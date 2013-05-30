@@ -10,6 +10,10 @@ namespace Analyzing
 {
     public interface IEmitter
     {
+        /// <summary>
+        /// TODO: think about have non internal instructions
+        /// </summary>
+        /// <param name="_testInstructions"></param>
         //void Emit(IInstruction[] _testInstructions);
 
         void AssignLiteral(string target, object literal);
