@@ -11,7 +11,7 @@ namespace Analyzing.Execution.Instructions
         private readonly VariableName _sourceVariable;
         private readonly VariableName _targetVariable;
 
-        internal Assign(VariableName targetVariable, VariableName sourceVariable)
+        internal Assign(VariableName sourceVariable, VariableName targetVariable)
         {
             _sourceVariable = sourceVariable;
             _targetVariable = targetVariable;

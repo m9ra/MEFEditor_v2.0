@@ -22,7 +22,7 @@ namespace Analyzing
             var context = new Execution.Context();
             context.FetchInstructions(loader.EntryPoint);
 
-            //TODO caching services, ...
+            //TODO caching services via wrapped loader, ...
             while (!context.ExecutionEnd)
             {
                 var instruction = context.NextInstruction();

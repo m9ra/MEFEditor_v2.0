@@ -16,6 +16,13 @@ namespace Analyzing
         /// Determine fully qualified name of object
         /// </summary>
         public readonly string Name;
+    
+
+        public VersionedName(string name, int versionNumber)
+        {
+            VersionNumber = versionNumber;
+            Name = name;
+        }
 
         //TODO override hashcode/equals/..
     }
