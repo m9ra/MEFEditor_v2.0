@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B07DA660-12ED-455A-944A-CB7E8D5C16C0}</ProjectGuid>
+    <ProjectGuid>{4E0257A9-5C44-434D-85D0-B2D4906D00FE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AnalyzingMachine</RootNamespace>
-    <AssemblyName>AnalyzingMachine</AssemblyName>
+    <RootNamespace>Analyzing</RootNamespace>
+    <AssemblyName>Analyzing</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,16 +22,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -44,11 +39,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalyzingResult.cs" />
+    <Compile Include="Execution\Context.cs" />
+    <Compile Include="Execution\Instance.cs" />
+    <Compile Include="Execution\Instruction.cs" />
+    <Compile Include="Execution\Instructions\Assign.cs" />
+    <Compile Include="Execution\Instructions\Call.cs" />
+    <Compile Include="Execution\Instructions\AssignLiteral.cs" />
+    <Compile Include="IEmitController.cs" />
+    <Compile Include="IInstructionGenerator.cs" />
+    <Compile Include="IInstructionLoader.cs" />
+    <Compile Include="Machine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VariableName.cs" />
+    <Compile Include="VersionedName.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
