@@ -11,13 +11,13 @@ namespace Analyzing.Execution.Instructions
         private readonly VariableName _sourceVariable;
         private readonly VariableName _targetVariable;
 
-        internal Assign(VariableName sourceVariable, VariableName targetVariable)
+        internal Assign(VariableName targetVariable,VariableName sourceVariable)
         {
             _sourceVariable = sourceVariable;
             _targetVariable = targetVariable;
         }
 
-        public void Execute(Context context)
+        public void Execute(AnalyzingContext context)
         {
             var sourceValue = context.GetValue(_sourceVariable);
             context.SetValue(_targetVariable, sourceValue);

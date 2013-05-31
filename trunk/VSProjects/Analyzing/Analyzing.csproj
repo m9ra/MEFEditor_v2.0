@@ -40,7 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzingResult.cs" />
-    <Compile Include="Execution\Context.cs" />
+    <Compile Include="Execution\AnalyzingContext.cs" />
+    <Compile Include="Execution\CallContext.cs" />
+    <Compile Include="Execution\CallEmitter.cs" />
     <Compile Include="Execution\Instance.cs" />
     <Compile Include="Execution\Instruction.cs" />
     <Compile Include="Execution\Instructions\Assign.cs" />

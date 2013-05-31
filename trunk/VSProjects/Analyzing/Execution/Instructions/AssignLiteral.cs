@@ -17,7 +17,7 @@ namespace Analyzing.Execution.Instructions
             _targetVariable = targetVariable;
         }
 
-        public void Execute(Context context)
+        public void Execute(AnalyzingContext context)
         {            
             context.SetValue(_targetVariable, _literal);
         }

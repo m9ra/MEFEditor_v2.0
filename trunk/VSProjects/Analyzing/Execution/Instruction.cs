@@ -8,6 +8,6 @@ namespace Analyzing.Execution
 {
     interface IInstruction
     {
-        void Execute(Context context);
+        void Execute(AnalyzingContext context);
     }
 }

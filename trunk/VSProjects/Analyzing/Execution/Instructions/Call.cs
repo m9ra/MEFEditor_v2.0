@@ -17,11 +17,10 @@ namespace Analyzing.Execution.Instructions
             _arguments = arguments.ToArray();
         }
 
-        public void Execute(Context context)
+        public void Execute(AnalyzingContext context)
         {
             var generator = context.GetGenerator(_methodGeneratorName);
-            context.FetchInstructions(generator);
-            context.PrepareArguments(_arguments);            
+            context.FetchCallInstructions(generator,_arguments);
         }
     }
 }
