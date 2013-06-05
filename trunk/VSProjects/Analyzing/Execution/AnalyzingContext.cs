@@ -12,17 +12,33 @@ namespace Analyzing.Execution
         /// Current call stack
         /// </summary>
         Stack<CallContext> _callStack = new Stack<CallContext>();
-
+        /// <summary>
+        /// Loader used for loading and resolving methods and type descriptions
+        /// </summary>
+        private readonly IInstructionLoader _loader;
         /// <summary>
         /// Current call context on call stack
         /// </summary>
         private CallContext CurrentCall { get { return _callStack.Peek(); } }
 
+        
+
         /// <summary>
         /// Determine that execution has ended now
         /// </summary>
-        public bool IsExecutionEnd { get; private set; }
+        internal bool IsExecutionEnd { get; private set; }
 
+        /// <summary>
+        /// Return value of lastly proceeded call
+        /// </summary>
+        internal Instance LastReturnValue { get; private set; }
+
+
+
+        internal AnalyzingContext(IInstructionLoader loader)
+        {
+            _loader = loader;
+        }
 
         /// <summary>
         /// Get current instance stored in variable of given name
@@ -51,7 +67,7 @@ namespace Analyzing.Execution
         internal void FetchCallInstructions(IInstructionGenerator generator, params VariableName[] arguments)
         {
             var argumentValues = getArgumentValues(arguments);
-            var call = new CallContext(generator, argumentValues);
+            var call = new CallContext(_loader,generator, argumentValues);
             _callStack.Push(call);
         }
 
@@ -61,18 +77,22 @@ namespace Analyzing.Execution
         /// <returns>Instruction that is on turn to be processed, if end of execution returns null</returns>
         internal IInstruction NextInstruction()
         {
-            IInstruction instrution;
-            while((instrution=CurrentCall.NextInstrution())==null){
-                _callStack.Pop();
-
-                if (_callStack.Count == 0)
-                {
-                    IsExecutionEnd = true;
-                    return null;
-                }                
+            IInstruction instrution=null;
+            while(!IsExecutionEnd && (instrution=CurrentCall.NextInstrution())==null){
+                popContext();                
             }
 
             return instrution;
+        }
+
+        private void popContext()
+        {
+            var poppedContext = _callStack.Pop();
+
+            if (_callStack.Count == 0)
+            {
+                IsExecutionEnd = true;                
+            }
         }
 
         /// <summary>
@@ -82,7 +102,7 @@ namespace Analyzing.Execution
         /// <returns>Instruction generator for given name</returns>
         internal IInstructionGenerator GetGenerator(VersionedName methodName)
         {
-            throw new NotImplementedException();
+            return _loader.GetGenerator(methodName);
         }
 
         /// <summary>
@@ -108,6 +128,17 @@ namespace Analyzing.Execution
             }
 
             return values.ToArray();
+        }
+
+        internal void Return(Instance returnValue)
+        {
+            popContext();
+            LastReturnValue = returnValue;                        
+        }
+
+        internal bool Contains(VariableName targetVariable)
+        {
+            return CurrentCall.Contains(targetVariable);
         }
     }
 }

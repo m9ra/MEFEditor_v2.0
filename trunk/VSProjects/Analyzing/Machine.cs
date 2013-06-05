@@ -19,7 +19,7 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         public AnalyzingResult Run(IInstructionLoader loader)
         {
-            var context = new Execution.AnalyzingContext();
+            var context = new Execution.AnalyzingContext(loader);
             context.FetchCallInstructions(loader.EntryPoint);
 
             //TODO caching services via wrapped loader, ...

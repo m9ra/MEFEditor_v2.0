@@ -46,11 +46,16 @@
     <Compile Include="Execution\Instance.cs" />
     <Compile Include="Execution\Instruction.cs" />
     <Compile Include="Execution\Instructions\Assign.cs" />
+    <Compile Include="Execution\Instructions\AssignReturnValue.cs" />
     <Compile Include="Execution\Instructions\Call.cs" />
     <Compile Include="Execution\Instructions\AssignLiteral.cs" />
+    <Compile Include="Execution\Instructions\LateReturnInitialization.cs" />
+    <Compile Include="Execution\Instructions\EnsureInitialized.cs" />
+    <Compile Include="Execution\Instructions\Return.cs" />
     <Compile Include="IEmitController.cs" />
     <Compile Include="IInstructionGenerator.cs" />
     <Compile Include="IInstructionLoader.cs" />
+    <Compile Include="TypeDescription.cs" />
     <Compile Include="Machine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VariableName.cs" />

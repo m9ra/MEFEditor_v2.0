@@ -16,14 +16,10 @@ namespace Analyzing.Execution
         /// Determine that call doesn't have next instructions to proceed
         /// </summary>
         internal bool IsCallEnd { get { return _instructionPointer >= _callInstructions.Length; } }
-        /// <summary>
-        /// Return value of call
-        /// </summary>
-        internal Instance ReturnValue { get; private set; }
 
-        public CallContext(IInstructionGenerator generator, Instance[] argumentValues)
+        internal CallContext(IInstructionLoader loader,IInstructionGenerator generator, Instance[] argumentValues)
         {
-            var emitter = new CallEmitter();
+            var emitter = new CallEmitter(loader);
 
             generator.Generate(emitter);
 
@@ -49,6 +45,11 @@ namespace Analyzing.Execution
             }
 
             return _callInstructions[_instructionPointer++];
+        }
+
+        internal bool Contains(VariableName targetVariable)
+        {
+            return _variables.ContainsKey(targetVariable);
         }
     }
 }

@@ -19,5 +19,15 @@ namespace Analyzing
         void AssignLiteral(string target, object literal);
 
         void Assign(string targetVar, string sourceVar);
+
+        /// <summary>
+        /// Assigning last call return value into specified target variable
+        /// </summary>
+        /// <param name="targetVar">Variable where returned value will be assigned</param>
+        void AssignReturnValue(string targetVar);
+
+        void StaticCall(string typeFullname, string methodName, params string[] inputArguments);
+
+        void Return(string sourceVar);
     }
 }

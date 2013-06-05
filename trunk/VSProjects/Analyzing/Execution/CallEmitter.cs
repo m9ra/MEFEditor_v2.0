@@ -10,6 +10,12 @@ namespace Analyzing.Execution
 {
     class CallEmitter:IEmitter
     {
+        readonly IInstructionLoader _loader;
+        internal CallEmitter(IInstructionLoader loader)
+        {
+            _loader = loader;
+        }
+
         /// <summary>
         /// Instructions emitted by this emitter
         /// </summary>
@@ -30,6 +36,40 @@ namespace Analyzing.Execution
             _instructions.Add(new Assign(target, source));
         }
 
+        public void AssignReturnValue(string targetVar)
+        {
+            var target = new VariableName(targetVar);
+
+            _instructions.Add(new AssignReturnValue(target));
+        }
+
+        public void StaticCall(string typeFullname, string methodName, params string[] inputArguments)
+        {
+            var inputArgumentVars=translateVariables(inputArguments);
+
+            var sharedThisVar=getSharedVar(typeFullname);
+            var callArgVars=new VariableName[]{sharedThisVar}.Concat(inputArgumentVars);
+            
+            var typeDescription=_loader.ResolveDescription(typeFullname);
+            var generatorName=_loader.ResolveCallName(typeDescription,methodName);
+            var initializatorName=_loader.ResolveCallName(typeDescription,".initializer");
+            
+            var ensureInitialization = new EnsureInitialized(sharedThisVar, initializatorName);
+            var lateInitialization = new LateReturnInitialization(sharedThisVar);
+            var call=new Call(generatorName,callArgVars);
+            
+
+            _instructions.Add(ensureInitialization);
+            _instructions.Add(lateInitialization);
+            _instructions.Add(call);
+        }
+
+
+        public void Return(string sourceVar)
+        {
+            var sourceVariable = new VariableName(sourceVar);
+            _instructions.Add(new Return(sourceVariable));
+        }
         /// <summary>
         /// Get emitted program
         /// </summary>
@@ -38,5 +78,20 @@ namespace Analyzing.Execution
         {
             return _instructions.ToArray();
         }
+
+        private VariableName getSharedVar(string typeFullname)
+        {
+            return new VariableName("shared_"+typeFullname);
+        }
+
+        private IEnumerable<VariableName> translateVariables(string[] inputArguments)
+        {
+            foreach (var arg in inputArguments)
+            {
+                yield return new VariableName(arg);
+            }
+        }
+
+
     }
 }

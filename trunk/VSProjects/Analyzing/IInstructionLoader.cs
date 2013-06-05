@@ -17,5 +17,12 @@ namespace Analyzing
         IInstructionGenerator EntryPoint { get; }
 
 
+
+        TypeDescription ResolveDescription(string typeFullname);
+
+        VersionedName ResolveCallName(TypeDescription typeDescription,string callName);
+
+
+        IInstructionGenerator GetGenerator(VersionedName methodName);
     }
 }

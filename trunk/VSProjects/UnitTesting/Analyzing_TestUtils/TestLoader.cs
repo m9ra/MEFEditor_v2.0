@@ -32,5 +32,25 @@ namespace UnitTesting.Analyzing_TestUtils
         {
             _director(emitter);
         }
+
+
+        public TypeDescription ResolveDescription(string typeFullname)
+        {
+            return new TypeDescription(typeFullname);
+        }
+
+        public VersionedName ResolveCallName(TypeDescription typeDescription, string callName)
+        {
+            return new VersionedName(callName,1);
+        }
+        
+        public IInstructionGenerator GetGenerator(VersionedName methodName)
+        {
+            return new TestLoader((e) =>
+            {
+                e.AssignLiteral("result", 20);
+                e.Return("result");
+            });
+        }
     }
 }
