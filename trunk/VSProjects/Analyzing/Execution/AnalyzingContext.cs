@@ -17,12 +17,21 @@ namespace Analyzing.Execution
         /// </summary>
         private readonly IInstructionLoader _loader;
         /// <summary>
+        /// Execution entry context
+        /// </summary>
+        private CallContext _entryContext;
+        /// <summary>
         /// Current call context on call stack
         /// </summary>
         private CallContext CurrentCall { get { return _callStack.Peek(); } }
 
-        
+        /// <summary>
+        /// Arguments prepared for call invoking
+        /// </summary>
+        private VariableName[] _preparedArguments = null;
 
+
+        internal Instance[] CurrentArguments { get { return CurrentCall.ArgumentValues; } }
         /// <summary>
         /// Determine that execution has ended now
         /// </summary>
@@ -59,15 +68,26 @@ namespace Analyzing.Execution
             CurrentCall.SetValue(targetVaraiable, value);
         }
 
+        internal void PrepareCall(params VariableName[] arguments)
+        {
+            _preparedArguments = arguments;
+        }
+
         /// <summary>
         /// Fetch instructions from given generator
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(IInstructionGenerator generator, params VariableName[] arguments)
+        internal void FetchCallInstructions(IInstructionGenerator generator)
         {
-            var argumentValues = getArgumentValues(arguments);
+            var argumentValues = getArgumentValues(_preparedArguments);
+            //preparing is just for single call
+            _preparedArguments = null;
             var call = new CallContext(_loader,generator, argumentValues);
+            if (_entryContext == null)
+            {
+                _entryContext = call;   
+            }
             _callStack.Push(call);
         }
 
@@ -111,7 +131,7 @@ namespace Analyzing.Execution
         /// <returns>Result of analysis</returns>
         internal AnalyzingResult GetResult()
         {
-            return new AnalyzingResult();
+            return new AnalyzingResult(_entryContext);
         }
 
         /// <summary>
@@ -140,5 +160,9 @@ namespace Analyzing.Execution
         {
             return CurrentCall.Contains(targetVariable);
         }
+
+
+
+
     }
 }

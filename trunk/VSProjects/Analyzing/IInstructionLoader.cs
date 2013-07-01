@@ -20,9 +20,8 @@ namespace Analyzing
 
         TypeDescription ResolveDescription(string typeFullname);
 
-        VersionedName ResolveCallName(TypeDescription typeDescription,string callName);
-
-
+        VersionedName ResolveCallName(MethodDescription method);
+        
         IInstructionGenerator GetGenerator(VersionedName methodName);
     }
 }

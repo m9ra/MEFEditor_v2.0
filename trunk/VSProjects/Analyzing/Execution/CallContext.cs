@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    class CallContext
+    public class CallContext
     {
         private Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
         private IInstruction[] _callInstructions;
@@ -17,8 +17,11 @@ namespace Analyzing.Execution
         /// </summary>
         internal bool IsCallEnd { get { return _instructionPointer >= _callInstructions.Length; } }
 
+        internal Instance[] ArgumentValues { get; private set; }
+
         internal CallContext(IInstructionLoader loader,IInstructionGenerator generator, Instance[] argumentValues)
         {
+            ArgumentValues = argumentValues;
             var emitter = new CallEmitter(loader);
 
             generator.Generate(emitter);
@@ -29,10 +32,14 @@ namespace Analyzing.Execution
 
         internal void SetValue(VariableName targetVaraiable, Instance value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException("value cannot be null");
+            }
             _variables[targetVaraiable] = value;
         }
 
-        internal Instance GetValue(VariableName variable)
+        public Instance GetValue(VariableName variable)
         {
             return _variables[variable];
         }
@@ -47,7 +54,7 @@ namespace Analyzing.Execution
             return _callInstructions[_instructionPointer++];
         }
 
-        internal bool Contains(VariableName targetVariable)
+        public bool Contains(VariableName targetVariable)
         {
             return _variables.ContainsKey(targetVariable);
         }

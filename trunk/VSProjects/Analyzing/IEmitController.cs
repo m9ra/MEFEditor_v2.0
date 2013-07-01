@@ -26,8 +26,10 @@ namespace Analyzing
         /// <param name="targetVar">Variable where returned value will be assigned</param>
         void AssignReturnValue(string targetVar);
 
-        void StaticCall(string typeFullname, string methodName, params string[] inputArguments);
+        void StaticCall(string typeFullname, string methodName, params string[] inputVariables);
 
         void Return(string sourceVar);
+
+        void Call(string methodName,string thisObjVariable, params string[] inputVariables);
     }
 }

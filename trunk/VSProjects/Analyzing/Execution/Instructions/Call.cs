@@ -8,19 +8,17 @@ namespace Analyzing.Execution.Instructions
 {
     class Call:IInstruction
     {
-        private readonly VersionedName _methodGeneratorName;
-        private readonly VariableName[] _arguments;
+        private readonly VersionedName _methodGeneratorName;        
 
-        internal Call(VersionedName methodGeneratorName,IEnumerable<VariableName> arguments)
+        internal Call(VersionedName methodGeneratorName)
         {
-            _methodGeneratorName = methodGeneratorName;
-            _arguments = arguments.ToArray();
+            _methodGeneratorName = methodGeneratorName;            
         }
 
         public void Execute(AnalyzingContext context)
         {
             var generator = context.GetGenerator(_methodGeneratorName);
-            context.FetchCallInstructions(generator,_arguments);
+            context.FetchCallInstructions(generator);
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing.Execution;
+
 namespace Analyzing
 {
     /// <summary>
@@ -12,6 +14,17 @@ namespace Analyzing
     /// </summary>
     public class Machine
     {
+        AnalyzingInstructionLoader _cachedLoader;
+
+
+        public Machine()
+        {
+            _cachedLoader = new AnalyzingInstructionLoader();
+        }
+
+
+
+
         /// <summary>
         /// Run analysis of program loaded via given loader. Execution starts from loader.EntryPoint
         /// </summary>
@@ -19,10 +32,21 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         public AnalyzingResult Run(IInstructionLoader loader)
         {
-            var context = new Execution.AnalyzingContext(loader);
-            context.FetchCallInstructions(loader.EntryPoint);
+            _cachedLoader.SetLoader(loader);
 
-            //TODO caching services via wrapped loader, ...
+            return run();
+        }
+
+        /// <summary>
+        /// Run instructions present in _cachedLoader
+        /// </summary>
+        /// <returns>Result of analysis</returns>
+        private AnalyzingResult run()
+        {
+            var context = new Execution.AnalyzingContext(_cachedLoader);
+            context.PrepareCall(new VariableName[] { }); //no input arguments
+            context.FetchCallInstructions(_cachedLoader.EntryPoint);
+
             while (!context.IsExecutionEnd)
             {
                 var instruction = context.NextInstruction();

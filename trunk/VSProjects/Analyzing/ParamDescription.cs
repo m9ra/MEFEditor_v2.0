@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Analyzing.Execution
+namespace Analyzing
 {
-    interface IInstruction
+    public class ParamDescription
     {
-        void Execute(AnalyzingContext context);
+        public readonly TypeDescription Type;
     }
 }

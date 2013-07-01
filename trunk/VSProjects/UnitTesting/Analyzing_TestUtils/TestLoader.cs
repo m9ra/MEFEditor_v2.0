@@ -33,15 +33,14 @@ namespace UnitTesting.Analyzing_TestUtils
             _director(emitter);
         }
 
-
         public TypeDescription ResolveDescription(string typeFullname)
         {
             return new TypeDescription(typeFullname);
         }
 
-        public VersionedName ResolveCallName(TypeDescription typeDescription, string callName)
+        public VersionedName ResolveCallName(MethodDescription description)
         {
-            return new VersionedName(callName,1);
+            return new VersionedName(description.MethodName,1);
         }
         
         public IInstructionGenerator GetGenerator(VersionedName methodName)

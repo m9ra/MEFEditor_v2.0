@@ -6,21 +6,17 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    class Instance
-    {        
-        internal readonly VersionedName TypeName;
-        private object literal;
+    public class Instance
+    {            
         internal bool IsDirty { get; private set; }
 
-        internal Instance(VersionedName typeName)
-        {
-            TypeName = typeName;
-        }
+        public object DirectValue { get; private set; }
 
-        public Instance(object literal)
+ 
+
+        public Instance(object directValue)
         {
-            // TODO: Complete member initialization
-            this.literal = literal;
-        }
+            DirectValue = directValue;
+        }        
     }
 }

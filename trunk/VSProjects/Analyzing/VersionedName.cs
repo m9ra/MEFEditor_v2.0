@@ -16,7 +16,7 @@ namespace Analyzing
         /// Determine fully qualified name of object
         /// </summary>
         public readonly string Name;
-    
+
 
         public VersionedName(string name, int versionNumber)
         {
@@ -24,6 +24,20 @@ namespace Analyzing
             Name = name;
         }
 
-        //TODO override hashcode/equals/..
+        public override bool Equals(object obj)
+        {
+            if (!(obj is VersionedName))
+            {
+                return false;
+            }
+
+            var o = (VersionedName)obj;
+            return o.Name == Name && o.VersionNumber == VersionNumber;
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode() + VersionNumber;
+        }
     }
 }
