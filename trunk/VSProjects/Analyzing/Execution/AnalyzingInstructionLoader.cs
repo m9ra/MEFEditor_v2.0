@@ -9,17 +9,14 @@ using System.Reflection;
 
 namespace Analyzing.Execution
 {
-    delegate Instance InstanceFunction(Instance[] arguments);
+    
 
     class AnalyzingInstructionLoader : IInstructionLoader
     {
         /// <summary>
         /// Types that will be represented directly in .NET representation
         /// </summary>
-        Type[] _directTypes = new Type[]{
-            typeof(int),       
-            typeof(string)
-        };
+        readonly Type[] _directTypes;
 
         /// <summary>
         /// Direct types that has already been registered
@@ -34,12 +31,19 @@ namespace Analyzing.Execution
         /// </summary>
         IInstructionLoader _currentLoader;
 
-        public AnalyzingInstructionLoader()
+        public AnalyzingInstructionLoader(MachineSettings settings)
         {
+            _directTypes = settings.DirectTypes;
+
             foreach (var directType in _directTypes)
             {
                 registerDirectType(directType);
-            }            
+            }
+
+            foreach (var methodPair in settings.DirectMethods)
+            {
+                addDirectMethod(methodPair.Key, methodPair.Value);
+            }
         }
         
         #region Internal API for Virtual Machine
@@ -119,11 +123,15 @@ namespace Analyzing.Execution
             {
                 if (isInDirectCover(method))
                 {
-                    var call = generateDirectCall(method);
-                    var methodName = Name.FromMethod(method);
-                    _directCalls.Add(methodName, new CachedGenerator(call));
+                    var directMethod = generateDirectMethod(method);
+                    var name = Name.FromMethod(method);
+                    addDirectMethod(name, directMethod);
                 }
             }
+        }
+
+        private void addDirectMethod(VersionedName name, DirectMethod method){
+            _directCalls.Add(name, new CachedGenerator(method));
         }
 
         private TypeDescription resolveDirectType(Type type)
@@ -132,12 +140,12 @@ namespace Analyzing.Execution
             return new TypeDescription(type.FullName);
         }
 
-        private InstanceFunction generateDirectCall(MethodInfo method)
+        private DirectMethod generateDirectMethod(MethodInfo method)
         {
             var returnTypeDescription = resolveDirectType(method.ReturnType);
-            return (args) =>
+            return (context) =>
             {
-                
+                var args = context.CurrentArguments;
                 object[] directArgs;
                 object thisObj;
 
@@ -152,7 +160,9 @@ namespace Analyzing.Execution
                 }                
 
                 var returnValue = method.Invoke(thisObj, directArgs);        
-                return createDirectInstance(returnTypeDescription, returnValue);
+                var returnInstance=createDirectInstance(returnTypeDescription, returnValue);
+
+                context.Return(returnInstance);
             };
         }
 

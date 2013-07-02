@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Analyzing_TestUtils\Environment\SettingsProvider.cs" />
     <Compile Include="Analyzing_TestUtils\ExecutionUtils.cs" />
     <Compile Include="Analyzing_TestUtils\TestLoader.cs" />
     <Compile Include="Machine_Testing.cs" />

@@ -15,11 +15,10 @@ namespace Analyzing
     public class Machine
     {
         AnalyzingInstructionLoader _cachedLoader;
-
-
-        public Machine()
+        
+        public Machine(MachineSettings settings)
         {
-            _cachedLoader = new AnalyzingInstructionLoader();
+            _cachedLoader = new AnalyzingInstructionLoader(settings);
         }
 
 

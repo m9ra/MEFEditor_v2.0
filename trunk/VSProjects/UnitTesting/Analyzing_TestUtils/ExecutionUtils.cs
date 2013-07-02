@@ -18,7 +18,7 @@ namespace UnitTesting.Analyzing_TestUtils
     {
         public static AnalyzingResult Run(EmitDirector director)
         {
-            var machine = new Machine();
+            var machine = new Machine(Environment.SettingsProvider.MachineSettings);
             var loader=new TestLoader(director);
             return machine.Run(loader);
         }

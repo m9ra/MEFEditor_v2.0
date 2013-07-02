@@ -13,7 +13,7 @@ namespace Analyzing.Execution
 
         List<IInstruction> _instructions = new List<IInstruction>();
         
-        public CachedGenerator(InstanceFunction function)
+        public CachedGenerator(DirectMethod function)
         {         
             _instructions.Add(new DirectCall(function));
         }

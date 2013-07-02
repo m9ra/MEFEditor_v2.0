@@ -8,16 +8,15 @@ namespace Analyzing.Execution.Instructions
 {
     class DirectCall : IInstruction
     {
-        InstanceFunction _call;
-        public DirectCall(InstanceFunction call)
+        DirectMethod _call;
+        public DirectCall(DirectMethod call)
         {
             _call = call;
         }
 
         public void Execute(AnalyzingContext context)
         {
-            var result = _call(context.CurrentArguments);
-            context.Return(result);
+            _call(context);            
         }
     }
 }

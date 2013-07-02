@@ -10,12 +10,12 @@ using Analyzing.Execution;
 
 namespace UnitTesting.Analyzing_TestUtils
 {
-    class TestLoader:IInstructionLoader,IInstructionGenerator
+    class TestLoader : IInstructionLoader, IInstructionGenerator
     {
         EmitDirector _director;
         public TestLoader(EmitDirector director)
         {
-            _director=director;
+            _director = director;
         }
 
         public IInstructionGenerator EntryPoint
@@ -40,9 +40,9 @@ namespace UnitTesting.Analyzing_TestUtils
 
         public VersionedName ResolveCallName(MethodDescription description)
         {
-            return new VersionedName(description.MethodName,1);
+            return new VersionedName(description.ThisType.Fullname + "." + description.MethodName,0);
         }
-        
+
         public IInstructionGenerator GetGenerator(VersionedName methodName)
         {
             return new TestLoader((e) =>

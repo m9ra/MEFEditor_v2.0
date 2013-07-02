@@ -59,6 +59,7 @@
     <Compile Include="IEmitController.cs" />
     <Compile Include="IInstructionGenerator.cs" />
     <Compile Include="IInstructionLoader.cs" />
+    <Compile Include="MachineSettings.cs" />
     <Compile Include="MethodDescription.cs" />
     <Compile Include="NameUtilities.cs" />
     <Compile Include="ParamDescription.cs" />

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    class AnalyzingContext
+    public class AnalyzingContext
     {
         /// <summary>
         /// Current call stack
@@ -31,7 +31,7 @@ namespace Analyzing.Execution
         private VariableName[] _preparedArguments = null;
 
 
-        internal Instance[] CurrentArguments { get { return CurrentCall.ArgumentValues; } }
+        public Instance[] CurrentArguments { get { return CurrentCall.ArgumentValues; } }
         /// <summary>
         /// Determine that execution has ended now
         /// </summary>
@@ -150,19 +150,20 @@ namespace Analyzing.Execution
             return values.ToArray();
         }
 
-        internal void Return(Instance returnValue)
+        public void Return(Instance returnValue)
         {
             popContext();
             LastReturnValue = returnValue;                        
         }
 
-        internal bool Contains(VariableName targetVariable)
+        public bool Contains(VariableName targetVariable)
         {
             return CurrentCall.Contains(targetVariable);
         }
 
-
-
-
+        public Instance CreateDirectInstance<T>(T data)
+        {
+            return new Instance(data);
+        }
     }
 }
