@@ -30,7 +30,7 @@ namespace UnitTesting
             ExecutionUtils.Run((e) =>
             {
                 e.AssignLiteral("var1", "HELLO");
-                e.Call("ToLower", "var1");
+                e.Call("ToLower".Method(), "var1");
                 e.AssignReturnValue("var2");
             })
             .AssertVariable("var2").HasValue("hello");
@@ -43,20 +43,20 @@ namespace UnitTesting
             {
                 e.AssignLiteral("var1", 25);
                 e.AssignLiteral("format", "Number: {0}");
-                e.Call("ToString", "var1", "format");
+                e.Call("ToString".Method(), "var1", "format");
                 e.AssignReturnValue("var2");
             })
             .AssertVariable("var2").HasValue(25.ToString("Number: {0}"));
         }
 
         [TestMethod]
-        public void DirectOperator_binary()
+        public void InjectedMethodCall_static()
         {
             ExecutionUtils.Run((e) =>
             {
                 e.AssignLiteral("var1", 40);
                 e.AssignLiteral("var2", 2);
-                e.StaticCall("System.Int32", "+", "var1", "var2");
+                e.StaticCall("System.Int32", "+".Method(), "var1", "var2");
                 e.AssignReturnValue("var3");
             })
             .AssertVariable("var3").HasValue(40 + 2);

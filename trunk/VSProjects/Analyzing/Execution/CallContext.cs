@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    public class CallContext
-    {
+    public class CallContext<MethodID, InstanceInfo>
+    {        
         private Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
-        private IInstruction[] _callInstructions;
+        private IInstruction<MethodID, InstanceInfo>[] _callInstructions;
         private uint _instructionPointer;
 
         /// <summary>
@@ -19,11 +19,11 @@ namespace Analyzing.Execution
 
         internal Instance[] ArgumentValues { get; private set; }
 
-        internal CallContext(IInstructionLoader loader,IInstructionGenerator generator, Instance[] argumentValues)
+        internal CallContext(IMachineSettings<InstanceInfo> settings,IInstructionLoader<MethodID, InstanceInfo> loader, IInstructionGenerator<MethodID, InstanceInfo> generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
-            var emitter = new CallEmitter(loader);
 
+            var emitter = new CallEmitter<MethodID, InstanceInfo>(settings,loader);
             generator.Generate(emitter);
 
             _callInstructions = emitter.GetEmittedInstructions();
@@ -44,7 +44,7 @@ namespace Analyzing.Execution
             return _variables[variable];
         }
 
-        internal IInstruction NextInstrution()
+        internal IInstruction<MethodID, InstanceInfo> NextInstrution()
         {
             if (IsCallEnd)
             {

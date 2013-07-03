@@ -4,52 +4,60 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+using TypeSystem;
 using Analyzing;
 using Analyzing.Execution;
 
 
 namespace UnitTesting.Analyzing_TestUtils
 {
-    class TestLoader : IInstructionLoader, IInstructionGenerator
+    class TestLoaderProvider : TypeSystem.IInstructionLoader
     {
         EmitDirector _director;
-        public TestLoader(EmitDirector director)
+        private TestLoaderProvider(EmitDirector director)
         {
             _director = director;
         }
 
-        public IInstructionGenerator EntryPoint
+        static internal TypeSystem.IInstructionLoader CreateStandardLoader(EmitDirector director)
         {
-            get { return this; }
+            var testLoader = new TestLoaderProvider(director);
+
+            return new TypeSystem.DirectCallLoader(testLoader, Environment.SettingsProvider.TypeSettings);
         }
 
-        public VersionedName Name
+        public IInstructionGenerator<MethodID, InstanceInfo> EntryPoint
         {
-            get { return new VersionedName("TestGenerator", 1); }
+            get { return new DirectorGenerator(_director); }
         }
 
-        public void Generate(IEmitter emitter)
+        public VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo)
+        {
+                throw new NotImplementedException();
+        }
+
+        public IInstructionGenerator<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        {
+            return Environment.SettingsProvider.MethodGenerator(methodName);
+        }
+        
+        public VersionedName ResolveStaticInitializer(TypeSystem.InstanceInfo info)
+        {
+            return new VersionedName(info.TypeName+"#initializer", -1);
+        }
+    }
+
+    class DirectorGenerator:TypeSystem.IInstructionGenerator
+    {
+        readonly EmitDirector _director;
+        public DirectorGenerator(EmitDirector director)
+        {
+            _director = director;
+        }
+        public void Generate(IEmitter<MethodID, InstanceInfo> emitter)
         {
             _director(emitter);
-        }
-
-        public TypeDescription ResolveDescription(string typeFullname)
-        {
-            return new TypeDescription(typeFullname);
-        }
-
-        public VersionedName ResolveCallName(MethodDescription description)
-        {
-            return new VersionedName(description.ThisType.Fullname + "." + description.MethodName,0);
-        }
-
-        public IInstructionGenerator GetGenerator(VersionedName methodName)
-        {
-            return new TestLoader((e) =>
-            {
-                e.AssignLiteral("result", 20);
-                e.Return("result");
-            });
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class LateReturnInitialization:IInstruction
+    class LateReturnInitialization<MethodID, InstanceInfo> : IInstruction<MethodID, InstanceInfo>
     {
         private readonly VariableName _targetVariable;
                     
@@ -16,7 +16,7 @@ namespace Analyzing.Execution.Instructions
             _targetVariable = targetVariable;            
         }
 
-        public void Execute(AnalyzingContext context)
+        public void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
             if (context.Contains(_targetVariable))
             {

@@ -6,24 +6,26 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    public class AnalyzingContext
+    public class AnalyzingContext<MethodID,InstanceInfo>
     {
+
+        IMachineSettings<InstanceInfo> _settings;
         /// <summary>
         /// Current call stack
         /// </summary>
-        Stack<CallContext> _callStack = new Stack<CallContext>();
+        Stack<CallContext<MethodID, InstanceInfo>> _callStack = new Stack<CallContext<MethodID, InstanceInfo>>();
         /// <summary>
         /// Loader used for loading and resolving methods and type descriptions
         /// </summary>
-        private readonly IInstructionLoader _loader;
+        private readonly IInstructionLoader<MethodID,InstanceInfo> _loader;
         /// <summary>
         /// Execution entry context
         /// </summary>
-        private CallContext _entryContext;
+        private CallContext<MethodID, InstanceInfo> _entryContext;
         /// <summary>
         /// Current call context on call stack
         /// </summary>
-        private CallContext CurrentCall { get { return _callStack.Peek(); } }
+        private CallContext<MethodID, InstanceInfo> CurrentCall { get { return _callStack.Peek(); } }
 
         /// <summary>
         /// Arguments prepared for call invoking
@@ -44,8 +46,9 @@ namespace Analyzing.Execution
 
 
 
-        internal AnalyzingContext(IInstructionLoader loader)
+        internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID,InstanceInfo> loader)
         {
+            _settings = settings;
             _loader = loader;
         }
 
@@ -78,12 +81,12 @@ namespace Analyzing.Execution
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(IInstructionGenerator generator)
+        internal void FetchCallInstructions(IInstructionGenerator<MethodID,InstanceInfo> generator)
         {
             var argumentValues = getArgumentValues(_preparedArguments);
             //preparing is just for single call
             _preparedArguments = null;
-            var call = new CallContext(_loader,generator, argumentValues);
+            var call = new CallContext<MethodID, InstanceInfo>(_settings,_loader,generator, argumentValues);
             if (_entryContext == null)
             {
                 _entryContext = call;   
@@ -95,9 +98,9 @@ namespace Analyzing.Execution
         /// Get next available instrution
         /// </summary>
         /// <returns>Instruction that is on turn to be processed, if end of execution returns null</returns>
-        internal IInstruction NextInstruction()
+        internal IInstruction<MethodID, InstanceInfo> NextInstruction()
         {
-            IInstruction instrution=null;
+            IInstruction<MethodID, InstanceInfo> instrution = null;
             while(!IsExecutionEnd && (instrution=CurrentCall.NextInstrution())==null){
                 popContext();                
             }
@@ -120,7 +123,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="methodName">Name of method generator</param>
         /// <returns>Instruction generator for given name</returns>
-        internal IInstructionGenerator GetGenerator(VersionedName methodName)
+        internal IInstructionGenerator<MethodID,InstanceInfo> GetGenerator(VersionedName methodName)
         {
             return _loader.GetGenerator(methodName);
         }
@@ -129,9 +132,9 @@ namespace Analyzing.Execution
         /// Get current result of analysis
         /// </summary>
         /// <returns>Result of analysis</returns>
-        internal AnalyzingResult GetResult()
+        internal AnalyzingResult<MethodID, InstanceInfo> GetResult()
         {
-            return new AnalyzingResult(_entryContext);
+            return new AnalyzingResult<MethodID, InstanceInfo>(_entryContext);
         }
 
         /// <summary>

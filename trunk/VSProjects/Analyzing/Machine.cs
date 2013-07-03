@@ -12,16 +12,15 @@ namespace Analyzing
     /// Virtual machine that provides analyzing services
     /// NOTE: Is not thread safe
     /// </summary>
-    public class Machine
+    public class Machine<MethodID,InstanceInfo>
     {
-        AnalyzingInstructionLoader _cachedLoader;
-        
-        public Machine(MachineSettings settings)
+        IInstructionLoader<MethodID,InstanceInfo> _loader;
+        IMachineSettings<InstanceInfo> _settings;
+
+        public Machine(IMachineSettings<InstanceInfo> settings)
         {
-            _cachedLoader = new AnalyzingInstructionLoader(settings);
+            _settings = settings;    
         }
-
-
 
 
         /// <summary>
@@ -29,9 +28,9 @@ namespace Analyzing
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
         /// <returns>Result of analysis</returns>
-        public AnalyzingResult Run(IInstructionLoader loader)
+        public AnalyzingResult<MethodID, InstanceInfo> Run(IInstructionLoader<MethodID, InstanceInfo> loader)
         {
-            _cachedLoader.SetLoader(loader);
+            _loader = loader;
 
             return run();
         }
@@ -40,11 +39,11 @@ namespace Analyzing
         /// Run instructions present in _cachedLoader
         /// </summary>
         /// <returns>Result of analysis</returns>
-        private AnalyzingResult run()
+        private AnalyzingResult<MethodID, InstanceInfo> run()
         {
-            var context = new Execution.AnalyzingContext(_cachedLoader);
+            var context = new Execution.AnalyzingContext<MethodID, InstanceInfo>(_settings,_loader);
             context.PrepareCall(new VariableName[] { }); //no input arguments
-            context.FetchCallInstructions(_cachedLoader.EntryPoint);
+            context.FetchCallInstructions(_loader.EntryPoint);
 
             while (!context.IsExecutionEnd)
             {

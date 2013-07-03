@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class Call:IInstruction
+    class Call<MethodID, InstanceInfo> : IInstruction<MethodID, InstanceInfo>
     {
         private readonly VersionedName _methodGeneratorName;        
 
@@ -15,7 +15,7 @@ namespace Analyzing.Execution.Instructions
             _methodGeneratorName = methodGeneratorName;            
         }
 
-        public void Execute(AnalyzingContext context)
+        public void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
             var generator = context.GetGenerator(_methodGeneratorName);
             context.FetchCallInstructions(generator);

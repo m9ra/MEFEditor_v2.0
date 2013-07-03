@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    interface IInstruction
+    interface IInstruction<MethodID,InstanceInfo>
     {
-        void Execute(AnalyzingContext context);
+        void Execute(AnalyzingContext<MethodID,InstanceInfo> context);
     }
 }

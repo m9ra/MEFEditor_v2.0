@@ -9,19 +9,17 @@ namespace Analyzing
     /// <summary>
     /// Loader provide access to instruction generators (types, methods,..)
     /// </summary>
-    public interface IInstructionLoader
+    public interface IInstructionLoader<MethodID,InstanceInfo>
     {
         /// <summary>
         /// Entry point for execution start
         /// </summary>
-        IInstructionGenerator EntryPoint { get; }
-
-
-
-        TypeDescription ResolveDescription(string typeFullname);
-
-        VersionedName ResolveCallName(MethodDescription method);
+        IInstructionGenerator<MethodID, InstanceInfo> EntryPoint { get; }
         
-        IInstructionGenerator GetGenerator(VersionedName methodName);
+        VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo);
+        
+        IInstructionGenerator<MethodID,InstanceInfo> GetGenerator(VersionedName methodName);
+
+        VersionedName ResolveStaticInitializer(InstanceInfo info);
     }
 }

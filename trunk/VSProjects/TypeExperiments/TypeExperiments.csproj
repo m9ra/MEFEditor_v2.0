@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{807BE5F4-84D5-4035-8905-9D196A957AF0}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TypeExperiments</RootNamespace>
+    <AssemblyName>TypeSystem</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Benchmark.cs" />
+    <Compile Include="Core\ExecutingContext.cs" />
+    <Compile Include="Core\Instance.cs" />
+    <Compile Include="Core\InstanceData.cs" />
+    <Compile Include="Core\InternalAssembly.cs" />
+    <Compile Include="Core\InternalType.cs" />
+    <Compile Include="ExampleOverride.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\Definitions\BodyDefinition.cs" />
+    <Compile Include="Reflection\Definitions\FieldDefinition.cs" />
+    <Compile Include="Reflection\Definitions\MethodDefinition.cs" />
+    <Compile Include="Core\GenericStrongName.cs" />
+    <Compile Include="Reflection\ILAnalyzer\DynamicILReaderProvider.cs" />
+    <Compile Include="Reflection\ILAnalyzer\IILReaderProvider.cs" />
+    <Compile Include="Reflection\ILAnalyzer\ILInstruction.cs" />
+    <Compile Include="Reflection\ILAnalyzer\ILReader.cs" />
+    <Compile Include="Reflection\ILAnalyzer\ILReaderProvider.cs" />
+    <Compile Include="Reflection\ILAnalyzer\ILUtilities.cs" />
+    <Compile Include="Core\InternalTypeResolver.cs" />
+    <Compile Include="Core\MethodName.cs" />
+    <Compile Include="Core\Modifiers.cs" />
+    <Compile Include="Core\StrongName.cs" />
+    <Compile Include="Core\TypeName.cs" />
+    <Compile Include="ExampleClass.cs" />
+    <Compile Include="Reflection\Definitions\ILWriter.cs" />
+    <Compile Include="TypeBuilding\MethodBuilder.cs" />
+    <Compile Include="TypeBuilding\RuntimeDefinition.cs" />
+    <Compile Include="TypeBuilding\StringModifyWriter.cs" />
+    <Compile Include="TypeBuilding\TypeBuilder.cs" />
+    <Compile Include="TypeBuilding\TypeBuildingManager.cs" />
+    <Compile Include="Reflection\Definitions\TypeDefinition.cs" />
+    <Compile Include="TypeBuilding\TypeOverriding\OverrideBuilder.cs" />
+    <Compile Include="TypeBuilding\TypeOverriding\OverridenInstance.cs" />
+    <Compile Include="TypeBuilding\TypeOverriding\OverridenType.cs" />
+    <Compile Include="TypeBuilding\TypeOverriding\TypeOverride.cs" />
+    <Compile Include="TypeBuilding\TypeUtils.cs" />
+    <Compile Include="TypeBuilding\TypeWrapping\WrappedInstance.cs" />
+    <Compile Include="TypeBuilding\TypeWrapping\WrappedType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

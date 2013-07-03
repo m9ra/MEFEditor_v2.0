@@ -9,32 +9,39 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Analyzing;
 using Analyzing.Execution;
 
+using TypeSystem;
+
 namespace UnitTesting.Analyzing_TestUtils
 {
 
-    delegate void EmitDirector(IEmitter emitter);
+    delegate void EmitDirector(IEmitter<MethodID,InstanceInfo> emitter);
 
     static class ExecutionUtils
     {
-        public static AnalyzingResult Run(EmitDirector director)
+        public static AnalyzingResult<MethodID,InstanceInfo> Run(EmitDirector director)
         {
-            var machine = new Machine(Environment.SettingsProvider.MachineSettings);
-            var loader=new TestLoader(director);
+            var machine = new Machine<MethodID,InstanceInfo>(new MachineSettings());
+            var loader = TestLoaderProvider.CreateStandardLoader(director);
             return machine.Run(loader);
         }
 
-        internal static TestCase AssertVariable(this AnalyzingResult result, string variable)
+        internal static TestCase AssertVariable(this AnalyzingResult<MethodID,InstanceInfo> result, string variable)
         {
             return new TestCase(result, variable);
+        }
+
+        internal static MethodID Method(this string methodName)
+        {
+            return new MethodID(methodName);
         }
     }
 
     internal class TestCase
     {
-        private readonly AnalyzingResult _result;
+        private readonly AnalyzingResult<MethodID,InstanceInfo> _result;
         private readonly VariableName _variable;
 
-        internal TestCase(AnalyzingResult result, string variable)
+        internal TestCase(AnalyzingResult<MethodID,InstanceInfo> result, string variable)
         {            
             _result = result;
             _variable = new VariableName(variable);

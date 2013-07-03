@@ -8,11 +8,11 @@ using Analyzing.Execution;
 
 namespace Analyzing
 {
-    public class AnalyzingResult
+    public class AnalyzingResult<MethodID, InstanceInfo>
     {
-        public readonly CallContext EntryContext;
+        public readonly CallContext<MethodID, InstanceInfo> EntryContext;
 
-        internal AnalyzingResult(CallContext entryContext)
+        internal AnalyzingResult(CallContext<MethodID, InstanceInfo> entryContext)
         {
             EntryContext = entryContext;
         }
