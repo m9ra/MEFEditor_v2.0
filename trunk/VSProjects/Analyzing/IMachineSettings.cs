@@ -16,5 +16,7 @@ namespace Analyzing
         InstanceInfo GetLiteralInfo(Type literalType);
 
         InstanceInfo GetSharedInstanceInfo(string typeFullname);
+
+        bool IsTrue(Instance condition);
     }
 }

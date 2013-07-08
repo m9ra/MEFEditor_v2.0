@@ -58,5 +58,10 @@ namespace Analyzing.Execution
         {
             return _variables.ContainsKey(targetVariable);
         }
+
+        internal void Jump(Label target)
+        {
+            _instructionPointer = target.InstructionOffset;
+        }
     }
 }

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Analyzing;
+using Analyzing.Execution;
+
 namespace TypeSystem
 {
     public class MachineSettings:IMachineSettings<InstanceInfo>
@@ -17,6 +19,11 @@ namespace TypeSystem
         public InstanceInfo GetSharedInstanceInfo(string typeFullname)
         {
             return new InstanceInfo(typeFullname);
+        }
+
+        public bool IsTrue(Instance condition)
+        {
+            return (bool)condition.DirectValue;
         }
     }
 }

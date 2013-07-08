@@ -168,5 +168,15 @@ namespace Analyzing.Execution
         {
             return new Instance(data);
         }
+
+        internal void Jump(Label target)
+        {
+            CurrentCall.Jump(target);
+        }
+
+        internal bool IsTrue(VariableName condition)
+        {
+            return _settings.IsTrue(GetValue(condition));
+        }
     }
 }

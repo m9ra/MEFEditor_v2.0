@@ -25,6 +25,10 @@ namespace Analyzing.Execution
         /// Types resolved for variables
         /// </summary>
         readonly Dictionary<VariableName, InstanceInfo> _staticVariableInfo = new Dictionary<VariableName, InstanceInfo>();
+        /// <summary>
+        /// Defined labels pointing to instruction offset
+        /// </summary>
+        readonly HashSet<Label> _labels = new HashSet<Label>();
 
         internal CallEmitter(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID, InstanceInfo> loader)
         {
@@ -104,6 +108,39 @@ namespace Analyzing.Execution
         {
             var sourceVariable = getVariable(sourceVar);
             _instructions.Add(new Return<MethodID, InstanceInfo>(sourceVariable));
+        }
+        
+        public Label CreateLabel(string identifier)
+        {
+            var label = new Label(identifier);
+
+            _labels.Add(label);
+
+            return label;
+        }
+
+        public void SetLabel(Label label)
+        {
+            if (!_labels.Contains(label))
+            {
+                throw new NotSupportedException("This label cannot be set by this emitter");
+            }
+
+            label.SetOffset((uint)_instructions.Count);
+        }
+
+        public void ConditionalJump(string conditionVariable, Label target)
+        {
+            var condition = getVariable(conditionVariable);
+            var conditionalJump = new ConditionalJump<MethodID, InstanceInfo>(condition,target);
+
+            _instructions.Add(conditionalJump);
+        }
+
+        public void Jump(Label target)
+        {
+            var jump = new Jump<MethodID,InstanceInfo>(target);
+            _instructions.Add(jump);
         }
         #endregion
 
@@ -195,7 +232,5 @@ namespace Analyzing.Execution
         }
 
         #endregion
-
-
     }
 }

@@ -27,5 +27,32 @@ namespace Analyzing
         void Return(string sourceVar);
 
         void DirectInvoke(DirectMethod<MethodID,InstanceInfo> method);
+
+        /// <summary>
+        /// Creates label
+        /// NOTE:
+        ///     Every label has to be initialized by SetLabel
+        /// </summary>
+        /// <param name="identifier">Label identifier</param>
+        /// <returns>Created label</returns>
+        Label CreateLabel(string identifier);
+        
+        /// <summary>
+        /// Jumps at given target if instance under conditionVariable is resolved as true
+        /// </summary>
+        /// <param name="conditionVariable">Variable where condition is stored</param>
+        /// <param name="target">Target label</param>
+        void ConditionalJump(string conditionVariable, Label target);
+
+        /// <summary>
+        /// Jumps at given target
+        /// </summary>
+        /// <param name="target">Target label</param>
+        void Jump(Label target);
+        /// <summary>
+        /// Set label pointing to next instruction that will be generated
+        /// </summary>
+        /// <param name="label">Label that will be set</param>
+        void SetLabel(Label label);
     }
 }

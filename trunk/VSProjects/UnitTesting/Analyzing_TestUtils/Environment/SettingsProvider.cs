@@ -23,7 +23,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             MachineSettings = new MachineSettings();
 
             TypeSettings = new TypeSystem.Settings(
-                typeof(int),typeof(string),typeof(double)
+                typeof(int),typeof(string),typeof(double),typeof(bool)
                 );
 
             addDirectAdding<int>();            

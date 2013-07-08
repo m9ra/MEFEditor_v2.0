@@ -61,5 +61,29 @@ namespace UnitTesting
             })
             .AssertVariable("var3").HasValue(40 + 2);
         }
+
+        [TestMethod]
+        public void ConditionalLoop_iteration()
+        {
+            ExecutionUtils.Run((e) =>
+            {
+                var start = e.CreateLabel("start");
+                var end = e.CreateLabel("end");
+
+                e.AssignLiteral("stop", 100);
+                e.AssignLiteral("step", 1);
+                e.AssignLiteral("increment", 0);
+
+                e.SetLabel(start);
+                e.StaticCall("System.Int32", "+".Method(), "increment", "step");
+                e.AssignReturnValue("increment");
+                e.Call("Equals".Method(), "increment", "stop");
+                e.AssignReturnValue("condition");
+                e.ConditionalJump("condition", end);
+                e.Jump(start);
+                e.SetLabel(end);
+            })
+            .AssertVariable("increment").HasValue(100);
+        }
     }
 }
