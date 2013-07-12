@@ -54,12 +54,17 @@
     <Compile Include="Analyzing_TestUtils\ExecutionUtils.cs" />
     <Compile Include="Analyzing_TestUtils\TestLoader.cs" />
     <Compile Include="Machine_Testing.cs" />
+    <Compile Include="Parsing_Testing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analyzing\Analyzing.csproj">
       <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
       <Name>Analyzing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AssemblyProviders\AssemblyProviders.csproj">
+      <Project>{7be9c607-8e00-44d7-958c-60519ba569b7}</Project>
+      <Name>AssemblyProviders</Name>
     </ProjectReference>
     <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>

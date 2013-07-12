@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7BE9C607-8E00-44D7-958C-60519BA569B7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AssemblyProviders</RootNamespace>
+    <AssemblyName>AssemblyProviders</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CSharp\CodeInstructions\CodeAssign.cs" />
+    <Compile Include="CSharp\CodeInstructions\CodeInstruction.cs" />
+    <Compile Include="CSharp\CodeInstructions\CodeKeyword.cs" />
+    <Compile Include="CSharp\CodeInstructions\CodeMethod.cs" />
+    <Compile Include="CSharp\CodeInstructions\CodeReturn.cs" />
+    <Compile Include="CSharp\CodeInstructions\CodeThis.cs" />
+    <Compile Include="CSharp\CodeInstructions\NodeTools.cs" />
+    <Compile Include="CSharp\CodeInstructions\ValueProviders.cs" />
+    <Compile Include="CSharp\Interfaces\AST.cs" />
+    <Compile Include="CSharp\Interfaces\CodeInstructions.cs" />
+    <Compile Include="CSharp\Interfaces\IPosition.cs" />
+    <Compile Include="CSharp\Interfaces\Scanning.cs" />
+    <Compile Include="CSharp\LanguageDefinitions\CSharpSyntax.cs" />
+    <Compile Include="CSharp\LanguageDefinitions\Layouts.cs" />
+    <Compile Include="CSharp\LanguageDefinitions\NamespaceDoc.cs" />
+    <Compile Include="CSharp\Lexer.cs" />
+    <Compile Include="CSharp\Primitives\CaseBlock.cs" />
+    <Compile Include="CSharp\Primitives\CodeNode.cs" />
+    <Compile Include="CSharp\Primitives\NodeException.cs" />
+    <Compile Include="CSharp\Primitives\ParsingPrimitives.cs" />
+    <Compile Include="CSharp\SyntaxParser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

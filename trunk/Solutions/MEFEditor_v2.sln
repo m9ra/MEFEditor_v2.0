@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeExperiments", "..\VSPro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeSystem", "..\VSProjects\TypeSystem\TypeSystem.csproj", "{6571F9B2-7D38-423D-BB65-79916C9CD1B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyProviders", "..\VSProjects\AssemblyProviders\AssemblyProviders.csproj", "{7BE9C607-8E00-44D7-958C-60519BA569B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,30 @@ Global
 		{6571F9B2-7D38-423D-BB65-79916C9CD1B1}.winphone_Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6571F9B2-7D38-423D-BB65-79916C9CD1B1}.winphone_Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6571F9B2-7D38-423D-BB65-79916C9CD1B1}.winphone_Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_2_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_2_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_2_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_2_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_3_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_3_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_3_5_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_3_5_Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_4_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_4_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_4_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.net_4_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.silverlight_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.silverlight_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.silverlight_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.silverlight_Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.winphone_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.winphone_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.winphone_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE9C607-8E00-44D7-958C-60519BA569B7}.winphone_Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

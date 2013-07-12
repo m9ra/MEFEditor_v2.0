@@ -1,10 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-
 using Analyzing.Execution.Instructions;
 using UnitTesting.Analyzing_TestUtils;
-
 
 namespace UnitTesting
 {
