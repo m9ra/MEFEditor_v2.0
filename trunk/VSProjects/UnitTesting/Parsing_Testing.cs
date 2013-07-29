@@ -48,7 +48,9 @@ var test2=test;
 
             var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
 
-            machine.Run(entryLoader);
+            var result=machine.Run(entryLoader);
+
+            result.AssertVariable("test2").HasValue("hello");
         }
 
     }

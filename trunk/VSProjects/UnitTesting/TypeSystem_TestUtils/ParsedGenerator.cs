@@ -13,18 +13,18 @@ namespace UnitTesting.TypeSystem_TestUtils
     class ParsedGenerator:IInstructionGenerator
     {
         static readonly SyntaxParser Parser = new SyntaxParser();
-        readonly string _source;
+
+        readonly string _methodSource;
+
         public ParsedGenerator(string source)
         {
-            _source = source;
+            _methodSource = source;
         }
 
         public void Generate(IEmitter<MethodID, InstanceInfo> emitter)
         {
-            var codeNode = Parser.Parse(_source);
-            var compiler = new Compiler(codeNode);
-
-            compiler.GenerateInstructions(emitter);
+            var method = Parser.Parse(_methodSource);
+            Compiler.GenerateInstructions(method,emitter);
         }
     }
 }

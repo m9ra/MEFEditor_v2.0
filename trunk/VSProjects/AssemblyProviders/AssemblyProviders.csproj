@@ -48,6 +48,8 @@
     <Compile Include="CSharp\CodeInstructions\NodeTools.cs" />
     <Compile Include="CSharp\CodeInstructions\ValueProviders.cs" />
     <Compile Include="CSharp\Compiler.cs" />
+    <Compile Include="CSharp\Compiling\Context.cs" />
+    <Compile Include="CSharp\Compiling\ValueProviders.cs" />
     <Compile Include="CSharp\Interfaces\AST.cs" />
     <Compile Include="CSharp\Interfaces\CodeInstructions.cs" />
     <Compile Include="CSharp\Interfaces\IPosition.cs" />
