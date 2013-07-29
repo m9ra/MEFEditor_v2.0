@@ -47,6 +47,7 @@
     <Compile Include="CSharp\CodeInstructions\CodeThis.cs" />
     <Compile Include="CSharp\CodeInstructions\NodeTools.cs" />
     <Compile Include="CSharp\CodeInstructions\ValueProviders.cs" />
+    <Compile Include="CSharp\Compiler.cs" />
     <Compile Include="CSharp\Interfaces\AST.cs" />
     <Compile Include="CSharp\Interfaces\CodeInstructions.cs" />
     <Compile Include="CSharp\Interfaces\IPosition.cs" />
@@ -60,7 +61,18 @@
     <Compile Include="CSharp\Primitives\NodeException.cs" />
     <Compile Include="CSharp\Primitives\ParsingPrimitives.cs" />
     <Compile Include="CSharp\SyntaxParser.cs" />
+    <Compile Include="CSharp\ProjectProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Analyzing\Analyzing.csproj">
+      <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
+      <Name>Analyzing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
+      <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
+      <Name>TypeSystem</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

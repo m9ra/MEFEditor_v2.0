@@ -39,10 +39,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyCollection.cs" />
+    <Compile Include="AssemblyProvider.cs" />
     <Compile Include="CachedGenerator.cs" />
+    <Compile Include="Core\AssembliesManager.cs" />
     <Compile Include="DirectCallLoader.cs" />
     <Compile Include="IInstructionGenerator.cs" />
     <Compile Include="InstanceInfo.cs" />
+    <Compile Include="AssemblyLoader.cs" />
     <Compile Include="MachineSettings.cs" />
     <Compile Include="MethodID.cs" />
     <Compile Include="Name.cs" />
