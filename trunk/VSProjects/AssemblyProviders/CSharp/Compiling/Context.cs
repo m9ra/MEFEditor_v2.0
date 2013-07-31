@@ -12,11 +12,24 @@ namespace AssemblyProviders.CSharp.Compiling
     class Context
     {
         public readonly IEmitter<MethodID, InstanceInfo> Emitter;
+        public readonly TypeServices Services;
 
-        public Context(IEmitter<MethodID, InstanceInfo> emitter)
+        public Context(IEmitter<MethodID, InstanceInfo> emitter,TypeServices services)
         {
+            if (emitter == null)
+                throw new ArgumentNullException("emitter");
+
+            if (services == null)
+                throw new ArgumentNullException("services");
+            
             Emitter = emitter;
+            Services = services;
         }
 
+
+        public MethodSearcher CreateSearcher()
+        {
+            return Services.CreateSearcher();
+        }
     }
 }

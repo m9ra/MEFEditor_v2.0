@@ -41,7 +41,14 @@ namespace Analyzing.Execution
 
         public Instance GetValue(VariableName variable)
         {
-            return _variables[variable];
+            Instance value;
+
+            if (!_variables.TryGetValue(variable, out value))
+            {
+                throw new NotSupportedException(string.Format("Missing entry for reading value from '{0}'", variable));
+            }
+
+            return value;
         }
 
         internal IInstruction<MethodID, InstanceInfo> NextInstrution()

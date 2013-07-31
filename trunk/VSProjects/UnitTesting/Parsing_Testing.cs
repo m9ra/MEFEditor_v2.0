@@ -27,31 +27,36 @@ var test2=System.String.test();
 
 
         [TestMethod]
-        public void AssemblyLoading()
+        public void Emit_variableAssign()
         {
-            var parsedAssembly = new ParsedAssembly();
-            parsedAssembly.AddMethod("StartMethod", @"{
+            AssemblyUtils.Run(@"
 var test=""hello"";
 var test2=test;
-}
-");
-
-            var testAssemblies = new TestAssemblyCollection(parsedAssembly);
-            
-                        
-
-            var loader = new AssemblyLoader(testAssemblies);
-            var entryLoader = new EntryPointLoader(
-                new VersionedName("StartMethod",0)
-                ,loader);
-            
-
-            var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
-
-            var result=machine.Run(entryLoader);
-
-            result.AssertVariable("test2").HasValue("hello");
+").AssertVariable("test2").HasValue("hello");
         }
+
+        [TestMethod]
+        public void Emit_call()
+        {
+            AssemblyUtils.Run(@"
+var test=ParsedMethod();
+
+").AddMethod("ParsedMethod", @"
+        return ""ParsedValue"";
+").AssertVariable("test").HasValue("ParsedValue");
+        }
+
+        [TestMethod]
+        public void Emit_staticCall()
+        {
+            AssemblyUtils.Run(@"
+var test=StaticClass.StaticMethod();
+
+").AddMethod("StaticClass.StaticMethod", @"
+        return ""ValueFromStaticCall"";
+", true).AssertVariable("test").HasValue("ValueFromStaticCall");
+        }
+
 
     }
 }

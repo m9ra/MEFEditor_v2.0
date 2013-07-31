@@ -16,15 +16,26 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         readonly string _methodSource;
 
+        TypeServices _services;
+
         public ParsedGenerator(string source)
         {
+            if (source == null)
+                throw new ArgumentNullException("source");
+
+
             _methodSource = source;
+        }
+
+        internal void SetServices(TypeServices services)
+        {
+            _services = services;
         }
 
         public void Generate(IEmitter<MethodID, InstanceInfo> emitter)
         {
             var method = Parser.Parse(_methodSource);
-            Compiler.GenerateInstructions(method,emitter);
+            Compiler.GenerateInstructions(method,emitter,_services);
         }
     }
 }

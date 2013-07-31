@@ -42,6 +42,7 @@ namespace AssemblyProviders.CSharp.Compiling
     abstract class RValueProvider : ValueProvider
     {
         public abstract void AssignInto(LValueProvider lValue);
+        public abstract void Return();
 
         protected RValueProvider(Context context) : base(context) { }
     }
@@ -76,6 +77,14 @@ namespace AssemblyProviders.CSharp.Compiling
             E.AssignLiteral(lValue.Storage, _literal);
             lValue.PostAction();
         }
+
+        public override void Return()
+        {
+            //TODO get empty variable
+            var temporaryName = ".temporary";
+            E.AssignLiteral(temporaryName, _literal);
+            E.Return(temporaryName);
+        }
     }
 
     class VariableRValue: RValueProvider
@@ -92,6 +101,43 @@ namespace AssemblyProviders.CSharp.Compiling
             lValue.PreAction();
             E.Assign(lValue.Storage, _variableName);
             lValue.PostAction();
+        }
+        
+        public override void Return()
+        {
+            E.Return(_variableName);
+        }
+    }
+
+    class CallRValue : RValueProvider
+    {
+        private string _callName;
+        public CallRValue(string callName, Context context)
+            : base(context)
+        {
+            _callName =callName;
+        }
+
+        public override void AssignInto(LValueProvider lValue)
+        {
+            lValue.PreAction();
+            generateCall();
+            E.AssignReturnValue(lValue.Storage);    
+            lValue.PostAction();
+        }
+
+        public override void Return()
+        {
+            //TODO get empty variable
+            var temporaryName = ".temporary";            
+            E.AssignReturnValue(temporaryName);
+            E.Return(temporaryName);
+        }
+
+        private void generateCall()
+        {
+            //Resolve called object
+            E.Call(new MethodID(_callName), "this");                    
         }
     }
 }

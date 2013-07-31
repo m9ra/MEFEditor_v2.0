@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 using TypeSystem;
 
-
-
-
 namespace AssemblyProviders.CSharp
 {
     public class ProjectProvider:AssemblyProvider
@@ -20,6 +17,11 @@ namespace AssemblyProviders.CSharp
 
 
         protected override IInstructionGenerator getGenerator(string methodName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override SearchIterator CreateRootIterator()
         {
             throw new NotImplementedException();
         }

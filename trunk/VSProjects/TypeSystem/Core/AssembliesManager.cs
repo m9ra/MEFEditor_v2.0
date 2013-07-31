@@ -12,10 +12,20 @@ namespace TypeSystem.Core
     {
         readonly AssemblyCollection _assemblies;
 
+        readonly TypeServices _services;
+
         internal AssembliesManager(AssemblyCollection assemblies)
         {
-            //TODO hook collection actions
+            _services = new TypeServices(this);
+
             _assemblies = assemblies;
+            _assemblies.OnAdd += onAssemblyAdd;
+            _assemblies.OnRemove += onAssemblyRemove;
+
+            foreach (var assembly in _assemblies)
+            {
+                onAssemblyAdd(assembly);
+            }
         }
 
         internal bool TryResolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo,out VersionedName name)
@@ -53,7 +63,7 @@ namespace TypeSystem.Core
 
         private void bindName(VersionedName name, AssemblyProvider provider)
         {
-            throw new NotImplementedException("When name is found, we remember provider of the name");
+            //throw new NotImplementedException("When name is found, we remember provider of the name");
         }
 
         private VersionedName createVersionedName(string methodName)
@@ -62,5 +72,19 @@ namespace TypeSystem.Core
             return new VersionedName(methodName, 42);
         }
 
+        private void onAssemblyAdd(AssemblyProvider assembly)
+        {
+            assembly.SetServices(_services);
+        }
+
+        private void onAssemblyRemove(AssemblyProvider assembly)
+        {
+            assembly.UnloadServices();
+        }
+
+        internal MethodSearcher CreateSearcher()
+        {
+            return new MethodSearcher(_assemblies);
+        }
     }
 }

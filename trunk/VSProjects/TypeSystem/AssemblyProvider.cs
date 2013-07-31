@@ -16,9 +16,13 @@ namespace TypeSystem
     {
         #region Template method API
 
+        protected TypeServices TypeServices { get; private set; }
+
         protected abstract string resolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo);
 
         protected abstract IInstructionGenerator getGenerator(string methodName);
+
+        public abstract SearchIterator CreateRootIterator();
 
         #endregion
 
@@ -54,12 +58,29 @@ namespace TypeSystem
 
         internal string ResolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo)
         {
-            throw new NotImplementedException();
+            return resolveMethod(method, staticArgumentInfo);
         }
 
         internal IInstructionGenerator<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
         {
             return getGenerator(methodName.Name);
         }
+
+        internal void SetServices(TypeServices services)
+        {
+            if (TypeServices != null)
+            {
+                throw new NotSupportedException("Cannot set services twice");
+            }
+
+            TypeServices = services;
+        }
+
+        internal void UnloadServices()
+        {
+            TypeServices = null;
+        }
+
+        
     }
 }
