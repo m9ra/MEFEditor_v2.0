@@ -43,8 +43,11 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         public abstract void AssignInto(LValueProvider lValue);
         public abstract void Return();
+        public abstract InstanceInfo GetResultInfo();
 
         protected RValueProvider(Context context) : base(context) { }
+
+        
     }
 
 
@@ -85,6 +88,11 @@ namespace AssemblyProviders.CSharp.Compiling
             E.AssignLiteral(temporaryName, _literal);
             E.Return(temporaryName);
         }
+
+        public override InstanceInfo GetResultInfo()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class VariableRValue: RValueProvider
@@ -107,21 +115,27 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             E.Return(_variableName);
         }
+
+        public override InstanceInfo GetResultInfo()
+        {
+            return E.VariableInfo(_variableName);
+        }
     }
 
     class CallRValue : RValueProvider
     {
-        private string _callName;
-        public CallRValue(string callName, Context context)
+        private TypeMethodInfo _methodInfo;
+
+        public CallRValue(TypeMethodInfo methodInfo, Context context)
             : base(context)
         {
-            _callName =callName;
+            _methodInfo = methodInfo;
         }
 
         public override void AssignInto(LValueProvider lValue)
         {
             lValue.PreAction();
-            generateCall();
+            generateCall();            
             E.AssignReturnValue(lValue.Storage);    
             lValue.PostAction();
         }
@@ -136,8 +150,20 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private void generateCall()
         {
-            //Resolve called object
-            E.Call(new MethodID(_callName), "this");                    
+            if (_methodInfo.IsStatic)
+            {
+                E.StaticCall(_methodInfo.TypeName,new MethodID(_methodInfo.Path), "this");
+            }
+            else
+            {
+                //TODO Resolve called object
+                E.Call(new MethodID(_methodInfo.Path), "this");
+            }
+        }
+
+        public override InstanceInfo GetResultInfo()
+        {
+            throw new NotImplementedException();
         }
     }
 }

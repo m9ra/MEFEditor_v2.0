@@ -33,7 +33,7 @@ namespace Analyzing
 
         public override string ToString()
         {
-            return string.Format("variable: {0}", Name);
+            return "[Variable]"+Name;
         }
     }
 }

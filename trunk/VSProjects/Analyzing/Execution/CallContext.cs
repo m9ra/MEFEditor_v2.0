@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Analyzing.Execution
 {
     public class CallContext<MethodID, InstanceInfo>
-    {        
+    {
         private Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
         private IInstruction<MethodID, InstanceInfo>[] _callInstructions;
         private uint _instructionPointer;
@@ -19,11 +19,26 @@ namespace Analyzing.Execution
 
         internal Instance[] ArgumentValues { get; private set; }
 
-        internal CallContext(IMachineSettings<InstanceInfo> settings,IInstructionLoader<MethodID, InstanceInfo> loader, IInstructionGenerator<MethodID, InstanceInfo> generator, Instance[] argumentValues)
+        public string ProgramCode
+        {
+            get
+            {
+                var result = new StringBuilder();
+                foreach (var instruction in _callInstructions)
+                {
+                    result.AppendLine(instruction.ToString());
+                }
+
+                return result.ToString();
+            }
+        }
+
+
+        internal CallContext(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID, InstanceInfo> loader, IInstructionGenerator<MethodID, InstanceInfo> generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
 
-            var emitter = new CallEmitter<MethodID, InstanceInfo>(settings,loader);
+            var emitter = new CallEmitter<MethodID, InstanceInfo>(settings, loader);
             generator.Generate(emitter);
 
             _callInstructions = emitter.GetEmittedInstructions();
@@ -70,5 +85,7 @@ namespace Analyzing.Execution
         {
             _instructionPointer = target.InstructionOffset;
         }
+
+
     }
 }

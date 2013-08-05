@@ -232,5 +232,11 @@ namespace Analyzing.Execution
         }
 
         #endregion
+
+
+        public InstanceInfo VariableInfo(string variable)
+        {
+            return variableInfo(getVariable(variable));
+        }
     }
 }

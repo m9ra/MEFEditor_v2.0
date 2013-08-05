@@ -10,8 +10,8 @@ namespace Analyzing.Execution.Instructions
     {
         private readonly VariableName _targetVariable;
         private readonly VersionedName _initializator;
-            
-        
+
+
         internal EnsureInitialized(VariableName targetVariable, VersionedName initializator)
         {
             _targetVariable = targetVariable;
@@ -26,11 +26,16 @@ namespace Analyzing.Execution.Instructions
                 return;
             }
 
-            //run shared generator
-            var generator=context.GetGenerator(_initializator);
+            //run initializer generator
+            var generator = context.GetGenerator(_initializator);
             context.PrepareCall();
             context.FetchCallInstructions(generator);
             //NOTE: call value is supposed to be assigned by late return initialization
+        }
+
+        public override string ToString()
+        {
+            return string.Format("ensure_initialized {0} by {1}", _targetVariable, _initializator);
         }
     }
 }

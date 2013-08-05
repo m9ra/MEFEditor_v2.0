@@ -21,5 +21,10 @@ namespace Analyzing.Execution.Instructions
         {
             context.PrepareCall(_arguments);
         }
+
+        public override string ToString()
+        {
+            return string.Format("prepare_call {0}", string.Join(", ",_arguments.Skip(0)));
+        }
     }
 }

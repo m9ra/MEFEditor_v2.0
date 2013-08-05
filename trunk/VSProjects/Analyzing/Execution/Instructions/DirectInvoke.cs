@@ -18,5 +18,10 @@ namespace Analyzing.Execution.Instructions
         {
             _call(context);            
         }
+
+        public override string ToString()
+        {
+            return string.Format("direct_invoke {0}", _call);
+        }
     }
 }

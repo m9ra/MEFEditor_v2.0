@@ -43,7 +43,8 @@ var test=ParsedMethod();
 
 ").AddMethod("ParsedMethod", @"
         return ""ParsedValue"";
-").AssertVariable("test").HasValue("ParsedValue");
+")
+ .AssertVariable("test").HasValue("ParsedValue");
         }
 
         [TestMethod]
@@ -54,9 +55,24 @@ var test=StaticClass.StaticMethod();
 
 ").AddMethod("StaticClass.StaticMethod", @"
         return ""ValueFromStaticCall"";
-", true).AssertVariable("test").HasValue("ValueFromStaticCall");
+", true)
+ .AddMethod("StaticClass.StaticClass", @"
+    return ""Initialization value"";
+",true)
+.AssertVariable("test").HasValue("ValueFromStaticCall");
         }
 
+        [TestMethod]
+        public void Emit_objectCall()
+        {
+            AssemblyUtils.Run(@"
+var obj=""Test string"";
+var result=obj.CustomMethod();
+").AddMethod("System.String.CustomMethod", @"
+    return ""Custom result"";
+")
+.AssertVariable("result").HasValue("Custom result");
+        }
 
     }
 }

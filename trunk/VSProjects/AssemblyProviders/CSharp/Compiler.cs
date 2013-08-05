@@ -125,12 +125,9 @@ namespace AssemblyProviders.CSharp
 
             switch (valueNode.NodeType)
             {
+                case NodeTypes.call:
                 case NodeTypes.hierarchy:
                     return resolveRHierarchy(valueNode);
-
-                case NodeTypes.call:
-                    //TODO resolve namespaces and arguments
-                    return new CallRValue(value, _context);
 
                 default:
                     throw new NotImplementedException();
@@ -200,7 +197,7 @@ namespace AssemblyProviders.CSharp
         }
 
 
-        private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider baseObject = null)
+        private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
         {
             //x without base can resolve to:            
             //[this namespace].this.get_x /this.set_x
@@ -211,6 +208,11 @@ namespace AssemblyProviders.CSharp
 
             var currNode = callHierarchy;
             var searcher = _context.CreateSearcher();
+                        
+            if (calledObject != null)
+            {
+                searcher.SetCalledObject(calledObject.GetResultInfo());                
+            }
 
             while (currNode != null) 
             {
@@ -234,7 +236,7 @@ namespace AssemblyProviders.CSharp
                     //TODO method chaining
                     //TODO overloading
                     var methodInfo=searcher.FoundResult.First();
-                    call=new CallRValue(methodInfo.TypeName+"."+methodInfo.MethodName,_context);
+                    call=new CallRValue(methodInfo,_context);
                     return true;
                 }
 

@@ -19,5 +19,10 @@ namespace Analyzing.Execution.Instructions
         {
             context.Jump(_target);
         }
+
+        public override string ToString()
+        {
+            return string.Format("jmp {0}", _target);
+        }
     }
 }

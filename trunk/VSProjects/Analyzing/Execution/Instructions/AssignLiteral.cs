@@ -21,5 +21,10 @@ namespace Analyzing.Execution.Instructions
         {            
             context.SetValue(_targetVariable, _literal);
         }
+
+        public override string ToString()
+        {
+            return string.Format("mov {0}, {1}", _literal, _targetVariable);
+        }
     }
 }

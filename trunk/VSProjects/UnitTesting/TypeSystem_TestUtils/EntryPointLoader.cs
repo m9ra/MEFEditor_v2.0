@@ -37,7 +37,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public VersionedName ResolveStaticInitializer(InstanceInfo info)
         {
-            throw new NotImplementedException();
+            //TODO resolve
+            return new VersionedName(info.TypeName + "." + info.TypeName, 33);
         }
     }
 }

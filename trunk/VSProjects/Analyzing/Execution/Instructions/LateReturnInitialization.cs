@@ -27,5 +27,10 @@ namespace Analyzing.Execution.Instructions
             //initialize shared instance
             context.SetValue(_targetVariable, context.LastReturnValue);
         }
+
+        public override string ToString()
+        {
+            return string.Format("late_return {0}", _targetVariable);
+        }
     }
 }

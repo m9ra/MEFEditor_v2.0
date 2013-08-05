@@ -22,5 +22,10 @@ namespace Analyzing.Execution.Instructions
             var sourceValue = context.GetValue(_sourceVariable);
             context.SetValue(_targetVariable, sourceValue);
         }
+
+        public override string ToString()
+        {
+            return string.Format("mov {0}, {1}", _sourceVariable, _targetVariable);
+        }
     }
 }

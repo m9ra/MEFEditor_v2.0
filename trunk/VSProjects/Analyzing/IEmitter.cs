@@ -54,5 +54,12 @@ namespace Analyzing
         /// </summary>
         /// <param name="label">Label that will be set</param>
         void SetLabel(Label label);
+
+        /// <summary>
+        /// Returns instance info stored for given variable
+        /// </summary>
+        /// <param name="variable">Variable which info is resolved</param>
+        /// <returns>Stored info</returns>
+        InstanceInfo VariableInfo(string variable);
     }
 }

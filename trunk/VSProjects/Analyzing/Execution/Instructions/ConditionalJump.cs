@@ -24,5 +24,10 @@ namespace Analyzing.Execution.Instructions
                 context.Jump(_target);
             }
         }
+
+        public override string ToString()
+        {
+            return string.Format("jmp {0} if {1}", _target, _condition);
+        }
     }
 }

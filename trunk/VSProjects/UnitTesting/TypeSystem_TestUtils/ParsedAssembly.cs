@@ -10,11 +10,16 @@ namespace UnitTesting.TypeSystem_TestUtils
 {
     class ParsedAssembly : AssemblyProvider
     {
-        Dictionary<string, ParsedGenerator> _methods = new Dictionary<string, ParsedGenerator>();
+        Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> _methods = new Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>>();
 
         internal ParsedAssembly AddMethod(string name, string source,bool isStatic=false)
         {
-            _methods.Add(name, new ParsedGenerator("{" + source + "}"));
+            var nameParts=name.Split('.');
+            var methodName=nameParts.Last();
+            var typeName =string.Join(".", nameParts.Take(nameParts.Count() - 1).ToArray());
+
+            var method=Tuple.Create(new TypeMethodInfo(typeName,methodName,isStatic),new ParsedGenerator("{" + source + "}"));
+            _methods.Add(name,method );
 
             return this;
         }
@@ -26,7 +31,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         protected override IInstructionGenerator getGenerator(string methodName)
         {
-            var generator = _methods[methodName];
+            var generator = _methods[methodName].Item2;
             generator.SetServices(TypeServices);
             return generator;
         }
@@ -38,13 +43,13 @@ namespace UnitTesting.TypeSystem_TestUtils
     }
 
     class HashIterator : SearchIterator
-    {
-        readonly private Dictionary<string, ParsedGenerator> _methods;
+    {        
+        readonly private Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> _methods = new Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>>();
 
         readonly string _actualPath;
 
-        public HashIterator(Dictionary<string, ParsedGenerator> methods,string actualPath="")
-        {            
+        public HashIterator(Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> methods, string actualPath = "")
+        {
             _methods = methods;
             _actualPath = actualPath;
         }
@@ -58,10 +63,10 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             var name = extendPath(searchedName);
 
-            ParsedGenerator generator;
-            if (_methods.TryGetValue(name, out generator))
+            Tuple<TypeMethodInfo,ParsedGenerator> method;
+            if (_methods.TryGetValue(name, out method))
             {
-                yield return new TypeMethodInfo(_actualPath, searchedName);
+                yield return method.Item1;
             }
         }
 

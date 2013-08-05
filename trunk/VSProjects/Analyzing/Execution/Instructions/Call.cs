@@ -20,5 +20,10 @@ namespace Analyzing.Execution.Instructions
             var generator = context.GetGenerator(_methodGeneratorName);
             context.FetchCallInstructions(generator);
         }
+
+        public override string ToString()
+        {
+            return string.Format("call {0}", _methodGeneratorName);
+        }
     }
 }

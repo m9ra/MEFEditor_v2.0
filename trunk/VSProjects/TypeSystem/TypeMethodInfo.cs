@@ -10,11 +10,28 @@ namespace TypeSystem
     {
         public readonly string TypeName;
         public readonly string MethodName;
+        public readonly bool IsStatic;
 
-        public TypeMethodInfo(string typeName, string methodName)
+        public string Path
+        {
+            get
+            {
+                if (TypeName != "")
+                {
+                    return TypeName + "." + MethodName;
+                }
+                else
+                {
+                    return MethodName;
+                }
+            }
+        }
+
+        public TypeMethodInfo(string typeName, string methodName,bool isStatic)
         {
             TypeName = typeName;
             MethodName = methodName;
+            IsStatic = isStatic;
         }
     }
 }

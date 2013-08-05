@@ -39,5 +39,10 @@ namespace Analyzing
         {
             return Name.GetHashCode() + VersionNumber;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}-{1}", Name, VersionNumber);
+        }
     }
 }

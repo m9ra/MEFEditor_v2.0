@@ -21,5 +21,10 @@ namespace Analyzing.Execution.Instructions
             var returnValue=context.GetValue(_sourceVariable);
             context.Return(returnValue);
         }
+
+        public override string ToString()
+        {
+            return string.Format("ret {0}", _sourceVariable);
+        }
     }
 }
