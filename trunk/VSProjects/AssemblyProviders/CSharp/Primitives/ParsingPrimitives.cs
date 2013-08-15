@@ -14,22 +14,23 @@ namespace AssemblyProviders.CSharp.Primitives
     /// </summary>
     class Position : IPosition
     {
-        public Position(Match match)
-        {
-            this.Offset = match.Index;
-        }
-
-        internal Position(int offset)
+        internal Position(string source,int offset)
         {
             Offset = offset;
+            Source = source;
         }
 
         public int Offset { get; private set; }
-        public object Source { get; private set; }
+        public string Source { get; private set; }
 
         public IPosition Shift(int offset)
         {
-            return new Position(Offset + offset);
+            return new Position(Source,Offset + offset);
+        }
+
+        public string GetStrip(IPosition position)
+        {
+            return Source.Substring(Offset, position.Offset - Offset);
         }
     }
 
@@ -38,11 +39,11 @@ namespace AssemblyProviders.CSharp.Primitives
     /// </summary>
     class Token : IToken
     {
-        public Token(string value, int position, Token previousToken)
+        public Token(string value, int position, Token previousToken,string source)
         {
             this.Value = value;
             this.Previous = previousToken;
-            this.Position = new Position(position);
+            this.Position = new Position(source,position);
             if (previousToken != null) previousToken.Next = this;
         }
 

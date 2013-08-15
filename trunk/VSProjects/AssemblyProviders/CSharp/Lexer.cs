@@ -30,6 +30,8 @@ namespace AssemblyProviders.CSharp
         int _current;
         List<Token> _tokens = new List<Token>();
 
+        readonly string _source;
+
         /// <summary>
         /// Determine if there are next tokens.
         /// </summary>
@@ -54,12 +56,11 @@ namespace AssemblyProviders.CSharp
 
         /// <summary>
         /// Create lexer for given object and language definition.
-        /// </summary>
-        /// <param name="obj">Object to be lexed.</param>
-        /// <param name="language">Language which is pasted into lexed tokens.</param>
-        internal Lexer(string code)
+        /// </summary>        
+        internal Lexer(string source)
         {
-            createTokens(code);
+            _source = source;
+            createTokens(source);
         }
 
         private void createTokens(string code)
@@ -100,7 +101,7 @@ namespace AssemblyProviders.CSharp
                 if (pos == 0) pos = lastToken.Position.Offset + lastToken.Value.Length;
             }
 
-            _tokens.Add(new Token(str, pos, lastToken));
+            _tokens.Add(new Token(str, pos, lastToken,_source));
 
             if (lastToken == null) Current = _tokens[_current]; //first token
         }

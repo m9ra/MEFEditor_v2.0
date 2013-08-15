@@ -14,13 +14,15 @@ namespace Analyzing.Execution
         /// Owning loader - is used for resolving
         /// </summary>
         readonly IInstructionLoader<MethodID, InstanceInfo> _loader;
-
+        /// <summary>
+        /// Available machine settings
+        /// </summary>
         readonly IMachineSettings<InstanceInfo> _settings;
 
         /// <summary>
         /// Instructions emitted by this emitter
         /// </summary>
-        readonly List<IInstruction<MethodID, InstanceInfo>> _instructions = new List<IInstruction<MethodID, InstanceInfo>>();
+        readonly List<InstructionBase<MethodID, InstanceInfo>> _instructions = new List<InstructionBase<MethodID, InstanceInfo>>();
         /// <summary>
         /// Types resolved for variables
         /// </summary>
@@ -29,6 +31,12 @@ namespace Analyzing.Execution
         /// Defined labels pointing to instruction offset
         /// </summary>
         readonly HashSet<Label> _labels = new HashSet<Label>();
+
+        /// <summary>
+        /// Instruction info for currently emitted block
+        /// </summary>
+        private InstructionInfo _currentBlockInfo = new InstructionInfo();
+
 
         internal CallEmitter(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID, InstanceInfo> loader)
         {
@@ -42,7 +50,7 @@ namespace Analyzing.Execution
             var target = getVariable(targetVar, literal.GetType());
             var literalInstance = new Instance(literal);
 
-            _instructions.Add(new AssignLiteral<MethodID, InstanceInfo>(target, literalInstance));
+            emitInstruction(new AssignLiteral<MethodID, InstanceInfo>(target, literalInstance));
         }
 
         public void Assign(string targetVar, string sourceVar)
@@ -50,7 +58,7 @@ namespace Analyzing.Execution
             var source = getVariable(sourceVar);
             var target = getVariable(targetVar, variableInfo(source));
 
-            _instructions.Add(new Assign<MethodID, InstanceInfo>(target, source));
+            emitInstruction(new Assign<MethodID, InstanceInfo>(target, source));
         }
 
         public void AssignReturnValue(string targetVar)
@@ -58,7 +66,7 @@ namespace Analyzing.Execution
             //TODO resolve return value of previous call
             var target = getVariable(targetVar);
 
-            _instructions.Add(new AssignReturnValue<MethodID, InstanceInfo>(target));
+            emitInstruction(new AssignReturnValue<MethodID, InstanceInfo>(target));
         }
 
         public void StaticCall(string typeFullname,MethodID methodID, params string[] inputVariables)
@@ -75,10 +83,10 @@ namespace Analyzing.Execution
             var preCall = new PreCall<MethodID, InstanceInfo>(callArgVars);
             var call = new Call<MethodID, InstanceInfo>(generatorName);
 
-            _instructions.Add(ensureInitialization);
-            _instructions.Add(lateInitialization);
-            _instructions.Add(preCall);
-            _instructions.Add(call);
+            emitInstruction(ensureInitialization);
+            emitInstruction(lateInitialization);
+            emitInstruction(preCall);
+            emitInstruction(call);
         }
 
         public void Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
@@ -94,20 +102,20 @@ namespace Analyzing.Execution
             var preCall = new PreCall<MethodID, InstanceInfo>(callArgVars);
             var call = new Call<MethodID, InstanceInfo>(generatorName);
 
-            _instructions.Add(preCall);
-            _instructions.Add(call);
+            emitInstruction(preCall);
+            emitInstruction(call);
         }
 
         
         public void DirectInvoke(DirectMethod<MethodID, InstanceInfo> method)
         {
-            _instructions.Add(new DirectInvoke<MethodID,InstanceInfo>(method));
+            emitInstruction(new DirectInvoke<MethodID,InstanceInfo>(method));
         }
 
         public void Return(string sourceVar)
         {
             var sourceVariable = getVariable(sourceVar);
-            _instructions.Add(new Return<MethodID, InstanceInfo>(sourceVariable));
+            emitInstruction(new Return<MethodID, InstanceInfo>(sourceVariable));
         }
         
         public Label CreateLabel(string identifier)
@@ -134,13 +142,19 @@ namespace Analyzing.Execution
             var condition = getVariable(conditionVariable);
             var conditionalJump = new ConditionalJump<MethodID, InstanceInfo>(condition,target);
 
-            _instructions.Add(conditionalJump);
+            emitInstruction(conditionalJump);
         }
 
         public void Jump(Label target)
         {
             var jump = new Jump<MethodID,InstanceInfo>(target);
-            _instructions.Add(jump);
+            emitInstruction(jump);
+        }
+
+        public InstructionInfo StartNewInfoBlock()
+        {
+            _currentBlockInfo = new InstructionInfo();
+            return _currentBlockInfo;
         }
         #endregion
 
@@ -150,21 +164,24 @@ namespace Analyzing.Execution
         /// Get emitted program
         /// </summary>
         /// <returns>Program that has been emitted</returns>
-        internal IInstruction<MethodID, InstanceInfo>[] GetEmittedInstructions()
+        internal InstructionBase<MethodID, InstanceInfo>[] GetEmittedInstructions()
         {
             return _instructions.ToArray();
         }
-
+           
         /// <summary>
-        /// Directly emits given instructions
-        /// NOTE:
-        ///     Is used for emitting from cached calls
+        /// Add given instruction into generated program
+        /// <remarks>
+        ///     All instructions are assigned into current instruction block
+        /// </remarks>
         /// </summary>
-        /// <param name="instructions">Instractions that will be emitted</param>
-        internal void DirectEmit(IEnumerable<IInstruction<MethodID, InstanceInfo>> instructions)
+        /// <param name="instruction">Added instruction</param>
+        private void emitInstruction(InstructionBase<MethodID, InstanceInfo> instruction)
         {
-            _instructions.AddRange(instructions);
+            instruction.Info = _currentBlockInfo;
+            _instructions.Add(instruction);
         }
+
         #endregion
 
         #region Private variable services

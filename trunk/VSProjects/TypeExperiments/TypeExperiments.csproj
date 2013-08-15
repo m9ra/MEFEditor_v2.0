@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TypeExperiments</RootNamespace>
-    <AssemblyName>TypeSystem</AssemblyName>
+    <AssemblyName>TypeExperiments</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -48,6 +48,7 @@
     <Compile Include="Core\InternalAssembly.cs" />
     <Compile Include="Core\InternalType.cs" />
     <Compile Include="ExampleOverride.cs" />
+    <Compile Include="PrinterIAL.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\Definitions\BodyDefinition.cs" />
@@ -83,6 +84,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Analyzing\Analyzing.csproj">
+      <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
+      <Name>Analyzing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
+      <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
+      <Name>TypeSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UnitTesting\UnitTesting.csproj">
+      <Project>{a95a1df1-8c3d-4ed0-8e6b-758994261909}</Project>
+      <Name>UnitTesting</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

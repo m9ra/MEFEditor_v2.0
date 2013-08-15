@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class AssignReturnValue<MethodID, InstanceInfo> : IInstruction<MethodID, InstanceInfo>
+    class AssignReturnValue<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
     {
         private readonly VariableName _targetVariable;
      
@@ -15,7 +15,7 @@ namespace Analyzing.Execution.Instructions
         {            
             _targetVariable = targetVariable;
         }
-        public void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
             context.SetValue(_targetVariable, context.LastReturnValue);
         }

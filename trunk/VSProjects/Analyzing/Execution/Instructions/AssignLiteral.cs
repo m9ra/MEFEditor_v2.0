@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class AssignLiteral<MethodID, InstanceInfo> : IInstruction<MethodID, InstanceInfo>
+    class AssignLiteral<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
     {        
         private readonly VariableName _targetVariable;
         private readonly Instance _literal;
@@ -17,14 +17,14 @@ namespace Analyzing.Execution.Instructions
             _targetVariable = targetVariable;
         }
 
-        public void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {            
             context.SetValue(_targetVariable, _literal);
         }
 
         public override string ToString()
         {
-            return string.Format("mov {0}, {1}", _literal, _targetVariable);
+            return string.Format("mov {0}, {1}", _targetVariable, _literal);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class ConditionalJump<MethodID, InstanceInfo> : IInstruction<MethodID, InstanceInfo>
+    class ConditionalJump<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
     {        
         private readonly Label _target;
         private readonly VariableName _condition;
@@ -17,7 +17,7 @@ namespace Analyzing.Execution.Instructions
             _target = target;
         }
 
-        public void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
             if (context.IsTrue(_condition))
             {

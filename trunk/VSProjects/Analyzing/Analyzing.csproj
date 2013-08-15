@@ -44,7 +44,7 @@
     <Compile Include="Execution\CallContext.cs" />
     <Compile Include="Execution\CallEmitter.cs" />
     <Compile Include="Execution\Instance.cs" />
-    <Compile Include="Execution\IInstruction.cs" />
+    <Compile Include="Execution\InstructionBase.cs" />
     <Compile Include="Execution\Instructions\Assign.cs" />
     <Compile Include="Execution\Instructions\AssignReturnValue.cs" />
     <Compile Include="Execution\Instructions\Call.cs" />
@@ -60,6 +60,7 @@
     <Compile Include="IInstructionGenerator.cs" />
     <Compile Include="IInstructionLoader.cs" />
     <Compile Include="IMachineSettings.cs" />
+    <Compile Include="InstructionInfo.cs" />
     <Compile Include="Label.cs" />
     <Compile Include="Machine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

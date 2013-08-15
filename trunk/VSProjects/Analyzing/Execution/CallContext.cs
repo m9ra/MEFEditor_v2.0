@@ -9,7 +9,7 @@ namespace Analyzing.Execution
     public class CallContext<MethodID, InstanceInfo>
     {
         private Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
-        private IInstruction<MethodID, InstanceInfo>[] _callInstructions;
+        private InstructionBase<MethodID, InstanceInfo>[] _callInstructions;
         private uint _instructionPointer;
 
         /// <summary>
@@ -24,8 +24,16 @@ namespace Analyzing.Execution
             get
             {
                 var result = new StringBuilder();
+                InstructionInfo currentInfo = null;
+
                 foreach (var instruction in _callInstructions)
                 {
+                    if (instruction.Info != currentInfo)
+                    {
+                        currentInfo = instruction.Info;
+                        if (currentInfo.Comment != null)
+                            result.AppendLine(currentInfo.Comment);
+                    }
                     result.AppendLine(instruction.ToString());
                 }
 
@@ -66,7 +74,7 @@ namespace Analyzing.Execution
             return value;
         }
 
-        internal IInstruction<MethodID, InstanceInfo> NextInstrution()
+        internal InstructionBase<MethodID, InstanceInfo> NextInstrution()
         {
             if (IsCallEnd)
             {

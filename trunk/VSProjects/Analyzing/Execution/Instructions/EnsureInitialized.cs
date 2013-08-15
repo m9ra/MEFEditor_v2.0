@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class EnsureInitialized<MethodID, InstanceInfo> : IInstruction<MethodID, InstanceInfo>
+    class EnsureInitialized<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
     {
         private readonly VariableName _targetVariable;
         private readonly VersionedName _initializator;
@@ -18,7 +18,7 @@ namespace Analyzing.Execution.Instructions
             _initializator = initializator;
         }
 
-        public void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
             if (context.Contains(_targetVariable))
             {
@@ -35,7 +35,7 @@ namespace Analyzing.Execution.Instructions
 
         public override string ToString()
         {
-            return string.Format("ensure_initialized {0} by {1}", _targetVariable, _initializator);
+            return string.Format("ensure_init {0} by {1}", _targetVariable, _initializator);
         }
     }
 }

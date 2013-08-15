@@ -11,11 +11,11 @@ using UnitTesting.Analyzing_TestUtils;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    static class AssemblyUtils
+    public static class AssemblyUtils
     {
         public static readonly string EntryMethodName="EntryMethod";
 
-        internal static ParsedAssembly Run(string entryMethod)
+        public static ParsedAssembly Run(string entryMethod)
         {
             var assembly = new ParsedAssembly();
             assembly.AddMethod(EntryMethodName, entryMethod);
@@ -23,7 +23,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return assembly;
         }
 
-        internal static TestCase AssertVariable(this ParsedAssembly assembly, string variableName)
+        public static Analyzing.AnalyzingResult<MethodID,InstanceInfo> GetResult(this ParsedAssembly assembly)
         {
             var testAssemblies = new TestAssemblyCollection(assembly);
             var loader = new AssemblyLoader(testAssemblies);
@@ -33,8 +33,13 @@ namespace UnitTesting.TypeSystem_TestUtils
 
 
             var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
-            var result = machine.Run(entryLoader);
+            return machine.Run(entryLoader);
+        }
 
+        internal static TestCase AssertVariable(this ParsedAssembly assembly, string variableName)
+        {
+            var result = assembly.GetResult();
+            
             return new TestCase(result, variableName);
         }
         

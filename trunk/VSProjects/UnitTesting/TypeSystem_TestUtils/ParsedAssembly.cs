@@ -8,11 +8,11 @@ using TypeSystem;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    class ParsedAssembly : AssemblyProvider
+    public class ParsedAssembly : AssemblyProvider
     {
         Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> _methods = new Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>>();
 
-        internal ParsedAssembly AddMethod(string name, string source,bool isStatic=false)
+        public ParsedAssembly AddMethod(string name, string source,bool isStatic=false)
         {
             var nameParts=name.Split('.');
             var methodName=nameParts.Last();

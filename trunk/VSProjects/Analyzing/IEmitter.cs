@@ -10,10 +10,16 @@ namespace Analyzing
 {
     public interface IEmitter<MethodID,InstanceInfo>
     {
+        /// <summary>
+        /// Create new instruction info for block starting with next emitted instruction
+        /// </summary>
+        /// <returns>Created instruction info</returns>
+        InstructionInfo StartNewInfoBlock();
+
         void AssignLiteral(string target, object literal);
 
         void Assign(string targetVar, string sourceVar);
-
+        
         /// <summary>
         /// Assigning last call return value into specified target variable
         /// </summary>

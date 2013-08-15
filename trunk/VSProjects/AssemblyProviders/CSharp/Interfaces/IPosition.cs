@@ -11,5 +11,7 @@ namespace AssemblyProviders.CSharp.Interfaces
         int Offset { get; }
 
         IPosition Shift(int p);
+
+        string GetStrip(IPosition endPosition);
     }
 }

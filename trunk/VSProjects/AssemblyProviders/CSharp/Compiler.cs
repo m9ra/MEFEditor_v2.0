@@ -36,10 +36,18 @@ namespace AssemblyProviders.CSharp
             _context = new Context(emitter, services);
         }
 
+        #region Info utilities
+        private string statementText(INodeAST node)
+        {
+            return node.StartingToken.Position.GetStrip(node.EndingToken.Position);
+        }
+        #endregion
+
         #region Instruction generating
         private void generateInstructions()
         {
             //TODO Debug only
+            _emitter.StartNewInfoBlock().Comment = "===Compiler initialization===";
             _emitter.AssignLiteral("this", "ValueOfThisObject");
             foreach (var line in _method.Subsequence.Lines)
             {
@@ -49,8 +57,9 @@ namespace AssemblyProviders.CSharp
 
         private void generateLine(INodeAST line)
         {
-            //TODO add line info
-
+            
+            var info = _emitter.StartNewInfoBlock();
+            info.Comment = "\n---"+statementText(line)+"---";
             generateStatement(line);
         }
 
@@ -154,7 +163,7 @@ namespace AssemblyProviders.CSharp
                 var baseObject = result;
                 if (!tryGetCall(node.Child, out result, baseObject))
                 {
-                    throw new NotSupportedException("Unknown object based hierarchy construction on " + node.Child);
+                    throw new NotSupportedException("Unknown object call hierarchy construction on " + node.Child);
                 }
             }
             else if (!hasBaseObject)
@@ -176,6 +185,13 @@ namespace AssemblyProviders.CSharp
             {
                 literalToken = literalToken.Replace("\"", "");
                 literal = new LiteralValue(literalToken, _context);
+                return true;
+            }
+
+            int num;
+            if (int.TryParse(literalToken, out num))
+            {
+                literal = new LiteralValue(num, _context);
                 return true;
             }
 
@@ -208,13 +224,13 @@ namespace AssemblyProviders.CSharp
 
             var currNode = callHierarchy;
             var searcher = _context.CreateSearcher();
-                        
+
             if (calledObject != null)
             {
-                searcher.SetCalledObject(calledObject.GetResultInfo());                
+                searcher.SetCalledObject(calledObject.GetResultInfo());
             }
 
-            while (currNode != null) 
+            while (currNode != null)
             {
                 var nextNode = currNode.Child;
                 //TODO add namespaces
@@ -235,15 +251,15 @@ namespace AssemblyProviders.CSharp
                 {
                     //TODO method chaining
                     //TODO overloading
-                    var methodInfo=searcher.FoundResult.First();
-                    call=new CallRValue(methodInfo,_context);
+                    var methodInfo = searcher.FoundResult.First();
+                    call = new CallRValue(methodInfo, _context);
                     return true;
                 }
 
                 //shift to next node
                 searcher.ExtendName(currNode.Value);
-                currNode = nextNode;                
-            } 
+                currNode = nextNode;
+            }
 
             call = null;
             return false;

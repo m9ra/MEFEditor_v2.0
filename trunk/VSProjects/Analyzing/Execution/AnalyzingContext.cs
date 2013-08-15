@@ -8,7 +8,9 @@ namespace Analyzing.Execution
 {
     public class AnalyzingContext<MethodID,InstanceInfo>
     {
-
+        /// <summary>
+        /// Available machine settings
+        /// </summary>
         IMachineSettings<InstanceInfo> _settings;
         /// <summary>
         /// Current call stack
@@ -43,7 +45,6 @@ namespace Analyzing.Execution
         /// Return value of lastly proceeded call
         /// </summary>
         internal Instance LastReturnValue { get; private set; }
-
 
 
         internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID,InstanceInfo> loader)
@@ -98,9 +99,9 @@ namespace Analyzing.Execution
         /// Get next available instrution
         /// </summary>
         /// <returns>Instruction that is on turn to be processed, if end of execution returns null</returns>
-        internal IInstruction<MethodID, InstanceInfo> NextInstruction()
+        internal InstructionBase<MethodID, InstanceInfo> NextInstruction()
         {
-            IInstruction<MethodID, InstanceInfo> instrution = null;
+            InstructionBase<MethodID, InstanceInfo> instrution = null;
             while(!IsExecutionEnd && (instrution=CurrentCall.NextInstrution())==null){
                 popContext();                
             }
