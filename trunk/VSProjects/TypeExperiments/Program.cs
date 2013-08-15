@@ -47,8 +47,9 @@ namespace TypeExperiments
         {
             var code = AssemblyUtils.Run(@"
 
-var test=StaticClass.StaticMethod();
+var test=StaticClass.StaticMethod(""aaa"");
 var test2=test;
+var test3=4;
 ").AddMethod("StaticClass.StaticMethod", @"
         return ""ValueFromStaticCall"";
 ", true)

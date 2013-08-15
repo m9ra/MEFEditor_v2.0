@@ -44,6 +44,11 @@ namespace AssemblyProviders.CSharp.Compiling
         public abstract void AssignInto(LValueProvider lValue);
         public abstract void Return();
         public abstract InstanceInfo GetResultInfo();
+        /// <summary>
+        /// Get storage where RValue is available. If there is no such storage, temporary variable is used
+        /// </summary>
+        /// <returns>Name of storage variable</returns>
+        public abstract string GetStorage();
 
         protected RValueProvider(Context context) : base(context) { }
 
@@ -83,15 +88,20 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override void Return()
         {
-            //TODO get empty variable
-            var temporaryName = ".temporary";
-            E.AssignLiteral(temporaryName, _literal);
-            E.Return(temporaryName);
+            E.Return(GetStorage());
         }
 
         public override InstanceInfo GetResultInfo()
         {
             throw new NotImplementedException();
+        }
+
+        public override string GetStorage()
+        {
+            //TODO get empty variable
+            var temporaryName = ".temporary";
+            E.AssignLiteral(temporaryName, _literal);
+            return temporaryName;
         }
     }
 
@@ -120,24 +130,41 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             return E.VariableInfo(_variableName);
         }
+
+        public override string GetStorage()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class CallRValue : RValueProvider
     {
         private TypeMethodInfo _methodInfo;
+        private RValueProvider[] _arguments;
 
-        public CallRValue(TypeMethodInfo methodInfo, Context context)
+        public CallRValue(TypeMethodInfo methodInfo,RValueProvider[] arguments, Context context)
             : base(context)
         {
             _methodInfo = methodInfo;
+            _arguments = arguments;
         }
 
         public override void AssignInto(LValueProvider lValue)
         {
             lValue.PreAction();
+            foreach (var arg in _arguments)
+            {
+                arg.PreAction();
+            }
+
             generateCall();            
-            E.AssignReturnValue(lValue.Storage);    
-            lValue.PostAction();
+            E.AssignReturnValue(lValue.Storage);
+
+            foreach (var arg in _arguments)
+            {
+                arg.PostAction();
+            }
+            lValue.PostAction();    
         }
 
         public override void Return()
@@ -150,18 +177,30 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private void generateCall()
         {
+            var argVariables = new List<string>();
+            foreach (var arg in _arguments)
+            {
+                argVariables.Add(arg.GetStorage());
+            }
+            
             if (_methodInfo.IsStatic)
             {
-                E.StaticCall(_methodInfo.TypeName,new MethodID(_methodInfo.Path), "this");
+                argVariables.Add("this");
+                E.StaticCall(_methodInfo.TypeName,new MethodID(_methodInfo.Path), argVariables.ToArray());
             }
             else
             {
                 //TODO Resolve called object
-                E.Call(new MethodID(_methodInfo.Path), "this");
+                E.Call(new MethodID(_methodInfo.Path),"this", argVariables.ToArray());
             }
         }
 
         public override InstanceInfo GetResultInfo()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetStorage()
         {
             throw new NotImplementedException();
         }

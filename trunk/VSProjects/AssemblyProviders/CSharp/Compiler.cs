@@ -144,6 +144,18 @@ namespace AssemblyProviders.CSharp
             throw new NotImplementedException();
         }
 
+
+        private RValueProvider[] getArguments(INodeAST node)
+        {
+            var args = new List<RValueProvider>();
+            foreach (var arg in node.Arguments)
+            {
+                args.Add(getRValue(arg));
+            }
+
+            return args.ToArray();
+        }
+
         private RValueProvider resolveRHierarchy(INodeAST node)
         {
             var value = node.Value;
@@ -178,6 +190,7 @@ namespace AssemblyProviders.CSharp
 
             return result;
         }
+
 
         private bool tryGetLiteral(string literalToken, out RValueProvider literal)
         {
@@ -252,7 +265,9 @@ namespace AssemblyProviders.CSharp
                     //TODO method chaining
                     //TODO overloading
                     var methodInfo = searcher.FoundResult.First();
-                    call = new CallRValue(methodInfo, _context);
+
+                    var arguments = getArguments(currNode);
+                    call = new CallRValue(methodInfo,arguments, _context);
                     return true;
                 }
 

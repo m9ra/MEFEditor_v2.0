@@ -23,6 +23,7 @@ namespace TypeExperiments
 
         static ConsoleColor NameColor = ConsoleColor.Cyan;
         static ConsoleColor StringColor = ConsoleColor.Green;
+        static ConsoleColor NumberColor = ConsoleColor.DarkGreen;
         static ConsoleColor VariableColor = ConsoleColor.Yellow;
 
         public static void Print(string code)
@@ -137,6 +138,9 @@ namespace TypeExperiments
                     break;
                 case "[System.String]":
                     print(StringColor, "\"{0}\"", valuePart);
+                    break;
+                case "[System.Int32]":
+                    print(NumberColor, valuePart);
                     break;
                 default:
                     print(ArgumentTypeColor, typePart);
