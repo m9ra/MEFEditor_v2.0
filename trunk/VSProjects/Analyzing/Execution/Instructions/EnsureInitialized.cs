@@ -29,7 +29,7 @@ namespace Analyzing.Execution.Instructions
             //run initializer generator
             var generator = context.GetGenerator(_initializator);
             context.PrepareCall();
-            context.FetchCallInstructions(generator);
+            context.FetchCallInstructions(_initializator,generator);
             //NOTE: call value is supposed to be assigned by late return initialization
         }
 

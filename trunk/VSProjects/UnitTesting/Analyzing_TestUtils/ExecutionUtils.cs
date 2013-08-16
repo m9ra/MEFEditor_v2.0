@@ -14,7 +14,7 @@ using TypeSystem;
 namespace UnitTesting.Analyzing_TestUtils
 {
 
-    delegate void EmitDirector(IEmitter<MethodID,InstanceInfo> emitter);
+    delegate void EmitDirector(EmitterBase<MethodID,InstanceInfo> emitter);
 
     static class ExecutionUtils
     {

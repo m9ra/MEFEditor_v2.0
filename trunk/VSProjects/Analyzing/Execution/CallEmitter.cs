@@ -8,7 +8,7 @@ using Analyzing.Execution.Instructions;
 
 namespace Analyzing.Execution
 {
-    class CallEmitter<MethodID, InstanceInfo> : IEmitter<MethodID, InstanceInfo>
+    class CallEmitter<MethodID, InstanceInfo> : EmitterBase<MethodID, InstanceInfo>
     {
         /// <summary>
         /// Owning loader - is used for resolving
@@ -45,7 +45,7 @@ namespace Analyzing.Execution
         }
 
         #region Emittor API implementation
-        public void AssignLiteral(string targetVar, object literal)
+        public override void AssignLiteral(string targetVar, object literal)
         {
             var target = getVariable(targetVar, literal.GetType());
             var literalInstance = new Instance(literal);
@@ -53,7 +53,7 @@ namespace Analyzing.Execution
             emitInstruction(new AssignLiteral<MethodID, InstanceInfo>(target, literalInstance));
         }
 
-        public void Assign(string targetVar, string sourceVar)
+        public override void Assign(string targetVar, string sourceVar)
         {
             var source = getVariable(sourceVar);
             var target = getVariable(targetVar, variableInfo(source));
@@ -61,7 +61,13 @@ namespace Analyzing.Execution
             emitInstruction(new Assign<MethodID, InstanceInfo>(target, source));
         }
 
-        public void AssignReturnValue(string targetVar)
+        public override void AssignArgument(string targetVar, uint argumentPosition)
+        {
+            var target = getVariable(targetVar);
+            emitInstruction(new AssignArgument<MethodID,InstanceInfo>(target,argumentPosition));
+        }
+
+        public override void AssignReturnValue(string targetVar)
         {
             //TODO resolve return value of previous call
             var target = getVariable(targetVar);
@@ -69,7 +75,7 @@ namespace Analyzing.Execution
             emitInstruction(new AssignReturnValue<MethodID, InstanceInfo>(target));
         }
 
-        public void StaticCall(string typeFullname,MethodID methodID, params string[] inputVariables)
+        public override void StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)
         {
             var inputArgumentVars = translateVariables(inputVariables);
             var sharedThisVar = getSharedVar(typeFullname);
@@ -89,7 +95,7 @@ namespace Analyzing.Execution
             emitInstruction(call);
         }
 
-        public void Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
+        public override void Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
         {
             var thisVar = getVariable(thisObjVariable);
             var thisType = variableInfo(thisVar);
@@ -106,19 +112,19 @@ namespace Analyzing.Execution
             emitInstruction(call);
         }
 
-        
-        public void DirectInvoke(DirectMethod<MethodID, InstanceInfo> method)
+
+        public override void DirectInvoke(DirectMethod<MethodID, InstanceInfo> method)
         {
             emitInstruction(new DirectInvoke<MethodID,InstanceInfo>(method));
         }
 
-        public void Return(string sourceVar)
+        public override void Return(string sourceVar)
         {
             var sourceVariable = getVariable(sourceVar);
             emitInstruction(new Return<MethodID, InstanceInfo>(sourceVariable));
         }
-        
-        public Label CreateLabel(string identifier)
+
+        public override Label CreateLabel(string identifier)
         {
             var label = new Label(identifier);
 
@@ -127,7 +133,7 @@ namespace Analyzing.Execution
             return label;
         }
 
-        public void SetLabel(Label label)
+        public override void SetLabel(Label label)
         {
             if (!_labels.Contains(label))
             {
@@ -137,7 +143,7 @@ namespace Analyzing.Execution
             label.SetOffset((uint)_instructions.Count);
         }
 
-        public void ConditionalJump(string conditionVariable, Label target)
+        public override void ConditionalJump(string conditionVariable, Label target)
         {
             var condition = getVariable(conditionVariable);
             var conditionalJump = new ConditionalJump<MethodID, InstanceInfo>(condition,target);
@@ -145,16 +151,27 @@ namespace Analyzing.Execution
             emitInstruction(conditionalJump);
         }
 
-        public void Jump(Label target)
+        public override void Jump(Label target)
         {
             var jump = new Jump<MethodID,InstanceInfo>(target);
             emitInstruction(jump);
         }
 
-        public InstructionInfo StartNewInfoBlock()
+        public override InstructionInfo StartNewInfoBlock()
         {
             _currentBlockInfo = new InstructionInfo();
             return _currentBlockInfo;
+        }
+
+        public override string GetTemporaryVariable()
+        {
+            var variable="$temporary";
+            var index=_staticVariableInfo.Count;
+            while(_staticVariableInfo.ContainsKey(new VariableName(variable+index))){
+                ++index;
+            }
+
+            return variable + index;
         }
         #endregion
 
@@ -251,7 +268,7 @@ namespace Analyzing.Execution
         #endregion
 
 
-        public InstanceInfo VariableInfo(string variable)
+        public override InstanceInfo VariableInfo(string variable)
         {
             return variableInfo(getVariable(variable));
         }

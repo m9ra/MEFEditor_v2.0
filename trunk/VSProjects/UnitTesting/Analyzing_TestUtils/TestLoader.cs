@@ -55,7 +55,7 @@ namespace UnitTesting.Analyzing_TestUtils
         {
             _director = director;
         }
-        public void Generate(IEmitter<MethodID, InstanceInfo> emitter)
+        public void Generate(EmitterBase<MethodID, InstanceInfo> emitter)
         {
             _director(emitter);
         }

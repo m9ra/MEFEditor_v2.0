@@ -8,31 +8,39 @@ using Analyzing.Execution;
 
 namespace Analyzing
 {
-    public interface IEmitter<MethodID,InstanceInfo>
+    public abstract class EmitterBase<MethodID,InstanceInfo>
     {
         /// <summary>
         /// Create new instruction info for block starting with next emitted instruction
         /// </summary>
         /// <returns>Created instruction info</returns>
-        InstructionInfo StartNewInfoBlock();
+        public abstract InstructionInfo StartNewInfoBlock();
 
-        void AssignLiteral(string target, object literal);
+        /// <summary>
+        /// Get variable, which is not used yet in emitted code
+        /// </summary>
+        /// <returns>Name of variable</returns>
+        public abstract string GetTemporaryVariable();
 
-        void Assign(string targetVar, string sourceVar);
-        
+        public abstract void AssignLiteral(string target, object literal);
+
+        public abstract void Assign(string targetVar, string sourceVar);
+
+        public abstract void AssignArgument(string targetVar, uint argumentPosition);
+
         /// <summary>
         /// Assigning last call return value into specified target variable
         /// </summary>
         /// <param name="targetVar">Variable where returned value will be assigned</param>
-        void AssignReturnValue(string targetVar);
+        public abstract void AssignReturnValue(string targetVar);
 
-        void StaticCall(string typeFullname,MethodID method, params string[] inputVariables);
+        public abstract void StaticCall(string typeFullname, MethodID method, params string[] inputVariables);
 
-        void Call(MethodID method, string thisObjVariable, params string[] inputVariables);
+        public abstract void Call(MethodID method, string thisObjVariable, params string[] inputVariables);
 
-        void Return(string sourceVar);
+        public abstract void Return(string sourceVar);
 
-        void DirectInvoke(DirectMethod<MethodID,InstanceInfo> method);
+        public abstract void DirectInvoke(DirectMethod<MethodID, InstanceInfo> method);
 
         /// <summary>
         /// Creates label
@@ -41,31 +49,31 @@ namespace Analyzing
         /// </summary>
         /// <param name="identifier">Label identifier</param>
         /// <returns>Created label</returns>
-        Label CreateLabel(string identifier);
+        public abstract Label CreateLabel(string identifier);
         
         /// <summary>
         /// Jumps at given target if instance under conditionVariable is resolved as true
         /// </summary>
         /// <param name="conditionVariable">Variable where condition is stored</param>
         /// <param name="target">Target label</param>
-        void ConditionalJump(string conditionVariable, Label target);
+        public abstract void ConditionalJump(string conditionVariable, Label target);
 
         /// <summary>
         /// Jumps at given target
         /// </summary>
         /// <param name="target">Target label</param>
-        void Jump(Label target);
+        public abstract void Jump(Label target);
         /// <summary>
         /// Set label pointing to next instruction that will be generated
         /// </summary>
         /// <param name="label">Label that will be set</param>
-        void SetLabel(Label label);
+        public abstract void SetLabel(Label label);
 
         /// <summary>
         /// Returns instance info stored for given variable
         /// </summary>
         /// <param name="variable">Variable which info is resolved</param>
         /// <returns>Stored info</returns>
-        InstanceInfo VariableInfo(string variable);
+        public abstract InstanceInfo VariableInfo(string variable);
     }
 }

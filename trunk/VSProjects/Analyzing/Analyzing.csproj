@@ -50,13 +50,14 @@
     <Compile Include="Execution\Instructions\Call.cs" />
     <Compile Include="Execution\Instructions\AssignLiteral.cs" />
     <Compile Include="Execution\Instructions\ConditionalJump.cs" />
+    <Compile Include="Execution\Instructions\AssignArgument.cs" />
     <Compile Include="Execution\Instructions\Jump.cs" />
     <Compile Include="Execution\Instructions\DirectInvoke.cs" />
     <Compile Include="Execution\Instructions\LateReturnInitialization.cs" />
     <Compile Include="Execution\Instructions\EnsureInitialized.cs" />
     <Compile Include="Execution\Instructions\PreCall.cs" />
     <Compile Include="Execution\Instructions\Return.cs" />
-    <Compile Include="IEmitter.cs" />
+    <Compile Include="EmitterBase.cs" />
     <Compile Include="IInstructionGenerator.cs" />
     <Compile Include="IInstructionLoader.cs" />
     <Compile Include="IMachineSettings.cs" />

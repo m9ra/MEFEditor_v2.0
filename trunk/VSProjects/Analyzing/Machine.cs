@@ -43,7 +43,7 @@ namespace Analyzing
         {
             var context = new Execution.AnalyzingContext<MethodID, InstanceInfo>(_settings,_loader);
             context.PrepareCall(new VariableName[] { }); //no input arguments
-            context.FetchCallInstructions(_loader.EntryPoint);
+            context.FetchCallInstructions(new VersionedName("EntryPoint",0),_loader.EntryPoint);
 
             while (!context.IsExecutionEnd)
             {

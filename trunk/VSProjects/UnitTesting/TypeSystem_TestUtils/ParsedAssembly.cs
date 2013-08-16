@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TypeSystem;
+using AssemblyProviders.CSharp.Compiling;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
@@ -12,13 +13,13 @@ namespace UnitTesting.TypeSystem_TestUtils
     {
         Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> _methods = new Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>>();
 
-        public ParsedAssembly AddMethod(string name, string source,bool isStatic=false)
+        public ParsedAssembly AddMethod(string name, string source,bool isStatic=false,params ParameterInfo[] arguments)
         {
             var nameParts=name.Split('.');
             var methodName=nameParts.Last();
             var typeName =string.Join(".", nameParts.Take(nameParts.Count() - 1).ToArray());
 
-            var method=Tuple.Create(new TypeMethodInfo(typeName,methodName,isStatic),new ParsedGenerator("{" + source + "}"));
+            var method=Tuple.Create(new TypeMethodInfo(typeName,methodName,isStatic),new ParsedGenerator("{" + source + "}",arguments));
             _methods.Add(name,method );
 
             return this;

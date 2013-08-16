@@ -16,7 +16,7 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         protected readonly Context Context;
 
-        protected IEmitter<MethodID, InstanceInfo> E { get { return Context.Emitter; } }
+        protected EmitterBase<MethodID, InstanceInfo> E { get { return Context.Emitter; } }
 
         protected ValueProvider(Context context)
         {
@@ -97,9 +97,8 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         public override string GetStorage()
-        {
-            //TODO get empty variable
-            var temporaryName = ".temporary";
+        {            
+            var temporaryName = E.GetTemporaryVariable();
             E.AssignLiteral(temporaryName, _literal);
             return temporaryName;
         }
@@ -133,7 +132,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override string GetStorage()
         {
-            throw new NotImplementedException();
+            return _variableName;
         }
     }
 
@@ -170,7 +169,7 @@ namespace AssemblyProviders.CSharp.Compiling
         public override void Return()
         {
             //TODO get empty variable
-            var temporaryName = ".temporary";            
+            var temporaryName = E.GetTemporaryVariable();            
             E.AssignReturnValue(temporaryName);
             E.Return(temporaryName);
         }
@@ -184,8 +183,7 @@ namespace AssemblyProviders.CSharp.Compiling
             }
             
             if (_methodInfo.IsStatic)
-            {
-                argVariables.Add("this");
+            {            
                 E.StaticCall(_methodInfo.TypeName,new MethodID(_methodInfo.Path), argVariables.ToArray());
             }
             else

@@ -45,8 +45,7 @@ namespace TypeExperiments
 
             }
 
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.ReadKey();
+            Console.ForegroundColor = ConsoleColor.Gray;            
         }
 
         static void printComment(string comment)
@@ -64,7 +63,7 @@ namespace TypeExperiments
 
             Console.ForegroundColor = OpcodeColor;
 
-            Console.Write("   " + opCode.PadRight(15));
+            Console.Write("  " + opCode.PadRight(15));
 
             switch (opCode)
             {

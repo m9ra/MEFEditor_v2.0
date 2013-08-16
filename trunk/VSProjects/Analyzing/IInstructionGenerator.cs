@@ -14,6 +14,6 @@ namespace Analyzing
         /// <remarks>Throwing any exception will immediately stops analyzing</remarks>
         /// </summary>
         /// <param name="emitter">Emitter used for instruction generating</param>
-        void Generate(IEmitter<MethodID,InstanceInfo> emitter);
+        void Generate(EmitterBase<MethodID,InstanceInfo> emitter);
     }
 }

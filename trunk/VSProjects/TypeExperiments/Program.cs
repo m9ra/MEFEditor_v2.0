@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using System.Reflection;
+
 
 using TypeExperiments.Core;
 using TypeExperiments.TypeBuilding;
@@ -14,7 +14,7 @@ using TypeExperiments.Reflection.ILAnalyzer;
 using System.Diagnostics;
 
 using UnitTesting.TypeSystem_TestUtils;
-
+using AssemblyProviders.CSharp.Compiling;
 
 namespace TypeExperiments
 {
@@ -45,29 +45,44 @@ namespace TypeExperiments
         /// </summary>
         static void Main()
         {
-            var code = AssemblyUtils.Run(@"
+            var entry = AssemblyUtils.Run(@"
 
-var test=StaticClass.StaticMethod(""aaa"");
+var test=StaticClass.StaticMethod(""aaa"",153);
 var test2=test;
 var test3=4;
-").AddMethod("StaticClass.StaticMethod", @"
-        return ""ValueFromStaticCall"";
-", true)
+")
+ 
+ .AddMethod("StaticClass.StaticMethod", @"
+        return arg1;
+", true, 
+ new ParameterInfo("arg1",new TypeSystem.InstanceInfo("System.String")),
+ new ParameterInfo("arg2",new TypeSystem.InstanceInfo("System.Int32"))
+ )
+ 
+ 
  .AddMethod("StaticClass.StaticClass", @"
     return ""Initialization value"";
 ", true)
 
- .GetResult().EntryContext.ProgramCode;
+ .GetResult().EntryContext;
 
-            PrinterIAL.Print(code);
-        }
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("ENTRY CONTEXT");
+            PrinterIAL.Print(entry.ProgramCode);
+            Console.WriteLine();
 
+            foreach (var context in entry.ChildContexts)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Method: "+context.Name);
+                PrinterIAL.Print(context.ProgramCode);
+                Console.WriteLine();
+            }
 
+            Console.ReadKey();
 
-        
-
-
-        
+            
+        }        
     }
 
 

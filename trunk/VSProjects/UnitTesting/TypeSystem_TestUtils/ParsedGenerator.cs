@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CSharp;
 using TypeSystem;
 using Analyzing;
@@ -18,13 +18,18 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         TypeServices _services;
 
-        public ParsedGenerator(string source)
+        ParameterInfo[] _arguments;
+
+        public ParsedGenerator(string source,ParameterInfo[] arguments)
         {
             if (source == null)
                 throw new ArgumentNullException("source");
 
+            if (arguments == null)
+                throw new ArgumentNullException("arguments");
 
             _methodSource = source;
+            _arguments = arguments;
         }
 
         internal void SetServices(TypeServices services)
@@ -32,10 +37,10 @@ namespace UnitTesting.TypeSystem_TestUtils
             _services = services;
         }
 
-        public void Generate(IEmitter<MethodID, InstanceInfo> emitter)
+        public void Generate(EmitterBase<MethodID, InstanceInfo> emitter)
         {
             var method = Parser.Parse(_methodSource);
-            Compiler.GenerateInstructions(method,emitter,_services);
+            Compiler.GenerateInstructions(method,_arguments,emitter,_services);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace AssemblyProviders.CSharp
             _methods.Add(method, parsed);
         }
 
-        protected void generateMethod(MethodID method, InstanceInfo[] argumentInfo, IEmitter<MethodID,InstanceInfo> emitter)
+        protected void generateMethod(MethodID method, InstanceInfo[] argumentInfo, EmitterBase<MethodID,InstanceInfo> emitter)
         {
             throw new NotImplementedException();
         }

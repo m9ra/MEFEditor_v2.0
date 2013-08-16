@@ -82,16 +82,22 @@ namespace Analyzing.Execution
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(IInstructionGenerator<MethodID,InstanceInfo> generator)
+        internal void FetchCallInstructions(VersionedName name, IInstructionGenerator<MethodID,InstanceInfo> generator)
         {
             var argumentValues = getArgumentValues(_preparedArguments);
             //preparing is just for single call
             _preparedArguments = null;
-            var call = new CallContext<MethodID, InstanceInfo>(_settings,_loader,generator, argumentValues);
+            var call = new CallContext<MethodID, InstanceInfo>(_settings,_loader,name,generator, argumentValues);
+
             if (_entryContext == null)
             {
-                _entryContext = call;   
+                _entryContext = call;                
             }
+            else
+            {
+                CurrentCall.RegisterCall(call);
+            }
+
             _callStack.Push(call);
         }
 

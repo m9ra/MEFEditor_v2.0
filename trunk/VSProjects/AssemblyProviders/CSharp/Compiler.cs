@@ -16,22 +16,23 @@ namespace AssemblyProviders.CSharp
     public class Compiler
     {
         private readonly CodeNode _method;
-        private readonly IEmitter<MethodID, InstanceInfo> _emitter;
+        private readonly EmitterBase<MethodID, InstanceInfo> _emitter;
         private readonly Context _context;
-
+        private readonly ParameterInfo[] _arguments;
 
         private readonly Dictionary<string, string> _declaredVariables = new Dictionary<string, string>();
 
-        public static void GenerateInstructions(CodeNode method, IEmitter<MethodID, InstanceInfo> emitter, TypeServices services)
+        public static void GenerateInstructions(CodeNode method, ParameterInfo[] arguments, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
         {
-            var compiler = new Compiler(method, emitter, services);
+            var compiler = new Compiler(method, arguments, emitter, services);
 
             compiler.generateInstructions();
         }
 
-        private Compiler(CodeNode method, IEmitter<MethodID, InstanceInfo> emitter, TypeServices services)
-        {
+        private Compiler(CodeNode method, ParameterInfo[] arguments, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
+        {            
             _method = method;
+            _arguments = arguments; 
             _emitter = emitter;
             _context = new Context(emitter, services);
         }
@@ -45,10 +46,20 @@ namespace AssemblyProviders.CSharp
 
         #region Instruction generating
         private void generateInstructions()
-        {
-            //TODO Debug only
+        {            
             _emitter.StartNewInfoBlock().Comment = "===Compiler initialization===";
-            _emitter.AssignLiteral("this", "ValueOfThisObject");
+            //TODO Debug only
+            _emitter.AssignLiteral("this", "Fake Value of this object");
+
+            //generate argument assigns
+            for (uint i = 0; i < _arguments.Length; ++i)
+            {
+                var arg = _arguments[i];
+                _emitter.AssignArgument(arg.Name, i+1); //argument 0 is always this object
+                _declaredVariables.Add(arg.Name, arg.StaticInfo.TypeName);
+            }
+
+            //generate method body
             foreach (var line in _method.Subsequence.Lines)
             {
                 generateLine(line);
@@ -57,9 +68,9 @@ namespace AssemblyProviders.CSharp
 
         private void generateLine(INodeAST line)
         {
-            
+
             var info = _emitter.StartNewInfoBlock();
-            info.Comment = "\n---"+statementText(line)+"---";
+            info.Comment = "\n---" + statementText(line) + "---";
             generateStatement(line);
         }
 
@@ -267,7 +278,7 @@ namespace AssemblyProviders.CSharp
                     var methodInfo = searcher.FoundResult.First();
 
                     var arguments = getArguments(currNode);
-                    call = new CallRValue(methodInfo,arguments, _context);
+                    call = new CallRValue(methodInfo, arguments, _context);
                     return true;
                 }
 

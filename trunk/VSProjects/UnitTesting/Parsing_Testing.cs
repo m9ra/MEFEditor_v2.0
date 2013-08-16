@@ -8,6 +8,8 @@ using UnitTesting.TypeSystem_TestUtils;
 using Analyzing;
 using TypeSystem;
 using AssemblyProviders.CSharp;
+using AssemblyProviders.CSharp.Compiling;
+
 
 namespace UnitTesting
 {
@@ -73,6 +75,21 @@ var result=obj.CustomMethod();
 ")
 .AssertVariable("result").HasValue("Custom result");
         }
+
+
+        [TestMethod]
+        public void Emit_objectCall_withArguments()
+        {
+            AssemblyUtils.Run(@"
+var obj=""Object value"";
+var argument=""Argument value"";
+var result=obj.CustomMethod(argument);
+").AddMethod("System.String.CustomMethod", @"
+    return parameterName;
+",arguments: new ParameterInfo("parameterName",new InstanceInfo("System.String")))
+.AssertVariable("result").HasValue("Argument value");
+        }
+
 
     }
 }
