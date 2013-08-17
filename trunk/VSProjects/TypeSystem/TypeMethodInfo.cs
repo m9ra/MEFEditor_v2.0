@@ -11,6 +11,8 @@ namespace TypeSystem
         public readonly string TypeName;
         public readonly string MethodName;
         public readonly bool IsStatic;
+        public readonly ParameterInfo[] Arguments;
+        public readonly InstanceInfo ThisType;
 
         public string Path
         {
@@ -27,11 +29,15 @@ namespace TypeSystem
             }
         }
 
-        public TypeMethodInfo(string typeName, string methodName,bool isStatic)
+        public TypeMethodInfo(string typeName, string methodName,ParameterInfo[]arguments,bool isStatic)
         {
             TypeName = typeName;
             MethodName = methodName;
             IsStatic = isStatic;
+            Arguments = arguments;
+            ThisType = new InstanceInfo(TypeName);
         }
+
+        
     }
 }

@@ -19,5 +19,10 @@ namespace Analyzing
         {
             InstructionOffset = instructionOffset;
         }
+
+        public override string ToString()
+        {
+            return "[Label]" + LabelName;
+        } 
     }
 }

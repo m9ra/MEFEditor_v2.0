@@ -19,8 +19,16 @@ namespace Analyzing.Execution.Instructions
 
         public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
-            var sourceValue = context.CurrentArguments[_argumentNumber];
-            context.SetValue(_targetVariable, sourceValue);
+            //TODO init this for EntryPoint
+            if (context.CurrentArguments.Length > 0)
+            {
+                var sourceValue = context.CurrentArguments[_argumentNumber];
+                context.SetValue(_targetVariable, sourceValue);
+            }
+            else
+            {
+                context.SetValue(_targetVariable,new Instance("Nothing"));
+            }
         }
 
         public override string ToString()

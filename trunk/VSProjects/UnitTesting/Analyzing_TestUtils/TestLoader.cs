@@ -24,7 +24,7 @@ namespace UnitTesting.Analyzing_TestUtils
         {
             var testLoader = new TestLoaderProvider(director);
 
-            return new TypeSystem.DirectCallLoader(testLoader, Environment.SettingsProvider.TypeSettings);
+            return new TypeSystem.DirectAssembly(testLoader, Environment.SettingsProvider.TypeSettings);
         }
 
         public IInstructionGenerator<MethodID, InstanceInfo> EntryPoint

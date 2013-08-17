@@ -24,7 +24,9 @@ namespace TypeExperiments
         static ConsoleColor NameColor = ConsoleColor.Cyan;
         static ConsoleColor StringColor = ConsoleColor.Green;
         static ConsoleColor NumberColor = ConsoleColor.DarkGreen;
-        static ConsoleColor VariableColor = ConsoleColor.Yellow;
+        static ConsoleColor BoolColor = ConsoleColor.DarkGreen;
+        static ConsoleColor VariableColor = ConsoleColor.DarkYellow;
+        static ConsoleColor LabelColor = ConsoleColor.Yellow;
 
         public static void Print(string code)
         {
@@ -50,34 +52,42 @@ namespace TypeExperiments
 
         static void printComment(string comment)
         {
-            //comment, whitespace
-            Console.ForegroundColor = CommentColor;
-            Console.WriteLine(comment);
+            if (comment.StartsWith("["))
+            {
+                //label
+                printArgument(comment);
+                Console.WriteLine(":");
+            }
+            else
+            {
+                //comment, whitespace
+                print(CommentColor, comment);
+                Console.WriteLine();
+            }
         }
 
         static void printInstruction(string instructionLine)
         {
             var instruction = instructionLine.Split(new char[] { ' ' }, 2);
-            var opCode = instruction[0];
-            var argumentsPart = instruction[1];
+            var opCode = instruction[0].Trim();
+            print(OpcodeColor,"  " + opCode.PadRight(15));
 
-            Console.ForegroundColor = OpcodeColor;
-
-            Console.Write("  " + opCode.PadRight(15));
-
-            switch (opCode)
+            if (instruction.Length > 1)
             {
-                case "ensure_init":
-                    printSeparatedArguments(argumentsPart, " by ", BySeparatorColor);
-                    break;
-                case "jmp":
-                    printSeparatedArguments(argumentsPart, " if ", IfSeparatorColor);
-                    break;
-                default:
-                    printArguments(argumentsPart);
-                    break;
+                var argumentsPart = instruction[1];
+                switch (opCode)
+                {
+                    case "ensure_init":
+                        printSeparatedArguments(argumentsPart, " by ", BySeparatorColor);
+                        break;
+                    case "jmp":
+                        printSeparatedArguments(argumentsPart, " if ", IfSeparatorColor);
+                        break;
+                    default:
+                        printArguments(argumentsPart);
+                        break;
+                }
             }
-
 
             Console.WriteLine();
         }
@@ -123,23 +133,30 @@ namespace TypeExperiments
             }
             else
             {
-                Console.ForegroundColor = NameColor;
-                Console.Write(argumentPart);
+                print(NameColor, argumentPart);
             }
         }
 
         static void printValue(string typePart, string valuePart)
         {
+            typePart = typePart.Trim();
+            valuePart = valuePart.Trim();
             switch (typePart)
             {
                 case "[Variable]":
                     print(VariableColor, valuePart);
+                    break;
+                case "[Label]":
+                    print(LabelColor, valuePart);
                     break;
                 case "[System.String]":
                     print(StringColor, "\"{0}\"", valuePart);
                     break;
                 case "[System.Int32]":
                     print(NumberColor, valuePart);
+                    break;
+                case "[System.Boolean]":
+                    print(BoolColor, valuePart);
                     break;
                 default:
                     print(ArgumentTypeColor, typePart);

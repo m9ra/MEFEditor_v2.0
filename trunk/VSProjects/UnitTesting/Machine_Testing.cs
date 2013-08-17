@@ -48,13 +48,13 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void InjectedMethodCall_static()
+        public void InjectedMethodCall_adding()
         {
             ExecutionUtils.Run((e) =>
             {
                 e.AssignLiteral("var1", 40);
                 e.AssignLiteral("var2", 2);
-                e.StaticCall("System.Int32", "+".Method(), "var1", "var2");
+                e.Call("add_operator".Method(), "var1", "var2");
                 e.AssignReturnValue("var3");
             })
             .AssertVariable("var3").HasValue(40 + 2);
@@ -73,7 +73,7 @@ namespace UnitTesting
                 e.AssignLiteral("increment", 0);
 
                 e.SetLabel(start);
-                e.StaticCall("System.Int32", "+".Method(), "increment", "step");
+                e.Call("add_operator".Method(), "increment", "step");
                 e.AssignReturnValue("increment");
                 e.Call("Equals".Method(), "increment", "stop");
                 e.AssignReturnValue("condition");

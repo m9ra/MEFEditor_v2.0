@@ -8,21 +8,21 @@ namespace Analyzing.Execution.Instructions
 {
     class Jump<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
     {        
-        private readonly Label _target;
+        internal readonly Label Target;
 
         internal Jump(Label target)
         {
-            _target = target;
+            Target = target;
         }
 
         public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
-            context.Jump(_target);
+            context.Jump(Target);
         }
 
         public override string ToString()
         {
-            return string.Format("jmp {0}", _target);
+            return string.Format("jmp {0}", Target);
         }
     }
 }

@@ -16,24 +16,24 @@ namespace AssemblyProviders.CSharp
     public class Compiler
     {
         private readonly CodeNode _method;
-        private readonly EmitterBase<MethodID, InstanceInfo> _emitter;
+        private readonly EmitterBase<MethodID, InstanceInfo> E;
         private readonly Context _context;
-        private readonly ParameterInfo[] _arguments;
+        private readonly TypeMethodInfo _info;
 
         private readonly Dictionary<string, string> _declaredVariables = new Dictionary<string, string>();
 
-        public static void GenerateInstructions(CodeNode method, ParameterInfo[] arguments, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
+        public static void GenerateInstructions(CodeNode method, TypeMethodInfo info, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
         {
-            var compiler = new Compiler(method, arguments, emitter, services);
+            var compiler = new Compiler(method, info, emitter, services);
 
             compiler.generateInstructions();
         }
 
-        private Compiler(CodeNode method, ParameterInfo[] arguments, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
-        {            
+        private Compiler(CodeNode method, TypeMethodInfo info, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
+        {
             _method = method;
-            _arguments = arguments; 
-            _emitter = emitter;
+            _info = info;
+            E = emitter;
             _context = new Context(emitter, services);
         }
 
@@ -46,30 +46,68 @@ namespace AssemblyProviders.CSharp
 
         #region Instruction generating
         private void generateInstructions()
-        {            
-            _emitter.StartNewInfoBlock().Comment = "===Compiler initialization===";
-            //TODO Debug only
-            _emitter.AssignLiteral("this", "Fake Value of this object");
+        {
+            E.StartNewInfoBlock().Comment = "===Compiler initialization===";
+            
+            E.AssignArgument("this",_info.ThisType, 0);
 
             //generate argument assigns
-            for (uint i = 0; i < _arguments.Length; ++i)
+            for (uint i = 0; i < _info.Arguments.Length; ++i)
             {
-                var arg = _arguments[i];
-                _emitter.AssignArgument(arg.Name, i+1); //argument 0 is always this object
+                var arg = _info.Arguments[i];
+                E.AssignArgument(arg.Name,arg.StaticInfo, i + 1); //argument 0 is always this object
                 _declaredVariables.Add(arg.Name, arg.StaticInfo.TypeName);
             }
 
             //generate method body
-            foreach (var line in _method.Subsequence.Lines)
+            generateSubsequence(_method);
+        }
+
+        private void generateSubsequence(INodeAST node)
+        {
+            foreach (var line in node.Subsequence.Lines)
             {
-                generateLine(line);
+                if (line.NodeType == NodeTypes.block)
+                {
+                    generateBlock(line);
+                }
+                else
+                {
+                    generateLine(line);
+                }
             }
+        }
+
+        private void generateBlock(INodeAST block)
+        {
+            var info = E.StartNewInfoBlock();
+            info.Comment = "\n---" + block.Value + " block---";
+            var condition = getRValue(block.Arguments[0]);
+            var conditionVariable = new VariableValue(E.GetTemporaryVariable(), _context);
+            condition.AssignInto(conditionVariable);
+
+            var trueLbl = E.GetTemporaryLabel("_true");
+            var falseLbl = E.GetTemporaryLabel("_false");
+            var endLbl = E.GetTemporaryLabel("_end");
+
+            E.ConditionalJump(conditionVariable.Storage, trueLbl);
+            E.Jump(falseLbl);
+
+            E.SetLabel(trueLbl);
+            generateSubsequence(block.Arguments[1]);
+
+            E.Jump(endLbl);
+            E.SetLabel(falseLbl);
+
+            generateSubsequence(block.Arguments[2]);
+            E.SetLabel(endLbl);
+            //because of editation can proceed smoothly
+            E.Nop();
         }
 
         private void generateLine(INodeAST line)
         {
-
-            var info = _emitter.StartNewInfoBlock();
+            var info = E.StartNewInfoBlock();
             info.Comment = "\n---" + statementText(line) + "---";
             generateStatement(line);
         }
@@ -148,7 +186,8 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.call:
                 case NodeTypes.hierarchy:
                     return resolveRHierarchy(valueNode);
-
+                case NodeTypes.binaryOperator:
+                    return resolveBinary(valueNode);
                 default:
                     throw new NotImplementedException();
             }
@@ -165,6 +204,37 @@ namespace AssemblyProviders.CSharp
             }
 
             return args.ToArray();
+        }
+
+        private RValueProvider resolveBinary(INodeAST binary)
+        {          
+
+            string method;
+            switch (binary.Value)
+            {
+                case "+":
+                    method="System.Int32.add_operator";
+                    break;
+                case "-":
+                    method = "System.Int32.sub_operator";
+                    break;
+                  
+                case "<":
+                    method = "System.Int32.lesser_operator";
+                    break;                    
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            var lOperand = getRValue(binary.Arguments[0]).GetStorage();
+            var rOperand = getRValue(binary.Arguments[1]).GetStorage();
+
+            E.Call(new MethodID(method), lOperand, rOperand);
+            var result = E.GetTemporaryVariable();
+            E.AssignReturnValue(result);
+
+            return new VariableRValue(result, _context);
         }
 
         private RValueProvider resolveRHierarchy(INodeAST node)
@@ -218,6 +288,14 @@ namespace AssemblyProviders.CSharp
                 literal = new LiteralValue(num, _context);
                 return true;
             }
+
+            bool bl;
+            if (bool.TryParse(literalToken, out bl))
+            {
+                literal = new LiteralValue(bl, _context);
+                return true;
+            }
+
 
             literal = null;
             return false;

@@ -31,6 +31,7 @@ namespace Analyzing.Execution
                 var result = new StringBuilder();
                 InstructionInfo currentInfo = null;
 
+                var line = 0;
                 foreach (var instruction in _callInstructions)
                 {
                     if (instruction.Info != currentInfo)
@@ -39,11 +40,41 @@ namespace Analyzing.Execution
                         if (currentInfo.Comment != null)
                             result.AppendLine(currentInfo.Comment);
                     }
+
+                    var pointingLabel=getLabelToLine(line);
+                    if (pointingLabel != null)
+                    {
+                        result.AppendLine(pointingLabel.ToString());
+                    }
+
                     result.AppendLine(instruction.ToString());
+                    ++line;
                 }
 
                 return result.ToString();
             }
+        }
+
+        private Label getLabelToLine(int line)
+        {
+            foreach (var instr in _callInstructions)
+            {
+                var jmp = instr as Instructions.Jump<MethodID, InstanceInfo>;
+                var jmpif = instr as Instructions.ConditionalJump<MethodID, InstanceInfo>;
+
+                Label label=null;
+                if (jmp != null)
+                    label = jmp.Target;
+                if (jmpif != null)
+                    label = jmpif.Target;
+
+                if (label == null)
+                    continue;
+
+                if (label.InstructionOffset == line)
+                    return label;
+            }
+            return null;
         }
 
 

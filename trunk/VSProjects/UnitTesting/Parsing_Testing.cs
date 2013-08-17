@@ -90,6 +90,24 @@ var result=obj.CustomMethod(argument);
 .AssertVariable("result").HasValue("Argument value");
         }
 
+        [TestMethod]
+        public void Emit_Fibonacci()
+        {
+            AssemblyUtils.Run(@"
+var result=fib(7);
+
+").AddMethod("fib", @"    
+    if(n<3){
+        return 1;
+    }else{
+        return fib(n-1)+fib(n-2);
+    }
+", arguments: new ParameterInfo("n", new InstanceInfo("System.Int32")))
+
+
+.AssertVariable("result").HasValue(13);
+        }
+
 
     }
 }

@@ -14,22 +14,24 @@ namespace UnitTesting.TypeSystem_TestUtils
     {
         static readonly SyntaxParser Parser = new SyntaxParser();
 
+        public readonly TypeMethodInfo Info;
+
         readonly string _methodSource;
 
         TypeServices _services;
 
-        ParameterInfo[] _arguments;
-
-        public ParsedGenerator(string source,ParameterInfo[] arguments)
+        public ParsedGenerator(TypeMethodInfo info,string source)
         {
+            if (info == null)
+                throw new ArgumentNullException("info");
+            
             if (source == null)
                 throw new ArgumentNullException("source");
 
-            if (arguments == null)
-                throw new ArgumentNullException("arguments");
+            
 
             _methodSource = source;
-            _arguments = arguments;
+            Info = info;
         }
 
         internal void SetServices(TypeServices services)
@@ -40,7 +42,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public void Generate(EmitterBase<MethodID, InstanceInfo> emitter)
         {
             var method = Parser.Parse(_methodSource);
-            Compiler.GenerateInstructions(method,_arguments,emitter,_services);
+            Compiler.GenerateInstructions(method,Info,emitter,_services);
         }
     }
 }

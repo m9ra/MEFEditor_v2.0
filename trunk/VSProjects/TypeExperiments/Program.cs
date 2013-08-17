@@ -13,8 +13,10 @@ using TypeExperiments.Reflection.ILAnalyzer;
 
 using System.Diagnostics;
 
+using TypeSystem;
 using UnitTesting.TypeSystem_TestUtils;
 using AssemblyProviders.CSharp.Compiling;
+
 
 namespace TypeExperiments
 {
@@ -45,11 +47,16 @@ namespace TypeExperiments
         /// </summary>
         static void Main()
         {
-            var entry = AssemblyUtils.Run(@"
-
+            var entry = AssemblyUtils.Run(/*@"
 var test=StaticClass.StaticMethod(""aaa"",153);
 var test2=test;
 var test3=4;
+
+if(true){
+    test3=2;
+}else{
+    test3=1;
+}
 ")
  
  .AddMethod("StaticClass.StaticMethod", @"
@@ -63,6 +70,19 @@ var test3=4;
  .AddMethod("StaticClass.StaticClass", @"
     return ""Initialization value"";
 ", true)
+ */
+
+@"
+var result=fib(18);
+
+").AddMethod("fib", @"    
+    if(n<2){
+        return 1;
+    }else{
+        return fib(n-1)+fib(n-2);
+    }
+", arguments: new ParameterInfo("n", new InstanceInfo("System.Int32")))
+  
 
  .GetResult().EntryContext;
 

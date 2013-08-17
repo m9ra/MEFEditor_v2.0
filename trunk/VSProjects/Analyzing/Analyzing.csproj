@@ -55,6 +55,7 @@
     <Compile Include="Execution\Instructions\DirectInvoke.cs" />
     <Compile Include="Execution\Instructions\LateReturnInitialization.cs" />
     <Compile Include="Execution\Instructions\EnsureInitialized.cs" />
+    <Compile Include="Execution\Instructions\Nop.cs" />
     <Compile Include="Execution\Instructions\PreCall.cs" />
     <Compile Include="Execution\Instructions\Return.cs" />
     <Compile Include="EmitterBase.cs" />

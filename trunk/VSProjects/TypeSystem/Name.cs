@@ -14,14 +14,14 @@ namespace TypeSystem
     {
         internal static VersionedName From(MethodInfo method, int version=0)
         {
-            var name = string.Format("{0}.{1}_{2}", method.DeclaringType.FullName, method.Name, method.GetParameters().Count());
+            var name = string.Format("{0}_{1}",method.Name, method.GetParameters().Count(),method.DeclaringType.FullName);
             return new VersionedName(name,version);
         }
 
         internal static VersionedName From(MethodID method,InstanceInfo[] info, int version = 0)
         {
             //TODO this resolving is not sufficient
-            var name = string.Format("{0}.{1}_{2}", info[0].TypeName,method.MethodName, info.Length - 1);
+            var name = string.Format("{0}_{1}", method.MethodName, info.Length - 1,info[0].TypeName);
             return new VersionedName(name, version);
         }
 

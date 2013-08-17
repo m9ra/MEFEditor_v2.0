@@ -11,7 +11,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 {
     public class ParsedAssembly : AssemblyProvider
     {
-        Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> _methods = new Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>>();
+        Dictionary<string,  MethodItem> _methods = new Dictionary<string, MethodItem>();
 
         public ParsedAssembly AddMethod(string name, string source,bool isStatic=false,params ParameterInfo[] arguments)
         {
@@ -19,8 +19,9 @@ namespace UnitTesting.TypeSystem_TestUtils
             var methodName=nameParts.Last();
             var typeName =string.Join(".", nameParts.Take(nameParts.Count() - 1).ToArray());
 
-            var method=Tuple.Create(new TypeMethodInfo(typeName,methodName,isStatic),new ParsedGenerator("{" + source + "}",arguments));
-            _methods.Add(name,method );
+            var info=new TypeMethodInfo(typeName,methodName,arguments,isStatic);
+            var method=new ParsedGenerator(info,"{" + source + "}");
+            _methods.Add(name,new MethodItem(method,info) );
 
             return this;
         }
@@ -32,7 +33,11 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         protected override IInstructionGenerator getGenerator(string methodName)
         {
-            var generator = _methods[methodName].Item2;
+            if (!_methods.ContainsKey(methodName))
+            {
+                return null;
+            }
+            var generator = _methods[methodName].Generator as ParsedGenerator;
             generator.SetServices(TypeServices);
             return generator;
         }
@@ -40,48 +45,6 @@ namespace UnitTesting.TypeSystem_TestUtils
         public override SearchIterator CreateRootIterator()
         {
             return new HashIterator(_methods);
-        }
-    }
-
-    class HashIterator : SearchIterator
-    {        
-        readonly private Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> _methods = new Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>>();
-
-        readonly string _actualPath;
-
-        public HashIterator(Dictionary<string, Tuple<TypeMethodInfo, ParsedGenerator>> methods, string actualPath = "")
-        {
-            _methods = methods;
-            _actualPath = actualPath;
-        }
-
-        public override SearchIterator ExtendName(string suffix)
-        {
-            return new HashIterator(_methods,extendPath(suffix));
-        }
-
-        public override IEnumerable<TypeMethodInfo> FindMethods(string searchedName)
-        {
-            var name = extendPath(searchedName);
-
-            Tuple<TypeMethodInfo,ParsedGenerator> method;
-            if (_methods.TryGetValue(name, out method))
-            {
-                yield return method.Item1;
-            }
-        }
-
-
-        private string extendPath(string name)
-        {
-            if (_actualPath == "")
-            {
-                return name;
-            }
-            else
-            {
-               return string.Format("{0}.{1}", _actualPath, name);
-            }
         }
     }
 }

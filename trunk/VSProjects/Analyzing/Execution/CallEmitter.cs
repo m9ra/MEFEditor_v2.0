@@ -30,7 +30,7 @@ namespace Analyzing.Execution
         /// <summary>
         /// Defined labels pointing to instruction offset
         /// </summary>
-        readonly HashSet<Label> _labels = new HashSet<Label>();
+        readonly Dictionary<string,Label> _labels = new Dictionary<string,Label>();
 
         /// <summary>
         /// Instruction info for currently emitted block
@@ -61,9 +61,9 @@ namespace Analyzing.Execution
             emitInstruction(new Assign<MethodID, InstanceInfo>(target, source));
         }
 
-        public override void AssignArgument(string targetVar, uint argumentPosition)
+        public override void AssignArgument(string targetVar,InstanceInfo staticInfo, uint argumentPosition)
         {
-            var target = getVariable(targetVar);
+            var target = getVariable(targetVar,staticInfo);
             emitInstruction(new AssignArgument<MethodID,InstanceInfo>(target,argumentPosition));
         }
 
@@ -128,14 +128,14 @@ namespace Analyzing.Execution
         {
             var label = new Label(identifier);
 
-            _labels.Add(label);
+            _labels.Add(label.LabelName,label);
 
             return label;
         }
 
         public override void SetLabel(Label label)
         {
-            if (!_labels.Contains(label))
+            if (!_labels.ContainsKey(label.LabelName) || _labels[label.LabelName]!=label)
             {
                 throw new NotSupportedException("This label cannot be set by this emitter");
             }
@@ -157,21 +157,41 @@ namespace Analyzing.Execution
             emitInstruction(jump);
         }
 
+        public override void Nop()
+        {
+            emitInstruction(new Nop<MethodID, InstanceInfo>());
+        }
+
         public override InstructionInfo StartNewInfoBlock()
         {
             _currentBlockInfo = new InstructionInfo();
             return _currentBlockInfo;
         }
 
-        public override string GetTemporaryVariable()
+        public override string GetTemporaryVariable(string description="")
         {
-            var variable="$temporary";
+            var variable="$tmp"+description;
             var index=_staticVariableInfo.Count;
-            while(_staticVariableInfo.ContainsKey(new VariableName(variable+index))){
+            VariableName toRegister;
+            while(_staticVariableInfo.ContainsKey(toRegister=new VariableName(variable+index))){
                 ++index;
             }
 
+            _staticVariableInfo.Add(toRegister, default(InstanceInfo));
             return variable + index;
+        }
+
+        public override Label GetTemporaryLabel(string description="")
+        {
+            string labelName;
+            var index = _labels.Count;
+            
+            while (_labels.ContainsKey(labelName="$lbl"+ index+description))
+            {
+                ++index;
+            }
+
+            return CreateLabel(labelName); 
         }
         #endregion
 
@@ -229,7 +249,10 @@ namespace Analyzing.Execution
         private VariableName getVariable(string variable, InstanceInfo info)
         {
             var variableName = new VariableName(variable);
-            if (info != null && !_staticVariableInfo.ContainsKey(variableName))
+
+            InstanceInfo currentInfo;
+
+            if (info != null && (!_staticVariableInfo.TryGetValue(variableName,out currentInfo) || object.Equals(currentInfo,null) ))
             {
                 //firstly determined variable type
                 _staticVariableInfo[variableName] = info;

@@ -18,15 +18,23 @@ namespace Analyzing
 
         /// <summary>
         /// Get variable, which is not used yet in emitted code
-        /// </summary>
+        /// </summary>        
+        /// <param name="description">Description of varible, used in name</param>
         /// <returns>Name of variable</returns>
-        public abstract string GetTemporaryVariable();
+        public abstract string GetTemporaryVariable(string description = "");
+
+        /// <summary>
+        /// Get label, which is not used yet in emitted code
+        /// </summary>
+        /// <param name="description">Description of label, used in name</param>
+        /// <returns>Created label</returns>
+        public abstract Label GetTemporaryLabel(string description = "");
 
         public abstract void AssignLiteral(string target, object literal);
 
         public abstract void Assign(string targetVar, string sourceVar);
 
-        public abstract void AssignArgument(string targetVar, uint argumentPosition);
+        public abstract void AssignArgument(string targetVar,InstanceInfo staticInfo, uint argumentPosition);
 
         /// <summary>
         /// Assigning last call return value into specified target variable
@@ -69,11 +77,15 @@ namespace Analyzing
         /// <param name="label">Label that will be set</param>
         public abstract void SetLabel(Label label);
 
+        public abstract void Nop();
+
         /// <summary>
         /// Returns instance info stored for given variable
         /// </summary>
         /// <param name="variable">Variable which info is resolved</param>
         /// <returns>Stored info</returns>
         public abstract InstanceInfo VariableInfo(string variable);
+
+        
     }
 }

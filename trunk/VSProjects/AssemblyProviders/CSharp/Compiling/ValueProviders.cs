@@ -167,8 +167,7 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         public override void Return()
-        {
-            //TODO get empty variable
+        {            
             var temporaryName = E.GetTemporaryVariable();            
             E.AssignReturnValue(temporaryName);
             E.Return(temporaryName);
@@ -200,7 +199,10 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override string GetStorage()
         {
-            throw new NotImplementedException();
+            var tmp = new VariableValue(E.GetTemporaryVariable(), Context);
+            AssignInto(tmp);
+
+            return tmp.Storage;
         }
     }
 }
