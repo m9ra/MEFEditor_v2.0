@@ -31,7 +31,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return method.MethodName;
         }
 
-        protected override IInstructionGenerator getGenerator(string methodName)
+        protected override GeneratorBase getGenerator(string methodName)
         {
             if (!_methods.ContainsKey(methodName))
             {

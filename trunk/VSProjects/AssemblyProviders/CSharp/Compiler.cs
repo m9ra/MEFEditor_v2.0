@@ -83,14 +83,12 @@ namespace AssemblyProviders.CSharp
             var info = E.StartNewInfoBlock();
             info.Comment = "\n---" + block.Value + " block---";
             var condition = getRValue(block.Arguments[0]);
-            var conditionVariable = new VariableValue(E.GetTemporaryVariable(), _context);
-            condition.AssignInto(conditionVariable);
-
+     
             var trueLbl = E.GetTemporaryLabel("_true");
             var falseLbl = E.GetTemporaryLabel("_false");
             var endLbl = E.GetTemporaryLabel("_end");
 
-            E.ConditionalJump(conditionVariable.Storage, trueLbl);
+            E.ConditionalJump(condition.GetStorage(), trueLbl);
             E.Jump(falseLbl);
 
             E.SetLabel(trueLbl);
@@ -195,33 +193,20 @@ namespace AssemblyProviders.CSharp
         }
 
 
-        private RValueProvider[] getArguments(INodeAST node)
-        {
-            var args = new List<RValueProvider>();
-            foreach (var arg in node.Arguments)
-            {
-                args.Add(getRValue(arg));
-            }
-
-            return args.ToArray();
-        }
-
         private RValueProvider resolveBinary(INodeAST binary)
-        {          
-
+        {
             string method;
             switch (binary.Value)
             {
                 case "+":
-                    method="System.Int32.add_operator";
+                    method = "System.Int32.add_operator";
                     break;
                 case "-":
                     method = "System.Int32.sub_operator";
                     break;
-                  
                 case "<":
                     method = "System.Int32.lesser_operator";
-                    break;                    
+                    break;
 
                 default:
                     throw new NotImplementedException();
@@ -236,6 +221,19 @@ namespace AssemblyProviders.CSharp
 
             return new VariableRValue(result, _context);
         }
+
+        private RValueProvider[] getArguments(INodeAST node)
+        {
+            var args = new List<RValueProvider>();
+            foreach (var arg in node.Arguments)
+            {
+                args.Add(getRValue(arg));
+            }
+
+            return args.ToArray();
+        }
+
+      
 
         private RValueProvider resolveRHierarchy(INodeAST node)
         {

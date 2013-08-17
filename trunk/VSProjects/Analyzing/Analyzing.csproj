@@ -59,9 +59,10 @@
     <Compile Include="Execution\Instructions\PreCall.cs" />
     <Compile Include="Execution\Instructions\Return.cs" />
     <Compile Include="EmitterBase.cs" />
-    <Compile Include="IInstructionGenerator.cs" />
-    <Compile Include="IInstructionLoader.cs" />
+    <Compile Include="GeneratorBase.cs" />
+    <Compile Include="LoaderBase.cs" />
     <Compile Include="IMachineSettings.cs" />
+    <Compile Include="InstructionBatch.cs" />
     <Compile Include="InstructionInfo.cs" />
     <Compile Include="Label.cs" />
     <Compile Include="Machine.cs" />

@@ -88,14 +88,14 @@ var result=fib(18);
 
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("ENTRY CONTEXT");
-            PrinterIAL.Print(entry.ProgramCode);
+            PrinterIAL.Print(entry.Program.Code);
             Console.WriteLine();
 
             foreach (var context in entry.ChildContexts)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Method: "+context.Name);
-                PrinterIAL.Print(context.ProgramCode);
+                PrinterIAL.Print(context.Program.Code);
                 Console.WriteLine();
             }
 

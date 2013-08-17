@@ -13,7 +13,7 @@ namespace Analyzing.Execution
         /// <summary>
         /// Owning loader - is used for resolving
         /// </summary>
-        readonly IInstructionLoader<MethodID, InstanceInfo> _loader;
+        readonly LoaderBase<MethodID, InstanceInfo> _loader;
         /// <summary>
         /// Available machine settings
         /// </summary>
@@ -23,6 +23,11 @@ namespace Analyzing.Execution
         /// Instructions emitted by this emitter
         /// </summary>
         readonly List<InstructionBase<MethodID, InstanceInfo>> _instructions = new List<InstructionBase<MethodID, InstanceInfo>>();
+
+        /// <summary>
+        /// Program that has been emitted. Is filled when instructions are inserted, or on GetEmittedInstructions call.
+        /// </summary>
+        InstructionBatch<MethodID, InstanceInfo> _emittedProgram;
         /// <summary>
         /// Types resolved for variables
         /// </summary>
@@ -30,7 +35,7 @@ namespace Analyzing.Execution
         /// <summary>
         /// Defined labels pointing to instruction offset
         /// </summary>
-        readonly Dictionary<string,Label> _labels = new Dictionary<string,Label>();
+        readonly Dictionary<string, Label> _labels = new Dictionary<string, Label>();
 
         /// <summary>
         /// Instruction info for currently emitted block
@@ -38,7 +43,8 @@ namespace Analyzing.Execution
         private InstructionInfo _currentBlockInfo = new InstructionInfo();
 
 
-        internal CallEmitter(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID, InstanceInfo> loader)
+
+        internal CallEmitter(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader)
         {
             _settings = settings;
             _loader = loader;
@@ -61,10 +67,10 @@ namespace Analyzing.Execution
             emitInstruction(new Assign<MethodID, InstanceInfo>(target, source));
         }
 
-        public override void AssignArgument(string targetVar,InstanceInfo staticInfo, uint argumentPosition)
+        public override void AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition)
         {
-            var target = getVariable(targetVar,staticInfo);
-            emitInstruction(new AssignArgument<MethodID,InstanceInfo>(target,argumentPosition));
+            var target = getVariable(targetVar, staticInfo);
+            emitInstruction(new AssignArgument<MethodID, InstanceInfo>(target, argumentPosition));
         }
 
         public override void AssignReturnValue(string targetVar)
@@ -81,10 +87,10 @@ namespace Analyzing.Execution
             var sharedThisVar = getSharedVar(typeFullname);
             var callArgVars = new VariableName[] { sharedThisVar }.Concat(inputArgumentVars).ToArray();
 
-            var generatorName = _loader.ResolveCallName(methodID,getInfo(callArgVars));
+            var generatorName = _loader.ResolveCallName(methodID, getInfo(callArgVars));
             var initializatorName = _loader.ResolveStaticInitializer(variableInfo(sharedThisVar));
 
-            var ensureInitialization = new EnsureInitialized<MethodID,InstanceInfo>(sharedThisVar, initializatorName);
+            var ensureInitialization = new EnsureInitialized<MethodID, InstanceInfo>(sharedThisVar, initializatorName);
             var lateInitialization = new LateReturnInitialization<MethodID, InstanceInfo>(sharedThisVar);
             var preCall = new PreCall<MethodID, InstanceInfo>(callArgVars);
             var call = new Call<MethodID, InstanceInfo>(generatorName);
@@ -102,7 +108,7 @@ namespace Analyzing.Execution
 
             var inputArgumentVars = translateVariables(inputVariables);
             var callArgVars = new VariableName[] { thisVar }.Concat(inputArgumentVars).ToArray();
-            
+
             var generatorName = _loader.ResolveCallName(methodID, getInfo(callArgVars));
 
             var preCall = new PreCall<MethodID, InstanceInfo>(callArgVars);
@@ -115,7 +121,7 @@ namespace Analyzing.Execution
 
         public override void DirectInvoke(DirectMethod<MethodID, InstanceInfo> method)
         {
-            emitInstruction(new DirectInvoke<MethodID,InstanceInfo>(method));
+            emitInstruction(new DirectInvoke<MethodID, InstanceInfo>(method));
         }
 
         public override void Return(string sourceVar)
@@ -128,14 +134,14 @@ namespace Analyzing.Execution
         {
             var label = new Label(identifier);
 
-            _labels.Add(label.LabelName,label);
+            _labels.Add(label.LabelName, label);
 
             return label;
         }
 
         public override void SetLabel(Label label)
         {
-            if (!_labels.ContainsKey(label.LabelName) || _labels[label.LabelName]!=label)
+            if (!_labels.ContainsKey(label.LabelName) || _labels[label.LabelName] != label)
             {
                 throw new NotSupportedException("This label cannot be set by this emitter");
             }
@@ -146,14 +152,14 @@ namespace Analyzing.Execution
         public override void ConditionalJump(string conditionVariable, Label target)
         {
             var condition = getVariable(conditionVariable);
-            var conditionalJump = new ConditionalJump<MethodID, InstanceInfo>(condition,target);
+            var conditionalJump = new ConditionalJump<MethodID, InstanceInfo>(condition, target);
 
             emitInstruction(conditionalJump);
         }
 
         public override void Jump(Label target)
         {
-            var jump = new Jump<MethodID,InstanceInfo>(target);
+            var jump = new Jump<MethodID, InstanceInfo>(target);
             emitInstruction(jump);
         }
 
@@ -168,12 +174,13 @@ namespace Analyzing.Execution
             return _currentBlockInfo;
         }
 
-        public override string GetTemporaryVariable(string description="")
+        public override string GetTemporaryVariable(string description = "")
         {
-            var variable="$tmp"+description;
-            var index=_staticVariableInfo.Count;
+            var variable = "$tmp" + description;
+            var index = _staticVariableInfo.Count;
             VariableName toRegister;
-            while(_staticVariableInfo.ContainsKey(toRegister=new VariableName(variable+index))){
+            while (_staticVariableInfo.ContainsKey(toRegister = new VariableName(variable + index)))
+            {
                 ++index;
             }
 
@@ -181,17 +188,17 @@ namespace Analyzing.Execution
             return variable + index;
         }
 
-        public override Label GetTemporaryLabel(string description="")
+        public override Label GetTemporaryLabel(string description = "")
         {
             string labelName;
             var index = _labels.Count;
-            
-            while (_labels.ContainsKey(labelName="$lbl"+ index+description))
+
+            while (_labels.ContainsKey(labelName = "$lbl" + index + description))
             {
                 ++index;
             }
 
-            return CreateLabel(labelName); 
+            return CreateLabel(labelName);
         }
         #endregion
 
@@ -201,11 +208,25 @@ namespace Analyzing.Execution
         /// Get emitted program
         /// </summary>
         /// <returns>Program that has been emitted</returns>
-        internal InstructionBase<MethodID, InstanceInfo>[] GetEmittedInstructions()
+        public override InstructionBatch<MethodID, InstanceInfo> GetEmittedInstructions()
         {
-            return _instructions.ToArray();
+            if (_emittedProgram == null)
+                _emittedProgram = new InstructionBatch<MethodID, InstanceInfo>(_instructions.ToArray());
+
+            return _emittedProgram;
         }
-           
+
+        /// <summary>
+        /// Insert given batch of instructions (as they were emitted)
+        /// </summary>
+        /// <param name="instructions">Inserted instructions</param>
+        public override void InsertInstructions(InstructionBatch<MethodID, InstanceInfo> instructions)
+        {
+            if (_emittedProgram != null)
+                throw new NotSupportedException("Cannot insert instructions twice.");
+            _emittedProgram = instructions;
+        }
+
         /// <summary>
         /// Add given instruction into generated program
         /// <remarks>
@@ -225,7 +246,7 @@ namespace Analyzing.Execution
 
         private VariableName getSharedVar(string typeFullname)
         {
-            var shared=new VariableName("shared_" + typeFullname);
+            var shared = new VariableName("shared_" + typeFullname);
 
             if (!_staticVariableInfo.ContainsKey(shared))
             {
@@ -252,7 +273,7 @@ namespace Analyzing.Execution
 
             InstanceInfo currentInfo;
 
-            if (info != null && (!_staticVariableInfo.TryGetValue(variableName,out currentInfo) || object.Equals(currentInfo,null) ))
+            if (info != null && (!_staticVariableInfo.TryGetValue(variableName, out currentInfo) || object.Equals(currentInfo, null)))
             {
                 //firstly determined variable type
                 _staticVariableInfo[variableName] = info;

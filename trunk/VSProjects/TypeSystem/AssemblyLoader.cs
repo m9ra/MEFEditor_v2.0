@@ -10,21 +10,22 @@ using TypeSystem.Core;
 
 namespace TypeSystem
 {
-    public class AssemblyLoader : IInstructionLoader
+    public class AssemblyLoader : LoaderBase
     {
         readonly AssembliesManager _assemblies;
+        
 
         public AssemblyLoader(AssemblyCollection assemblies)
         {
             _assemblies = new AssembliesManager(assemblies);
         }
 
-        public IInstructionGenerator<MethodID, InstanceInfo> EntryPoint
+        public override GeneratorBase<MethodID, InstanceInfo> EntryPoint
         {
             get { throw new NotImplementedException(); }
         }
 
-        public VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo)
+        public override VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo)
         {
             var thisInfo = staticArgumentInfo[0];
 
@@ -37,12 +38,12 @@ namespace TypeSystem
             throw new NotImplementedException("method not found");
         }
 
-        public IInstructionGenerator<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        public override GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
         {
             return _assemblies.GetGenerator(methodName);
         }
 
-        public VersionedName ResolveStaticInitializer(InstanceInfo info)
+        public override VersionedName ResolveStaticInitializer(InstanceInfo info)
         {
             throw new NotImplementedException();
         }

@@ -20,7 +20,7 @@ namespace TypeSystem
 
         protected abstract string resolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo);
 
-        protected abstract IInstructionGenerator getGenerator(string methodName);
+        protected abstract GeneratorBase getGenerator(string methodName);
 
         public abstract SearchIterator CreateRootIterator();
 
@@ -61,7 +61,7 @@ namespace TypeSystem
             return resolveMethod(method, staticArgumentInfo);
         }
 
-        internal IInstructionGenerator<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        internal GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
         {
             return getGenerator(methodName.Name);
         }

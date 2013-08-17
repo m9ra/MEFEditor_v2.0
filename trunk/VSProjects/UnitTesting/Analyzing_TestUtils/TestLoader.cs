@@ -12,50 +12,68 @@ using Analyzing.Execution;
 
 namespace UnitTesting.Analyzing_TestUtils
 {
-    class TestLoaderProvider : TypeSystem.IInstructionLoader
+    class TestLoaderProvider : TypeSystem.LoaderBase
     {
+        DirectAssembly _assembly = new DirectAssembly(Environment.SettingsProvider.TypeSettings);
         EmitDirector _director;
         private TestLoaderProvider(EmitDirector director)
         {
             _director = director;
         }
 
-        static internal TypeSystem.IInstructionLoader CreateStandardLoader(EmitDirector director)
+        static internal TypeSystem.LoaderBase CreateStandardLoader(EmitDirector director)
         {
             var testLoader = new TestLoaderProvider(director);
 
-            return new TypeSystem.DirectAssembly(testLoader, Environment.SettingsProvider.TypeSettings);
+            return testLoader;
         }
 
-        public IInstructionGenerator<MethodID, InstanceInfo> EntryPoint
+        public override GeneratorBase<MethodID, InstanceInfo> EntryPoint
         {
             get { return new DirectorGenerator(_director); }
         }
 
-        public VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo)
+        public override VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo)
         {
-                throw new NotImplementedException();
+            //TODO better method resolving
+
+            var methodName = staticArgumentInfo[0].TypeName + "." + method.MethodName;
+            if (!_assembly.DirectMethods.ContainsKey(methodName))
+            {
+                methodName = Name.From(method, staticArgumentInfo).Name;
+                methodName = staticArgumentInfo[0].TypeName + "." + methodName;
+            }
+
+            var name = new VersionedName(methodName, 733);
+            return name;
         }
 
-        public IInstructionGenerator<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        public override GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
         {
+            MethodItem method;
+
+            if (_assembly.DirectMethods.TryGetValue(methodName.Name, out method))
+            {
+                return method.Generator;
+            }
+
             return Environment.SettingsProvider.MethodGenerator(methodName);
         }
-        
-        public VersionedName ResolveStaticInitializer(TypeSystem.InstanceInfo info)
+                
+        public override VersionedName ResolveStaticInitializer(TypeSystem.InstanceInfo info)
         {
             return new VersionedName(info.TypeName+"#initializer", -1);
         }
     }
 
-    class DirectorGenerator:TypeSystem.IInstructionGenerator
+    class DirectorGenerator:TypeSystem.GeneratorBase
     {
         readonly EmitDirector _director;
         public DirectorGenerator(EmitDirector director)
         {
             _director = director;
         }
-        public void Generate(EmitterBase<MethodID, InstanceInfo> emitter)
+        protected override void generate(EmitterBase<MethodID, InstanceInfo> emitter)
         {
             _director(emitter);
         }

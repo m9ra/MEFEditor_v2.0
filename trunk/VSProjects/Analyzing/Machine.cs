@@ -14,7 +14,7 @@ namespace Analyzing
     /// </summary>
     public class Machine<MethodID,InstanceInfo>
     {
-        IInstructionLoader<MethodID,InstanceInfo> _loader;
+        LoaderBase<MethodID,InstanceInfo> _loader;
         IMachineSettings<InstanceInfo> _settings;
 
         public Machine(IMachineSettings<InstanceInfo> settings)
@@ -28,7 +28,7 @@ namespace Analyzing
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
         /// <returns>Result of analysis</returns>
-        public AnalyzingResult<MethodID, InstanceInfo> Run(IInstructionLoader<MethodID, InstanceInfo> loader)
+        public AnalyzingResult<MethodID, InstanceInfo> Run(LoaderBase<MethodID, InstanceInfo> loader)
         {
             _loader = loader;
 

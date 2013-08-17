@@ -115,7 +115,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             return typeof(T).FullName + "." + name;
         }
 
-        internal static IInstructionGenerator<MethodID, InstanceInfo> MethodGenerator(VersionedName methodName)
+        internal static GeneratorBase<MethodID, InstanceInfo> MethodGenerator(VersionedName methodName)
         {
             //TODO for testing purposes is this used as method initializer - Refactor
             return new DirectorGenerator((e) =>
@@ -127,7 +127,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         internal static DirectAssembly CreateDirectAssembly()
         {
-            var assembly = new DirectAssembly(null, TypeSettings);
+            var assembly = new DirectAssembly(TypeSettings);
 
             return assembly;
         }

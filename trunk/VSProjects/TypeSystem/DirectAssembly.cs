@@ -10,7 +10,7 @@ using Analyzing;
 
 namespace TypeSystem
 {
-    public class DirectAssembly : AssemblyProvider, IInstructionLoader
+    public class DirectAssembly : AssemblyProvider
     {
         /// <summary>
         /// Types that will be represented directly in .NET representation
@@ -25,14 +25,10 @@ namespace TypeSystem
         /// <summary>
         /// Registered direct calls
         /// </summary>
-        Dictionary<string, MethodItem> _directMethods = new Dictionary<string, MethodItem>();
-        /// <summary>
-        /// Currently wrapped instruction loader
-        /// </summary>
-        IInstructionLoader _wrappedLoader;
-        public DirectAssembly(IInstructionLoader wrappedLoader, Settings settings)
+        public Dictionary<string, MethodItem> DirectMethods = new Dictionary<string, MethodItem>();
+
+        public DirectAssembly( Settings settings)
         {
-            _wrappedLoader = wrappedLoader;
             _directTypes = settings.DirectTypes;
 
             foreach (var directType in _directTypes)
@@ -45,49 +41,7 @@ namespace TypeSystem
                 addDirectMethod(method);
             }
         }
-
-        #region IInstructionLoader implementation
-        public IInstructionGenerator<MethodID, InstanceInfo> EntryPoint
-        {
-            get { return _wrappedLoader.EntryPoint; }
-        }
-
-        public VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo)
-        {
-            //TODO better method resolving
-
-            var methodName=staticArgumentInfo[0].TypeName+"."+ method.MethodName;
-            if (!_directMethods.ContainsKey(methodName))
-            {
-                methodName = Name.From(method, staticArgumentInfo).Name;
-                methodName=staticArgumentInfo[0].TypeName + "." + methodName;
-            }
-
-            var name = new VersionedName(methodName,733);
-            return name;
-        }
-        public IInstructionGenerator<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
-        {
-            MethodItem method;
-            
-            if (_directMethods.TryGetValue(methodName.Name, out method))
-            {
-                return method.Generator;
-            }
-
-            return _wrappedLoader.GetGenerator(methodName);
-        }
-
-        public VersionedName ResolveStaticInitializer(InstanceInfo info)
-        {
-            return _wrappedLoader.ResolveStaticInitializer(info);
-        }
-
-        public IInstructionGenerator<MethodID, InstanceInfo> GetGenerator(VersionedName methodName, MethodID method, InstanceInfo[] instanceArgumentInfo)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
+             
 
         #region AssemblyProvider implementation
 
@@ -96,7 +50,7 @@ namespace TypeSystem
             //TODO better method resolving
             var name = Name.From(method, staticArgumentInfo);
 
-            if (_directMethods.ContainsKey(name.Name))
+            if (DirectMethods.ContainsKey(name.Name))
             {
                 return name.Name;
             }
@@ -105,11 +59,11 @@ namespace TypeSystem
             return null;
         }
 
-        protected override IInstructionGenerator getGenerator(string methodName)
+        protected override GeneratorBase getGenerator(string methodName)
         {
-            if (_directMethods.ContainsKey(methodName))
+            if (DirectMethods.ContainsKey(methodName))
             {
-                return _directMethods[methodName].Generator;
+                return DirectMethods[methodName].Generator;
             }
             return null;
         }
@@ -117,7 +71,7 @@ namespace TypeSystem
         public override SearchIterator CreateRootIterator()
         {
 
-            return new HashIterator(_directMethods);
+            return new HashIterator(DirectMethods);
         }
 
         #endregion
@@ -156,7 +110,7 @@ namespace TypeSystem
 
         private void addDirectMethod(MethodItem method)
         {            
-            _directMethods.Add(method.Info.Path, method);
+            DirectMethods.Add(method.Info.Path, method);
         }
 
         private DirectMethod<MethodID, InstanceInfo> generateDirectMethod(MethodInfo method)
@@ -212,7 +166,7 @@ namespace TypeSystem
 
         private bool isCached(VersionedName name)
         {
-            return _directMethods.ContainsKey(name.Name);
+            return DirectMethods.ContainsKey(name.Name);
         }
 
 

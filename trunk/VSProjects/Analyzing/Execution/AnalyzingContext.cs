@@ -19,7 +19,7 @@ namespace Analyzing.Execution
         /// <summary>
         /// Loader used for loading and resolving methods and type descriptions
         /// </summary>
-        private readonly IInstructionLoader<MethodID,InstanceInfo> _loader;
+        private readonly LoaderBase<MethodID,InstanceInfo> _loader;
         /// <summary>
         /// Execution entry context
         /// </summary>
@@ -47,7 +47,7 @@ namespace Analyzing.Execution
         internal Instance LastReturnValue { get; private set; }
 
 
-        internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID,InstanceInfo> loader)
+        internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID,InstanceInfo> loader)
         {
             _settings = settings;
             _loader = loader;
@@ -82,7 +82,7 @@ namespace Analyzing.Execution
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(VersionedName name, IInstructionGenerator<MethodID,InstanceInfo> generator)
+        internal void FetchCallInstructions(VersionedName name, GeneratorBase<MethodID,InstanceInfo> generator)
         {
             var argumentValues = getArgumentValues(_preparedArguments);
             //preparing is just for single call
@@ -130,7 +130,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="methodName">Name of method generator</param>
         /// <returns>Instruction generator for given name</returns>
-        internal IInstructionGenerator<MethodID,InstanceInfo> GetGenerator(VersionedName methodName)
+        internal GeneratorBase<MethodID,InstanceInfo> GetGenerator(VersionedName methodName)
         {
             return _loader.GetGenerator(methodName);
         }

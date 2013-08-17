@@ -16,7 +16,7 @@ namespace AssemblyProviders.CSharp
         }
 
 
-        protected override IInstructionGenerator getGenerator(string methodName)
+        protected override GeneratorBase getGenerator(string methodName)
         {
             throw new NotImplementedException();
         }

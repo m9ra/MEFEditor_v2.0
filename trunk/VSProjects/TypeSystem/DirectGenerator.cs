@@ -8,7 +8,7 @@ using Analyzing;
 
 namespace TypeSystem
 {
-    class DirectGenerator:IInstructionGenerator
+    class DirectGenerator:GeneratorBase
     {
         private readonly DirectMethod<MethodID, InstanceInfo> _method;
 
@@ -17,7 +17,7 @@ namespace TypeSystem
             _method = directMethod;
         }
 
-        public void Generate(EmitterBase<MethodID, InstanceInfo> emitter)
+        protected override void generate(EmitterBase<MethodID, InstanceInfo> emitter)
         {
             emitter.DirectInvoke(_method);
         }

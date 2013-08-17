@@ -93,6 +93,10 @@ var result=obj.CustomMethod(argument);
         [TestMethod]
         public void Emit_Fibonacci()
         {
+            //fib(24) Time elapsed: 16s (without caching)
+            //fib(24) Time elapsed: 15s (IInstructionLoader, IInstructionGenerator to abstract classes)
+            //fib(24) Time elapsed:  1s (with caching)
+            //fib(29) Time elapsed: 14s (with caching)
             AssemblyUtils.Run(@"
 var result=fib(7);
 

@@ -10,7 +10,7 @@ using Analyzing;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    class ParsedGenerator:IInstructionGenerator
+    class ParsedGenerator:GeneratorBase
     {
         static readonly SyntaxParser Parser = new SyntaxParser();
 
@@ -39,7 +39,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             _services = services;
         }
 
-        public void Generate(EmitterBase<MethodID, InstanceInfo> emitter)
+        protected override void generate(EmitterBase<MethodID, InstanceInfo> emitter)
         {
             var method = Parser.Parse(_methodSource);
             Compiler.GenerateInstructions(method,Info,emitter,_services);

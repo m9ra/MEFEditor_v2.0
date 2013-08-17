@@ -9,10 +9,10 @@ namespace TypeSystem
 
     public class MethodItem
     {
-        public readonly IInstructionGenerator Generator;
+        public readonly GeneratorBase Generator;
         public readonly TypeMethodInfo Info;
 
-        public MethodItem(IInstructionGenerator generator, TypeMethodInfo info)
+        public MethodItem(GeneratorBase generator, TypeMethodInfo info)
         {
             Generator = generator;
             Info = info;

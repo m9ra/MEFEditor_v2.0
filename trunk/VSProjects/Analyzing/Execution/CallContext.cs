@@ -9,14 +9,14 @@ namespace Analyzing.Execution
     public class CallContext<MethodID, InstanceInfo>
     {
         private Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
-        private InstructionBase<MethodID, InstanceInfo>[] _callInstructions;
+        public readonly InstructionBatch<MethodID, InstanceInfo> Program;
         private uint _instructionPointer;
         private LinkedList<CallContext<MethodID, InstanceInfo>> _childContexts = new LinkedList<CallContext<MethodID, InstanceInfo>>();
 
         /// <summary>
         /// Determine that call doesn't have next instructions to proceed
         /// </summary>
-        internal bool IsCallEnd { get { return _instructionPointer >= _callInstructions.Length; } }
+        internal bool IsCallEnd { get { return _instructionPointer >= Program.Instructions.Length; } }
 
         internal Instance[] ArgumentValues { get; private set; }
 
@@ -24,61 +24,12 @@ namespace Analyzing.Execution
 
         public readonly VersionedName Name;
 
-        public string ProgramCode
-        {
-            get
-            {
-                var result = new StringBuilder();
-                InstructionInfo currentInfo = null;
+       
 
-                var line = 0;
-                foreach (var instruction in _callInstructions)
-                {
-                    if (instruction.Info != currentInfo)
-                    {
-                        currentInfo = instruction.Info;
-                        if (currentInfo.Comment != null)
-                            result.AppendLine(currentInfo.Comment);
-                    }
-
-                    var pointingLabel=getLabelToLine(line);
-                    if (pointingLabel != null)
-                    {
-                        result.AppendLine(pointingLabel.ToString());
-                    }
-
-                    result.AppendLine(instruction.ToString());
-                    ++line;
-                }
-
-                return result.ToString();
-            }
-        }
-
-        private Label getLabelToLine(int line)
-        {
-            foreach (var instr in _callInstructions)
-            {
-                var jmp = instr as Instructions.Jump<MethodID, InstanceInfo>;
-                var jmpif = instr as Instructions.ConditionalJump<MethodID, InstanceInfo>;
-
-                Label label=null;
-                if (jmp != null)
-                    label = jmp.Target;
-                if (jmpif != null)
-                    label = jmpif.Target;
-
-                if (label == null)
-                    continue;
-
-                if (label.InstructionOffset == line)
-                    return label;
-            }
-            return null;
-        }
+  
 
 
-        internal CallContext(IMachineSettings<InstanceInfo> settings, IInstructionLoader<MethodID, InstanceInfo> loader,VersionedName name, IInstructionGenerator<MethodID, InstanceInfo> generator, Instance[] argumentValues)
+        internal CallContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader,VersionedName name, GeneratorBase<MethodID, InstanceInfo> generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
             Name = name;
@@ -86,7 +37,7 @@ namespace Analyzing.Execution
             var emitter = new CallEmitter<MethodID, InstanceInfo>(settings, loader);
             generator.Generate(emitter);
 
-            _callInstructions = emitter.GetEmittedInstructions();
+            Program = emitter.GetEmittedInstructions();
             _instructionPointer = 0;
         }
 
@@ -118,7 +69,7 @@ namespace Analyzing.Execution
                 return null;
             }
 
-            return _callInstructions[_instructionPointer++];
+            return Program.Instructions[_instructionPointer++];
         }
 
         public bool Contains(VariableName targetVariable)

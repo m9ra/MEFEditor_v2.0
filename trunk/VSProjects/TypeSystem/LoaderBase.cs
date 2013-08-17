@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing;
+
 namespace TypeSystem
 {
-    public interface IInstructionGenerator:Analyzing.IInstructionGenerator<MethodID,InstanceInfo>
+    public abstract class LoaderBase:LoaderBase<MethodID,InstanceInfo>
     {
     }
 }

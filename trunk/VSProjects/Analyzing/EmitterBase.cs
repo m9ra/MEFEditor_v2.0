@@ -30,6 +30,18 @@ namespace Analyzing
         /// <returns>Created label</returns>
         public abstract Label GetTemporaryLabel(string description = "");
 
+        /// <summary>
+        /// Get batch with instructions that has been emitted. Can be used for caching emitted instructions.
+        /// </summary>
+        /// <returns>Emitted instructions</returns>
+        public abstract InstructionBatch<MethodID, InstanceInfo> GetEmittedInstructions();
+
+        /// <summary>
+        /// Insert given batch of instructions (as they were emitted)
+        /// </summary>
+        /// <param name="instructions">Inserted instructions</param>
+        public abstract void InsertInstructions(InstructionBatch<MethodID, InstanceInfo> instructions);
+
         public abstract void AssignLiteral(string target, object literal);
 
         public abstract void Assign(string targetVar, string sourceVar);
