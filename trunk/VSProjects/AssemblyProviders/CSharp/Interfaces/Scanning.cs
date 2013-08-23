@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using AssemblyProviders.CSharp.Primitives;
+
 namespace AssemblyProviders.CSharp.Interfaces
 {
     /// <summary>
@@ -37,7 +39,7 @@ namespace AssemblyProviders.CSharp.Interfaces
         /// <summary>
         /// Token position in source code.
         /// </summary>
-        IPosition Position { get; }
+        Position Position { get; }
         /// <summary>
         /// Previous token.
         /// </summary>

@@ -21,13 +21,12 @@ namespace Analyzing.Execution
         internal Instance[] ArgumentValues { get; private set; }
 
         public IEnumerable<CallContext<MethodID, InstanceInfo>> ChildContexts { get { return _childContexts; } }
+        public IEnumerable<VariableName> Variables { get { return _variables.Keys; } }
+        
 
         public readonly VersionedName Name;
 
        
-
-  
-
 
         internal CallContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader,VersionedName name, GeneratorBase<MethodID, InstanceInfo> generator, Instance[] argumentValues)
         {

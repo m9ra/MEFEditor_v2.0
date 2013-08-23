@@ -8,11 +8,11 @@ using Analyzing;
 
 namespace TypeSystem
 {
-    class DirectGenerator:GeneratorBase
+    public class DirectGenerator:GeneratorBase
     {
         private readonly DirectMethod<MethodID, InstanceInfo> _method;
 
-        internal DirectGenerator(DirectMethod<MethodID, InstanceInfo> directMethod)
+        public DirectGenerator(DirectMethod<MethodID, InstanceInfo> directMethod)
         {
             _method = directMethod;
         }

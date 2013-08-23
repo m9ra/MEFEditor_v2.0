@@ -128,11 +128,11 @@ namespace AssemblyProviders.CSharp.Interfaces
         /// <summary>
         /// End position of node.
         /// </summary>
-        IPosition End { get; }
+        Position End { get; }
         /// <summary>
         /// Start position of node.
         /// </summary>
-        IPosition Start { get; }
+        Position Start { get; }
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ namespace AssemblyProviders.CSharp.Interfaces
         /// <summary>
         /// Position where place next argument.
         /// </summary>
-        IPosition NextArgument { get; }
+        Position NextArgument { get; }
     }
 
     /// <summary>

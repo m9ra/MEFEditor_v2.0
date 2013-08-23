@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using TypeSystem;
 using Analyzing;
 
@@ -14,38 +16,84 @@ namespace UnitTesting.TypeSystem_TestUtils
 {
     public static class AssemblyUtils
     {
-        public static readonly string EntryMethodName="EntryMethod";
+        public static readonly string EntryMethodName = "EntryMethod";
 
-        public static ParsedAssembly Run(string entryMethod)
+        public static TestingAssembly Run(string entryMethod)
         {
-            var assembly = new ParsedAssembly();
+            var assembly = new TestingAssembly();
             assembly.AddMethod(EntryMethodName, entryMethod);
 
             return assembly;
         }
 
-        public static Analyzing.AnalyzingResult<MethodID,InstanceInfo> GetResult(this ParsedAssembly assembly)
+        public static AnalyzingResult<MethodID, InstanceInfo> GetResult(this TestingAssembly assembly)
         {
-            var directAssembly=SettingsProvider.CreateDirectAssembly();
-            var testAssemblies = new TestAssemblyCollection(assembly,directAssembly);
+            var directAssembly = SettingsProvider.CreateDirectAssembly();
+            var testAssemblies = new TestAssemblyCollection(assembly, directAssembly);
             var loader = new AssemblyLoader(testAssemblies);
             var entryLoader = new EntryPointLoader(
                 new VersionedName(EntryMethodName, 0)
                 , loader);
 
 
-       //     var direct=new DirectCallLoader(entryLoader,new Settings(typeof(int),typeof(string)));
+
+
 
             var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
-            return machine.Run(entryLoader);
+            var result = machine.Run(entryLoader);
+
+            processEdits(result, assembly.EditActions);
+
+            return result;
         }
 
-        internal static TestCase AssertVariable(this ParsedAssembly assembly, string variableName)
+        /// <summary>
+        /// Test that entry source is equivalent to given source after edit actions
+        /// </summary>
+        /// <param name="source">Expected source</param>
+        public static void AssertSourceEquivalence(this TestingAssembly assembly,string source)
         {
             var result = assembly.GetResult();
-            
+            var editedSource=assembly.GetSource(EntryMethodName);
+
+            var nSource = normalizeCode("{"+source+"}");
+            var nEditedSource = normalizeCode(editedSource);
+
+            Assert.AreEqual(nSource,nEditedSource);
+        }
+
+        private static string normalizeCode(string code)
+        {
+            return code.Replace("\n", "").Replace("\r", "").Replace(" ", "");
+        }
+
+        internal static TestCase AssertVariable(this TestingAssembly assembly, string variableName)
+        {
+            var result = assembly.GetResult();
+
             return new TestCase(result, variableName);
         }
-        
+
+        private static void processEdits(AnalyzingResult<MethodID, InstanceInfo> result, IEnumerable<Tuple<VariableName, string>> editActions)
+        {
+            foreach (var editAction in editActions)
+            {
+                var inst = result.EntryContext.GetValue(editAction.Item1);
+                var edited = false;
+                foreach (var edit in inst.Edits)
+                {
+                    if (edit.Name != editAction.Item2)
+                        continue;
+
+                    edit.Transformation.Apply();
+                    edited = true;
+                    break;
+                }
+
+                if (!edited)
+                    throw new KeyNotFoundException("Specified edit hasn't been found");
+            }
+        }
+
     }
 }

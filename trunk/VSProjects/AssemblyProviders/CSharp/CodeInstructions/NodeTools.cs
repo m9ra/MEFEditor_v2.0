@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 
 using AssemblyProviders.CSharp.Interfaces;
+using AssemblyProviders.CSharp.Primitives;
 
 namespace AssemblyProviders.CSharp.CodeInstructions
 {
     static class NodeTools
     {
-        public static IPosition NodeEnding(INodeAST node)
+        public static Position NodeEnding(INodeAST node)
         {            
             var next = node.EndingToken.Next;
             if (next == null)
@@ -20,7 +21,7 @@ namespace AssemblyProviders.CSharp.CodeInstructions
             
             return next.Position;
         }
-        public static IPosition NodeStart(INodeAST node)
+        public static Position NodeStart(INodeAST node)
         {
             var start = node.StartingToken.Previous;
             if (start == null)
@@ -31,7 +32,7 @@ namespace AssemblyProviders.CSharp.CodeInstructions
             return start.Position.Shift(start.Value.Length);
         }
 
-        internal static IPosition NodeBlockEnding(INodeAST node)
+        internal static Position NodeBlockEnding(INodeAST node)
         {
             //blocks need double next
             var next = node.EndingToken.Next;

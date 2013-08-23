@@ -8,6 +8,7 @@ using Analyzing;
 using TypeSystem;
 
 using AssemblyProviders.CSharp.Interfaces;
+using AssemblyProviders.CSharp.Transformations;
 
 namespace AssemblyProviders.CSharp.Compiling
 {
@@ -52,7 +53,9 @@ namespace AssemblyProviders.CSharp.Compiling
 
         protected RValueProvider(Context context) : base(context) { }
 
-        
+
+
+        public abstract void Generate();
     }
 
 
@@ -102,6 +105,11 @@ namespace AssemblyProviders.CSharp.Compiling
             E.AssignLiteral(temporaryName, _literal);
             return temporaryName;
         }
+
+        public override void Generate()
+        {
+            //Nothing to generate
+        }
     }
 
     class VariableRValue: RValueProvider
@@ -134,16 +142,23 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             return _variableName;
         }
+
+        public override void Generate()
+        {
+            //Nothing to generate
+        }
     }
 
     class CallRValue : RValueProvider
     {
         private TypeMethodInfo _methodInfo;
         private RValueProvider[] _arguments;
+        private INodeAST _callNode;
 
-        public CallRValue(TypeMethodInfo methodInfo,RValueProvider[] arguments, Context context)
+        public CallRValue(INodeAST callNode,TypeMethodInfo methodInfo,RValueProvider[] arguments, Context context)
             : base(context)
         {
+            _callNode = callNode;
             _methodInfo = methodInfo;
             _arguments = arguments;
         }
@@ -188,7 +203,8 @@ namespace AssemblyProviders.CSharp.Compiling
             else
             {
                 //TODO Resolve called object
-                E.Call(new MethodID(_methodInfo.Path),"this", argVariables.ToArray());
+                var builder=E.Call(new MethodID(_methodInfo.Path),"this", argVariables.ToArray());
+                builder.SetTransformationProvider(new CallProvider(_callNode));
             }
         }
 
@@ -203,6 +219,11 @@ namespace AssemblyProviders.CSharp.Compiling
             AssignInto(tmp);
 
             return tmp.Storage;
+        }
+
+        public override void Generate()
+        {
+            generateCall();
         }
     }
 }

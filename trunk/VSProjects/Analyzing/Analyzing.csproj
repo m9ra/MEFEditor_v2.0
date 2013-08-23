@@ -40,6 +40,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzingResult.cs" />
+    <Compile Include="CallBuilder.cs" />
+    <Compile Include="Editing\CallTransformProvider.cs" />
+    <Compile Include="Editing\Edit.cs" />
+    <Compile Include="Editing\EmptyCallTransformProvider.cs" />
+    <Compile Include="Editing\EmptyTransformation.cs" />
+    <Compile Include="Editing\Transformation.cs" />
+    <Compile Include="Editing\TransformProvider.cs" />
+    <Compile Include="EditsProvider.cs" />
     <Compile Include="Execution\AnalyzingContext.cs" />
     <Compile Include="Execution\CallContext.cs" />
     <Compile Include="Execution\CallEmitter.cs" />

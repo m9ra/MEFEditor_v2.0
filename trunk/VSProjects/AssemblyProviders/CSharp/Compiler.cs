@@ -120,6 +120,9 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.prefixOperator:
                     generatePrefix(statement);
                     break;
+                case NodeTypes.call:
+                    generateCall(statement);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -151,6 +154,13 @@ namespace AssemblyProviders.CSharp
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        private void generateCall(INodeAST statement)
+        {
+            var call = resolveRHierarchy(statement);
+            //TODO - we dont need return value
+            call.Generate();
         }
         #endregion
 
@@ -354,7 +364,7 @@ namespace AssemblyProviders.CSharp
                     var methodInfo = searcher.FoundResult.First();
 
                     var arguments = getArguments(currNode);
-                    call = new CallRValue(methodInfo, arguments, _context);
+                    call = new CallRValue(currNode,methodInfo, arguments, _context);
                     return true;
                 }
 

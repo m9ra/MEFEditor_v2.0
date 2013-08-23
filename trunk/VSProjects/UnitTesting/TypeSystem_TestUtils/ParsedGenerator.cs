@@ -16,11 +16,11 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly TypeMethodInfo Info;
 
-        readonly string _methodSource;
+        public readonly Source Source;
 
         TypeServices _services;
 
-        public ParsedGenerator(TypeMethodInfo info,string source)
+        public ParsedGenerator(TypeMethodInfo info,Source source)
         {
             if (info == null)
                 throw new ArgumentNullException("info");
@@ -30,7 +30,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
             
 
-            _methodSource = source;
+            Source = source;
             Info = info;
         }
 
@@ -41,7 +41,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         protected override void generate(EmitterBase<MethodID, InstanceInfo> emitter)
         {
-            var method = Parser.Parse(_methodSource);
+            var method = Parser.Parse(Source);
             Compiler.GenerateInstructions(method,Info,emitter,_services);
         }
     }

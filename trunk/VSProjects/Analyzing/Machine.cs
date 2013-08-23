@@ -53,6 +53,7 @@ namespace Analyzing
                     break;
                 }
 
+                context.Prepare(instruction);
                 instruction.Execute(context);
             }
 

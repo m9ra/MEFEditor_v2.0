@@ -19,8 +19,8 @@ namespace AssemblyProviders.CSharp.CodeInstructions
         public ICodeValueProvider ReturnValue { get; private set; }
         public NodeKind Kind { get { return NodeKind.fReturn; } }
 
-        public IPosition End { get; private set; }
-        public IPosition Start { get; private set; }
+        public Position End { get; private set; }
+        public Position Start { get; private set; }
 
         public bool IsStatic { get { return false; } }
     }

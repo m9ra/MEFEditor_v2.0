@@ -52,7 +52,6 @@
     <Compile Include="CSharp\Compiling\ValueProviders.cs" />
     <Compile Include="CSharp\Interfaces\AST.cs" />
     <Compile Include="CSharp\Interfaces\CodeInstructions.cs" />
-    <Compile Include="CSharp\Interfaces\IPosition.cs" />
     <Compile Include="CSharp\Interfaces\Scanning.cs" />
     <Compile Include="CSharp\LanguageDefinitions\CSharpSyntax.cs" />
     <Compile Include="CSharp\LanguageDefinitions\Layouts.cs" />
@@ -62,8 +61,11 @@
     <Compile Include="CSharp\Primitives\CodeNode.cs" />
     <Compile Include="CSharp\Primitives\NodeException.cs" />
     <Compile Include="CSharp\Primitives\ParsingPrimitives.cs" />
+    <Compile Include="CSharp\Source.cs" />
     <Compile Include="CSharp\SyntaxParser.cs" />
     <Compile Include="CSharp\ProjectProvider.cs" />
+    <Compile Include="CSharp\Transformations\CallProvider.cs" />
+    <Compile Include="CSharp\Transformations\SourceTransformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

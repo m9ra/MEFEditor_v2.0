@@ -20,9 +20,9 @@ namespace AssemblyProviders.CSharp
         /// <param name="services">Available parsing services.</param>
         /// <param name="invokeInfo">Instructions to parse.</param>
         /// <returns>Syntax abstract tree instructions.</returns>
-        public CodeNode Parse(string code)
+        public CodeNode Parse(Source source)
         {
-            var lexer = new Lexer(code);
+            var lexer = new Lexer(source);
             _language = new CSharpSyntax(lexer, _getTree);
 
             return _getTree();                        

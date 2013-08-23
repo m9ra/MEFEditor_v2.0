@@ -4,14 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing.Editing;
+
 namespace Analyzing.Execution
 {
     public class Instance
     {
+        List<Edit> _edits = new List<Edit>();
+
         internal bool IsDirty { get; private set; }
 
         public object DirectValue { get; private set; }
 
+        public IEnumerable<Edit> Edits { get { return _edits; } }
 
 
         public Instance(object directValue)
@@ -28,6 +33,14 @@ namespace Analyzing.Execution
             else
             {
                 return base.ToString();
+            }
+        }
+
+        internal void AddEdit(Edit edit)
+        {
+            if (!edit.IsEmpty)
+            {
+                _edits.Add(edit);
             }
         }
     }

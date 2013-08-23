@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing.Execution.Instructions;
+
 namespace Analyzing.Execution
 {
     public class AnalyzingContext<MethodID,InstanceInfo>
@@ -34,7 +36,9 @@ namespace Analyzing.Execution
         /// </summary>
         private VariableName[] _preparedArguments = null;
 
-
+        /// <summary>
+        /// Array of arguments available for current call
+        /// </summary>
         public Instance[] CurrentArguments { get { return CurrentCall.ArgumentValues; } }
         /// <summary>
         /// Determine that execution has ended now
@@ -46,6 +50,10 @@ namespace Analyzing.Execution
         /// </summary>
         internal Instance LastReturnValue { get; private set; }
 
+        /// <summary>
+        /// Provider for Edits handling
+        /// </summary>
+        public readonly EditsProvider Edits = new EditsProvider();
 
         internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID,InstanceInfo> loader)
         {
@@ -184,6 +192,14 @@ namespace Analyzing.Execution
         internal bool IsTrue(VariableName condition)
         {
             return _settings.IsTrue(GetValue(condition));
+        }
+
+        internal void Prepare(InstructionBase<MethodID, InstanceInfo> instruction)
+        {
+            var call=instruction as Call<MethodID,InstanceInfo>;
+            if(call!=null){
+                Edits.SetProvider(call.TransformProvider);
+            }            
         }
     }
 }

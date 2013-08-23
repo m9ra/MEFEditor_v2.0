@@ -24,7 +24,8 @@ namespace AssemblyProviders.CSharp
 
         void AddMethod(MethodID method, string code)
         {
-            var parsed=parser.Parse(code);
+            var source = new Source(code);
+            var parsed=parser.Parse(source);
             _methods.Add(method, parsed);
         }
 

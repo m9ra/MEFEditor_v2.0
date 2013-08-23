@@ -81,7 +81,7 @@ namespace Analyzing.Execution
             emitInstruction(new AssignReturnValue<MethodID, InstanceInfo>(target));
         }
 
-        public override void StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)
+        public override CallBuilder<MethodID, InstanceInfo> StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)
         {
             var inputArgumentVars = translateVariables(inputVariables);
             var sharedThisVar = getSharedVar(typeFullname);
@@ -99,9 +99,11 @@ namespace Analyzing.Execution
             emitInstruction(lateInitialization);
             emitInstruction(preCall);
             emitInstruction(call);
+
+            return new CallBuilder<MethodID, InstanceInfo>(call);
         }
 
-        public override void Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
+        public override CallBuilder<MethodID,InstanceInfo> Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
         {
             var thisVar = getVariable(thisObjVariable);
             var thisType = variableInfo(thisVar);
@@ -116,6 +118,8 @@ namespace Analyzing.Execution
 
             emitInstruction(preCall);
             emitInstruction(call);
+
+            return new CallBuilder<MethodID,InstanceInfo>(call);
         }
 
 

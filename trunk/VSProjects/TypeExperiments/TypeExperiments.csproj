@@ -68,6 +68,7 @@
     <Compile Include="Core\TypeName.cs" />
     <Compile Include="ExampleClass.cs" />
     <Compile Include="Reflection\Definitions\ILWriter.cs" />
+    <Compile Include="ResearchSources.cs" />
     <Compile Include="TypeBuilding\MethodBuilder.cs" />
     <Compile Include="TypeBuilding\RuntimeDefinition.cs" />
     <Compile Include="TypeBuilding\StringModifyWriter.cs" />

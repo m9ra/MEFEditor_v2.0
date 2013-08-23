@@ -30,7 +30,7 @@ namespace AssemblyProviders.CSharp
         int _current;
         List<Token> _tokens = new List<Token>();
 
-        readonly string _source;
+        readonly Source _source;
 
         /// <summary>
         /// Determine if there are next tokens.
@@ -57,10 +57,10 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Create lexer for given object and language definition.
         /// </summary>        
-        internal Lexer(string source)
+        internal Lexer(Source source)
         {
             _source = source;
-            createTokens(source);
+            createTokens(source.Code);
         }
 
         private void createTokens(string code)

@@ -47,47 +47,20 @@ namespace TypeExperiments
         /// </summary>
         static void Main()
         {
-            var entry = AssemblyUtils.Run(/*@"
-var test=StaticClass.StaticMethod(""aaa"",153);
-var test2=test;
-var test3=4;
+            //force JIT to precompile before measuring
+            var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
-if(true){
-    test3=2;
-}else{
-    test3=1;
-}
-")
- 
- .AddMethod("StaticClass.StaticMethod", @"
-        return arg1;
-", true, 
- new ParameterInfo("arg1",new TypeSystem.InstanceInfo("System.String")),
- new ParameterInfo("arg2",new TypeSystem.InstanceInfo("System.Int32"))
- )
- 
- 
- .AddMethod("StaticClass.StaticClass", @"
-    return ""Initialization value"";
-", true)
- */
+            var watch=Stopwatch.StartNew();
+            var entry = ResearchSources.EditProvider().GetResult().EntryContext;
+            watch.Stop();
 
-@"
-var result=fib(18);
 
-").AddMethod("fib", @"    
-    if(n<2){
-        return 1;
-    }else{
-        return fib(n-1)+fib(n-2);
-    }
-", arguments: new ParameterInfo("n", new InstanceInfo("System.Int32")))
-  
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("ENTRY CONTEXT - Variable values");
+            PrinterIAL.PrintVariables(entry);
 
- .GetResult().EntryContext;
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("ENTRY CONTEXT");
+            Console.ForegroundColor = ConsoleColor.Red;            
+            Console.WriteLine("\n\nENTRY CONTEXT");
             PrinterIAL.Print(entry.Program.Code);
             Console.WriteLine();
 
@@ -98,6 +71,10 @@ var result=fib(18);
                 PrinterIAL.Print(context.Program.Code);
                 Console.WriteLine();
             }
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Elapsed time: {0}ms",watch.ElapsedMilliseconds);
 
             Console.ReadKey();
 

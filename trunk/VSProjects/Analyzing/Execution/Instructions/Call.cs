@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing.Editing;
+
 namespace Analyzing.Execution.Instructions
 {
     class Call<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
     {
-        private readonly VersionedName _methodGeneratorName;        
+        private readonly VersionedName _methodGeneratorName;
 
+        internal CallTransformProvider TransformProvider { get; set; }
+        
         internal Call(VersionedName methodGeneratorName)
         {
             _methodGeneratorName = methodGeneratorName;            

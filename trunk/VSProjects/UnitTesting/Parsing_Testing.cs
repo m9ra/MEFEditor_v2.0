@@ -20,11 +20,11 @@ namespace UnitTesting
         public void BasicParsing()
         {
             var parser = new SyntaxParser();
-            var result = parser.Parse(@"{
+            var result = parser.Parse(new Source(@"{
 var test=System.String.test;
 var test2=System.String.test();
 }
-");
+"));
         }
 
 
@@ -86,7 +86,7 @@ var argument=""Argument value"";
 var result=obj.CustomMethod(argument);
 ").AddMethod("System.String.CustomMethod", @"
     return parameterName;
-",arguments: new ParameterInfo("parameterName",new InstanceInfo("System.String")))
+",parameters: new ParameterInfo("parameterName",new InstanceInfo("System.String")))
 .AssertVariable("result").HasValue("Argument value");
         }
 
@@ -106,12 +106,33 @@ var result=fib(7);
     }else{
         return fib(n-1)+fib(n-2);
     }
-", arguments: new ParameterInfo("n", new InstanceInfo("System.Int32")))
+", parameters: new ParameterInfo("n", new InstanceInfo("System.Int32")))
 
 
 .AssertVariable("result").HasValue(13);
         }
 
+
+        [TestMethod]
+        public void Edit_SimpleReject()
+        {
+            AssemblyUtils.Run(@"
+var arg=""input"";
+DirectMethod(arg);
+
+").AddMethod("DirectMethod", (c) =>
+ {
+     var arg = c.CurrentArguments[1];
+     c.Edits.RemoveArgument(arg, 1, ".reject");
+ }, false, new ParameterInfo("parameter", new InstanceInfo("System.String")))
+
+.AddEditAction("arg", ".reject").AssertSourceEquivalence(@"
+
+var arg=""input"";
+DirectMethod();
+");
+
+        }
 
     }
 }

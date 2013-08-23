@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing;
+using Analyzing.Execution;
+
+using TypeSystem;
+
 namespace TypeExperiments
 {
     /// <summary>
@@ -12,6 +17,7 @@ namespace TypeExperiments
     static class PrinterIAL
     {
         static ConsoleColor BySeparatorColor = ConsoleColor.Red;
+        static ConsoleColor EqualsSeparatorColor = ConsoleColor.Red;
         static ConsoleColor IfSeparatorColor = ConsoleColor.Red;
         static ConsoleColor ArgumentDelimiterColor = ConsoleColor.Red;
 
@@ -28,6 +34,18 @@ namespace TypeExperiments
         static ConsoleColor VariableColor = ConsoleColor.DarkYellow;
         static ConsoleColor LabelColor = ConsoleColor.Yellow;
 
+        internal static void PrintVariables(CallContext<MethodID, InstanceInfo> context)
+        {
+            foreach (var variable in context.Variables)
+            {
+                var value=context.GetValue(variable);
+                var args=string.Format("{0} = {1}",variable,value);
+
+                printSeparatedArguments(args, "=", EqualsSeparatorColor);
+                Console.WriteLine();
+            }
+        }
+        
         public static void Print(string code)
         {
             var lines = code.Split('\n');
@@ -170,5 +188,7 @@ namespace TypeExperiments
             Console.ForegroundColor = color;
             Console.Write(text, formatArgs);
         }
+
+ 
     }
 }

@@ -37,7 +37,7 @@ namespace AssemblyProviders.CSharp.CodeInstructions
 
         public NodeKind Kind { get { return NodeKind.argument; } }
 
-        public IPosition End { get; private set; }
-        public IPosition Start { get; private set; }
+        public Position End { get; private set; }
+        public Position Start { get; private set; }
     }
 }

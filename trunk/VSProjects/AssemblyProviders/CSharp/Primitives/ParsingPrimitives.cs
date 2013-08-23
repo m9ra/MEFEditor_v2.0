@@ -9,28 +9,31 @@ using AssemblyProviders.CSharp.Interfaces;
 
 namespace AssemblyProviders.CSharp.Primitives
 {
+
+
+
     /// <summary>
     /// Implementation for IPosition.
     /// </summary>
-    class Position : IPosition
+    public class Position
     {
-        internal Position(string source,int offset)
+        internal Position(Source source,int offset)
         {
             Offset = offset;
             Source = source;
         }
 
         public int Offset { get; private set; }
-        public string Source { get; private set; }
+        public Source Source { get; private set; }
 
-        public IPosition Shift(int offset)
+        public Position Shift(int offset)
         {
             return new Position(Source,Offset + offset);
         }
 
-        public string GetStrip(IPosition position)
+        public string GetStrip(Position position)
         {
-            return Source.Substring(Offset, position.Offset - Offset);
+            return Source.Code.Substring(Offset, position.Offset - Offset);
         }
     }
 
@@ -39,7 +42,7 @@ namespace AssemblyProviders.CSharp.Primitives
     /// </summary>
     class Token : IToken
     {
-        public Token(string value, int position, Token previousToken,string source)
+        public Token(string value, int position, Token previousToken,Source source)
         {
             this.Value = value;
             this.Previous = previousToken;
@@ -52,7 +55,7 @@ namespace AssemblyProviders.CSharp.Primitives
         public string Value { get; private set; }
 
 
-        public IPosition Position { get; private set; }
+        public Position Position { get; private set; }
 
     }
 }
