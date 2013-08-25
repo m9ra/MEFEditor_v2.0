@@ -42,6 +42,9 @@ namespace UnitTesting.TypeSystem_TestUtils
             var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
             var result = machine.Run(entryLoader);
 
+            foreach (var action in assembly.UserActions)
+                action(result);
+
             processEdits(result, assembly.EditActions);
 
             return result;
@@ -74,18 +77,18 @@ namespace UnitTesting.TypeSystem_TestUtils
             return new TestCase(result, variableName);
         }
 
-        private static void processEdits(AnalyzingResult<MethodID, InstanceInfo> result, IEnumerable<Tuple<VariableName, string>> editActions)
+        private static void processEdits(AnalyzingResult<MethodID, InstanceInfo> result, IEnumerable<EditAction> editActions)
         {
             foreach (var editAction in editActions)
             {
-                var inst = result.EntryContext.GetValue(editAction.Item1);
+                var inst = result.EntryContext.GetValue(editAction.Variable);
                 var edited = false;
                 foreach (var edit in inst.Edits)
                 {
-                    if (edit.Name != editAction.Item2)
+                    if (edit.Name != editAction.Name)
                         continue;
 
-                    edit.Transformation.Apply();
+                    result.TransformationServices.Apply(edit.Transformation);
                     edited = true;
                     break;
                 }

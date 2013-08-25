@@ -16,9 +16,9 @@ namespace UnitTesting.Analyzing_TestUtils
 
     delegate void EmitDirector(EmitterBase<MethodID,InstanceInfo> emitter);
 
-    static class ExecutionUtils
+    public static class ExecutionUtils
     {
-        public static AnalyzingResult<MethodID,InstanceInfo> Run(EmitDirector director)
+        internal static AnalyzingResult<MethodID,InstanceInfo> Run(EmitDirector director)
         {
             var machine = new Machine<MethodID,InstanceInfo>(new MachineSettings());
             var loader = TestLoaderProvider.CreateStandardLoader(director);
@@ -33,6 +33,18 @@ namespace UnitTesting.Analyzing_TestUtils
         internal static MethodID Method(this string methodName)
         {
             return new MethodID(methodName);
+        }
+
+        public static IEnumerable<CallContext<MethodID, InstanceInfo>> ChildContexts(this CallContext<MethodID, InstanceInfo> callContext)
+        {
+            var block = callContext.EntryBlock;
+            while (block != null)
+            {
+                foreach (var childContext in block.Calls)
+                {
+                    yield return callContext;
+                }
+            }
         }
     }
 

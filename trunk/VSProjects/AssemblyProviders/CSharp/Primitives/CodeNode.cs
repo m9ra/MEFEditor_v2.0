@@ -157,6 +157,7 @@ namespace AssemblyProviders.CSharp.Primitives
         public void AddArgument(CodeNode node)
         {
             if (node == null) throw new ArgumentNullException("node");
+            node.Parent = this;
             _args.Add(node);
         }
 

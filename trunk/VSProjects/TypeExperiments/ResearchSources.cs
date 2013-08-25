@@ -9,35 +9,56 @@ using UnitTesting.TypeSystem_TestUtils;
 
 using TypeSystem;
 
+using Analyzing;
+using Analyzing.Execution;
+using Analyzing.Editing;
+
 namespace TypeExperiments
 {
     static class ResearchSources
     {
 
+        static Instance EXTERNAL_INPUT;
+
         static internal TestingAssembly EditProvider()
         {
             return AssemblyUtils.Run(@"
-var arg=""input param"";
-var result=DirectMethod(arg);
+                var arg=""input"";
+                DirectMethod(""input2"");
 
-").AddMethod("DirectMethod", (c) =>
- {
-     var thisInst = c.CurrentArguments[0];
-     var arg = c.CurrentArguments[1];
-//     c.Edits.AppendArgument(thisInst, ".accept_System.String");
-     c.Edits.RemoveArgument(arg, 1, ".reject");
-//     c.Edits.ChangeArgument(thisInst, 1, "Set new Value", (inst) => "new value");
+            ")
 
-     var res = c.CreateDirectInstance("Direct result");
-     c.Return(res);
+             .AddMethod("DirectMethod", (c) =>
+             {
+                 var thisInst = c.CurrentArguments[0];
+                 var arg = c.CurrentArguments[1];
+                 c.Edits.AppendArgument(thisInst, ".accept", (t) => acceptInstance(c.Edits, t));
+                 //c.Edits.RemoveArgument(arg, 1, ".reject");
+                 //     c.Edits.ChangeArgument(thisInst, 1, "Set new Value", () => "new value");
 
- }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
- 
- .AddEditAction("arg",".reject");
+                 var res = c.CreateDirectInstance("Direct result");
+                 c.Return(res);
+
+             }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
+
+            .UserAction((c)=>{
+                EXTERNAL_INPUT = c.EntryContext.GetValue(new VariableName("arg"));
+            })
+
+            .AddEditAction("this", ".accept");
         }
 
 
+        static object acceptInstance(EditsProvider<MethodID,InstanceInfo> edits, TransformationServices services)
+        {
+            var variable = edits.GetVariableFor(EXTERNAL_INPUT,services);
+            if (variable == null)
+            {
+                return services.Abort("Cannot get variable for instance");
+            }
 
+            return variable;
+        }
 
         static internal TestingAssembly Fibonacci(int n)
         {

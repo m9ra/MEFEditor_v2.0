@@ -17,7 +17,7 @@ namespace Analyzing.Editing
         public Edit(string name, Transformation transformation)
         {
             Name = name;
-            Transformation = transformation;    
+            Transformation = transformation;
         }
     }
 }

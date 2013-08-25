@@ -9,9 +9,10 @@ namespace Analyzing.Execution
     public class CallContext<MethodID, InstanceInfo>
     {
         private Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
-        public readonly InstructionBatch<MethodID, InstanceInfo> Program;
+
         private uint _instructionPointer;
-        private LinkedList<CallContext<MethodID, InstanceInfo>> _childContexts = new LinkedList<CallContext<MethodID, InstanceInfo>>();
+
+        
 
         /// <summary>
         /// Determine that call doesn't have next instructions to proceed
@@ -20,15 +21,22 @@ namespace Analyzing.Execution
 
         internal Instance[] ArgumentValues { get; private set; }
 
-        public IEnumerable<CallContext<MethodID, InstanceInfo>> ChildContexts { get { return _childContexts; } }
         public IEnumerable<VariableName> Variables { get { return _variables.Keys; } }
-        
+
+        public ExecutedBlock<MethodID, InstanceInfo> CurrentBlock { get; private set; }
+
+        public readonly ExecutedBlock<MethodID, InstanceInfo> EntryBlock;
 
         public readonly VersionedName Name;
 
-       
+        public readonly InstructionBatch<MethodID, InstanceInfo> Program;
 
-        internal CallContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader,VersionedName name, GeneratorBase<MethodID, InstanceInfo> generator, Instance[] argumentValues)
+        
+
+
+
+
+        internal CallContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader, VersionedName name, GeneratorBase<MethodID, InstanceInfo> generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
             Name = name;
@@ -38,6 +46,9 @@ namespace Analyzing.Execution
 
             Program = emitter.GetEmittedInstructions();
             _instructionPointer = 0;
+
+            EntryBlock = new ExecutedBlock<MethodID, InstanceInfo>(Program.Instructions[0].Info,this);
+            CurrentBlock = EntryBlock;
         }
 
         internal void SetValue(VariableName targetVaraiable, Instance value)
@@ -68,7 +79,11 @@ namespace Analyzing.Execution
                 return null;
             }
 
-            return Program.Instructions[_instructionPointer++];
+            var instruction = Program.Instructions[_instructionPointer++];
+            if (instruction.Info != CurrentBlock.Info)
+                setNewBlock(instruction);
+
+            return instruction;
         }
 
         public bool Contains(VariableName targetVariable)
@@ -80,10 +95,19 @@ namespace Analyzing.Execution
         {
             _instructionPointer = target.InstructionOffset;
         }
-        
+
         internal void RegisterCall(CallContext<MethodID, InstanceInfo> call)
         {
-            _childContexts.AddLast(call);
+            CurrentBlock.RegisterCall(call);
         }
+
+        private void setNewBlock(InstructionBase<MethodID, InstanceInfo> instruction)
+        {
+            var newExecutedBlock = new ExecutedBlock<MethodID, InstanceInfo>(instruction.Info,this);
+            CurrentBlock.NextBlock = newExecutedBlock;
+            CurrentBlock = newExecutedBlock;
+        }
+
+
     }
 }

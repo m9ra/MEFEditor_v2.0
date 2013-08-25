@@ -8,7 +8,7 @@ namespace Analyzing.Editing
 {
     class EmptyTransformation : Transformation
     {
-        public override void Apply()
+        protected override void apply(TransformationServices services)
         {
             //nothing to do
         }

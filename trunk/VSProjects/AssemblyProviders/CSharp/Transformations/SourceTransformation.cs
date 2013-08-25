@@ -7,18 +7,20 @@ using System.Threading.Tasks;
 using Analyzing.Editing;
 namespace AssemblyProviders.CSharp.Transformations
 {
+    delegate void TransformAction(TransformationServices services);
+
     class SourceTransformation:Transformation
     {
-        readonly Action _apply;
-        internal SourceTransformation(Action apply)
+        readonly TransformAction _apply;
+        internal SourceTransformation(TransformAction apply)
         {
             if (apply == null)
                 throw new ArgumentNullException();
             _apply = apply;
         }
-        public override void Apply()
+        protected override void apply(TransformationServices services)
         {
-            _apply();
+            _apply(services);
         }
     }
 }

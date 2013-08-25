@@ -43,6 +43,7 @@
     <Compile Include="CallBuilder.cs" />
     <Compile Include="Editing\CallTransformProvider.cs" />
     <Compile Include="Editing\Edit.cs" />
+    <Compile Include="Editing\TransformationServices.cs" />
     <Compile Include="Editing\EmptyCallTransformProvider.cs" />
     <Compile Include="Editing\EmptyTransformation.cs" />
     <Compile Include="Editing\Transformation.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="Execution\AnalyzingContext.cs" />
     <Compile Include="Execution\CallContext.cs" />
     <Compile Include="Execution\CallEmitter.cs" />
+    <Compile Include="Execution\ExecutedBlock.cs" />
     <Compile Include="Execution\Instance.cs" />
     <Compile Include="Execution\InstructionBase.cs" />
     <Compile Include="Execution\Instructions\Assign.cs" />

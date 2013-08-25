@@ -8,7 +8,7 @@ using Analyzing.Execution.Instructions;
 
 namespace Analyzing.Execution
 {
-    public class AnalyzingContext<MethodID,InstanceInfo>
+    public class AnalyzingContext<MethodID, InstanceInfo>
     {
         /// <summary>
         /// Available machine settings
@@ -21,7 +21,7 @@ namespace Analyzing.Execution
         /// <summary>
         /// Loader used for loading and resolving methods and type descriptions
         /// </summary>
-        private readonly LoaderBase<MethodID,InstanceInfo> _loader;
+        private readonly LoaderBase<MethodID, InstanceInfo> _loader;
         /// <summary>
         /// Execution entry context
         /// </summary>
@@ -53,9 +53,9 @@ namespace Analyzing.Execution
         /// <summary>
         /// Provider for Edits handling
         /// </summary>
-        public readonly EditsProvider Edits = new EditsProvider();
+        public EditsProvider<MethodID, InstanceInfo> Edits { get; private set; }
 
-        internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID,InstanceInfo> loader)
+        internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader)
         {
             _settings = settings;
             _loader = loader;
@@ -90,16 +90,16 @@ namespace Analyzing.Execution
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(VersionedName name, GeneratorBase<MethodID,InstanceInfo> generator)
+        internal void FetchCallInstructions(VersionedName name, GeneratorBase<MethodID, InstanceInfo> generator)
         {
             var argumentValues = getArgumentValues(_preparedArguments);
             //preparing is just for single call
             _preparedArguments = null;
-            var call = new CallContext<MethodID, InstanceInfo>(_settings,_loader,name,generator, argumentValues);
+            var call = new CallContext<MethodID, InstanceInfo>(_settings, _loader, name, generator, argumentValues);
 
             if (_entryContext == null)
             {
-                _entryContext = call;                
+                _entryContext = call;
             }
             else
             {
@@ -116,8 +116,9 @@ namespace Analyzing.Execution
         internal InstructionBase<MethodID, InstanceInfo> NextInstruction()
         {
             InstructionBase<MethodID, InstanceInfo> instrution = null;
-            while(!IsExecutionEnd && (instrution=CurrentCall.NextInstrution())==null){
-                popContext();                
+            while (!IsExecutionEnd && (instrution = CurrentCall.NextInstrution()) == null)
+            {
+                popContext();
             }
 
             return instrution;
@@ -129,7 +130,7 @@ namespace Analyzing.Execution
 
             if (_callStack.Count == 0)
             {
-                IsExecutionEnd = true;                
+                IsExecutionEnd = true;
             }
         }
 
@@ -138,7 +139,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="methodName">Name of method generator</param>
         /// <returns>Instruction generator for given name</returns>
-        internal GeneratorBase<MethodID,InstanceInfo> GetGenerator(VersionedName methodName)
+        internal GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
         {
             return _loader.GetGenerator(methodName);
         }
@@ -171,7 +172,7 @@ namespace Analyzing.Execution
         public void Return(Instance returnValue)
         {
             popContext();
-            LastReturnValue = returnValue;                        
+            LastReturnValue = returnValue;
         }
 
         public bool Contains(VariableName targetVariable)
@@ -196,10 +197,18 @@ namespace Analyzing.Execution
 
         internal void Prepare(InstructionBase<MethodID, InstanceInfo> instruction)
         {
-            var call=instruction as Call<MethodID,InstanceInfo>;
-            if(call!=null){
-                Edits.SetProvider(call.TransformProvider);
-            }            
+            var call = instruction as Call<MethodID, InstanceInfo>;
+            if (call == null)
+            {
+                //only calls will have edits provider
+                if (!(instruction is DirectInvoke<MethodID, InstanceInfo>))
+                    //Direct invoke shares edits provider (because we want to get edits on call place)
+                    Edits = null;
+            }
+            else
+            {
+                Edits = new EditsProvider<MethodID, InstanceInfo>(call.TransformProvider,CurrentCall.CurrentBlock);
+            }
         }
     }
 }

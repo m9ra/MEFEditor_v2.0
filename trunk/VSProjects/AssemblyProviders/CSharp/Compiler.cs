@@ -128,20 +128,6 @@ namespace AssemblyProviders.CSharp
             }
         }
 
-        private void generateBinary(INodeAST statement)
-        {
-            switch (statement.Value)
-            {
-                case "=":
-                    var lValue = getLValue(statement.Arguments[0]);
-                    var rValue = getRValue(statement.Arguments[1]);
-
-                    rValue.AssignInto(lValue);
-
-                    break;
-            }
-        }
-
         private void generatePrefix(INodeAST statement)
         {
             switch (statement.Value)
@@ -158,10 +144,16 @@ namespace AssemblyProviders.CSharp
 
         private void generateCall(INodeAST statement)
         {
-            var call = resolveRHierarchy(statement);
-            //TODO - we dont need return value
+            var call = resolveRHierarchy(statement);            
             call.Generate();
         }
+
+        private void generateBinary(INodeAST statement)
+        {
+            var binary= resolveBinary(statement);            
+            binary.Generate();
+        }
+
         #endregion
 
         #region Value providing
@@ -205,6 +197,8 @@ namespace AssemblyProviders.CSharp
 
         private RValueProvider resolveBinary(INodeAST binary)
         {
+            var lNode = binary.Arguments[0];
+            var rNode = binary.Arguments[1];
             string method;
             switch (binary.Value)
             {
@@ -217,13 +211,18 @@ namespace AssemblyProviders.CSharp
                 case "<":
                     method = "System.Int32.lesser_operator";
                     break;
+                case "=":
+                    var lValue = getLValue(lNode);
+                    var rValue = getRValue(rNode);
 
+                    rValue.AssignInto(lValue);                    
+                    return new VariableRValue(lValue.Storage,_context);
                 default:
                     throw new NotImplementedException();
             }
 
-            var lOperand = getRValue(binary.Arguments[0]).GetStorage();
-            var rOperand = getRValue(binary.Arguments[1]).GetStorage();
+            var lOperand = getRValue(lNode).GetStorage();
+            var rOperand = getRValue(rNode).GetStorage();
 
             E.Call(new MethodID(method), lOperand, rOperand);
             var result = E.GetTemporaryVariable();

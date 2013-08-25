@@ -8,6 +8,11 @@ namespace Analyzing.Editing
 {
     public abstract class Transformation
     {
-        public abstract void Apply();
+        protected abstract void apply(TransformationServices services);
+
+        public void Apply(TransformationServices services)
+        {
+            apply(services);
+        }
     }
 }

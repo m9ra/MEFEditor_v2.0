@@ -14,6 +14,7 @@ using TypeExperiments.Reflection.ILAnalyzer;
 using System.Diagnostics;
 
 using TypeSystem;
+using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 using AssemblyProviders.CSharp.Compiling;
 
@@ -64,7 +65,7 @@ namespace TypeExperiments
             PrinterIAL.Print(entry.Program.Code);
             Console.WriteLine();
 
-            foreach (var context in entry.ChildContexts)
+            foreach (var context in entry.ChildContexts())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Method: "+context.Name);

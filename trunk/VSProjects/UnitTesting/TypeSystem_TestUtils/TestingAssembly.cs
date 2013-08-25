@@ -9,14 +9,23 @@ using TypeSystem;
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
 
+using UnitTesting.Analyzing_TestUtils;
+
 namespace UnitTesting.TypeSystem_TestUtils
 {
+    public delegate void ResultAction(AnalyzingResult<MethodID,InstanceInfo> result);
+
     public class TestingAssembly : AssemblyProvider
     {
         Dictionary<string,  MethodItem> _methods = new Dictionary<string, MethodItem>();
-        List<Tuple<VariableName, string>> _editActions = new List<Tuple<VariableName, string>>();
+        List<EditAction> _editActions = new List<EditAction>();
+        List<ResultAction> _userActions = new List<ResultAction>();
 
-        public IEnumerable<Tuple<VariableName, string>> EditActions { get { return _editActions; } }
+        /// <summary>
+        /// Simulate actions from user
+        /// </summary>
+        public IEnumerable<ResultAction> UserActions { get { return _userActions; } }
+        public IEnumerable<EditAction> EditActions { get { return _editActions; } }
 
         public TestingAssembly AddMethod(string path, string code,bool isStatic=false,params ParameterInfo[] parameters)
         {
@@ -34,14 +43,21 @@ namespace UnitTesting.TypeSystem_TestUtils
             var info = getInfo(path, isStatic, parameters);
             var method = new DirectGenerator(source);
 
-
             addMethod(method, info);
+            return this;
+        }
+
+        public TestingAssembly UserAction(ResultAction action)
+        {
+            _userActions.Add(action);
+
             return this;
         }
 
         public TestingAssembly AddEditAction(string variable, string editName)
         {
-            _editActions.Add(Tuple.Create(new VariableName(variable), editName));
+            var editAction = new EditAction(new VariableName(variable), editName, null);
+            _editActions.Add(editAction);
             return this;
         }
 
