@@ -4,10 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Utilities;
+
 namespace Analyzing.Execution
 {
     public class ExecutedBlock<MethodID, InstanceInfo>
     {
+        private MultiDictionary<Instance, VariableName> _scopeStarts = new MultiDictionary<Instance, VariableName>();
+        private MultiDictionary<Instance, VariableName> _scopeEnds = new MultiDictionary<Instance, VariableName>();
+
         private LinkedList<CallContext<MethodID, InstanceInfo>> _calls;
 
         private ExecutedBlock<MethodID, InstanceInfo> _nextBlock;
@@ -34,6 +39,25 @@ namespace Analyzing.Execution
             }
         }
 
+        /// <summary>
+        /// Determine which variables for given instance has scope start on this block
+        /// </summary>
+        /// <param name="instance">Scoped instance</param>
+        /// <returns>Names of variables</returns>
+        public IEnumerable<VariableName> ScopeStarts(Instance instance)
+        {
+            return _scopeStarts.GetValues(instance);
+        }
+
+        /// <summary>
+        /// Determine which variables for given instance has scope end on this block
+        /// </summary>
+        /// <param name="instance">Scoped instance</param>
+        /// <returns>Names of variables</returns>
+        public IEnumerable<VariableName> ScopeEnds(Instance instance)
+        {
+            return _scopeEnds.GetValues(instance);
+        }
 
 
         public IEnumerable<CallContext<MethodID, InstanceInfo>> Calls
@@ -64,6 +88,16 @@ namespace Analyzing.Execution
                 _calls = new LinkedList<CallContext<MethodID, InstanceInfo>>();
             }
             _calls.AddLast(callContext);
+        }
+
+        internal void RegisterAssign(VariableName scopedVariable, Instance oldInstance, Instance assignedInstance)
+        {
+            if (oldInstance != null)
+            {
+                _scopeEnds.Add(oldInstance, scopedVariable);
+            }
+
+            _scopeStarts.Add(assignedInstance, scopedVariable);
         }
 
     }

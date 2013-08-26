@@ -15,13 +15,13 @@ namespace Analyzing
     /// <returns>Value that will be pasted to transformation provider. The transformation provider decide, that it understand given value.</returns>
     public delegate object ValueProvider(TransformationServices services);
 
-    public class EditsProvider<MethodID,InstanceInfo>
+    public class EditsProvider<MethodID, InstanceInfo>
     {
         readonly CallTransformProvider _callProvider;
 
         readonly ExecutedBlock<MethodID, InstanceInfo> _block;
 
-        internal EditsProvider(CallTransformProvider callProvider,ExecutedBlock<MethodID,InstanceInfo> block)
+        internal EditsProvider(CallTransformProvider callProvider, ExecutedBlock<MethodID, InstanceInfo> block)
         {
             if (callProvider == null)
             {
@@ -32,16 +32,28 @@ namespace Analyzing
         }
 
         public VariableName GetVariableFor(Instance instance, TransformationServices services)
-        {
-            //TODO this is not correct
-
-            foreach (var variable in _block.Call.Variables)
+        {            
+            //find variable with valid scope
+            var block=_block.PreviousBlock;
+            var scopeEnds=new HashSet<VariableName>();
+            while (block != null)
             {
-                var value = _block.Call.GetValue(variable);
-                if (value == instance)
-                    return variable;
+                scopeEnds.UnionWith(block.ScopeEnds(instance));
+
+                foreach (var start in block.ScopeStarts(instance))
+                {
+                    if (!start.Name.Contains('$') && !scopeEnds.Contains(start))
+                    {
+                        //we have found variable with valid scope
+                        return start;
+                    }
+                }
+
+                //shift to next block
+                block = block.PreviousBlock;
             }
 
+                    //cannot find valid scope
             return null;
         }
 

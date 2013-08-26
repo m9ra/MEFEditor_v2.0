@@ -57,12 +57,17 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static void AssertSourceEquivalence(this TestingAssembly assembly,string source)
         {
             var result = assembly.GetResult();
-            var editedSource=assembly.GetSource(EntryMethodName);
+            var editedSource = assembly.GetEntrySource();
 
             var nSource = normalizeCode("{"+source+"}");
             var nEditedSource = normalizeCode(editedSource);
 
             Assert.AreEqual(nSource,nEditedSource);
+        }
+
+        public static string GetEntrySource(this TestingAssembly assembly)
+        {
+            return assembly.GetSource(EntryMethodName);
         }
 
         private static string normalizeCode(string code)

@@ -205,7 +205,8 @@ namespace UnitTesting
             .AddMethod("DirectMethod", (c) =>
             {
                 var thisInst = c.CurrentArguments[0];
-                c.Edits.AppendArgument(thisInst, "Append", (s) => c.Edits.GetVariableFor(EXTERNAL_INPUT, s));
+                var e = c.Edits;
+                c.Edits.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(EXTERNAL_INPUT, s));
             }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
 
             .UserAction((c) =>

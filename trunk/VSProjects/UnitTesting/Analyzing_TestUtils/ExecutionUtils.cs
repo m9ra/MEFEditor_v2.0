@@ -44,6 +44,7 @@ namespace UnitTesting.Analyzing_TestUtils
                 {
                     yield return callContext;
                 }
+                block = block.NextBlock;
             }
         }
     }

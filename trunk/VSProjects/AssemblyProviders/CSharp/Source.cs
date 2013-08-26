@@ -67,9 +67,9 @@ namespace AssemblyProviders.CSharp
             write(p1, p2, toCSharp(value));
         }
 
-        internal void AppendArgument(INodeAST node, object value)
+        internal void AppendArgument(INodeAST call, object value)
         {
-            var lastArg = node.Arguments.Last();
+            var lastArg = call.Arguments.Last();
 
             var behindArg = getBehindOffset(lastArg);
             var stringRepresentation = toCSharp(value);

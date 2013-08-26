@@ -57,7 +57,12 @@ namespace Analyzing.Execution
             {
                 throw new ArgumentNullException("value cannot be null");
             }
+
+            Instance oldInstance;
+            _variables.TryGetValue(targetVaraiable, out oldInstance);
             _variables[targetVaraiable] = value;
+
+            CurrentBlock.RegisterAssign(targetVaraiable, oldInstance, value);
         }
 
         public Instance GetValue(VariableName variable)

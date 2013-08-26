@@ -52,7 +52,8 @@ namespace TypeExperiments
             var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
             var watch=Stopwatch.StartNew();
-            var entry = ResearchSources.EditProvider().GetResult().EntryContext;
+            var assembly=ResearchSources.EditProvider();
+            var entry = assembly.GetResult().EntryContext;
             watch.Stop();
 
 
@@ -75,7 +76,13 @@ namespace TypeExperiments
 
             Console.WriteLine();
             Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Elapsed time: {0}ms",watch.ElapsedMilliseconds);
+
+            Console.ForegroundColor=ConsoleColor.Yellow;
+            Console.WriteLine("\n\nEntry source result:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine(assembly.GetEntrySource());
 
             Console.ReadKey();
 
