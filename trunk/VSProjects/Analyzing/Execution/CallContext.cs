@@ -8,7 +8,7 @@ namespace Analyzing.Execution
 {
     public class CallContext<MethodID, InstanceInfo>
     {
-        private Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
+        private readonly Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
 
         private uint _instructionPointer;
 

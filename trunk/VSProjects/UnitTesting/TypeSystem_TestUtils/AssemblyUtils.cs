@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using TypeSystem;
 using Analyzing;
+using Analyzing.Execution;
 
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.Analyzing_TestUtils.Environment;
@@ -16,12 +17,17 @@ namespace UnitTesting.TypeSystem_TestUtils
 {
     public static class AssemblyUtils
     {
+        public static Instance EXTERNAL_INPUT { get; set; }
+        public static Instance REPORTED_INSTANCE { get; internal set; }
+
         public static readonly string EntryMethodName = "EntryMethod";
 
         public static TestingAssembly Run(string entryMethod)
         {
             var assembly = new TestingAssembly();
             assembly.AddMethod(EntryMethodName, entryMethod);
+
+            addStandardMethods(assembly);
 
             return assembly;
         }
@@ -34,9 +40,6 @@ namespace UnitTesting.TypeSystem_TestUtils
             var entryLoader = new EntryPointLoader(
                 new VersionedName(EntryMethodName, 0)
                 , loader);
-
-
-
 
 
             var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
@@ -54,15 +57,15 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// Test that entry source is equivalent to given source after edit actions
         /// </summary>
         /// <param name="source">Expected source</param>
-        public static void AssertSourceEquivalence(this TestingAssembly assembly,string source)
+        public static void AssertSourceEquivalence(this TestingAssembly assembly, string source)
         {
             var result = assembly.GetResult();
             var editedSource = assembly.GetEntrySource();
 
-            var nSource = normalizeCode("{"+source+"}");
+            var nSource = normalizeCode("{" + source + "}");
             var nEditedSource = normalizeCode(editedSource);
 
-            Assert.AreEqual(nSource,nEditedSource);
+            Assert.AreEqual(nSource, nEditedSource);
         }
 
         public static string GetEntrySource(this TestingAssembly assembly)
@@ -101,6 +104,14 @@ namespace UnitTesting.TypeSystem_TestUtils
                 if (!edited)
                     throw new KeyNotFoundException("Specified edit hasn't been found");
             }
+        }
+
+        private static void addStandardMethods(TestingAssembly assembly)
+        {
+            assembly.AddMethod("Report", (c) =>
+            {
+                AssemblyUtils.REPORTED_INSTANCE = c.CurrentArguments[1];
+            }, false, new ParameterInfo("p", new InstanceInfo("System.String")));
         }
 
     }

@@ -77,33 +77,20 @@ namespace AssemblyProviders.CSharp
             write(behindArg, ","+stringRepresentation);
         }
 
-        internal void handleSideEffect(INodeAST node)
+        internal void ShiftBehind(INodeAST shiftedLine, INodeAST behindLine)
         {
-            int p1, p2;
-            getBorderPositions(node,out p1,out p2);
+            var end = getBehindOffset(behindLine);
 
-            var keepExpression = Code.Substring(p1, p2 - p1) + ";\n";
-            var insertPos = beforeStatementPosition(node);
+            var shiftedCode=getCode(shiftedLine);
+            var shiftStart=shiftedLine.StartingToken.Position.Offset;
+            var shiftEnd=shiftStart+shiftedCode.Length;
 
-            write(insertPos.Offset, keepExpression);            
+            write(shiftStart,shiftEnd,"");
+            write(end, shiftedCode);
         }
 
-        private void getBorderPositions(INodeAST node, out int p1, out int p2)
-        {
-            p1 = node.StartingToken.Position.Offset;
-            p2 = getBehindOffset(node);
-        }
+      
 
-        /// <summary>
-        /// Get offset behind given node
-        /// </summary>
-        /// <param name="node">Resolved node</param>
-        /// <returns>Offset behind node</returns>
-        private int getBehindOffset(INodeAST node)
-        {
-            var end = node.EndingToken;
-            return end.Next.Position.Offset;
-        }
 
         /// <summary>
         /// Converts given value into C# representation
@@ -141,6 +128,39 @@ namespace AssemblyProviders.CSharp
             }
 
             return current.StartingToken.Position;
+        }
+
+        private void handleSideEffect(INodeAST node)
+        {
+            var keepExpression = getCode(node) + ";\n";
+            var insertPos = beforeStatementPosition(node);
+
+            write(insertPos.Offset, keepExpression);
+        }
+
+        private string getCode(INodeAST node)
+        {
+            int p1, p2;
+            getBorderPositions(node, out p1, out p2);
+
+            return Code.Substring(p1, p2 - p1);
+        }
+
+        private void getBorderPositions(INodeAST node, out int p1, out int p2)
+        {
+            p1 = node.StartingToken.Position.Offset;
+            p2 = getBehindOffset(node);
+        }
+
+        /// <summary>
+        /// Get offset behind given node
+        /// </summary>
+        /// <param name="node">Resolved node</param>
+        /// <returns>Offset behind node</returns>
+        private int getBehindOffset(INodeAST node)
+        {
+            var end = node.EndingToken;
+            return end.Next.Position.Offset;
         }
         #endregion
 
@@ -225,5 +245,7 @@ namespace AssemblyProviders.CSharp
             return offset;
         }
         #endregion
+
+
     }
 }

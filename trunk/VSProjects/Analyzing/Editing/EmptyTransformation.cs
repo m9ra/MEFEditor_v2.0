@@ -10,7 +10,7 @@ namespace Analyzing.Editing
     {
         protected override void apply(TransformationServices services)
         {
-            //nothing to do
+            services.Abort("There is missing transformation for requested operation");
         }
     }
 }

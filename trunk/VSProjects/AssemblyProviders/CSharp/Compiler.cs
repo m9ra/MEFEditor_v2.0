@@ -107,6 +107,7 @@ namespace AssemblyProviders.CSharp
         {
             var info = E.StartNewInfoBlock();
             info.Comment = "\n---" + statementText(line) + "---";
+            info.ShiftingProvider = new Transformations.ShiftingProvider(line);
             generateStatement(line);
         }
 

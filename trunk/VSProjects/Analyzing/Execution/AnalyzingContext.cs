@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing.Editing;
 using Analyzing.Execution.Instructions;
 
 namespace Analyzing.Execution

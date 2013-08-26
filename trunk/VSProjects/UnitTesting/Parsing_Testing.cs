@@ -17,7 +17,6 @@ namespace UnitTesting
     [TestClass]
     public class Parsing_Testing
     {
-        static Instance EXTERNAL_INPUT;
 
         [TestMethod]
         public void BasicParsing()
@@ -195,7 +194,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Edit_SimpleAppend()
+        public void Edit_AppendWithValidScope()
         {
             AssemblyUtils.Run(@"
                 var arg=""input"";
@@ -206,12 +205,12 @@ namespace UnitTesting
             {
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
-                c.Edits.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(EXTERNAL_INPUT, s));
+                c.Edits.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
             }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
 
             .UserAction((c) =>
             {
-                EXTERNAL_INPUT = c.EntryContext.GetValue(new VariableName("arg"));
+                AssemblyUtils.EXTERNAL_INPUT = c.EntryContext.GetValue(new VariableName("arg"));
             })
 
             .AddEditAction("this", "Append")
@@ -221,5 +220,45 @@ namespace UnitTesting
             ");
         }
 
+        [TestMethod]
+        public void Edit_AppendWithBehindShifting()
+        {
+            AssemblyUtils.Run(@"
+                var arg=""input"";
+                Report(arg);
+                arg=""scope end"";
+                arg=""tight scope end"";
+                var arg2=""spliting line"";
+                arg=""another scope end"";
+                DirectMethod(""input2"");             
+            ")
+
+            .AddMethod("DirectMethod", (c) =>
+            {
+                var thisInst = c.CurrentArguments[0];
+                var e = c.Edits;
+                e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
+
+            }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
+
+
+            .UserAction((c) =>
+            {
+                AssemblyUtils.EXTERNAL_INPUT = AssemblyUtils.REPORTED_INSTANCE;
+            })
+
+            .AddEditAction("this", "Append")
+
+            .AssertSourceEquivalence(@"
+                var arg=""input"";
+                Report(arg);
+                var arg2=""spliting line"";
+                DirectMethod(""input2"",arg);  
+                arg=""scope end"";
+                arg=""tight scope end"";
+                arg=""another scope end"";
+            ");
+            ;
+        }
     }
 }

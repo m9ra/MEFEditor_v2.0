@@ -13,11 +13,19 @@ namespace Analyzing.Editing
     /// </summary>
     public class TransformationServices
     {
-        public bool IsAborted { get; private set; }
+        public string AbortMessage { get; private set; }
+
+        public bool IsAborted { get { return AbortMessage != null; } }
             
         public object Abort(string abortMessage)
         {
-            throw new NotImplementedException();
+            if (IsAborted)
+            {
+                throw new NotSupportedException("Cannot abort twice");
+            }
+            AbortMessage = abortMessage;
+
+            return null;
         }
 
         public void Apply(Transformation transformation)

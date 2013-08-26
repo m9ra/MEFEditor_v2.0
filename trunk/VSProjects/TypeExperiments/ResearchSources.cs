@@ -18,8 +18,7 @@ namespace TypeExperiments
     static class ResearchSources
     {
 
-        static Instance EXTERNAL_INPUT;
-        static Instance REPORTED_INSTANCE;
+
 
         static internal TestingAssembly EditProvider()
         {
@@ -27,28 +26,27 @@ namespace TypeExperiments
                 var arg=""input"";
                 Report(arg);
                 arg=""scope end"";
+                arg=""tight scope end"";
+                var arg2=""spliting line"";
+                arg=""another scope end"";
                 DirectMethod(""input2"");                
             ")
 
             .AddMethod("DirectMethod", (c) =>
             {
-                var thisInst = c.CurrentArguments[0];                
+                var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
-                e.AppendArgument(thisInst, "Append", (s) => acceptInstance(e, s));             
+                e.AppendArgument(thisInst, "Append", (s) => acceptInstance(e, s));
 
                 var res = c.CreateDirectInstance("Direct result");
                 c.Return(res);
 
             }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
 
-            .AddMethod("Report", (c) =>
-            {
-                REPORTED_INSTANCE = c.CurrentArguments[1];
-            }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
 
             .UserAction((c) =>
             {
-                EXTERNAL_INPUT = REPORTED_INSTANCE;
+                AssemblyUtils.EXTERNAL_INPUT = AssemblyUtils.REPORTED_INSTANCE;
             })
 
             .AddEditAction("this", "Append");
@@ -57,7 +55,7 @@ namespace TypeExperiments
 
         static object acceptInstance(EditsProvider<MethodID, InstanceInfo> edits, TransformationServices services)
         {
-            var variable = edits.GetVariableFor(EXTERNAL_INPUT, services);
+            var variable = edits.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, services);
             if (variable == null)
             {
                 return services.Abort("Cannot get variable for instance");

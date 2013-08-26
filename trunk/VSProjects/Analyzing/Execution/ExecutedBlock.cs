@@ -12,6 +12,7 @@ namespace Analyzing.Execution
     {
         private MultiDictionary<Instance, VariableName> _scopeStarts = new MultiDictionary<Instance, VariableName>();
         private MultiDictionary<Instance, VariableName> _scopeEnds = new MultiDictionary<Instance, VariableName>();
+        private HashSet<Instance> _affectedInstances=new HashSet<Instance>();
 
         private LinkedList<CallContext<MethodID, InstanceInfo>> _calls;
 
@@ -25,6 +26,12 @@ namespace Analyzing.Execution
         public readonly CallContext<MethodID, InstanceInfo> Call;
 
         public ExecutedBlock<MethodID, InstanceInfo> PreviousBlock { get; private set; }
+
+        /// <summary>
+        /// Instances that were affected during execution of current block
+        /// TODO: Other than assigns affecting, deep calls affecting
+        /// </summary>
+        public IEnumerable<Instance> AffectedInstances { get { return _affectedInstances; } }
 
         public ExecutedBlock<MethodID, InstanceInfo> NextBlock
         {
@@ -92,13 +99,22 @@ namespace Analyzing.Execution
 
         internal void RegisterAssign(VariableName scopedVariable, Instance oldInstance, Instance assignedInstance)
         {
-            if (oldInstance != null)
+            if (scopedVariable.Name.StartsWith("$"))
             {
-                _scopeEnds.Add(oldInstance, scopedVariable);
+                //TODO: refactor temporary variables
+                //dont save temporary variables
+                return;
             }
 
+            if (oldInstance != null)
+            {
+                //there was another instance in variable - its scope is ending
+                _scopeEnds.Add(oldInstance, scopedVariable);
+                _affectedInstances.Add(oldInstance);
+            }
+
+            _affectedInstances.Add(assignedInstance);
             _scopeStarts.Add(assignedInstance, scopedVariable);
         }
-
     }
 }
