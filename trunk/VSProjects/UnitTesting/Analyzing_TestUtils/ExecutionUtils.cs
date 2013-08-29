@@ -42,7 +42,7 @@ namespace UnitTesting.Analyzing_TestUtils
             {
                 foreach (var childContext in block.Calls)
                 {
-                    yield return callContext;
+                    yield return childContext;
                 }
                 block = block.NextBlock;
             }

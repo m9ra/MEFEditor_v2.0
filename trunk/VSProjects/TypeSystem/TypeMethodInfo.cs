@@ -30,17 +30,17 @@ namespace TypeSystem
             }
         }
 
-        public TypeMethodInfo(string typeName, string methodName,ParameterInfo[]arguments,bool isStatic)
+        public TypeMethodInfo(InstanceInfo thisType, string methodName, InstanceInfo returnType, ParameterInfo[] parameters, bool isStatic)
         {
-            TypeName = typeName;
+            TypeName = thisType.TypeName;
             MethodName = methodName;
             IsStatic = isStatic;
-            Arguments = arguments;
-            ThisType = new InstanceInfo(TypeName);
+            Arguments = parameters;
+            ThisType = thisType;
             //TODO correct return type
-            ReturnType = ThisType;
+            ReturnType = returnType;
         }
 
-        
+
     }
 }

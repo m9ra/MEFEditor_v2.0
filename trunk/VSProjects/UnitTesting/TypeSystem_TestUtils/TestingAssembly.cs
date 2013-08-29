@@ -13,11 +13,11 @@ using UnitTesting.Analyzing_TestUtils;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    public delegate void ResultAction(AnalyzingResult<MethodID,InstanceInfo> result);
+    public delegate void ResultAction(AnalyzingResult<MethodID, InstanceInfo> result);
 
     public class TestingAssembly : AssemblyProvider
     {
-        Dictionary<string,  MethodItem> _methods = new Dictionary<string, MethodItem>();
+        Dictionary<string, MethodItem> _methods = new Dictionary<string, MethodItem>();
         List<EditAction> _editActions = new List<EditAction>();
         List<ResultAction> _userActions = new List<ResultAction>();
 
@@ -27,12 +27,12 @@ namespace UnitTesting.TypeSystem_TestUtils
         public IEnumerable<ResultAction> UserActions { get { return _userActions; } }
         public IEnumerable<EditAction> EditActions { get { return _editActions; } }
 
-        public TestingAssembly AddMethod(string path, string code,bool isStatic=false,params ParameterInfo[] parameters)
+        public TestingAssembly AddMethod(string path, string code, bool isStatic = false, params ParameterInfo[] parameters)
         {
-            var info = getInfo(path, isStatic, parameters);
+            var info = getInfo(path, isStatic,"", parameters);
             var source = new Source("{" + code + "}");
-            var method=new ParsedGenerator(info,source);
-            
+            var method = new ParsedGenerator(info, source);
+
 
             addMethod(method, info);
             return this;
@@ -40,7 +40,16 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public TestingAssembly AddMethod(string path, DirectMethod<MethodID, InstanceInfo> source, bool isStatic = false, params ParameterInfo[] parameters)
         {
-            var info = getInfo(path, isStatic, parameters);
+            var info = getInfo(path, isStatic,"", parameters);
+            var method = new DirectGenerator(source);
+
+            addMethod(method, info);
+            return this;
+        }
+
+        public TestingAssembly AddMethod(string path, DirectMethod<MethodID, InstanceInfo> source, string returnType, params ParameterInfo[] parameters)
+        {
+            var info = getInfo(path, false, returnType, parameters);
             var method = new DirectGenerator(source);
 
             addMethod(method, info);
@@ -98,15 +107,20 @@ namespace UnitTesting.TypeSystem_TestUtils
             _methods.Add(info.Path, new MethodItem(method, info));
         }
 
-        private TypeMethodInfo getInfo(string path, bool isStatic, params ParameterInfo[] parameters)
+        private TypeMethodInfo getInfo(string path, bool isStatic, string returnType, params ParameterInfo[] parameters)
         {
             var nameParts = path.Split('.');
             var methodName = nameParts.Last();
             var typeName = string.Join(".", nameParts.Take(nameParts.Count() - 1).ToArray());
-            return new TypeMethodInfo(typeName, methodName, parameters, isStatic);
+
+            var typeInfo = new InstanceInfo(typeName);
+            var returnInfo = new InstanceInfo(returnType);
+
+            return new TypeMethodInfo(typeInfo, methodName, returnInfo, parameters, isStatic);
         }
+
         #endregion
 
-        
+
     }
 }

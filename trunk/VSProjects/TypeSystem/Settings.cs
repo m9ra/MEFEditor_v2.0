@@ -32,7 +32,8 @@ namespace TypeSystem
             var paramsInfo = from par in parameters select par.StaticInfo;
             var allArguments=new InstanceInfo[]{thisInfo}.Concat(paramsInfo).ToArray();
 
-            var info = new TypeMethodInfo(thisType.FullName,methodID.MethodName, parameters, false);
+            //TODO resolving of return type
+            var info = new TypeMethodInfo(thisInfo,methodID.MethodName,thisInfo, parameters, false);
 
             var method = new MethodItem(new DirectGenerator(directMethod), info);
             DirectMethods.Add(info.Path, method);

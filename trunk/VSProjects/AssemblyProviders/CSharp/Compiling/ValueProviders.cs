@@ -154,14 +154,22 @@ namespace AssemblyProviders.CSharp.Compiling
         private TypeMethodInfo _methodInfo;
         private RValueProvider[] _arguments;
         private INodeAST _callNode;
+        private RValueProvider _calledObject;
 
-        public CallRValue(INodeAST callNode,TypeMethodInfo methodInfo,RValueProvider[] arguments, Context context)
+        public CallRValue(INodeAST callNode,TypeMethodInfo methodInfo,RValueProvider calledObject,RValueProvider[] arguments, Context context)
             : base(context)
         {
             _callNode = callNode;
             _methodInfo = methodInfo;
             _arguments = arguments;
+            _calledObject = calledObject;
+
+            if (_calledObject == null && !methodInfo.IsStatic)
+            {
+                throw new NotSupportedException();
+            }
         }
+
 
         public override void AssignInto(LValueProvider lValue)
         {
@@ -202,8 +210,9 @@ namespace AssemblyProviders.CSharp.Compiling
             }
             else
             {
-                //TODO Resolve called object
-                var builder=E.Call(new MethodID(_methodInfo.Path),"this", argVariables.ToArray());
+                var objStorage = _calledObject.GetStorage();                
+                
+                var builder=E.Call(new MethodID(_methodInfo.Path),objStorage, argVariables.ToArray());
                 builder.SetTransformationProvider(new CallProvider(_callNode));
             }
         }

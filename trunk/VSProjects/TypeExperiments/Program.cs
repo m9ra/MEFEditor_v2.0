@@ -49,7 +49,7 @@ namespace TypeExperiments
         static void Main()
         {
             //force JIT to precompile before measuring
-            var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
+      //      var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
             var watch=Stopwatch.StartNew();
             var assembly=ResearchSources.EditProvider();

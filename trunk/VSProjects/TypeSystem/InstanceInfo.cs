@@ -16,9 +16,14 @@ namespace TypeSystem
         }
 
 
+        public InstanceInfo(Type type)
+        {
+            TypeName = type.FullName;
+        }
+
         public static InstanceInfo Create<Type>()
         {
-            return new InstanceInfo(typeof(Type).FullName);
+            return new InstanceInfo(typeof(Type));
         }
 
     }

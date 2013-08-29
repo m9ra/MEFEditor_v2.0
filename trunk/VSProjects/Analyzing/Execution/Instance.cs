@@ -10,7 +10,8 @@ namespace Analyzing.Execution
 {
     public class Instance
     {
-        List<Edit> _edits = new List<Edit>();
+        readonly Dictionary<string, Instance> _fields = new Dictionary<string, Instance>();
+        readonly List<Edit> _edits = new List<Edit>();
 
         internal bool IsDirty { get; private set; }
 
@@ -19,7 +20,11 @@ namespace Analyzing.Execution
         public IEnumerable<Edit> Edits { get { return _edits; } }
 
 
-        public Instance(object directValue)
+        internal Instance()
+        {
+        }
+
+        internal Instance(object directValue)
         {
             DirectValue = directValue;
         }
@@ -42,6 +47,16 @@ namespace Analyzing.Execution
             {
                 _edits.Add(edit);
             }
+        }
+
+        internal void SetField(string fieldName, Instance value)
+        {
+            _fields[fieldName] = value;
+        }
+
+        internal Instance GetField(string fieldName)
+        {
+            return _fields[fieldName];
         }
     }
 }

@@ -101,7 +101,8 @@ namespace TypeSystem
                     var name = Name.From(method);
 
                     //TODO create proper info
-                    var info = new TypeMethodInfo(type.FullName, name.Name, null, false);
+                    var typeInfo = new InstanceInfo(type);
+                    var info = new TypeMethodInfo(typeInfo, name.Name,typeInfo, null, false);
                     var item = new MethodItem(new DirectGenerator(directMethod), info);
                     addDirectMethod(item);
                 }

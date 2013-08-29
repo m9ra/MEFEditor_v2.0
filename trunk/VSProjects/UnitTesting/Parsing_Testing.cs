@@ -105,6 +105,37 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Emit_objectCreation_fieldsUsage()
+        {
+            AssemblyUtils.Run(@"
+                var obj=new TestObj(""input"");
+                
+                var result = obj.GetInput();          
+            ")
+
+            .AddMethod("TestObj", (c) =>
+            {
+                var arg = c.CurrentArguments[1];
+                var createdObj = c.CreateInstance(new InstanceInfo("TestObj"));
+
+                c.SetField(createdObj, "inputData", arg);
+                c.Return(createdObj);
+
+            }, "TestObj", new ParameterInfo("p", InstanceInfo.Create<string>()))
+
+            .AddMethod("TestObj.GetInput", (c) =>
+            {
+                var thisObj = c.CurrentArguments[0];
+                var data = c.GetField(thisObj, "inputData");
+                c.Return(data);
+            }, false, new ParameterInfo("p", InstanceInfo.Create<string>()))
+
+            .AssertVariable("result").HasValue("input");
+
+            ;
+        }
+
+        [TestMethod]
         public void Emit_Fibonacci()
         {
             //fib(24) Time elapsed: 16s (without caching)

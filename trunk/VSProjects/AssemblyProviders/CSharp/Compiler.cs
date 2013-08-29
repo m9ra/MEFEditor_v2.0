@@ -391,9 +391,15 @@ namespace AssemblyProviders.CSharp
                     //TODO method chaining
                     //TODO overloading
                     var methodInfo = searcher.FoundResult.First();
-
                     var arguments = getArguments(currNode);
-                    call = new CallRValue(currNode,methodInfo, arguments, _context);
+
+                    //TODO this object resolution
+                    if (calledObject == null && !methodInfo.IsStatic)
+                    {
+                        calledObject = new VariableRValue("this", _context);
+                    }
+
+                    call = new CallRValue(currNode,methodInfo,calledObject, arguments, _context);
                     return true;
                 }
 

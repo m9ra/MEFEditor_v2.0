@@ -25,20 +25,27 @@ namespace TypeExperiments
             return AssemblyUtils.Run(@"
                 var obj=new TestObj(""input"");
                 
-                obj.GetInput();          
+                var result = obj.GetInput();          
             ")
 
             .AddMethod("TestObj", (c) =>
             {
-                var arg= c.CurrentArguments[0];
+                var arg = c.CurrentArguments[1];
+                var createdObj=c.CreateInstance(new InstanceInfo("TestObj"));
                 
-                c.Return(arg);
+                c.SetField(createdObj, "inputData", arg);
+                c.Return(createdObj);
 
-            }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
+            }, "TestObj", new ParameterInfo("p", InstanceInfo.Create<string>()))
+
+            .AddMethod("TestObj.GetInput", (c) =>
+            {
+                var thisObj=c.CurrentArguments[0];
+                var data=c.GetField(thisObj, "inputData");
+                c.Return(data);
+            }, false, new ParameterInfo("p", InstanceInfo.Create<string>()))
 
 
-     
-            
             ;
         }
 

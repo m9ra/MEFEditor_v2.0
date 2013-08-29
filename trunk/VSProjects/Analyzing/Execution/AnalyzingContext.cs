@@ -81,6 +81,17 @@ namespace Analyzing.Execution
             CurrentCall.SetValue(targetVaraiable, value);
         }
 
+
+        public void SetField(Instance obj, string fieldName, Instance value)
+        {
+            obj.SetField(fieldName, value);
+        }
+
+        public Instance GetField(Instance obj, string fieldName)
+        {
+            return obj.GetField(fieldName);
+        }
+
         internal void PrepareCall(params VariableName[] arguments)
         {
             _preparedArguments = arguments;
@@ -186,6 +197,11 @@ namespace Analyzing.Execution
             return new Instance(data);
         }
 
+        public Instance CreateInstance(InstanceInfo info)
+        {
+            return new Instance();
+        }
+
         internal void Jump(Label target)
         {
             CurrentCall.Jump(target);
@@ -211,5 +227,10 @@ namespace Analyzing.Execution
                 Edits = new EditsProvider<MethodID, InstanceInfo>(call.TransformProvider,CurrentCall.CurrentBlock);
             }
         }
+
+
+
+
+     
     }
 }
