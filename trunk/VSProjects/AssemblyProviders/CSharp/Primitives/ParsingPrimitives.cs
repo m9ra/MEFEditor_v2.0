@@ -33,7 +33,7 @@ namespace AssemblyProviders.CSharp.Primitives
 
         public string GetStrip(Position position)
         {
-            return Source.Code.Substring(Offset, position.Offset - Offset);
+            return Source.OriginalCode.Substring(Offset, position.Offset - Offset);
         }
     }
 

@@ -67,8 +67,23 @@ namespace Analyzing.Editing
                 {
                     //scope end was shifted
                     return _firstScopeEnd.ScopeEnds(instance).First();
+                }                
+            }
+
+            //find scope start
+            var scopeStartBlock= _block.NextBlock;
+            while (scopeStartBlock != null)
+            {
+                var starts = scopeStartBlock.ScopeStarts(instance);
+                if (starts.Any())
+                {
+                    if (shiftBehind(_block, scopeStartBlock, services))
+                    {
+                        return starts.First();
+                    }
+                    break;
                 }
-                throw new NotImplementedException();
+                scopeStartBlock = scopeStartBlock.NextBlock;
             }
 
             //cannot find valid scope
@@ -108,9 +123,9 @@ namespace Analyzing.Editing
         private bool shiftBehind(ExecutedBlock<MethodID, InstanceInfo> shiftedBlock, ExecutedBlock<MethodID, InstanceInfo> target, TransformationServices services)
         {
             //cumulative list of blocks that has to be shifted
-            //It has reverse ordering of transformations that will be generated
-            //Hint: Shifted block will be added because of border instances
+            //It has reverse ordering of transformations that will be generated            
             var shiftedBlocks = new List<ExecutedBlock<MethodID, InstanceInfo>>();
+            shiftedBlocks.Add(shiftedBlock);
           
             var borderInstances = new HashSet<Instance>();
             borderInstances.UnionWith(shiftedBlock.AffectedInstances);
@@ -119,14 +134,14 @@ namespace Analyzing.Editing
             var currentBlock = shiftedBlock;
             while (currentBlock != target)
             {
+                currentBlock = currentBlock.NextBlock;
+
                 if (!canCross(currentBlock, borderInstances))
                 {
                     //this block cannot be crossed
                     borderInstances.UnionWith(currentBlock.AffectedInstances);
                     shiftedBlocks.Add(currentBlock);
                 }
-
-                currentBlock = currentBlock.NextBlock;
             }
 
             //shifting is not possible, due to collisions between blocks

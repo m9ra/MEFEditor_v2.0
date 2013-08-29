@@ -9,39 +9,26 @@ using AssemblyProviders.CSharp.Primitives;
 
 namespace AssemblyProviders.CSharp
 {
-    class WriteItem
-    {
-        public readonly string Data;
 
-        public int ReplacedLength;
-
-        public int StartOffset;
-
-        public int Elongation { get { return Data.Length - ReplacedLength; } }
-
-        public WriteItem(int startOffset, string data)
-        {
-            Data = data;
-            StartOffset = startOffset;
-        }
-
-        public WriteItem(int startOffset, int replacedLength, string data)
-        {
-            StartOffset = startOffset;
-            ReplacedLength = replacedLength;
-            Data = data;
-        }
-    }
 
     public class Source
     {
-        LinkedList<WriteItem> _items = new LinkedList<WriteItem>();
+        StripManager _strips;
 
-        public string Code { get; private set; }
-        
+        public readonly string OriginalCode;
+
+        public string Code
+        {
+            get
+            {
+                return _strips.Data;
+            }
+        }
+
         public Source(string code)
         {
-            Code = code;
+            OriginalCode = code;
+            _strips = new StripManager(code);
         }
 
         internal void Remove(INodeAST node, bool keepSideEffect)
@@ -62,7 +49,7 @@ namespace AssemblyProviders.CSharp
 
             int p1, p2;
             getBorderPositions(node, out p1, out p2);
-                  
+
 
             write(p1, p2, toCSharp(value));
         }
@@ -74,24 +61,20 @@ namespace AssemblyProviders.CSharp
             var behindArg = getBehindOffset(lastArg);
             var stringRepresentation = toCSharp(value);
 
-            write(behindArg, ","+stringRepresentation);
+            write(behindArg, "," + stringRepresentation);
         }
 
         internal void ShiftBehind(INodeAST shiftedLine, INodeAST behindLine)
         {
-            var end = getBehindOffset(behindLine);
+            var shiftTargetOffset = getBehindOffset(behindLine);
 
-            var shiftedCode=getCode(shiftedLine);
-            var shiftStart=shiftedLine.StartingToken.Position.Offset;
-            var shiftEnd=shiftStart+shiftedCode.Length;
+            int shiftStart, shiftEnd;
+            getBorderPositions(shiftedLine, out shiftStart, out shiftEnd);
+            var shiftLen = shiftEnd - shiftStart;
 
-            write(shiftStart,shiftEnd,"");
-            write(end, shiftedCode);
+            move(shiftStart, shiftTargetOffset, shiftLen);
         }
-
-      
-
-
+        
         /// <summary>
         /// Converts given value into C# representation
         /// </summary>
@@ -143,7 +126,7 @@ namespace AssemblyProviders.CSharp
             int p1, p2;
             getBorderPositions(node, out p1, out p2);
 
-            return Code.Substring(p1, p2 - p1);
+            return OriginalCode.Substring(p1, p2 - p1);
         }
 
         private void getBorderPositions(INodeAST node, out int p1, out int p2)
@@ -174,11 +157,8 @@ namespace AssemblyProviders.CSharp
         /// <param name="data">Written data</param>
         private void write(int start, int end, string data)
         {
-            var convertedStart = convertOffset(start);
-            var convertedEnd = convertOffset(end);
-
-            var item = new WriteItem(convertedStart, convertedEnd - convertedStart, data);
-            writeRaw(item);
+            _strips.Remove(start, end - start);
+            _strips.Write(start, data);
         }
 
         /// <summary>
@@ -188,62 +168,15 @@ namespace AssemblyProviders.CSharp
         /// <param name="data">Written data</param>
         private void write(int start, string data)
         {
-            var converted = convertOffset(start);
-            var item = new WriteItem(converted, data);
-            writeRaw(item);
+            _strips.Write(start, data);
         }
 
-        /// <summary>
-        /// Write given item into code
-        /// </summary>
-        /// <param name="item">Item to be written</param>
-        private void writeRaw(WriteItem item)
+        private void move(int p1, int np1, int length)
         {
-            Code = Code.Remove(item.StartOffset, item.ReplacedLength);
-            Code = Code.Insert(item.StartOffset, item.Data);
-
-            insertItem(item);
-        }
-              
-        /// <summary>
-        /// Insert item into items list, according to offset
-        /// </summary>
-        /// <param name="item">Inserted item</param>
-        private void insertItem(WriteItem item)
-        {
-            var node = _items.Last;
-            while (node != null && node.Value.StartOffset >= item.StartOffset)
-            {
-                node.Value.StartOffset += item.Elongation;
-                node = node.Previous;
-            }
-
-            if (node == null)
-            {
-                _items.AddFirst(item);
-            }
-            else
-            {
-                _items.AddAfter(node, item);
-            }
+            _strips.Move(p1, length, np1);
         }
 
-        /// <summary>
-        /// Convert given offset according to applied changes
-        /// </summary>
-        /// <param name="offset">Offset to be converted</param>
-        /// <returns>Converted offset</returns>
-        private int convertOffset(int offset)
-        {
-            var node = _items.First;
-            while (node != null && node.Value.StartOffset < offset)
-            {
-                offset += node.Value.Elongation;
-                node = node.Next;
-            }
 
-            return offset;
-        }
         #endregion
 
 

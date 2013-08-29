@@ -25,11 +25,9 @@ namespace TypeExperiments
             return AssemblyUtils.Run(@"
                 var arg=""input"";
                 Report(arg);
+
                 arg=""scope end"";
-                arg=""tight scope end"";
-                var arg2=""spliting line"";
-                arg=""another scope end"";
-                DirectMethod(""input2"");                
+                DirectMethod(""input2"");             
             ")
 
             .AddMethod("DirectMethod", (c) =>

@@ -62,6 +62,7 @@
     <Compile Include="CSharp\Primitives\NodeException.cs" />
     <Compile Include="CSharp\Primitives\ParsingPrimitives.cs" />
     <Compile Include="CSharp\Source.cs" />
+    <Compile Include="CSharp\StripManager.cs" />
     <Compile Include="CSharp\SyntaxParser.cs" />
     <Compile Include="CSharp\ProjectProvider.cs" />
     <Compile Include="CSharp\Transformations\CallProvider.cs" />

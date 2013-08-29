@@ -60,7 +60,7 @@ namespace AssemblyProviders.CSharp
         internal Lexer(Source source)
         {
             _source = source;
-            createTokens(source.Code);
+            createTokens(source.OriginalCode);
         }
 
         private void createTokens(string code)
