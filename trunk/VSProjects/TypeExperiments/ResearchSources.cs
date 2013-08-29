@@ -23,31 +23,23 @@ namespace TypeExperiments
         static internal TestingAssembly EditProvider()
         {
             return AssemblyUtils.Run(@"
-                var arg=""input"";
-                Report(arg);
-
-                arg=""scope end"";
-                DirectMethod(""input2"");             
+                var obj=new TestObj(""input"");
+                
+                obj.GetInput();          
             ")
 
-            .AddMethod("DirectMethod", (c) =>
+            .AddMethod("TestObj", (c) =>
             {
-                var thisInst = c.CurrentArguments[0];
-                var e = c.Edits;
-                e.AppendArgument(thisInst, "Append", (s) => acceptInstance(e, s));
-
-                var res = c.CreateDirectInstance("Direct result");
-                c.Return(res);
+                var arg= c.CurrentArguments[0];
+                
+                c.Return(arg);
 
             }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
 
 
-            .UserAction((c) =>
-            {
-                AssemblyUtils.EXTERNAL_INPUT = AssemblyUtils.REPORTED_INSTANCE;
-            })
-
-            .AddEditAction("this", "Append");
+     
+            
+            ;
         }
 
 

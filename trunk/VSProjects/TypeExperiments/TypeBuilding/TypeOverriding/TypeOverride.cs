@@ -14,7 +14,7 @@ namespace TypeExperiments.TypeBuilding
     {
         public const string OVERRIDE_PREFIX = "_call_";
 
-        protected ToOverride This;
+        //protected ToOverride This;
 
         /// <summary>
         /// Register overriden type into assembly

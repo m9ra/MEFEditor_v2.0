@@ -14,6 +14,12 @@ namespace TypeSystem
         {
             TypeName = typeName;
         }
-        
+
+
+        public static InstanceInfo Create<Type>()
+        {
+            return new InstanceInfo(typeof(Type).FullName);
+        }
+
     }
 }

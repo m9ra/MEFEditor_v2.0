@@ -15,6 +15,8 @@ namespace TypeExperiments.TypeBuilding.TypeOverriding
         public OverridenInstance(InternalType type)
             : base(type)
         {
+            //TODO implement
+            OverridenObject = null;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace UnitTesting.AssemblyProviders_TestUtils
         {
             _strips = new StripManager(test);
         }
-        
+
         internal SourceTest Write(int position, string data, string expectedValue)
         {
             _strips.Write(position, data);
@@ -28,10 +28,9 @@ namespace UnitTesting.AssemblyProviders_TestUtils
 
         internal SourceTest Move(int p1, int len, int p2, string expectedValue)
         {
-            _strips.Move(p1, p2, len);
+            _strips.Move(p1, len, p2);
 
             Assert.AreEqual(expectedValue, _strips.Data);
-
             return this;
         }
 

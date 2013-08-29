@@ -12,5 +12,11 @@ namespace TypeExperiments.Reflection.Definitions
     {
         public readonly StrongName Name;
         public readonly TypeName Type;
+
+        public FieldDefinition(StrongName name, TypeName type)
+        {
+            Name = name;
+            Type = type;
+        }
     }
 }

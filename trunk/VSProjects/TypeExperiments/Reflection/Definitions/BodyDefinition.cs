@@ -13,12 +13,12 @@ namespace TypeExperiments.Reflection.Definitions
 
     class BodyDefinition
     {
-        public readonly BodyModifier Modifiers;
+      //  public readonly BodyModifier Modifiers;
         public readonly Invokable Instructions;
 
         public BodyDefinition(Invokable instructions)
         {
-            //TODO implement
+            //TODO implement            
             Instructions = instructions;
         }
     }

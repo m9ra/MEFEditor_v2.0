@@ -15,7 +15,7 @@ namespace TypeExperiments.TypeBuilding
         public readonly TypeName Name;
         public bool IsBuilded { get; private set; }
 
-        private InternalType buildedType;
+        //private InternalType buildedType;
 
         public InternalTypeBuilder(TypeName name,TypeName baseName){
             this.Name = name;

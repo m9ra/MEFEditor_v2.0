@@ -52,7 +52,7 @@ namespace Analyzing
         /// Assigning last call return value into specified target variable
         /// </summary>
         /// <param name="targetVar">Variable where returned value will be assigned</param>
-        public abstract void AssignReturnValue(string targetVar);
+        public abstract void AssignReturnValue(string targetVar,InstanceInfo staticInfo);
 
         public abstract CallBuilder<MethodID, InstanceInfo> StaticCall(string typeFullname, MethodID method, params string[] inputVariables);
 

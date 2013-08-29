@@ -13,6 +13,11 @@ using AssemblyProviders.CSharp.Compiling;
 
 namespace AssemblyProviders.CSharp
 {
+
+    /// <summary>
+    /// Resovolve methods are for getting result of operation
+    /// Get methods are for getting value representation of operation
+    /// </summary>
     public class Compiler
     {
         private readonly CodeNode _method;
@@ -124,9 +129,18 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.call:
                     generateCall(statement);
                     break;
+                case NodeTypes.hierarchy:
+                    generateHierarchy(statement);
+                    break;                    
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        private void generateHierarchy(INodeAST statement)
+        {
+            var hierarchy = resolveRHierarchy(statement);
+            hierarchy.Generate();
         }
 
         private void generatePrefix(INodeAST statement)
@@ -189,12 +203,25 @@ namespace AssemblyProviders.CSharp
                     return resolveRHierarchy(valueNode);
                 case NodeTypes.binaryOperator:
                     return resolveBinary(valueNode);
+                case  NodeTypes.prefixOperator:
+                    return resolvePrefix(valueNode);
                 default:
                     throw new NotImplementedException();
             }
             throw new NotImplementedException();
         }
 
+
+        private RValueProvider resolvePrefix(INodeAST prefix)
+        {
+            switch (prefix.Value)
+            {
+                case "new":
+                    return resolveRHierarchy(prefix.Arguments[0]);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
         private RValueProvider resolveBinary(INodeAST binary)
         {
@@ -222,12 +249,14 @@ namespace AssemblyProviders.CSharp
                     throw new NotImplementedException();
             }
 
-            var lOperand = getRValue(lNode).GetStorage();
+            var lOperandProvider= getRValue(lNode);
+            var lOperand =lOperandProvider.GetStorage();
             var rOperand = getRValue(rNode).GetStorage();
 
             E.Call(new MethodID(method), lOperand, rOperand);
             var result = E.GetTemporaryVariable();
-            E.AssignReturnValue(result);
+            
+            E.AssignReturnValue(result,lOperandProvider.GetResultInfo());
 
             return new VariableRValue(result, _context);
         }

@@ -13,6 +13,7 @@ namespace TypeSystem
         public readonly bool IsStatic;
         public readonly ParameterInfo[] Arguments;
         public readonly InstanceInfo ThisType;
+        public readonly InstanceInfo ReturnType;
 
         public string Path
         {
@@ -36,6 +37,8 @@ namespace TypeSystem
             IsStatic = isStatic;
             Arguments = arguments;
             ThisType = new InstanceInfo(TypeName);
+            //TODO correct return type
+            ReturnType = ThisType;
         }
 
         

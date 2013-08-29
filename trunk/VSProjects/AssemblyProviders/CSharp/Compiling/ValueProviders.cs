@@ -172,7 +172,7 @@ namespace AssemblyProviders.CSharp.Compiling
             }
 
             generateCall();            
-            E.AssignReturnValue(lValue.Storage);
+            E.AssignReturnValue(lValue.Storage,_methodInfo.ReturnType);
 
             foreach (var arg in _arguments)
             {
@@ -184,7 +184,7 @@ namespace AssemblyProviders.CSharp.Compiling
         public override void Return()
         {            
             var temporaryName = E.GetTemporaryVariable();            
-            E.AssignReturnValue(temporaryName);
+            E.AssignReturnValue(temporaryName,_methodInfo.ReturnType);
             E.Return(temporaryName);
         }
 
@@ -210,7 +210,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override InstanceInfo GetResultInfo()
         {
-            throw new NotImplementedException();
+            return _methodInfo.ReturnType;
         }
 
         public override string GetStorage()

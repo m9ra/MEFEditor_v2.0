@@ -4,6 +4,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Analyzing.Execution.Instructions;
 using UnitTesting.Analyzing_TestUtils;
 
+using TypeSystem;
+
 namespace UnitTesting
 {
     [TestClass]
@@ -29,7 +31,7 @@ namespace UnitTesting
             {
                 e.AssignLiteral("var1", "HELLO");
                 e.Call("ToLower".Method(), "var1");
-                e.AssignReturnValue("var2");
+                e.AssignReturnValue("var2",InstanceInfo.Create<string>());
             })
             .AssertVariable("var2").HasValue("hello");
         }
@@ -42,7 +44,7 @@ namespace UnitTesting
                 e.AssignLiteral("var1", 25);
                 e.AssignLiteral("format", "Number: {0}");
                 e.Call("ToString".Method(), "var1", "format");
-                e.AssignReturnValue("var2");
+                e.AssignReturnValue("var2", InstanceInfo.Create<string>());
             })
             .AssertVariable("var2").HasValue(25.ToString("Number: {0}"));
         }
@@ -55,7 +57,7 @@ namespace UnitTesting
                 e.AssignLiteral("var1", 40);
                 e.AssignLiteral("var2", 2);
                 e.Call("add_operator".Method(), "var1", "var2");
-                e.AssignReturnValue("var3");
+                e.AssignReturnValue("var3", InstanceInfo.Create<string>());
             })
             .AssertVariable("var3").HasValue(40 + 2);
         }
@@ -74,9 +76,9 @@ namespace UnitTesting
 
                 e.SetLabel(start);
                 e.Call("add_operator".Method(), "increment", "step");
-                e.AssignReturnValue("increment");
+                e.AssignReturnValue("increment", InstanceInfo.Create<int>());
                 e.Call("Equals".Method(), "increment", "stop");
-                e.AssignReturnValue("condition");
+                e.AssignReturnValue("condition",InstanceInfo.Create<bool>());
                 e.ConditionalJump("condition", end);
                 e.Jump(start);
                 e.SetLabel(end);

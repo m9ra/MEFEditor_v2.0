@@ -73,10 +73,10 @@ namespace Analyzing.Execution
             emitInstruction(new AssignArgument<MethodID, InstanceInfo>(target, argumentPosition));
         }
 
-        public override void AssignReturnValue(string targetVar)
+        public override void AssignReturnValue(string targetVar,InstanceInfo returnInfo)
         {
             //TODO resolve return value of previous call
-            var target = getVariable(targetVar);
+            var target = getVariable(targetVar,returnInfo);
 
             emitInstruction(new AssignReturnValue<MethodID, InstanceInfo>(target));
         }

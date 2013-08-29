@@ -10,7 +10,7 @@ namespace TypeExperiments.Reflection.Definitions
 {
     class MethodDefinition
     {
-        public readonly MethodName Name;
+      //  public readonly MethodName Name;
         public readonly BodyDefinition Body;
         public MethodDefinition(BodyDefinition body)
         {

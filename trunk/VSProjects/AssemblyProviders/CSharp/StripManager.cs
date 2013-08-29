@@ -20,7 +20,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="data"></param>
         /// <param name="startingOffset"></param>
-        internal Strip(string data,int startingOffset)
+        internal Strip(string data, int startingOffset)
         {
             Data = data;
             IsOriginal = true;
@@ -31,7 +31,8 @@ namespace AssemblyProviders.CSharp
         /// Create non-original data strip
         /// </summary>
         /// <param name="data"></param>
-        internal Strip(string data){
+        internal Strip(string data)
+        {
             Data = data;
             IsOriginal = false;
             StartingOffset = int.MinValue;
@@ -46,12 +47,12 @@ namespace AssemblyProviders.CSharp
                 //there is no need to split strip
                 return;
 
-            var splitLine=offset - StartingOffset;
+            var splitLine = offset - StartingOffset;
             var part1 = Data.Substring(0, splitLine);
             var part2 = Data.Substring(splitLine);
 
             Data = part1;
-            
+
             var strip = new Strip(part2, offset);
             strip.Next = this.Next;
             this.Next = strip;
@@ -63,6 +64,11 @@ namespace AssemblyProviders.CSharp
                 return false;
 
             return StartingOffset <= offset && offset <= EndingOffset;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("'{0}' off: {1}", Data, StartingOffset);
         }
     }
 
@@ -94,7 +100,7 @@ namespace AssemblyProviders.CSharp
             var strip = getStrip(offset);
             strip.Split(offset);
 
-            var endOffset=offset + length;
+            var endOffset = offset + length;
             var endStrip = getStrip(endOffset, strip);
             endStrip.Split(endOffset);
 
@@ -119,7 +125,7 @@ namespace AssemblyProviders.CSharp
 
             //Remove moved strip from original position
             strip.Next = movedStripEnd.Next;
-            
+
             //Connect moved strip at target position
             movedStripEnd.Next = targetStrip.Next;
             targetStrip.Next = movedStripEnd;
@@ -146,7 +152,7 @@ namespace AssemblyProviders.CSharp
         }
 
         private void insert(Strip inserted, Strip target, int offset)
-        {   
+        {
             target.Split(offset);
 
             inserted.Next = target.Next;
@@ -158,7 +164,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="offset">Searched offset</param>
         /// <returns>Strip containing given offset</returns>
-        private Strip getStrip(int offset,Strip startStrip=null)
+        private Strip getStrip(int offset, Strip startStrip = null)
         {
             if (startStrip == null)
             {
