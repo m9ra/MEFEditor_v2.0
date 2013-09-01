@@ -43,7 +43,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
 
             var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
-            var result = machine.Run(entryLoader);
+            var entryObj=machine.CreateDirectInstance("EntryObject");
+            var result = machine.Run(entryLoader,entryObj);
 
             foreach (var action in assembly.UserActions)
                 action(result);

@@ -26,5 +26,9 @@ namespace TypeSystem
             return new InstanceInfo(typeof(Type));
         }
 
+        public override string ToString()
+        {
+            return TypeName;
+        }
     }
 }

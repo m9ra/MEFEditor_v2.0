@@ -38,6 +38,11 @@ namespace Analyzing.Execution
         private VariableName[] _preparedArguments = null;
 
         /// <summary>
+        /// Arguments for entry call
+        /// </summary>
+        private Instance[] _entryArguments = null;
+
+        /// <summary>
         /// Array of arguments available for current call
         /// </summary>
         public Instance[] CurrentArguments { get { return CurrentCall.ArgumentValues; } }
@@ -56,10 +61,11 @@ namespace Analyzing.Execution
         /// </summary>
         public EditsProvider<MethodID, InstanceInfo> Edits { get; private set; }
 
-        internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader)
+        internal AnalyzingContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader, Instance[] arguments)
         {
             _settings = settings;
             _loader = loader;
+            _entryArguments = arguments;
         }
 
         /// <summary>
@@ -84,12 +90,14 @@ namespace Analyzing.Execution
 
         public void SetField(Instance obj, string fieldName, Instance value)
         {
-            obj.SetField(fieldName, value);
+            var dataInstance = obj as DataInstance<InstanceInfo>;
+            dataInstance.SetField(fieldName, value);
         }
 
         public Instance GetField(Instance obj, string fieldName)
         {
-            return obj.GetField(fieldName);
+            var dataInstance = obj as DataInstance<InstanceInfo>;
+            return dataInstance.GetField(fieldName);
         }
 
         internal void PrepareCall(params VariableName[] arguments)
@@ -172,6 +180,12 @@ namespace Analyzing.Execution
         /// <returns>Argument values</returns>
         private Instance[] getArgumentValues(VariableName[] arguments)
         {
+            var isEntryContext = _callStack.Count == 0;
+            if (isEntryContext)
+            {
+                return _entryArguments;
+            }
+   
             var values = new List<Instance>();
             foreach (var argument in arguments)
             {
@@ -194,12 +208,12 @@ namespace Analyzing.Execution
 
         public Instance CreateDirectInstance<T>(T data)
         {
-            return new Instance(data);
+            return new DirectInstance(data);
         }
 
         public Instance CreateInstance(InstanceInfo info)
         {
-            return new Instance();
+            return new DataInstance<InstanceInfo>(info);
         }
 
         internal void Jump(Label target)

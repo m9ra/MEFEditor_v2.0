@@ -26,10 +26,10 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// </summary>
         public IEnumerable<ResultAction> UserActions { get { return _userActions; } }
         public IEnumerable<EditAction> EditActions { get { return _editActions; } }
-
-        public TestingAssembly AddMethod(string path, string code, bool isStatic = false, params ParameterInfo[] parameters)
+        
+        public TestingAssembly AddMethod(string path, string code, bool isStatic = false,string returnType="", params ParameterInfo[] parameters)
         {
-            var info = getInfo(path, isStatic,"", parameters);
+            var info = getInfo(path, isStatic,returnType, parameters);
             var source = new Source("{" + code + "}");
             var method = new ParsedGenerator(info, source);
 
@@ -122,5 +122,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         #endregion
 
 
+
+ 
     }
 }

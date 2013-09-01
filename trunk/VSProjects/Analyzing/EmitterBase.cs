@@ -42,7 +42,9 @@ namespace Analyzing
         /// <param name="instructions">Inserted instructions</param>
         public abstract void InsertInstructions(InstructionBatch<MethodID, InstanceInfo> instructions);
 
-        public abstract void AssignLiteral(string target, object literal);
+        public abstract void AssignLiteral(string targetVar, object literal);
+
+        public abstract void AssignNewObject(string targetVar, InstanceInfo objectInfo);
 
         public abstract void Assign(string targetVar, string sourceVar);
 
@@ -98,6 +100,8 @@ namespace Analyzing
         /// <returns>Stored info</returns>
         public abstract InstanceInfo VariableInfo(string variable);
 
-        
+
+
+
     }
 }

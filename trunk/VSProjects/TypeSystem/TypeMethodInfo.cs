@@ -15,6 +15,8 @@ namespace TypeSystem
         public readonly InstanceInfo ThisType;
         public readonly InstanceInfo ReturnType;
 
+        public bool HasThis { get { return !IsStatic; } }
+
         public string Path
         {
             get
@@ -39,8 +41,6 @@ namespace TypeSystem
             ThisType = thisType;
             //TODO correct return type
             ReturnType = returnType;
-        }
-
-
+        }        
     }
 }

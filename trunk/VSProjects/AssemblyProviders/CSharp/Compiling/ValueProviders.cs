@@ -23,14 +23,6 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             Context = context;
         }
-
-        internal void PreAction()
-        {
-        }
-
-        internal void PostAction()
-        {
-        }
     }
 
     abstract class LValueProvider : ValueProvider
@@ -73,6 +65,56 @@ namespace AssemblyProviders.CSharp.Compiling
         public override string Storage { get { return _variableName; } }
     }
 
+    class NewObjectValue : RValueProvider
+    {
+        readonly InstanceInfo _objectType;
+
+        RValueProvider _ctorCall;
+        string _storage;
+
+        public NewObjectValue(InstanceInfo objectType, Context context) :
+            base(context)
+        {
+            _objectType = objectType;
+        }
+
+        public override void AssignInto(LValueProvider lValue)
+        {
+            _storage=lValue.Storage;
+            E.AssignNewObject(_storage, _objectType);
+            _ctorCall.Generate();
+        }
+
+        public override void Return()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override InstanceInfo GetResultInfo()
+        {
+            return _objectType;
+        }
+
+        public override string GetStorage()
+        {
+            if (_storage == null)
+            {
+                throw new NotSupportedException("Object hasn't been created yet");
+            }
+            return _storage;
+        }
+
+        public override void Generate()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void SetCtor(RValueProvider ctorCall)
+        {
+            _ctorCall = ctorCall;
+        }
+    }
+
     class LiteralValue : RValueProvider
     {
         private object _literal;
@@ -83,10 +125,8 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         public override void AssignInto(LValueProvider lValue)
-        {
-            lValue.PreAction();
-            E.AssignLiteral(lValue.Storage, _literal);
-            lValue.PostAction();
+        {            
+            E.AssignLiteral(lValue.Storage, _literal);         
         }
 
         public override void Return()
@@ -122,10 +162,8 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         public override void AssignInto(LValueProvider lValue)
-        {
-            lValue.PreAction();
-            E.Assign(lValue.Storage, _variableName);
-            lValue.PostAction();
+        {            
+            E.Assign(lValue.Storage, _variableName);         
         }
         
         public override void Return()
@@ -173,20 +211,8 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override void AssignInto(LValueProvider lValue)
         {
-            lValue.PreAction();
-            foreach (var arg in _arguments)
-            {
-                arg.PreAction();
-            }
-
             generateCall();            
             E.AssignReturnValue(lValue.Storage,_methodInfo.ReturnType);
-
-            foreach (var arg in _arguments)
-            {
-                arg.PostAction();
-            }
-            lValue.PostAction();    
         }
 
         public override void Return()

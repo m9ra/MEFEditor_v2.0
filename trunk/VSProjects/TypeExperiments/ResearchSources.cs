@@ -17,9 +17,6 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
-
-
-
         static internal TestingAssembly EditProvider()
         {
             return AssemblyUtils.Run(@"
@@ -28,20 +25,18 @@ namespace TypeExperiments
                 var result = obj.GetInput();          
             ")
 
-            .AddMethod("TestObj", (c) =>
-            {
+            .AddMethod("TestObj.TestObj", (c) =>
+            {                
+                var thisObj= c.CurrentArguments[0];
                 var arg = c.CurrentArguments[1];
-                var createdObj=c.CreateInstance(new InstanceInfo("TestObj"));
-                
-                c.SetField(createdObj, "inputData", arg);
-                c.Return(createdObj);
+                c.SetField(thisObj, "inputData", arg);                
 
-            }, "TestObj", new ParameterInfo("p", InstanceInfo.Create<string>()))
+            }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
 
             .AddMethod("TestObj.GetInput", (c) =>
             {
-                var thisObj=c.CurrentArguments[0];
-                var data=c.GetField(thisObj, "inputData");
+                var thisObj = c.CurrentArguments[0];
+                var data = c.GetField(thisObj, "inputData");
                 c.Return(data);
             }, false, new ParameterInfo("p", InstanceInfo.Create<string>()))
 
@@ -72,7 +67,7 @@ var result=fib(" + n + @");
     }else{
         return fib(n-1)+fib(n-2);
     }
-", parameters: new ParameterInfo("n", new InstanceInfo("System.Int32")));
+",returnType: "System.Int32", parameters: new ParameterInfo("n", InstanceInfo.Create<int>()));
         }
 
 
@@ -95,9 +90,9 @@ if(true){
 
  .AddMethod("StaticClass.StaticMethod", @"
         return arg1;
-", true,
- new ParameterInfo("arg1", new InstanceInfo("System.String")),
- new ParameterInfo("arg2", new InstanceInfo("System.Int32"))
+", true, "System.Int32",
+ new ParameterInfo("arg1", InstanceInfo.Create<string>()),
+ new ParameterInfo("arg2", InstanceInfo.Create<int>())
  )
 
 

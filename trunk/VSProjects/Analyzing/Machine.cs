@@ -16,6 +16,7 @@ namespace Analyzing
     {
         LoaderBase<MethodID,InstanceInfo> _loader;
         IMachineSettings<InstanceInfo> _settings;
+        Instance[] _entryArguments;
 
         public Machine(IMachineSettings<InstanceInfo> settings)
         {
@@ -23,14 +24,21 @@ namespace Analyzing
         }
 
 
+
+        public Instance CreateDirectInstance(object directObject)
+        {
+            return new DirectInstance(directObject);
+        }
+
         /// <summary>
         /// Run analysis of program loaded via given loader. Execution starts from loader.EntryPoint
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
         /// <returns>Result of analysis</returns>
-        public AnalyzingResult<MethodID, InstanceInfo> Run(LoaderBase<MethodID, InstanceInfo> loader)
+        public AnalyzingResult<MethodID, InstanceInfo> Run(LoaderBase<MethodID, InstanceInfo> loader,params Instance[] arguments)
         {
             _loader = loader;
+            _entryArguments=arguments;
 
             return run();
         }
@@ -41,8 +49,7 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         private AnalyzingResult<MethodID, InstanceInfo> run()
         {
-            var context = new Execution.AnalyzingContext<MethodID, InstanceInfo>(_settings,_loader);
-            context.PrepareCall(new VariableName[] { }); //no input arguments
+            var context = new Execution.AnalyzingContext<MethodID, InstanceInfo>(_settings,_loader,_entryArguments);
             context.FetchCallInstructions(new VersionedName("EntryPoint",0),_loader.EntryPoint);
 
             while (!context.IsExecutionEnd)
@@ -59,5 +66,6 @@ namespace Analyzing
 
             return context.GetResult();
         }
+
     }
 }

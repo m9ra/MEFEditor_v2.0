@@ -27,6 +27,17 @@ namespace AssemblyProviders.CSharp
 
         private readonly Dictionary<string, string> _declaredVariables = new Dictionary<string, string>();
 
+        private static Dictionary<string, string> _mathOperatorMethods = new Dictionary<string, string>(){
+              {"+","add_operator"},
+              {"-","sub_operator"},
+              {"*","mul_operator"},
+              {"/","div_operator"},
+              {"<","lesser_operator"},
+              {">","greater_operator"},
+              
+              {"==","Equals"}
+        };
+
         public static void GenerateInstructions(CodeNode method, TypeMethodInfo info, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
         {
             var compiler = new Compiler(method, info, emitter, services);
@@ -53,8 +64,12 @@ namespace AssemblyProviders.CSharp
         private void generateInstructions()
         {
             E.StartNewInfoBlock().Comment = "===Compiler initialization===";
-            
-            E.AssignArgument("this",_info.ThisType, 0);
+
+
+            if (_info.HasThis)
+            {
+                E.AssignArgument("this", _info.ThisType, 0);
+            }
 
             //generate argument assigns
             for (uint i = 0; i < _info.Arguments.Length; ++i)
@@ -191,7 +206,6 @@ namespace AssemblyProviders.CSharp
             }
         }
 
-
         private RValueProvider getRValue(INodeAST valueNode)
         {
             var value = valueNode.Value;
@@ -204,7 +218,7 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.binaryOperator:
                     return resolveBinary(valueNode);
                 case  NodeTypes.prefixOperator:
-                    return resolvePrefix(valueNode);
+                    return resolveUnary(valueNode);
                 default:
                     throw new NotImplementedException();
             }
@@ -212,12 +226,23 @@ namespace AssemblyProviders.CSharp
         }
 
 
-        private RValueProvider resolvePrefix(INodeAST prefix)
+        private RValueProvider resolveUnary(INodeAST unary)
         {
-            switch (prefix.Value)
+            var operand=unary.Arguments[0];
+            switch (unary.Value)
             {
-                case "new":
-                    return resolveRHierarchy(prefix.Arguments[0]);
+                case "new":                    
+                    var objectType=resolveCtorType(operand);
+                    var nObject=new NewObjectValue(objectType,_context);
+
+                    RValueProvider ctorCall;
+                    if (!tryGetCall(operand, out ctorCall, nObject))
+                    {
+                        throw new NotSupportedException("Cannot construct object");
+                    }
+
+                    nObject.SetCtor(ctorCall);
+                    return nObject;
                 default:
                     throw new NotImplementedException();
             }
@@ -227,18 +252,18 @@ namespace AssemblyProviders.CSharp
         {
             var lNode = binary.Arguments[0];
             var rNode = binary.Arguments[1];
-            string method;
-            switch (binary.Value)
-            {
-                case "+":
-                    method = "System.Int32.add_operator";
-                    break;
-                case "-":
-                    method = "System.Int32.sub_operator";
-                    break;
-                case "<":
-                    method = "System.Int32.lesser_operator";
-                    break;
+            
+            if(_mathOperatorMethods.ContainsKey(binary.Value)){
+                return resolveMathOperator(lNode,binary.Value,rNode);
+            }else{
+                return resolveAssignOperator(lNode,binary.Value,rNode);
+            }
+        }
+
+        private RValueProvider resolveAssignOperator(INodeAST lNode, string op, INodeAST rNode)
+        {
+            switch (op)
+            {              
                 case "=":
                     var lValue = getLValue(lNode);
                     var rValue = getRValue(rNode);
@@ -248,15 +273,27 @@ namespace AssemblyProviders.CSharp
                 default:
                     throw new NotImplementedException();
             }
+        }
 
-            var lOperandProvider= getRValue(lNode);
-            var lOperand =lOperandProvider.GetStorage();
-            var rOperand = getRValue(rNode).GetStorage();
+        private RValueProvider resolveMathOperator(INodeAST lNode, string op, INodeAST rNode)
+        {
+            //translate method according to operators table
+            var method = _mathOperatorMethods[op];
+            
+            var lOperandProvider = getRValue(lNode);
+            var rOperandProvider = getRValue(rNode);
+                        
+            var lTypeInfo= lOperandProvider.GetResultInfo();
+            method = lTypeInfo.TypeName + "." + method;
 
+            var lOperand = lOperandProvider.GetStorage();
+            var rOperand = rOperandProvider.GetStorage();
+
+            //TODO properly determine which call is needed (MethodSearcher)
             E.Call(new MethodID(method), lOperand, rOperand);
             var result = E.GetTemporaryVariable();
-            
-            E.AssignReturnValue(result,lOperandProvider.GetResultInfo());
+
+            E.AssignReturnValue(result, lTypeInfo);
 
             return new VariableRValue(result, _context);
         }
@@ -271,9 +308,7 @@ namespace AssemblyProviders.CSharp
 
             return args.ToArray();
         }
-
       
-
         private RValueProvider resolveRHierarchy(INodeAST node)
         {
             var value = node.Value;
@@ -304,12 +339,10 @@ namespace AssemblyProviders.CSharp
                     throw new NotSupportedException("Unknown hierarchy construction on " + node);
                 }
             }
-
-
+            
             return result;
         }
-
-
+        
         private bool tryGetLiteral(string literalToken, out RValueProvider literal)
         {
             if (literalToken.Contains('"'))
@@ -351,6 +384,22 @@ namespace AssemblyProviders.CSharp
             return false;
         }
 
+        private InstanceInfo resolveCtorType(INodeAST ctorCall)
+        {
+            var name = new StringBuilder();
+
+            while (ctorCall != null)
+            {
+                if (name.Length > 0)
+                {
+                    name.Append('.');
+                }
+                name.Append(ctorCall.Value);
+                ctorCall = ctorCall.Child;
+            }
+
+            return new InstanceInfo(name.ToString());
+        }
 
         private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
         {
@@ -403,14 +452,22 @@ namespace AssemblyProviders.CSharp
                     return true;
                 }
 
-                //shift to next node
-                searcher.ExtendName(currNode.Value);
-                currNode = nextNode;
+                if (currNode.NodeType == NodeTypes.hierarchy)
+                {
+                    //only hierarchy hasn't been resolved immediately(namespaces) -> shift to next node
+                    searcher.ExtendName(currNode.Value);
+                    currNode = nextNode;
+                }
+                else {
+                    //call has to be found
+                    break;   
+                }
             }
 
             call = null;
             return false;
         }
+
         #endregion
     }
 }

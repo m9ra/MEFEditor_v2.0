@@ -113,13 +113,12 @@ namespace UnitTesting
                 var result = obj.GetInput();          
             ")
 
-            .AddMethod("TestObj", (c) =>
+            .AddMethod("TestObj.TestObj", (c) =>
             {
                 var arg = c.CurrentArguments[1];
-                var createdObj = c.CreateInstance(new InstanceInfo("TestObj"));
+                var thisObj = c.CurrentArguments[0];
 
-                c.SetField(createdObj, "inputData", arg);
-                c.Return(createdObj);
+                c.SetField(thisObj, "inputData", arg);
 
             }, "TestObj", new ParameterInfo("p", InstanceInfo.Create<string>()))
 
@@ -152,7 +151,7 @@ namespace UnitTesting
                 }else{
                     return fib(n-1)+fib(n-2);
                 }
-            ", parameters: new ParameterInfo("n", new InstanceInfo("System.Int32")))
+            ",returnType:"System.Int32", parameters: new ParameterInfo("n", new InstanceInfo("System.Int32")))
 
             .AssertVariable("result").HasValue(13);
         }

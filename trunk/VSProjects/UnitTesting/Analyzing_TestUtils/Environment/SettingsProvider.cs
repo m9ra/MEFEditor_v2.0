@@ -76,8 +76,6 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         private static DirectMethod<MethodID,InstanceInfo> generateMathOperator<T>(BinaryExpression mathExpression,ParameterExpression param1, ParameterExpression param2)
         {
-    
-
             var addOperator=Expression.Lambda<Func<T, T, T>>(
                 mathExpression,
                 new ParameterExpression[] { param1, param2 }

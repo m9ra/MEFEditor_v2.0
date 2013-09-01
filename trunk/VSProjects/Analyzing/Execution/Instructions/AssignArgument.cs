@@ -19,7 +19,6 @@ namespace Analyzing.Execution.Instructions
 
         public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
-            //TODO init this for EntryPoint
             if (context.CurrentArguments.Length > 0)
             {
                 var sourceValue = context.CurrentArguments[_argumentNumber];
@@ -27,7 +26,7 @@ namespace Analyzing.Execution.Instructions
             }
             else
             {
-                context.SetValue(_targetVariable,new Instance("Nothing"));
+                throw new NotSupportedException("Argument is not available");
             }
         }
 

@@ -54,7 +54,7 @@ namespace Analyzing.Execution
         public override void AssignLiteral(string targetVar, object literal)
         {
             var target = getVariable(targetVar, literal.GetType());
-            var literalInstance = new Instance(literal);
+            var literalInstance = new DirectInstance(literal);
 
             emitInstruction(new AssignLiteral<MethodID, InstanceInfo>(target, literalInstance));
         }
@@ -79,6 +79,13 @@ namespace Analyzing.Execution
             var target = getVariable(targetVar,returnInfo);
 
             emitInstruction(new AssignReturnValue<MethodID, InstanceInfo>(target));
+        }
+
+        public override void AssignNewObject(string targetVar, InstanceInfo objectInfo)
+        {
+            var target = getVariable(targetVar, objectInfo);
+
+            emitInstruction(new AssignNewObject<MethodID, InstanceInfo>(target,objectInfo));
         }
 
         public override CallBuilder<MethodID, InstanceInfo> StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)
@@ -204,6 +211,12 @@ namespace Analyzing.Execution
 
             return CreateLabel(labelName);
         }
+        
+        public override InstanceInfo VariableInfo(string variable)
+        {
+            return variableInfo(getVariable(variable));
+        }
+
         #endregion
 
         #region Internal emittor services
@@ -279,7 +292,7 @@ namespace Analyzing.Execution
 
             if (info != null && (!_staticVariableInfo.TryGetValue(variableName, out currentInfo) || object.Equals(currentInfo, null)))
             {
-                //firstly determined variable type
+                //firstly determined variable info
                 _staticVariableInfo[variableName] = info;
             }
 
@@ -316,9 +329,6 @@ namespace Analyzing.Execution
         #endregion
 
 
-        public override InstanceInfo VariableInfo(string variable)
-        {
-            return variableInfo(getVariable(variable));
-        }
+    
     }
 }
