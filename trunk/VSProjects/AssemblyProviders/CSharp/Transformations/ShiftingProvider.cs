@@ -25,17 +25,17 @@ namespace AssemblyProviders.CSharp.Transformations
         public override Transformation ShiftBehind(ShiftingTransformationProvider provider)
         {
             var other = provider as ShiftingProvider;
-            var source = _line.StartingToken.Position.Source;
+            var lineSource = _line.Source;
 
-            if (source != other._line.StartingToken.Position.Source)
+            if (lineSource != other._line.Source)
             {
                 throw new NotSupportedException("Cannot shift between sources");
             }
 
-            return new SourceTransformation((t) =>
+            return new SourceTransformation((t,source) =>
             {
                 source.ShiftBehind(_line, other._line);
-            });
+            },lineSource);
         }
     }
 }

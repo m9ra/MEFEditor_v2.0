@@ -17,7 +17,7 @@ namespace Analyzing.Editing
 
     public class EditsProvider<MethodID, InstanceInfo>
     {
-        readonly CallTransformProvider _callProvider;
+        internal readonly CallTransformProvider TransformProvider;
 
         readonly ExecutedBlock<MethodID, InstanceInfo> _block;
 
@@ -27,7 +27,7 @@ namespace Analyzing.Editing
             {
                 throw new ArgumentNullException("callProvider");
             }
-            _callProvider = callProvider;
+            TransformProvider = callProvider;
             _block = block;
         }
 
@@ -92,19 +92,19 @@ namespace Analyzing.Editing
 
         public void AppendArgument(Instance editProvider, string editName, ValueProvider valueProvider)
         {
-            var transformation = _callProvider.AppendArgument(valueProvider);
+            var transformation = TransformProvider.AppendArgument(valueProvider);
             addEdit(editProvider, editName, transformation);
         }
 
         public void RemoveArgument(Instance editProvider, int argumentIndex, string editName)
         {
-            var transformation = _callProvider.RemoveArgument(argumentIndex);
+            var transformation = TransformProvider.RemoveArgument(argumentIndex).Remove();
             addEdit(editProvider, editName, transformation);
         }
 
         public void ChangeArgument(Instance editProvider, int argumentIndex, string editName, ValueProvider valueProvider)
         {
-            var transformation = _callProvider.RewriteArgument(argumentIndex, valueProvider);
+            var transformation = TransformProvider.RewriteArgument(argumentIndex, valueProvider);
             addEdit(editProvider, editName, transformation);
         }
 

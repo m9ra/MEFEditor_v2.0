@@ -23,9 +23,10 @@ namespace AssemblyProviders.CSharp
         private readonly CodeNode _method;
         private readonly EmitterBase<MethodID, InstanceInfo> E;
         private readonly Context _context;
-        private readonly TypeMethodInfo _info;
+        private readonly TypeMethodInfo _methodInfo;
+        private readonly CompilationInfo _info;
 
-        private readonly Dictionary<string, string> _declaredVariables = new Dictionary<string, string>();
+        private readonly Dictionary<string, VariableInfo> _declaredVariables = new Dictionary<string, VariableInfo>();
 
         private static Dictionary<string, string> _mathOperatorMethods = new Dictionary<string, string>(){
               {"+","add_operator"},
@@ -45,10 +46,11 @@ namespace AssemblyProviders.CSharp
             compiler.generateInstructions();
         }
 
-        private Compiler(CodeNode method, TypeMethodInfo info, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
+        private Compiler(CodeNode method, TypeMethodInfo methodInfo, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
         {
             _method = method;
-            _info = info;
+            _info=_method.SourceToken.Position.Source.CompilationInfo;
+            _methodInfo = methodInfo;
             E = emitter;
             _context = new Context(emitter, services);
         }
@@ -64,19 +66,20 @@ namespace AssemblyProviders.CSharp
         private void generateInstructions()
         {
             E.StartNewInfoBlock().Comment = "===Compiler initialization===";
-
-
-            if (_info.HasThis)
+            
+            if (_methodInfo.HasThis)
             {
-                E.AssignArgument("this", _info.ThisType, 0);
+                E.AssignArgument("this", _methodInfo.ThisType, 0);
             }
 
             //generate argument assigns
-            for (uint i = 0; i < _info.Arguments.Length; ++i)
+            for (uint i = 0; i < _methodInfo.Arguments.Length; ++i)
             {
-                var arg = _info.Arguments[i];
+                var arg = _methodInfo.Arguments[i];
                 E.AssignArgument(arg.Name,arg.StaticInfo, i + 1); //argument 0 is always this object
-                _declaredVariables.Add(arg.Name, arg.StaticInfo.TypeName);
+
+                var variable = new VariableInfo(arg.Name, arg.StaticInfo);
+                declareVariable(variable);                
             }
 
             //generate method body
@@ -192,14 +195,18 @@ namespace AssemblyProviders.CSharp
             switch (lValue.NodeType)
             {
                 case NodeTypes.declaration:
-                    var varType = lValue.Arguments[0].Value;
-                    var varName = lValue.Arguments[1].Value;
-                    _declaredVariables.Add(varName, varType);
-                    return new VariableValue(varName, _context);
+                    var typeNode = lValue.Arguments[0];
+                    var nameNode = lValue.Arguments[1];
+
+                    //TODO type resolving
+                    var variable = new VariableInfo(lValue, new InstanceInfo(typeNode.Value));
+                    declareVariable(variable);
+                    return new VariableValue(variable,lValue, _context);
 
                 case NodeTypes.hierarchy:
                     //TODO resolve hierarchy
-                    return new VariableValue(lValue.Value, _context);
+                    var varInfo = getVariableInfo(lValue.Value);
+                    return new VariableValue(varInfo, lValue, _context);
 
                 default:
                     throw new NotImplementedException();
@@ -319,7 +326,7 @@ namespace AssemblyProviders.CSharp
             RValueProvider result;
 
 
-            var hasBaseObject = tryGetLiteral(value, out result) || tryGetVariable(value, out result);
+            var hasBaseObject = tryGetLiteral(node, out result) || tryGetVariable(value, out result);
             var hasCallExtending = node.Child != null;
 
             if (hasBaseObject && hasCallExtending)
@@ -343,26 +350,27 @@ namespace AssemblyProviders.CSharp
             return result;
         }
         
-        private bool tryGetLiteral(string literalToken, out RValueProvider literal)
+        private bool tryGetLiteral(INodeAST literalNode, out RValueProvider literal)
         {
+            var literalToken=literalNode.Value;
             if (literalToken.Contains('"'))
             {
                 literalToken = literalToken.Replace("\"", "");
-                literal = new LiteralValue(literalToken, _context);
+                literal = new LiteralValue(literalToken,literalNode, _context);
                 return true;
             }
 
             int num;
             if (int.TryParse(literalToken, out num))
             {
-                literal = new LiteralValue(num, _context);
+                literal = new LiteralValue(num,literalNode, _context);
                 return true;
             }
 
             bool bl;
             if (bool.TryParse(literalToken, out bl))
             {
-                literal = new LiteralValue(bl, _context);
+                literal = new LiteralValue(bl,literalNode, _context);
                 return true;
             }
 
@@ -466,6 +474,17 @@ namespace AssemblyProviders.CSharp
 
             call = null;
             return false;
+        }
+
+        private void declareVariable(VariableInfo variable)
+        {
+            _info.AddVariable(variable);
+            _declaredVariables.Add(variable.Name, variable);
+        }
+
+        private VariableInfo getVariableInfo(string variableName)
+        {
+            return _declaredVariables[variableName];
         }
 
         #endregion

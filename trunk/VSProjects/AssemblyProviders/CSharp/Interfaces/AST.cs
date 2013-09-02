@@ -112,6 +112,11 @@ namespace AssemblyProviders.CSharp.Interfaces
         IIndexer Indexer { get; }
 
         /// <summary>
+        /// Original source of node
+        /// </summary>
+        Source Source { get; }
+
+        /// <summary>
         /// Value contained in node
         /// </summary>
         string Value { get; }

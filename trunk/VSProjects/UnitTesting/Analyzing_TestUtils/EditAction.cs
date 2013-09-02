@@ -14,14 +14,33 @@ namespace UnitTesting.Analyzing_TestUtils
 
         public readonly string Name;
 
-        public readonly object Value;
+        public readonly bool IsRemoveAction;
 
-
-        public EditAction(VariableName variable, string name, object value)
+        /// <summary>
+        /// If name is null, it is an remove action
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <param name="name"></param>
+        private EditAction(VariableName variable, string name)
         {
             Variable = variable;
             Name = name;
-            Value = value;
+            IsRemoveAction = name == null;
+        }
+
+        internal static EditAction Edit(VariableName variable, string actionName)
+        {
+            if (actionName == null)
+                throw new ArgumentNullException("actionName");
+
+            var action = new EditAction(variable, actionName);
+            return action;
+        }
+
+        internal static EditAction Remove(VariableName variable)
+        {
+            var action = new EditAction(variable, null);
+            return action;
         }
     }
 }

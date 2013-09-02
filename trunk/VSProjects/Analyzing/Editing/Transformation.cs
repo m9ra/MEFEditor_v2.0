@@ -10,9 +10,16 @@ namespace Analyzing.Editing
     {
         protected abstract void apply(TransformationServices services);
 
+        protected abstract bool commit();
+
         public void Apply(TransformationServices services)
         {
             apply(services);
+        }
+
+        internal bool Commit()
+        {
+            return commit();
         }
     }
 }

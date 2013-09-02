@@ -51,41 +51,56 @@ namespace Analyzing.Execution
         }
 
         #region Emittor API implementation
-        public override void AssignLiteral(string targetVar, object literal)
+        public override AssignBuilder<MethodID, InstanceInfo> AssignLiteral(string targetVar, object literal)
         {
             var target = getVariable(targetVar, literal.GetType());
             var literalInstance = new DirectInstance(literal);
 
-            emitInstruction(new AssignLiteral<MethodID, InstanceInfo>(target, literalInstance));
+            var result=new AssignLiteral<MethodID, InstanceInfo>(target, literalInstance);
+            emitInstruction(result);
+
+            return new AssignBuilder<MethodID, InstanceInfo>(result);
         }
 
-        public override void Assign(string targetVar, string sourceVar)
+        public override AssignBuilder<MethodID, InstanceInfo> Assign(string targetVar, string sourceVar)
         {
             var source = getVariable(sourceVar);
             var target = getVariable(targetVar, variableInfo(source));
 
-            emitInstruction(new Assign<MethodID, InstanceInfo>(target, source));
+            var result = new Assign<MethodID, InstanceInfo>(target, source);
+            emitInstruction(result);
+
+            return new AssignBuilder<MethodID,InstanceInfo>(result);  
         }
 
-        public override void AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition)
+        public override AssignBuilder<MethodID, InstanceInfo> AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition)
         {
             var target = getVariable(targetVar, staticInfo);
-            emitInstruction(new AssignArgument<MethodID, InstanceInfo>(target, argumentPosition));
+
+            var result = new AssignArgument<MethodID, InstanceInfo>(target, argumentPosition);
+            emitInstruction(result);
+
+            return new AssignBuilder<MethodID, InstanceInfo>(result);  
         }
 
-        public override void AssignReturnValue(string targetVar,InstanceInfo returnInfo)
-        {
-            //TODO resolve return value of previous call
+        public override AssignBuilder<MethodID, InstanceInfo> AssignReturnValue(string targetVar, InstanceInfo returnInfo)
+        {            
             var target = getVariable(targetVar,returnInfo);
 
-            emitInstruction(new AssignReturnValue<MethodID, InstanceInfo>(target));
+            var result = new AssignReturnValue<MethodID, InstanceInfo>(target);
+            emitInstruction(result);
+
+            return new AssignBuilder<MethodID, InstanceInfo>(result);  
         }
 
-        public override void AssignNewObject(string targetVar, InstanceInfo objectInfo)
+        public override AssignBuilder<MethodID, InstanceInfo> AssignNewObject(string targetVar, InstanceInfo objectInfo)
         {
             var target = getVariable(targetVar, objectInfo);
 
-            emitInstruction(new AssignNewObject<MethodID, InstanceInfo>(target,objectInfo));
+            var result=new AssignNewObject<MethodID, InstanceInfo>(target,objectInfo);
+            emitInstruction(result);
+
+            return new AssignBuilder<MethodID, InstanceInfo>(result);  
         }
 
         public override CallBuilder<MethodID, InstanceInfo> StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)

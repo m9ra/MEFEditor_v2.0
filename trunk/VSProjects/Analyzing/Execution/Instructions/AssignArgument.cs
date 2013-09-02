@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class AssignArgument<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class AssignArgument<MethodID, InstanceInfo> :  AssignBase<MethodID, InstanceInfo>
     {
         private readonly uint _argumentNumber;
         private readonly VariableName _targetVariable;

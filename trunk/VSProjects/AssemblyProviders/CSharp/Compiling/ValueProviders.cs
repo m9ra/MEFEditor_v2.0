@@ -55,10 +55,11 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         private string _variableName;
 
-        public VariableValue(string variableName, Context context)
+        public VariableValue(VariableInfo variable, INodeAST variableNode, Context context)
             : base(context)
         {
-            this._variableName = variableName;
+            variable.VariableAssigns.Add(variableNode);
+            this._variableName = variable.Name;
         }
 
 
@@ -117,16 +118,19 @@ namespace AssemblyProviders.CSharp.Compiling
 
     class LiteralValue : RValueProvider
     {
-        private object _literal;
-        public LiteralValue(object literal, Context context)
+        private readonly object _literal;
+        private readonly INodeAST _literalNode;
+        public LiteralValue(object literal,INodeAST literalNode, Context context)
             : base(context)
         {
             _literal = literal;
+            _literalNode = literalNode;
         }
 
         public override void AssignInto(LValueProvider lValue)
         {            
-            E.AssignLiteral(lValue.Storage, _literal);         
+            var builder=E.AssignLiteral(lValue.Storage, _literal);
+            builder.RemoveProvider = new AssignRemove(_literalNode);
         }
 
         public override void Return()
@@ -250,7 +254,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override string GetStorage()
         {
-            var tmp = new VariableValue(E.GetTemporaryVariable(), Context);
+            var tmp = new TemporaryVariableValue(Context);
             AssignInto(tmp);
 
             return tmp.Storage;
@@ -259,6 +263,21 @@ namespace AssemblyProviders.CSharp.Compiling
         public override void Generate()
         {
             generateCall();
+        }
+    }
+
+    class TemporaryVariableValue:LValueProvider
+    {
+        private readonly string _storage;
+
+        public TemporaryVariableValue(Context context)
+            : base(context)
+        {
+            _storage = E.GetTemporaryVariable();
+        }
+        public override string Storage
+        {
+            get { return _storage; }
         }
     }
 }

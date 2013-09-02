@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Editing
 {
-    public abstract class TransformProvider
+    public abstract class RemoveTransformProvider
     {
-        public abstract RemoveTransformProvider Remove();
+        public abstract Transformation Remove();
     }
 }

@@ -43,8 +43,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
 
             var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
-            var entryObj=machine.CreateDirectInstance("EntryObject");
-            var result = machine.Run(entryLoader,entryObj);
+            var entryObj = machine.CreateDirectInstance("EntryObject");
+            var result = machine.Run(entryLoader, entryObj);
 
             foreach (var action in assembly.UserActions)
                 action(result);
@@ -90,21 +90,50 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             foreach (var editAction in editActions)
             {
-                var inst = result.EntryContext.GetValue(editAction.Variable);
-                var edited = false;
-                foreach (var edit in inst.Edits)
+                if (editAction.IsRemoveAction)
                 {
-                    if (edit.Name != editAction.Name)
-                        continue;
-
-                    result.TransformationServices.Apply(edit.Transformation);
-                    edited = true;
-                    break;
+                    processRemoveEdit(result, editAction);
                 }
-
-                if (!edited)
-                    throw new KeyNotFoundException("Specified edit hasn't been found");
+                else
+                {
+                    processInstanceEdit(result, editAction);
+                }
             }
+        }
+
+        private static void processRemoveEdit(AnalyzingResult<MethodID, InstanceInfo> result, EditAction editAction)
+        {
+            var inst = result.EntryContext.GetValue(editAction.Variable);
+            var services = result.CreateTransformationServices();
+
+            var success = services.Remove(inst);
+
+            if (!success)
+            {
+                throw new NotSupportedException("Remove edit doesn't succeeded");
+            }
+
+            services.Commit();
+        }
+
+        private static void processInstanceEdit(AnalyzingResult<MethodID, InstanceInfo> result, EditAction editAction)
+        {
+            var inst = result.EntryContext.GetValue(editAction.Variable);
+            var edited = false;
+            foreach (var edit in inst.Edits)
+            {
+                if (edit.Name != editAction.Name)
+                    continue;
+
+                var services = result.CreateTransformationServices();
+                services.Apply(edit.Transformation);
+                services.Commit();
+                edited = true;
+                break;
+            }
+
+            if (!edited)
+                throw new KeyNotFoundException("Specified edit hasn't been found");
         }
 
         private static void addStandardMethods(TestingAssembly assembly)

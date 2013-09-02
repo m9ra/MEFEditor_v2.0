@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class AssignReturnValue<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class AssignReturnValue<MethodID, InstanceInfo> : AssignBase<MethodID, InstanceInfo>
     {
         private readonly VariableName _targetVariable;
      

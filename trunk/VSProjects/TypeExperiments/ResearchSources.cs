@@ -17,6 +17,33 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+        static internal TestingAssembly InstanceRemoving()
+        {
+            return AssemblyUtils.Run(@"
+                var toDelete=""toDelete"";
+                
+                var anotherDeleted=PassThrough(toDelete);
+                
+                anotherDeleted=""force redeclaration"";                  
+            ")
+
+          .AddMethod("PassThrough", (c) =>
+          {
+              
+              var arg = c.CurrentArguments[1];
+
+              c.Return(arg);
+
+          }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+                    
+
+          .AddRemoveAction("toDelete")
+          
+          ;
+
+        }
+
+
         static internal TestingAssembly EditProvider()
         {
             return AssemblyUtils.Run(@"

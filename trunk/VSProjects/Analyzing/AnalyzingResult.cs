@@ -12,12 +12,17 @@ namespace Analyzing
     public class AnalyzingResult<MethodID, InstanceInfo>
     {
         public readonly CallContext<MethodID, InstanceInfo> EntryContext;
-        public readonly TransformationServices TransformationServices;
-
-        internal AnalyzingResult(CallContext<MethodID, InstanceInfo> entryContext)
+        private readonly RemoveHandler _removeHandler;
+        
+        internal AnalyzingResult(CallContext<MethodID, InstanceInfo> entryContext,RemoveHandler removeHandler)
         {
             EntryContext = entryContext;
-            TransformationServices = new TransformationServices();
+            _removeHandler = removeHandler;
+        }
+
+        public TransformationServices CreateTransformationServices()
+        {
+            return new TransformationServices(_removeHandler);
         }
     }
 }

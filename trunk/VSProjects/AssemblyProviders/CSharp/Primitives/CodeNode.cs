@@ -96,6 +96,13 @@ namespace AssemblyProviders.CSharp.Primitives
         public INodeAST Parent { get; private set; }
 
         /// <summary>
+        /// Source from where this Code node comes
+        /// </summary>
+        public Source Source { get {return SourceToken.Position.Source; } }
+
+
+
+        /// <summary>
         /// Create CodeNode object from sourceToken.
         /// </summary>
         /// <param name="sourceToken">Expect token, which caused creating this node.</param>

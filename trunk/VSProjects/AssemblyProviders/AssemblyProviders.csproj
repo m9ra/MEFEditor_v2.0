@@ -48,8 +48,10 @@
     <Compile Include="CSharp\CodeInstructions\NodeTools.cs" />
     <Compile Include="CSharp\CodeInstructions\ValueProviders.cs" />
     <Compile Include="CSharp\Compiler.cs" />
+    <Compile Include="CSharp\Compiling\CompilationInfo.cs" />
     <Compile Include="CSharp\Compiling\Context.cs" />
     <Compile Include="CSharp\Compiling\ValueProviders.cs" />
+    <Compile Include="CSharp\Compiling\VariableInfo.cs" />
     <Compile Include="CSharp\Interfaces\AST.cs" />
     <Compile Include="CSharp\Interfaces\CodeInstructions.cs" />
     <Compile Include="CSharp\Interfaces\Scanning.cs" />
@@ -66,6 +68,10 @@
     <Compile Include="CSharp\SyntaxParser.cs" />
     <Compile Include="CSharp\ProjectProvider.cs" />
     <Compile Include="CSharp\Transformations\CallProvider.cs" />
+    <Compile Include="CSharp\Transformations\AssignRemove.cs" />
+    <Compile Include="CSharp\Transformations\EditContext.cs" />
+    <Compile Include="CSharp\Transformations\NodeExtensions.cs" />
+    <Compile Include="CSharp\Transformations\SourceRemoveProvider.cs" />
     <Compile Include="CSharp\Transformations\ShiftingProvider.cs" />
     <Compile Include="CSharp\Transformations\SourceTransformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

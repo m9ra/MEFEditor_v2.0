@@ -98,9 +98,22 @@ namespace AssemblyProviders.CSharp
             }
 
             var strip = getStrip(offset);
-            strip.Split(offset);
 
             var endOffset = offset + length;
+            if (strip == null)
+            {
+                var removedStrip= getStrip(endOffset);
+                if (removedStrip != null)
+                {
+                    throw new NotSupportedException("Cannot remove partial strip");
+                }
+
+                //has already been removed - double removing is not a problem
+                return;
+            }
+
+            strip.Split(offset);
+            
             var endStrip = getStrip(endOffset, strip);
             endStrip.Split(endOffset);
 
@@ -179,7 +192,7 @@ namespace AssemblyProviders.CSharp
                 startStrip = startStrip.Next;
             }
 
-            throw new NotSupportedException("Given offset is not valid");
+            return null;
         }
     }
 }

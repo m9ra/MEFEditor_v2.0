@@ -335,5 +335,31 @@ namespace UnitTesting
             ");
             ;
         }
+
+        [TestMethod]
+        public void Edit_RemoveWithRedeclaration()
+        {
+            AssemblyUtils.Run(@"
+                var toDelete=""toDelete"";
+                
+                var anotherDeleted=PassThrough(toDelete);
+                
+                anotherDeleted=""force redeclaration"";                  
+            ")
+
+         .AddMethod("PassThrough", (c) =>
+         {
+             var arg = c.CurrentArguments[1];
+             c.Return(arg);
+         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         
+         .AddRemoveAction("toDelete")
+
+         .AssertSourceEquivalence(@"
+            var anotherDeleted=""force redeclaration"";         
+         ");
+         ;
+
+        }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class AssignNewObject<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class AssignNewObject<MethodID, InstanceInfo> : AssignBase<MethodID, InstanceInfo>
     {        
         private readonly VariableName _targetVariable;
         private readonly InstanceInfo _objectInfo;

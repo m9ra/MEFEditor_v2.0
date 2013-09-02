@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class AssignLiteral<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class AssignLiteral<MethodID, InstanceInfo> : AssignBase<MethodID, InstanceInfo>
     {        
         private readonly VariableName _targetVariable;
         private readonly Instance _literal;

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing.Editing;
+using Analyzing.Execution.Instructions;
+
 namespace Analyzing.Execution
 {
     public class CallContext<MethodID, InstanceInfo>
@@ -11,15 +14,15 @@ namespace Analyzing.Execution
         private readonly Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
 
         private uint _instructionPointer;
-
-        
-
+                        
         /// <summary>
         /// Determine that call doesn't have next instructions to proceed
         /// </summary>
         internal bool IsCallEnd { get { return _instructionPointer >= Program.Instructions.Length; } }
 
         internal Instance[] ArgumentValues { get; private set; }
+
+        internal readonly CallTransformProvider TransformProvider;
 
         public IEnumerable<VariableName> Variables { get { return _variables.Keys; } }
 
@@ -30,16 +33,13 @@ namespace Analyzing.Execution
         public readonly VersionedName Name;
 
         public readonly InstructionBatch<MethodID, InstanceInfo> Program;
+                
 
-        
-
-
-
-
-        internal CallContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader, VersionedName name, GeneratorBase<MethodID, InstanceInfo> generator, Instance[] argumentValues)
+        internal CallContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader, VersionedName name,CallTransformProvider transformProvider, GeneratorBase<MethodID, InstanceInfo> generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
             Name = name;
+            TransformProvider = transformProvider;
 
             var emitter = new CallEmitter<MethodID, InstanceInfo>(settings, loader);
             generator.Generate(emitter);
@@ -47,7 +47,7 @@ namespace Analyzing.Execution
             Program = emitter.GetEmittedInstructions();
             _instructionPointer = 0;
 
-            EntryBlock = new ExecutedBlock<MethodID, InstanceInfo>(Program.Instructions[0].Info,this);
+            EntryBlock = new ExecutedBlock<MethodID, InstanceInfo>(Program.Instructions[0].Info, this);
             CurrentBlock = EntryBlock;
         }
 
@@ -62,7 +62,9 @@ namespace Analyzing.Execution
             _variables.TryGetValue(targetVaraiable, out oldInstance);
             _variables[targetVaraiable] = value;
 
-            CurrentBlock.RegisterAssign(targetVaraiable, oldInstance, value);
+            var assignInstruction = Program.Instructions[_instructionPointer - 1] as AssignBase<MethodID, InstanceInfo>;
+
+            CurrentBlock.RegisterAssign(targetVaraiable, assignInstruction, oldInstance, value);
         }
 
         public Instance GetValue(VariableName variable)
@@ -108,11 +110,9 @@ namespace Analyzing.Execution
 
         private void setNewBlock(InstructionBase<MethodID, InstanceInfo> instruction)
         {
-            var newExecutedBlock = new ExecutedBlock<MethodID, InstanceInfo>(instruction.Info,this);
+            var newExecutedBlock = new ExecutedBlock<MethodID, InstanceInfo>(instruction.Info, this);
             CurrentBlock.NextBlock = newExecutedBlock;
             CurrentBlock = newExecutedBlock;
         }
-
-
     }
 }

@@ -16,7 +16,16 @@ namespace Analyzing.Editing
         public string AbortMessage { get; private set; }
 
         public bool IsAborted { get { return AbortMessage != null; } }
-            
+
+        private readonly RemoveHandler _removeHandler;
+
+        private List<Transformation> _appliedTransformations = new List<Transformation>();
+
+        internal TransformationServices(RemoveHandler removeHandler)
+        {
+            _removeHandler = removeHandler;
+        }
+
         public object Abort(string abortMessage)
         {
             if (IsAborted)
@@ -31,7 +40,33 @@ namespace Analyzing.Editing
         public void Apply(Transformation transformation)
         {
             if (!IsAborted)
+            {
+                _appliedTransformations.Add(transformation);
                 transformation.Apply(this);
+            }
+        }
+
+        public void Commit()
+        {
+            if (IsAborted)
+            {
+                throw new NotSupportedException("Cannot commit when aborted");
+            }
+
+            foreach (var transform in _appliedTransformations)
+            {
+                if (!transform.Commit())
+                {
+                    throw new NotSupportedException("Commiting transformation failed, sources can be in inconsistent state");
+                }
+            }
+
+            _appliedTransformations = null;
+        }
+
+        public bool Remove(Instance instance)
+        {
+            return _removeHandler(instance, this);
         }
     }
 }

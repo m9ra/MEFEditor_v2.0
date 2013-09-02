@@ -42,19 +42,19 @@ namespace Analyzing
         /// <param name="instructions">Inserted instructions</param>
         public abstract void InsertInstructions(InstructionBatch<MethodID, InstanceInfo> instructions);
 
-        public abstract void AssignLiteral(string targetVar, object literal);
+        public abstract AssignBuilder<MethodID,InstanceInfo> AssignLiteral(string targetVar, object literal);
 
-        public abstract void AssignNewObject(string targetVar, InstanceInfo objectInfo);
+        public abstract AssignBuilder<MethodID, InstanceInfo> AssignNewObject(string targetVar, InstanceInfo objectInfo);
 
-        public abstract void Assign(string targetVar, string sourceVar);
+        public abstract AssignBuilder<MethodID, InstanceInfo> Assign(string targetVar, string sourceVar);
 
-        public abstract void AssignArgument(string targetVar,InstanceInfo staticInfo, uint argumentPosition);
+        public abstract AssignBuilder<MethodID, InstanceInfo> AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition);
 
         /// <summary>
         /// Assigning last call return value into specified target variable
         /// </summary>
         /// <param name="targetVar">Variable where returned value will be assigned</param>
-        public abstract void AssignReturnValue(string targetVar,InstanceInfo staticInfo);
+        public abstract AssignBuilder<MethodID, InstanceInfo> AssignReturnValue(string targetVar, InstanceInfo staticInfo);
 
         public abstract CallBuilder<MethodID, InstanceInfo> StaticCall(string typeFullname, MethodID method, params string[] inputVariables);
 

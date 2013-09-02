@@ -115,7 +115,8 @@ namespace Analyzing.Execution
             var argumentValues = getArgumentValues(_preparedArguments);
             //preparing is just for single call
             _preparedArguments = null;
-            var call = new CallContext<MethodID, InstanceInfo>(_settings, _loader, name, generator, argumentValues);
+            var callTransformProvider = Edits == null ? null : Edits.TransformProvider;
+            var call = new CallContext<MethodID, InstanceInfo>(_settings, _loader, name, callTransformProvider, generator, argumentValues);
 
             if (_entryContext == null)
             {
@@ -170,7 +171,8 @@ namespace Analyzing.Execution
         /// <returns>Result of analysis</returns>
         internal AnalyzingResult<MethodID, InstanceInfo> GetResult()
         {
-            return new AnalyzingResult<MethodID, InstanceInfo>(_entryContext);
+            var removeProvider = new InstanceRemoveProvider<MethodID,InstanceInfo>(_entryContext);
+            return new AnalyzingResult<MethodID, InstanceInfo>(_entryContext,removeProvider.Remove);
         }
 
         /// <summary>
@@ -238,13 +240,9 @@ namespace Analyzing.Execution
             }
             else
             {
-                Edits = new EditsProvider<MethodID, InstanceInfo>(call.TransformProvider,CurrentCall.CurrentBlock);
+                Edits = new EditsProvider<MethodID, InstanceInfo>(call.TransformProvider,CurrentCall.CurrentBlock);                
             }
         }
 
-
-
-
-     
     }
 }

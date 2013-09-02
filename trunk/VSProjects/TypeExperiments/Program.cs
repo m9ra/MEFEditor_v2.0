@@ -52,7 +52,7 @@ namespace TypeExperiments
       //      var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
             var watch=Stopwatch.StartNew();
-            var assembly=ResearchSources.EditProvider();
+            var assembly=ResearchSources.InstanceRemoving();
             var entry = assembly.GetResult().EntryContext;
             watch.Stop();
 

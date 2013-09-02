@@ -65,7 +65,14 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public TestingAssembly AddEditAction(string variable, string editName)
         {
-            var editAction = new EditAction(new VariableName(variable), editName, null);
+            var editAction = EditAction.Edit(new VariableName(variable), editName);
+            _editActions.Add(editAction);
+            return this;
+        }
+
+        public TestingAssembly AddRemoveAction(string variable)
+        {
+            var editAction = EditAction.Remove(new VariableName(variable));
             _editActions.Add(editAction);
             return this;
         }

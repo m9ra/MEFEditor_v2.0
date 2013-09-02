@@ -22,7 +22,7 @@ namespace Analyzing.Execution.Instructions
         public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
         {
             var generator = context.GetGenerator(_methodGeneratorName);
-            context.FetchCallInstructions(_methodGeneratorName,generator);
+            context.FetchCallInstructions(_methodGeneratorName,generator);            
         }
 
         public override string ToString()

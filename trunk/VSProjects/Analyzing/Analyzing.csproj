@@ -40,10 +40,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzingResult.cs" />
+    <Compile Include="AssignBuilder.cs" />
     <Compile Include="CallBuilder.cs" />
     <Compile Include="Editing\CallTransformProvider.cs" />
     <Compile Include="Editing\Edit.cs" />
+    <Compile Include="Editing\EmptyRemoveProvider.cs" />
     <Compile Include="Editing\EmptyShiftingProvider.cs" />
+    <Compile Include="Editing\InstanceRemoveProvider.cs" />
+    <Compile Include="Editing\RemoveTransformProvider.cs" />
     <Compile Include="Editing\ShiftingTransformationProvider.cs" />
     <Compile Include="Editing\TransformationServices.cs" />
     <Compile Include="Editing\EmptyCallTransformProvider.cs" />
@@ -59,6 +63,7 @@
     <Compile Include="Execution\DirectInstance.cs" />
     <Compile Include="Execution\InstructionBase.cs" />
     <Compile Include="Execution\Instructions\Assign.cs" />
+    <Compile Include="Execution\Instructions\AssignBase.cs" />
     <Compile Include="Execution\Instructions\AssignReturnValue.cs" />
     <Compile Include="Execution\Instructions\Call.cs" />
     <Compile Include="Execution\Instructions\AssignLiteral.cs" />

@@ -8,9 +8,9 @@ namespace Analyzing.Editing
 {
     public class EmptyCallTransformProvider : CallTransformProvider
     {
-        public override Transformation RemoveArgument(int argumentIndex)
+        public override RemoveTransformProvider RemoveArgument(int argumentIndex)
         {
-            return new EmptyTransformation();
+            return new EmptyRemoveProvider();
         }
 
         public override Transformation RewriteArgument(int argumentIndex, ValueProvider valueProvider)
@@ -21,6 +21,16 @@ namespace Analyzing.Editing
         public override Transformation AppendArgument(ValueProvider valueProvider)
         {
             return new EmptyTransformation();
+        }
+
+        public override RemoveTransformProvider Remove()
+        {
+            return new EmptyRemoveProvider();
+        }
+
+        public override bool IsOptionalArgument(int argumentIndex)
+        {
+            return false;
         }
     }
 }

@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
+
+using AssemblyProviders.CSharp.Transformations;
 
 namespace AssemblyProviders.CSharp
 {
@@ -13,7 +16,9 @@ namespace AssemblyProviders.CSharp
 
     public class Source
     {
-        StripManager _strips;
+
+        internal readonly EditContext EditContext;
+        public readonly CompilationInfo CompilationInfo = new CompilationInfo();
 
         public readonly string OriginalCode;
 
@@ -21,14 +26,14 @@ namespace AssemblyProviders.CSharp
         {
             get
             {
-                return _strips.Data;
+                return EditContext.Code;
             }
         }
 
         public Source(string code)
         {
             OriginalCode = code;
-            _strips = new StripManager(code);
+            EditContext = new EditContext(this,code);
         }
 
         internal void Remove(INodeAST node, bool keepSideEffect)
@@ -74,7 +79,7 @@ namespace AssemblyProviders.CSharp
 
             move(shiftStart, shiftTargetOffset, shiftLen);
         }
-        
+
         /// <summary>
         /// Converts given value into C# representation
         /// </summary>
@@ -157,8 +162,11 @@ namespace AssemblyProviders.CSharp
         /// <param name="data">Written data</param>
         private void write(int start, int end, string data)
         {
-            _strips.Remove(start, end - start);
-            _strips.Write(start, data);
+            EditContext.Strips.Remove(start, end - start);
+            if (data.Length > 0)
+            {
+                EditContext.Strips.Write(start, data);
+            }
         }
 
         /// <summary>
@@ -168,17 +176,21 @@ namespace AssemblyProviders.CSharp
         /// <param name="data">Written data</param>
         private void write(int start, string data)
         {
-            _strips.Write(start, data);
+            EditContext.Strips.Write(start, data);
         }
 
         private void move(int p1, int np1, int length)
         {
-            _strips.Move(p1, length, np1);
+            EditContext.Strips.Move(p1, length, np1);
         }
 
 
         #endregion
-
-
+        
+        internal bool Commit()
+        {
+            EditContext.Commit();
+            return true;
+        }
     }
 }

@@ -12,5 +12,11 @@ namespace Analyzing.Editing
         {
             services.Abort("There is missing transformation for requested operation");
         }
+
+        protected override bool commit()
+        {
+            //cannot commit empty transaction
+            return false;   
+        }
     }
 }
