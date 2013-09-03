@@ -275,8 +275,10 @@ namespace AssemblyProviders.CSharp
                     var lValue = getLValue(lNode);
                     var rValue = getRValue(rNode);
 
-                    rValue.AssignInto(lValue);                    
-                    return new VariableRValue(lValue.Storage,_context);
+                    rValue.AssignInto(lValue);
+
+                    var lVar = getVariableInfo(lValue.Storage);
+                    return new VariableRValue(lVar,lNode,_context);
                 default:
                     throw new NotImplementedException();
             }
@@ -302,7 +304,7 @@ namespace AssemblyProviders.CSharp
 
             E.AssignReturnValue(result, lTypeInfo);
 
-            return new VariableRValue(result, _context);
+            return new TemporaryRVariableValue(_context, result);
         }
 
         private RValueProvider[] getArguments(INodeAST node)
@@ -318,15 +320,13 @@ namespace AssemblyProviders.CSharp
       
         private RValueProvider resolveRHierarchy(INodeAST node)
         {
-            var value = node.Value;
-
             //first token can be literal/variable/call
             //other hierarchy tokens can only be calls (fields are resolved as calls to property getters)
 
             RValueProvider result;
 
 
-            var hasBaseObject = tryGetLiteral(node, out result) || tryGetVariable(value, out result);
+            var hasBaseObject = tryGetLiteral(node, out result) || tryGetVariable(node, out result);
             var hasCallExtending = node.Child != null;
 
             if (hasBaseObject && hasCallExtending)
@@ -379,12 +379,13 @@ namespace AssemblyProviders.CSharp
             return false;
         }
 
-        private bool tryGetVariable(string variableName, out RValueProvider variable)
+        private bool tryGetVariable(INodeAST variableNode, out RValueProvider variable)
         {
-
-            if (_declaredVariables.ContainsKey(variableName))
+            var variableName = variableNode.Value;
+            VariableInfo varInfo;
+            if (_declaredVariables.TryGetValue(variableName,out varInfo))
             {
-                variable = new VariableRValue(variableName, _context);
+                variable = new VariableRValue(varInfo,variableNode, _context);
                 return true;
             }
 
@@ -453,7 +454,7 @@ namespace AssemblyProviders.CSharp
                     //TODO this object resolution
                     if (calledObject == null && !methodInfo.IsStatic)
                     {
-                        calledObject = new VariableRValue("this", _context);
+                        calledObject = new TemporaryRVariableValue(_context,"this");
                     }
 
                     call = new CallRValue(currNode,methodInfo,calledObject, arguments, _context);

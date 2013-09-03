@@ -264,7 +264,9 @@ namespace AssemblyProviders.CSharp.Primitives
 
         public override string ToString()
         {
-            return Value;
+            var start=StartingToken.Position.Offset;
+            var end=EndingToken.Next.Position.Offset;
+            return Source.OriginalCode.Substring(start, end - start);            
         }
     }
 }

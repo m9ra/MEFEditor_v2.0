@@ -20,25 +20,25 @@ namespace TypeExperiments
         static internal TestingAssembly InstanceRemoving()
         {
             return AssemblyUtils.Run(@"
-                var toDelete=""toDelete"";
-                
-                var anotherDeleted=PassThrough(toDelete);
-                
-                anotherDeleted=""force redeclaration"";                  
+                var toDelete=""toDelete"";                
+                CallWithOptional(CallWithRequired(toDelete));                
             ")
 
-          .AddMethod("PassThrough", (c) =>
-          {
-              
-              var arg = c.CurrentArguments[1];
+         .AddMethod("CallWithOptional", (c) =>
+         {
+             var arg = c.CurrentArguments[1];
+             c.Edits.SetOptional(1);
+             c.Return(arg);
+         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
 
-              c.Return(arg);
+         .AddMethod("CallWithRequired", (c) =>
+         {
+             var arg = c.CurrentArguments[1];
+             c.Return(arg);
+         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
 
-          }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
-                    
+         .AddRemoveAction("toDelete")
 
-          .AddRemoveAction("toDelete")
-          
           ;
 
         }

@@ -12,6 +12,7 @@ namespace AssemblyProviders.CSharp.Transformations
     class EditContext
     {
         private HashSet<INodeAST> _removedVariableUsings = new HashSet<INodeAST>();
+        private Dictionary<INodeAST, CallProvider> _callProviders = new Dictionary<INodeAST, CallProvider>();
 
         private readonly Source _source;
 
@@ -23,9 +24,21 @@ namespace AssemblyProviders.CSharp.Transformations
         internal EditContext(Source source, string code)
         {
             Code = code;
-            _source= source;
+            _source = source;
             Strips = new StripManager(code);
         }
+
+        internal void RegisterCallProvider(INodeAST callNode, CallProvider callProvider)
+        {
+            _callProviders.Add(callNode, callProvider);
+        }
+
+        internal CallProvider GetProvider(INodeAST call)
+        {
+            return _callProviders[call];
+        }
+
+
 
         internal void VariableNodeRemoved(INodeAST variableUse)
         {
@@ -47,7 +60,7 @@ namespace AssemblyProviders.CSharp.Transformations
             if (IsCommited)
                 //commit has already been processed
                 return;
-            
+
             foreach (var variable in _source.CompilationInfo.Variables)
             {
                 checkVariableRemoving(variable);
@@ -63,7 +76,7 @@ namespace AssemblyProviders.CSharp.Transformations
                 if (!_removedVariableUsings.Contains(usage))
                     continue;
 
-                
+
                 if (variable.Declaration == usage)
                 {
                     //it needs to be redeclared
@@ -71,6 +84,30 @@ namespace AssemblyProviders.CSharp.Transformations
                     break;
                 }
             }
+        }
+
+        private INodeAST getTopNode(INodeAST node)
+        {
+            var currNode = node;
+
+            while (currNode.Parent != null)
+            {
+                currNode = currNode.Parent;
+            }
+            return currNode;
+        }
+
+        private INodeAST getRedeclarationNode(INodeAST varUse)
+        {
+            var top=getTopNode(varUse);
+            if (top.Arguments[0] != varUse)
+            {
+                //redeclaration on previous line
+                return top;
+            }
+
+            //we can prepend variable use with type
+            return varUse;
         }
 
         private void redeclare(VariableInfo variable)
@@ -82,8 +119,21 @@ namespace AssemblyProviders.CSharp.Transformations
                 return;
             }
 
-            var redeclarationPoint = leavedUsages.First();
-            Strips.Write(redeclarationPoint.StartingToken.Position.Offset, variable.Info.TypeName+" ");
+            var variableUse = leavedUsages.First();
+            var redeclarationPoint = getRedeclarationNode(variableUse);
+            var beforeStatementOffset = _source.BeforeStatementOffset(redeclarationPoint);
+
+
+            var toWrite = variable.Info.TypeName + " ";
+            if (variableUse != redeclarationPoint)
+            {
+                toWrite += variable.Name+";\n";
+            }
+
+
+            Strips.Write(beforeStatementOffset,toWrite);
         }
+
+
     }
 }

@@ -88,7 +88,7 @@ namespace Analyzing.Execution
                         if (call.TransformProvider.IsOptionalArgument(i))
                         { 
                             //we can remove single argument
-                            yield return call.TransformProvider.RemoveArgument(i);
+                            yield return call.TransformProvider.RemoveArgument(i,false);
                         }
                         else
                         {

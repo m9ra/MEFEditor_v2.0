@@ -107,7 +107,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="node">Node for that is searched position for inserting previous statement</param>
         /// <returns>Position before nodes statement</returns>
-        private Position beforeStatementPosition(INodeAST node)
+        internal int BeforeStatementOffset(INodeAST node)
         {
             var current = node;
             while (current.Parent != null)
@@ -115,15 +115,15 @@ namespace AssemblyProviders.CSharp
                 current = current.Parent;
             }
 
-            return current.StartingToken.Position;
+            return current.StartingToken.Position.Offset;
         }
 
         private void handleSideEffect(INodeAST node)
         {
             var keepExpression = getCode(node) + ";\n";
-            var insertPos = beforeStatementPosition(node);
+            var insertPos = BeforeStatementOffset(node);
 
-            write(insertPos.Offset, keepExpression);
+            write(insertPos, keepExpression);
         }
 
         private string getCode(INodeAST node)

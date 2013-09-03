@@ -11,15 +11,15 @@ namespace AssemblyProviders.CSharp.Transformations
 {
     class AssignRemove:RemoveTransformProvider
     {
-        private INodeAST _literalNode;
+        private INodeAST _assignedValue;
 
         public AssignRemove(INodeAST assignedValue)
         {
-            _literalNode = assignedValue;
+            _assignedValue = assignedValue;
         }
         public override Transformation Remove()
         {
-            var assignOperator=_literalNode.Parent;
+            var assignOperator=_assignedValue.Parent;
             if (assignOperator.NodeType == NodeTypes.declaration)
             {
                 throw new NotImplementedException();
@@ -30,11 +30,14 @@ namespace AssemblyProviders.CSharp.Transformations
                 throw new NotImplementedException();
             }
 
+            var variableNode = assignOperator.Arguments[0];
+
             //remove whole satement;
             return new SourceTransformation((c,source) =>
             {
+                source.EditContext.VariableNodeRemoved(variableNode);
                 source.Remove(assignOperator, false);
-            },_literalNode.Source);
+            },_assignedValue.Source);
         }
     }
 }

@@ -98,7 +98,7 @@ namespace Analyzing.Editing
 
         public void RemoveArgument(Instance editProvider, int argumentIndex, string editName)
         {
-            var transformation = TransformProvider.RemoveArgument(argumentIndex).Remove();
+            var transformation = TransformProvider.RemoveArgument(argumentIndex,true).Remove();
             addEdit(editProvider, editName, transformation);
         }
 
@@ -173,6 +173,11 @@ namespace Analyzing.Editing
             }
 
             return true;
+        }
+
+        public void SetOptional(int index)
+        {
+            TransformProvider.SetOptionalArgument(index);
         }
     }
 }

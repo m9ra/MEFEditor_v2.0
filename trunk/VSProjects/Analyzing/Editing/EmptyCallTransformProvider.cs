@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Editing
 {
-    public class EmptyCallTransformProvider : CallTransformProvider
+    class EmptyCallTransformProvider : CallTransformProvider
     {
-        public override RemoveTransformProvider RemoveArgument(int argumentIndex)
+        public override RemoveTransformProvider RemoveArgument(int argumentIndex, bool keepSideEffect)
         {
             return new EmptyRemoveProvider();
         }
@@ -31,6 +31,11 @@ namespace Analyzing.Editing
         public override bool IsOptionalArgument(int argumentIndex)
         {
             return false;
+        }
+
+        public override void SetOptionalArgument(int index)
+        {
+            //nothing to do
         }
     }
 }

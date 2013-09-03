@@ -361,5 +361,103 @@ namespace UnitTesting
          ;
 
         }
+
+        [TestMethod]
+        public void Edit_RemoveFromOptionalParam()
+        {
+            AssemblyUtils.Run(@"
+                var toDelete=""toDelete"";                
+                CallWithOptional(toDelete);                
+            ")
+
+         .AddMethod("CallWithOptional", (c) =>
+         {
+             var arg = c.CurrentArguments[1];
+             c.Edits.SetOptional(1);
+             c.Return(arg);
+         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+
+         .AddRemoveAction("toDelete")
+
+         .AssertSourceEquivalence(@"
+            CallWithOptional();         
+         ");
+            ;
+
+        }
+
+        [TestMethod]
+        public void Edit_RemoveFromCallCascade()
+        {
+            AssemblyUtils.Run(@"
+                var toDelete=""toDelete"";                
+                CallWithOptional(CallWithRequired(toDelete));                
+            ")
+
+         .AddMethod("CallWithOptional", (c) =>
+         {
+             var arg = c.CurrentArguments[1];
+             c.Edits.SetOptional(1);
+             c.Return(arg);
+         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+
+         .AddMethod("CallWithRequired",(c) =>
+         {
+             var arg = c.CurrentArguments[1];             
+             c.Return(arg);
+         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+
+         .AddRemoveAction("toDelete")
+
+         .AssertSourceEquivalence(@"
+            CallWithOptional();         
+         ");
+            ;
+
+        }
+
+        [TestMethod]
+        public void Edit_RemoveMultiVariable()
+        {
+            AssemblyUtils.Run(@"                
+                var toDelete=""toDelete"";
+                var a=toDelete;
+                var b=a;
+            ")
+
+         .AddRemoveAction("toDelete")
+
+         .AssertSourceEquivalence(@"
+                
+         ");
+            ;
+
+        }
+
+
+        [TestMethod]
+        public void Edit_RemoveChainedAssign()
+        {
+            AssemblyUtils.Run(@"
+                var a=""valA"";
+                var b=""toDelete"";
+                var c=""valC"";
+        
+                var toDelete=b;
+                a=b=c;              
+            ")
+                    
+         .AddRemoveAction("toDelete")
+
+         .AssertSourceEquivalence(@"
+                var a=""valA"";                
+                var c=""valC"";
+                
+                var b;        
+                a=b=c;      
+         ");
+            ;
+
+        }
     }
 }

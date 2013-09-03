@@ -54,14 +54,15 @@ namespace AssemblyProviders.CSharp.Compiling
     class VariableValue : LValueProvider
     {
         private string _variableName;
+        private INodeAST _variableNode;
 
         public VariableValue(VariableInfo variable, INodeAST variableNode, Context context)
             : base(context)
         {
-            variable.VariableAssigns.Add(variableNode);
-            this._variableName = variable.Name;
+            variable.AddVariableUse(variableNode);
+            _variableName = variable.Name;
+            _variableNode = variableNode;
         }
-
 
         public override string Storage { get { return _variableName; } }
     }
@@ -158,31 +159,35 @@ namespace AssemblyProviders.CSharp.Compiling
 
     class VariableRValue: RValueProvider
     {
-        private string _variableName;
-        public VariableRValue(string variableName, Context context)
+        private readonly VariableInfo _variable;
+        private readonly INodeAST _variableNode;
+
+        public VariableRValue(VariableInfo variable,INodeAST variableNode, Context context)
             : base(context)
         {
-            _variableName = variableName;
+            _variable = variable;    
+            _variableNode = variableNode;
         }
 
         public override void AssignInto(LValueProvider lValue)
         {            
-            E.Assign(lValue.Storage, _variableName);         
+            var builder=E.Assign(lValue.Storage, _variable.Name);
+            builder.RemoveProvider = new AssignRemove(_variableNode);
         }
         
         public override void Return()
         {
-            E.Return(_variableName);
+            E.Return(_variable.Name);
         }
 
         public override InstanceInfo GetResultInfo()
         {
-            return E.VariableInfo(_variableName);
+            return E.VariableInfo(_variable.Name);
         }
 
         public override string GetStorage()
         {
-            return _variableName;
+            return _variable.Name;
         }
 
         public override void Generate()
@@ -270,14 +275,66 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         private readonly string _storage;
 
-        public TemporaryVariableValue(Context context)
+        public TemporaryVariableValue(Context context,string storage=null)
             : base(context)
         {
-            _storage = E.GetTemporaryVariable();
+            if (storage == null)
+            {
+                _storage = E.GetTemporaryVariable();
+            }
+            else
+            {
+                _storage = storage;
+            }
+
         }
         public override string Storage
         {
             get { return _storage; }
+        }       
+    }
+
+    class TemporaryRVariableValue : RValueProvider
+    {
+        private readonly string _storage;
+
+        public TemporaryRVariableValue(Context context, string storage = null)
+            : base(context)
+        {
+            if (storage == null)
+            {
+                _storage = E.GetTemporaryVariable();
+            }
+            else
+            {
+                _storage = storage;
+            }
+
+        }
+
+        public override void AssignInto(LValueProvider lValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Return()
+        {
+            E.Return(_storage);
+        }
+
+        public override InstanceInfo GetResultInfo()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetStorage()
+        {
+            return _storage;
+        }
+
+        public override void Generate()
+        {
+            throw new NotImplementedException();
         }
     }
 }

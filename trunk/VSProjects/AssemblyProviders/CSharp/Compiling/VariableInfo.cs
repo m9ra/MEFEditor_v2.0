@@ -19,14 +19,13 @@ namespace AssemblyProviders.CSharp.Compiling
 
         internal readonly INodeAST Declaration;
 
-        internal readonly List<INodeAST> VariableAssigns = new List<INodeAST>();
+        private readonly List<INodeAST> _variableAssigns = new List<INodeAST>();
 
         internal VariableInfo(INodeAST declaration,InstanceInfo info)
         {
             Info = info;
             Declaration = declaration;
-            Name = declaration.Arguments[1].Value;
-            VariableAssigns.Add(declaration);
+            Name = declaration.Arguments[1].Value;            
         }
 
         internal VariableInfo(string variableName, InstanceInfo info)
@@ -34,5 +33,19 @@ namespace AssemblyProviders.CSharp.Compiling
             Name = variableName;
             Info = info;
         }
+
+        internal IEnumerable<INodeAST> VariableAssigns
+        {
+            get
+            {
+                return _variableAssigns;
+            }
+        }
+
+        internal void AddVariableUse(INodeAST variableAssign)
+        {
+            _variableAssigns.Add(variableAssign);
+        }
+
     }
 }
