@@ -11,7 +11,7 @@ using Analyzing.Execution.Instructions;
 
 namespace Analyzing.Execution
 {
-    public class ExecutedBlock<MethodID, InstanceInfo>
+    public class ExecutedBlock
     {
         private MultiDictionary<Instance, VariableName> _scopeStarts = new MultiDictionary<Instance, VariableName>();
         private MultiDictionary<Instance, VariableName> _scopeEnds = new MultiDictionary<Instance, VariableName>();
@@ -19,18 +19,18 @@ namespace Analyzing.Execution
 
         private HashSet<Instance> _affectedInstances = new HashSet<Instance>();
 
-        private LinkedList<CallContext<MethodID, InstanceInfo>> _calls;
+        private LinkedList<CallContext> _calls;
 
-        private ExecutedBlock<MethodID, InstanceInfo> _nextBlock;
+        private ExecutedBlock _nextBlock;
 
         public readonly InstructionInfo Info;
 
         /// <summary>
         /// Call where this block has been executed
         /// </summary>
-        public readonly CallContext<MethodID, InstanceInfo> Call;
+        public readonly CallContext Call;
 
-        public ExecutedBlock<MethodID, InstanceInfo> PreviousBlock { get; private set; }
+        public ExecutedBlock PreviousBlock { get; private set; }
 
         /// <summary>
         /// Instances that were affected during execution of current block
@@ -38,7 +38,7 @@ namespace Analyzing.Execution
         /// </summary>
         public IEnumerable<Instance> AffectedInstances { get { return _affectedInstances; } }
 
-        public ExecutedBlock<MethodID, InstanceInfo> NextBlock
+        public ExecutedBlock NextBlock
         {
             get
             {
@@ -101,13 +101,13 @@ namespace Analyzing.Execution
         }
 
 
-        public IEnumerable<CallContext<MethodID, InstanceInfo>> Calls
+        public IEnumerable<CallContext> Calls
         {
             get
             {
                 if (_calls == null)
                 {
-                    return new CallContext<MethodID, InstanceInfo>[0];
+                    return new CallContext[0];
                 }
                 else
                 {
@@ -116,22 +116,22 @@ namespace Analyzing.Execution
             }
         }
 
-        internal ExecutedBlock(InstructionInfo info, CallContext<MethodID, InstanceInfo> call)
+        internal ExecutedBlock(InstructionInfo info, CallContext call)
         {
             Info = info;
             Call = call;
         }
 
-        internal void RegisterCall(CallContext<MethodID, InstanceInfo> callContext)
+        internal void RegisterCall(CallContext callContext)
         {
             if (_calls == null)
             {
-                _calls = new LinkedList<CallContext<MethodID, InstanceInfo>>();
+                _calls = new LinkedList<CallContext>();
             }
             _calls.AddLast(callContext);
         }
 
-        internal void RegisterAssign(VariableName scopedVariable, AssignBase<MethodID, InstanceInfo> assignInstruction, Instance oldInstance, Instance assignedInstance)
+        internal void RegisterAssign(VariableName scopedVariable, AssignBase assignInstruction, Instance oldInstance, Instance assignedInstance)
         {
             if (scopedVariable.Name.StartsWith("$"))
             {

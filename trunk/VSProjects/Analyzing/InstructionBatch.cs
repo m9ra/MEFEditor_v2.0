@@ -12,18 +12,18 @@ namespace Analyzing
     /// <summary>
     /// Represents Instructions emitted by Emitter. 
     /// </summary>
-    public class InstructionBatch<MethodID,InstanceInfo>
+    public class InstructionBatch
     {
         /// <summary>
         /// Emitted instructions representing program to be runned
         /// </summary>
-        internal readonly InstructionBase<MethodID, InstanceInfo>[] Instructions;
+        internal readonly InstructionBase[] Instructions;
 
         /// <summary>
         /// Create instruction batch from given instructions
         /// </summary>
         /// <param name="instructions">Instructions that will be present in batch</param>
-        internal InstructionBatch(InstructionBase<MethodID, InstanceInfo>[] instructions)
+        internal InstructionBatch(InstructionBase[] instructions)
         {
             Instructions = instructions;
         }
@@ -71,8 +71,8 @@ namespace Analyzing
         {
             foreach (var instr in Instructions)
             {
-                var jmp = instr as Jump<MethodID, InstanceInfo>;
-                var jmpif = instr as ConditionalJump<MethodID, InstanceInfo>;
+                var jmp = instr as Jump;
+                var jmpif = instr as ConditionalJump;
 
                 Label label = null;
                 if (jmp != null)

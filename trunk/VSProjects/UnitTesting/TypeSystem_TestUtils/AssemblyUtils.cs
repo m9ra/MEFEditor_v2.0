@@ -32,7 +32,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return assembly;
         }
 
-        public static AnalyzingResult<MethodID, InstanceInfo> GetResult(this TestingAssembly assembly)
+        public static AnalyzingResult GetResult(this TestingAssembly assembly)
         {
             var directAssembly = SettingsProvider.CreateDirectAssembly();
             var testAssemblies = new TestAssemblyCollection(assembly, directAssembly);
@@ -42,7 +42,7 @@ namespace UnitTesting.TypeSystem_TestUtils
                 , loader);
 
 
-            var machine = new Machine<MethodID, InstanceInfo>(new MachineSettings());
+            var machine = new Machine(new MachineSettings());
             var entryObj = machine.CreateDirectInstance("EntryObject");
             var result = machine.Run(entryLoader, entryObj);
 
@@ -86,7 +86,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return new TestCase(result, variableName);
         }
 
-        private static void processEdits(AnalyzingResult<MethodID, InstanceInfo> result, IEnumerable<EditAction> editActions)
+        private static void processEdits(AnalyzingResult result, IEnumerable<EditAction> editActions)
         {
             foreach (var editAction in editActions)
             {
@@ -101,7 +101,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             }
         }
 
-        private static void processRemoveEdit(AnalyzingResult<MethodID, InstanceInfo> result, EditAction editAction)
+        private static void processRemoveEdit(AnalyzingResult result, EditAction editAction)
         {
             var inst = result.EntryContext.GetValue(editAction.Variable);
             var services = result.CreateTransformationServices();
@@ -116,7 +116,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             services.Commit();
         }
 
-        private static void processInstanceEdit(AnalyzingResult<MethodID, InstanceInfo> result, EditAction editAction)
+        private static void processInstanceEdit(AnalyzingResult result, EditAction editAction)
         {
             var inst = result.EntryContext.GetValue(editAction.Variable);
             var edited = false;

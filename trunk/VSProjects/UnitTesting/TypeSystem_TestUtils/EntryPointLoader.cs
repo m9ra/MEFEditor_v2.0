@@ -20,7 +20,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             _wrapped = wrapped;
         }
 
-        public override GeneratorBase<MethodID, InstanceInfo> EntryPoint
+        public override GeneratorBase EntryPoint
         {
             get { return _wrapped.GetGenerator(_entryPointName); }
         }
@@ -30,7 +30,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return _wrapped.ResolveCallName(method, staticArgumentInfo);
         }
 
-        public override GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        public override GeneratorBase GetGenerator(VersionedName methodName)
         {
             return _wrapped.GetGenerator(methodName);
         }

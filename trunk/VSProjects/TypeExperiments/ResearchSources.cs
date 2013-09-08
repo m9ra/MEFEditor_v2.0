@@ -79,7 +79,7 @@ namespace TypeExperiments
         }
 
 
-        static object acceptInstance(EditsProvider<MethodID, InstanceInfo> edits, TransformationServices services)
+        static object acceptInstance(EditsProvider edits, TransformationServices services)
         {
             var variable = edits.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, services);
             if (variable == null)

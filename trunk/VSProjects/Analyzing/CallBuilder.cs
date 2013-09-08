@@ -9,10 +9,10 @@ using Analyzing.Execution.Instructions;
 
 namespace Analyzing
 {
-    public class CallBuilder<MethodID,InstanceInfo>
+    public class CallBuilder
     {
-        Call<MethodID, InstanceInfo> _call;
-        internal CallBuilder(Call<MethodID, InstanceInfo> call)
+        Call _call;
+        internal CallBuilder(Call call)
         {
             _call = call;
             _call.TransformProvider = new EmptyCallTransformProvider();

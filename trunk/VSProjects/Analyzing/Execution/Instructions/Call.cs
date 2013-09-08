@@ -8,7 +8,7 @@ using Analyzing.Editing;
 
 namespace Analyzing.Execution.Instructions
 {
-    class Call<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class Call : InstructionBase
     {
         private readonly VersionedName _methodGeneratorName;
 
@@ -19,7 +19,7 @@ namespace Analyzing.Execution.Instructions
             _methodGeneratorName = methodGeneratorName;            
         }
 
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             var generator = context.GetGenerator(_methodGeneratorName);
             context.FetchCallInstructions(_methodGeneratorName,generator);            

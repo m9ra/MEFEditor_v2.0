@@ -10,14 +10,14 @@ namespace TypeSystem
 {
     public class DirectGenerator:GeneratorBase
     {
-        private readonly DirectMethod<MethodID, InstanceInfo> _method;
+        private readonly DirectMethod _method;
 
-        public DirectGenerator(DirectMethod<MethodID, InstanceInfo> directMethod)
+        public DirectGenerator(DirectMethod directMethod)
         {
             _method = directMethod;
         }
 
-        protected override void generate(EmitterBase<MethodID, InstanceInfo> emitter)
+        protected override void generate(EmitterBase emitter)
         {
             emitter.DirectInvoke(_method);
         }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class Nop<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class Nop : InstructionBase
     {
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             //No operation
         }

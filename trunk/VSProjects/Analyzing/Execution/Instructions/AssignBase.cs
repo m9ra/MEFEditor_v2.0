@@ -8,7 +8,7 @@ using Analyzing.Editing;
 
 namespace Analyzing.Execution.Instructions
 {
-    abstract class AssignBase<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    abstract class AssignBase : InstructionBase
     {
         internal RemoveTransformProvider RemoveProvider { get; set; }
     }

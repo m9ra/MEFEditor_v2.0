@@ -21,7 +21,7 @@ namespace AssemblyProviders.CSharp
     public class Compiler
     {
         private readonly CodeNode _method;
-        private readonly EmitterBase<MethodID, InstanceInfo> E;
+        private readonly EmitterBase E;
         private readonly Context _context;
         private readonly TypeMethodInfo _methodInfo;
         private readonly CompilationInfo _info;
@@ -39,14 +39,14 @@ namespace AssemblyProviders.CSharp
               {"==","Equals"}
         };
 
-        public static void GenerateInstructions(CodeNode method, TypeMethodInfo info, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
+        public static void GenerateInstructions(CodeNode method, TypeMethodInfo info, EmitterBase emitter, TypeServices services)
         {
             var compiler = new Compiler(method, info, emitter, services);
 
             compiler.generateInstructions();
         }
 
-        private Compiler(CodeNode method, TypeMethodInfo methodInfo, EmitterBase<MethodID, InstanceInfo> emitter, TypeServices services)
+        private Compiler(CodeNode method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)
         {
             _method = method;
             _info=_method.SourceToken.Position.Source.CompilationInfo;

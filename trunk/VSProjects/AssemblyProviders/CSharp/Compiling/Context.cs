@@ -11,10 +11,10 @@ namespace AssemblyProviders.CSharp.Compiling
 {
     class Context
     {
-        public readonly EmitterBase<MethodID, InstanceInfo> Emitter;
+        public readonly EmitterBase Emitter;
         public readonly TypeServices Services;
 
-        public Context(EmitterBase<MethodID, InstanceInfo> emitter,TypeServices services)
+        public Context(EmitterBase emitter,TypeServices services)
         {
             if (emitter == null)
                 throw new ArgumentNullException("emitter");

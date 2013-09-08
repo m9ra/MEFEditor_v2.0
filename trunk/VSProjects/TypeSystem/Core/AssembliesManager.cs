@@ -45,7 +45,7 @@ namespace TypeSystem.Core
             return false;
         }
         
-        internal GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        internal GeneratorBase GetGenerator(VersionedName methodName)
         {
             //TODO: Ask binded provider for generator or get cached one
 

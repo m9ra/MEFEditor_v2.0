@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing;
 using TypeSystem;
+
 
 namespace AssemblyProviders.CSharp
 {
@@ -14,7 +16,6 @@ namespace AssemblyProviders.CSharp
         {
             throw new NotImplementedException();
         }
-
 
         protected override GeneratorBase getGenerator(string methodName)
         {

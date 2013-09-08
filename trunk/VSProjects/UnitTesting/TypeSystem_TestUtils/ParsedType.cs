@@ -29,7 +29,7 @@ namespace AssemblyProviders.CSharp
             _methods.Add(method, parsed);
         }
 
-        protected void generateMethod(MethodID method, InstanceInfo[] argumentInfo, EmitterBase<MethodID,InstanceInfo> emitter)
+        protected void generateMethod(MethodID method, InstanceInfo[] argumentInfo, EmitterBase emitter)
         {
             throw new NotImplementedException();
         }

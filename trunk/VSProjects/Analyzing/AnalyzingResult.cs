@@ -9,12 +9,12 @@ using Analyzing.Execution;
 
 namespace Analyzing
 {
-    public class AnalyzingResult<MethodID, InstanceInfo>
+    public class AnalyzingResult
     {
-        public readonly CallContext<MethodID, InstanceInfo> EntryContext;
+        public readonly CallContext EntryContext;
         private readonly RemoveHandler _removeHandler;
         
-        internal AnalyzingResult(CallContext<MethodID, InstanceInfo> entryContext,RemoveHandler removeHandler)
+        internal AnalyzingResult(CallContext entryContext,RemoveHandler removeHandler)
         {
             EntryContext = entryContext;
             _removeHandler = removeHandler;

@@ -25,7 +25,7 @@ namespace TypeSystem
         /// NOTE:
         ///     Can override direct methods for specified direct types
         /// </summary>
-        public void AddDirectMethod<Type>(MethodID methodID,ParameterInfo[] parameters, DirectMethod<MethodID, InstanceInfo> directMethod)
+        public void AddDirectMethod<Type>(MethodID methodID,ParameterInfo[] parameters, DirectMethod directMethod)
         {
             var thisType = typeof(Type);
             var thisInfo=new InstanceInfo(thisType.FullName);

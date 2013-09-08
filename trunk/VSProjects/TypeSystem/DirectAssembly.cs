@@ -114,7 +114,7 @@ namespace TypeSystem
             DirectMethods.Add(method.Info.Path, method);
         }
 
-        private DirectMethod<MethodID, InstanceInfo> generateDirectMethod(MethodInfo method)
+        private DirectMethod generateDirectMethod(MethodInfo method)
         {
             return (context) =>
             {

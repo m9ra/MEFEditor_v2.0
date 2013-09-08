@@ -9,10 +9,10 @@ using Analyzing.Execution.Instructions;
 
 namespace Analyzing
 {
-    public class AssignBuilder<MethodID, InstanceInfo>
+    public class AssignBuilder
     {
-        readonly AssignBase<MethodID, InstanceInfo> _instruction;
-        internal AssignBuilder(AssignBase<MethodID,InstanceInfo> instruction)
+        readonly AssignBase _instruction;
+        internal AssignBuilder(AssignBase instruction)
         {
             _instruction = instruction;
         }

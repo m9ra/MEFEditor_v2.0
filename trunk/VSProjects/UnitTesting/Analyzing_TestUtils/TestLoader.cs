@@ -12,7 +12,7 @@ using Analyzing.Execution;
 
 namespace UnitTesting.Analyzing_TestUtils
 {
-    class TestLoaderProvider : TypeSystem.LoaderBase
+    class TestLoaderProvider : LoaderBase
     {
         DirectAssembly _assembly = new DirectAssembly(Environment.SettingsProvider.TypeSettings);
         EmitDirector _director;
@@ -21,14 +21,14 @@ namespace UnitTesting.Analyzing_TestUtils
             _director = director;
         }
 
-        static internal TypeSystem.LoaderBase CreateStandardLoader(EmitDirector director)
+        static internal LoaderBase CreateStandardLoader(EmitDirector director)
         {
             var testLoader = new TestLoaderProvider(director);
 
             return testLoader;
         }
 
-        public override GeneratorBase<MethodID, InstanceInfo> EntryPoint
+        public override GeneratorBase EntryPoint
         {
             get { return new DirectorGenerator(_director); }
         }
@@ -48,7 +48,7 @@ namespace UnitTesting.Analyzing_TestUtils
             return name;
         }
 
-        public override GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        public override GeneratorBase GetGenerator(VersionedName methodName)
         {
             MethodItem method;
 
@@ -60,20 +60,20 @@ namespace UnitTesting.Analyzing_TestUtils
             return Environment.SettingsProvider.MethodGenerator(methodName);
         }
                 
-        public override VersionedName ResolveStaticInitializer(TypeSystem.InstanceInfo info)
+        public override VersionedName ResolveStaticInitializer(InstanceInfo info)
         {
             return new VersionedName(info.TypeName+"#initializer", -1);
         }
     }
 
-    class DirectorGenerator:TypeSystem.GeneratorBase
+    class DirectorGenerator:GeneratorBase
     {
         readonly EmitDirector _director;
         public DirectorGenerator(EmitDirector director)
         {
             _director = director;
         }
-        protected override void generate(EmitterBase<MethodID, InstanceInfo> emitter)
+        protected override void generate(EmitterBase emitter)
         {
             _director(emitter);
         }

@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Analyzing.Execution.Instructions;
 using UnitTesting.Analyzing_TestUtils;
 
+using Analyzing;
 using TypeSystem;
 
 namespace UnitTesting

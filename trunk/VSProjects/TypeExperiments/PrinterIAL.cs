@@ -34,7 +34,7 @@ namespace TypeExperiments
         static ConsoleColor VariableColor = ConsoleColor.DarkYellow;
         static ConsoleColor LabelColor = ConsoleColor.Yellow;
 
-        internal static void PrintVariables(CallContext<MethodID, InstanceInfo> context)
+        internal static void PrintVariables(CallContext context)
         {
             foreach (var variable in context.Variables)
             {

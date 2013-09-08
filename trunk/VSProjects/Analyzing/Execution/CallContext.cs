@@ -9,7 +9,7 @@ using Analyzing.Execution.Instructions;
 
 namespace Analyzing.Execution
 {
-    public class CallContext<MethodID, InstanceInfo>
+    public class CallContext
     {
         private readonly Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
 
@@ -26,28 +26,28 @@ namespace Analyzing.Execution
 
         public IEnumerable<VariableName> Variables { get { return _variables.Keys; } }
 
-        public ExecutedBlock<MethodID, InstanceInfo> CurrentBlock { get; private set; }
+        public ExecutedBlock CurrentBlock { get; private set; }
 
-        public readonly ExecutedBlock<MethodID, InstanceInfo> EntryBlock;
+        public readonly ExecutedBlock EntryBlock;
 
         public readonly VersionedName Name;
 
-        public readonly InstructionBatch<MethodID, InstanceInfo> Program;
+        public readonly InstructionBatch Program;
                 
 
-        internal CallContext(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader, VersionedName name,CallTransformProvider transformProvider, GeneratorBase<MethodID, InstanceInfo> generator, Instance[] argumentValues)
+        internal CallContext(IMachineSettings settings, LoaderBase loader, VersionedName name,CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
             Name = name;
             TransformProvider = transformProvider;
 
-            var emitter = new CallEmitter<MethodID, InstanceInfo>(settings, loader);
+            var emitter = new CallEmitter(settings, loader);
             generator.Generate(emitter);
 
             Program = emitter.GetEmittedInstructions();
             _instructionPointer = 0;
 
-            EntryBlock = new ExecutedBlock<MethodID, InstanceInfo>(Program.Instructions[0].Info, this);
+            EntryBlock = new ExecutedBlock(Program.Instructions[0].Info, this);
             CurrentBlock = EntryBlock;
         }
 
@@ -62,7 +62,7 @@ namespace Analyzing.Execution
             _variables.TryGetValue(targetVaraiable, out oldInstance);
             _variables[targetVaraiable] = value;
 
-            var assignInstruction = Program.Instructions[_instructionPointer - 1] as AssignBase<MethodID, InstanceInfo>;
+            var assignInstruction = Program.Instructions[_instructionPointer - 1] as AssignBase;
 
             CurrentBlock.RegisterAssign(targetVaraiable, assignInstruction, oldInstance, value);
         }
@@ -79,7 +79,7 @@ namespace Analyzing.Execution
             return value;
         }
 
-        internal InstructionBase<MethodID, InstanceInfo> NextInstrution()
+        internal InstructionBase NextInstrution()
         {
             if (IsCallEnd)
             {
@@ -103,14 +103,14 @@ namespace Analyzing.Execution
             _instructionPointer = target.InstructionOffset;
         }
 
-        internal void RegisterCall(CallContext<MethodID, InstanceInfo> call)
+        internal void RegisterCall(CallContext call)
         {
             CurrentBlock.RegisterCall(call);
         }
 
-        private void setNewBlock(InstructionBase<MethodID, InstanceInfo> instruction)
+        private void setNewBlock(InstructionBase instruction)
         {
-            var newExecutedBlock = new ExecutedBlock<MethodID, InstanceInfo>(instruction.Info, this);
+            var newExecutedBlock = new ExecutedBlock(instruction.Info, this);
             CurrentBlock.NextBlock = newExecutedBlock;
             CurrentBlock = newExecutedBlock;
         }

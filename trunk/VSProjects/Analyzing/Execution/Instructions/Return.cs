@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class Return<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class Return : InstructionBase
     {
         readonly VariableName _sourceVariable;
      
@@ -16,7 +16,7 @@ namespace Analyzing.Execution.Instructions
             _sourceVariable = sourceVariable;
         }
 
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             var returnValue=context.GetValue(_sourceVariable);
             context.Return(returnValue);

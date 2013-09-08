@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class EnsureInitialized<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class EnsureInitialized : InstructionBase
     {
         private readonly VariableName _targetVariable;
         private readonly VersionedName _initializator;
@@ -18,7 +18,7 @@ namespace Analyzing.Execution.Instructions
             _initializator = initializator;
         }
 
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             if (context.Contains(_targetVariable))
             {

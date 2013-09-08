@@ -10,11 +10,11 @@ namespace Analyzing.Editing
 {
     delegate bool RemoveHandler(Instance instance, TransformationServices services);
 
-    class InstanceRemoveProvider<MethodID, InstanceInfo>
+    class InstanceRemoveProvider
     {
-        readonly CallContext<MethodID, InstanceInfo> _context;
+        readonly CallContext _context;
 
-        internal InstanceRemoveProvider(CallContext<MethodID, InstanceInfo> context)
+        internal InstanceRemoveProvider(CallContext context)
         {
             _context = context;
         }
@@ -40,7 +40,7 @@ namespace Analyzing.Editing
             return false;
         }
 
-        private bool remove(Instance instance, ExecutedBlock<MethodID, InstanceInfo> creationBlock,TransformationServices services)
+        private bool remove(Instance instance, ExecutedBlock creationBlock,TransformationServices services)
         {
             
             var currBlock=creationBlock;

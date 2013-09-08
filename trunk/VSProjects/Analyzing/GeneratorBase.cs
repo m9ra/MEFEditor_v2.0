@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Analyzing
 {
-    public abstract class GeneratorBase<MethodID,InstanceInfo>
+    public abstract class GeneratorBase
     {
-        public InstructionBatch<MethodID, InstanceInfo> EmittedInstructions { get; private set; }
+        public InstructionBatch EmittedInstructions { get; private set; }
 
         /// <summary>
         /// Generate instructions through given emitter
         /// <remarks>Throwing any exception will immediately stops analyzing</remarks>
         /// </summary>
         /// <param name="emitter">Emitter used for instruction generating</param>
-        protected abstract void generate(EmitterBase<MethodID,InstanceInfo> emitter);
+        protected abstract void generate(EmitterBase emitter);
 
-        internal void Generate(EmitterBase<MethodID,InstanceInfo> emitter){
+        internal void Generate(EmitterBase emitter){
             if (EmittedInstructions != null)
             {
                 //we cache previous instructions generation

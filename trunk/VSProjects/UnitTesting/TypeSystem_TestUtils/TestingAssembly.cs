@@ -13,7 +13,7 @@ using UnitTesting.Analyzing_TestUtils;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    public delegate void ResultAction(AnalyzingResult<MethodID, InstanceInfo> result);
+    public delegate void ResultAction(AnalyzingResult result);
 
     public class TestingAssembly : AssemblyProvider
     {
@@ -38,7 +38,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
-        public TestingAssembly AddMethod(string path, DirectMethod<MethodID, InstanceInfo> source, bool isStatic = false, params ParameterInfo[] parameters)
+        public TestingAssembly AddMethod(string path, DirectMethod source, bool isStatic = false, params ParameterInfo[] parameters)
         {
             var info = getInfo(path, isStatic,"", parameters);
             var method = new DirectGenerator(source);
@@ -47,7 +47,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
-        public TestingAssembly AddMethod(string path, DirectMethod<MethodID, InstanceInfo> source, string returnType, params ParameterInfo[] parameters)
+        public TestingAssembly AddMethod(string path, DirectMethod source, string returnType, params ParameterInfo[] parameters)
         {
             var info = getInfo(path, false, returnType, parameters);
             var method = new DirectGenerator(source);

@@ -8,26 +8,26 @@ using Analyzing.Execution.Instructions;
 
 namespace Analyzing.Execution
 {
-    class CallEmitter<MethodID, InstanceInfo> : EmitterBase<MethodID, InstanceInfo>
+    class CallEmitter : EmitterBase
     {
         /// <summary>
         /// Owning loader - is used for resolving
         /// </summary>
-        readonly LoaderBase<MethodID, InstanceInfo> _loader;
+        readonly LoaderBase _loader;
         /// <summary>
         /// Available machine settings
         /// </summary>
-        readonly IMachineSettings<InstanceInfo> _settings;
+        readonly IMachineSettings _settings;
 
         /// <summary>
         /// Instructions emitted by this emitter
         /// </summary>
-        readonly List<InstructionBase<MethodID, InstanceInfo>> _instructions = new List<InstructionBase<MethodID, InstanceInfo>>();
+        readonly List<InstructionBase> _instructions = new List<InstructionBase>();
 
         /// <summary>
         /// Program that has been emitted. Is filled when instructions are inserted, or on GetEmittedInstructions call.
         /// </summary>
-        InstructionBatch<MethodID, InstanceInfo> _emittedProgram;
+        InstructionBatch _emittedProgram;
         /// <summary>
         /// Types resolved for variables
         /// </summary>
@@ -44,66 +44,66 @@ namespace Analyzing.Execution
 
 
 
-        internal CallEmitter(IMachineSettings<InstanceInfo> settings, LoaderBase<MethodID, InstanceInfo> loader)
+        internal CallEmitter(IMachineSettings settings, LoaderBase loader)
         {
             _settings = settings;
             _loader = loader;
         }
 
         #region Emittor API implementation
-        public override AssignBuilder<MethodID, InstanceInfo> AssignLiteral(string targetVar, object literal)
+        public override AssignBuilder AssignLiteral(string targetVar, object literal)
         {
             var target = getVariable(targetVar, literal.GetType());
             var literalInstance = new DirectInstance(literal);
 
-            var result=new AssignLiteral<MethodID, InstanceInfo>(target, literalInstance);
+            var result=new AssignLiteral(target, literalInstance);
             emitInstruction(result);
 
-            return new AssignBuilder<MethodID, InstanceInfo>(result);
+            return new AssignBuilder(result);
         }
 
-        public override AssignBuilder<MethodID, InstanceInfo> Assign(string targetVar, string sourceVar)
+        public override AssignBuilder Assign(string targetVar, string sourceVar)
         {
             var source = getVariable(sourceVar);
             var target = getVariable(targetVar, variableInfo(source));
 
-            var result = new Assign<MethodID, InstanceInfo>(target, source);
+            var result = new Assign(target, source);
             emitInstruction(result);
 
-            return new AssignBuilder<MethodID,InstanceInfo>(result);  
+            return new AssignBuilder(result);  
         }
 
-        public override AssignBuilder<MethodID, InstanceInfo> AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition)
+        public override AssignBuilder AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition)
         {
             var target = getVariable(targetVar, staticInfo);
 
-            var result = new AssignArgument<MethodID, InstanceInfo>(target, argumentPosition);
+            var result = new AssignArgument(target, argumentPosition);
             emitInstruction(result);
 
-            return new AssignBuilder<MethodID, InstanceInfo>(result);  
+            return new AssignBuilder(result);  
         }
 
-        public override AssignBuilder<MethodID, InstanceInfo> AssignReturnValue(string targetVar, InstanceInfo returnInfo)
+        public override AssignBuilder AssignReturnValue(string targetVar, InstanceInfo returnInfo)
         {            
             var target = getVariable(targetVar,returnInfo);
 
-            var result = new AssignReturnValue<MethodID, InstanceInfo>(target);
+            var result = new AssignReturnValue(target);
             emitInstruction(result);
 
-            return new AssignBuilder<MethodID, InstanceInfo>(result);  
+            return new AssignBuilder(result);  
         }
 
-        public override AssignBuilder<MethodID, InstanceInfo> AssignNewObject(string targetVar, InstanceInfo objectInfo)
+        public override AssignBuilder AssignNewObject(string targetVar, InstanceInfo objectInfo)
         {
             var target = getVariable(targetVar, objectInfo);
 
-            var result=new AssignNewObject<MethodID, InstanceInfo>(target,objectInfo);
+            var result=new AssignNewObject(target,objectInfo);
             emitInstruction(result);
 
-            return new AssignBuilder<MethodID, InstanceInfo>(result);  
+            return new AssignBuilder(result);  
         }
 
-        public override CallBuilder<MethodID, InstanceInfo> StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)
+        public override CallBuilder StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)
         {
             var inputArgumentVars = translateVariables(inputVariables);
             var sharedThisVar = getSharedVar(typeFullname);
@@ -112,20 +112,20 @@ namespace Analyzing.Execution
             var generatorName = _loader.ResolveCallName(methodID, getInfo(callArgVars));
             var initializatorName = _loader.ResolveStaticInitializer(variableInfo(sharedThisVar));
 
-            var ensureInitialization = new EnsureInitialized<MethodID, InstanceInfo>(sharedThisVar, initializatorName);
-            var lateInitialization = new LateReturnInitialization<MethodID, InstanceInfo>(sharedThisVar);
-            var preCall = new PreCall<MethodID, InstanceInfo>(callArgVars);
-            var call = new Call<MethodID, InstanceInfo>(generatorName);
+            var ensureInitialization = new EnsureInitialized(sharedThisVar, initializatorName);
+            var lateInitialization = new LateReturnInitialization(sharedThisVar);
+            var preCall = new PreCall(callArgVars);
+            var call = new Call(generatorName);
 
             emitInstruction(ensureInitialization);
             emitInstruction(lateInitialization);
             emitInstruction(preCall);
             emitInstruction(call);
 
-            return new CallBuilder<MethodID, InstanceInfo>(call);
+            return new CallBuilder(call);
         }
 
-        public override CallBuilder<MethodID,InstanceInfo> Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
+        public override CallBuilder Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
         {
             var thisVar = getVariable(thisObjVariable);
             var thisType = variableInfo(thisVar);
@@ -135,25 +135,25 @@ namespace Analyzing.Execution
 
             var generatorName = _loader.ResolveCallName(methodID, getInfo(callArgVars));
 
-            var preCall = new PreCall<MethodID, InstanceInfo>(callArgVars);
-            var call = new Call<MethodID, InstanceInfo>(generatorName);
+            var preCall = new PreCall(callArgVars);
+            var call = new Call(generatorName);
 
             emitInstruction(preCall);
             emitInstruction(call);
 
-            return new CallBuilder<MethodID,InstanceInfo>(call);
+            return new CallBuilder(call);
         }
 
 
-        public override void DirectInvoke(DirectMethod<MethodID, InstanceInfo> method)
+        public override void DirectInvoke(DirectMethod method)
         {
-            emitInstruction(new DirectInvoke<MethodID, InstanceInfo>(method));
+            emitInstruction(new DirectInvoke(method));
         }
 
         public override void Return(string sourceVar)
         {
             var sourceVariable = getVariable(sourceVar);
-            emitInstruction(new Return<MethodID, InstanceInfo>(sourceVariable));
+            emitInstruction(new Return(sourceVariable));
         }
 
         public override Label CreateLabel(string identifier)
@@ -178,20 +178,20 @@ namespace Analyzing.Execution
         public override void ConditionalJump(string conditionVariable, Label target)
         {
             var condition = getVariable(conditionVariable);
-            var conditionalJump = new ConditionalJump<MethodID, InstanceInfo>(condition, target);
+            var conditionalJump = new ConditionalJump(condition, target);
 
             emitInstruction(conditionalJump);
         }
 
         public override void Jump(Label target)
         {
-            var jump = new Jump<MethodID, InstanceInfo>(target);
+            var jump = new Jump(target);
             emitInstruction(jump);
         }
 
         public override void Nop()
         {
-            emitInstruction(new Nop<MethodID, InstanceInfo>());
+            emitInstruction(new Nop());
         }
 
         public override InstructionInfo StartNewInfoBlock()
@@ -240,10 +240,10 @@ namespace Analyzing.Execution
         /// Get emitted program
         /// </summary>
         /// <returns>Program that has been emitted</returns>
-        public override InstructionBatch<MethodID, InstanceInfo> GetEmittedInstructions()
+        public override InstructionBatch GetEmittedInstructions()
         {
             if (_emittedProgram == null)
-                _emittedProgram = new InstructionBatch<MethodID, InstanceInfo>(_instructions.ToArray());
+                _emittedProgram = new InstructionBatch(_instructions.ToArray());
 
             return _emittedProgram;
         }
@@ -252,7 +252,7 @@ namespace Analyzing.Execution
         /// Insert given batch of instructions (as they were emitted)
         /// </summary>
         /// <param name="instructions">Inserted instructions</param>
-        public override void InsertInstructions(InstructionBatch<MethodID, InstanceInfo> instructions)
+        public override void InsertInstructions(InstructionBatch instructions)
         {
             if (_emittedProgram != null)
                 throw new NotSupportedException("Cannot insert instructions twice.");
@@ -266,7 +266,7 @@ namespace Analyzing.Execution
         /// </remarks>
         /// </summary>
         /// <param name="instruction">Added instruction</param>
-        private void emitInstruction(InstructionBase<MethodID, InstanceInfo> instruction)
+        private void emitInstruction(InstructionBase instruction)
         {
             instruction.Info = _currentBlockInfo;
             _instructions.Add(instruction);

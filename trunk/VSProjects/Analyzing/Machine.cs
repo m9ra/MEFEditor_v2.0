@@ -12,13 +12,13 @@ namespace Analyzing
     /// Virtual machine that provides analyzing services
     /// NOTE: Is not thread safe
     /// </summary>
-    public class Machine<MethodID,InstanceInfo>
+    public class Machine
     {
-        LoaderBase<MethodID,InstanceInfo> _loader;
-        IMachineSettings<InstanceInfo> _settings;
+        LoaderBase _loader;
+        IMachineSettings _settings;
         Instance[] _entryArguments;
 
-        public Machine(IMachineSettings<InstanceInfo> settings)
+        public Machine(IMachineSettings settings)
         {
             _settings = settings;    
         }
@@ -35,7 +35,7 @@ namespace Analyzing
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
         /// <returns>Result of analysis</returns>
-        public AnalyzingResult<MethodID, InstanceInfo> Run(LoaderBase<MethodID, InstanceInfo> loader,params Instance[] arguments)
+        public AnalyzingResult Run(LoaderBase loader,params Instance[] arguments)
         {
             _loader = loader;
             _entryArguments=arguments;
@@ -47,9 +47,9 @@ namespace Analyzing
         /// Run instructions present in _cachedLoader
         /// </summary>
         /// <returns>Result of analysis</returns>
-        private AnalyzingResult<MethodID, InstanceInfo> run()
+        private AnalyzingResult run()
         {
-            var context = new Execution.AnalyzingContext<MethodID, InstanceInfo>(_settings,_loader,_entryArguments);
+            var context = new Execution.AnalyzingContext(_settings,_loader,_entryArguments);
             context.FetchCallInstructions(new VersionedName("EntryPoint",0),_loader.EntryPoint);
 
             while (!context.IsExecutionEnd)

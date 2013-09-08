@@ -39,7 +39,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             _services = services;
         }
 
-        protected override void generate(EmitterBase<MethodID, InstanceInfo> emitter)
+        protected override void generate(EmitterBase emitter)
         {
             var method = Parser.Parse(Source);
             Compiler.GenerateInstructions(method,Info,emitter,_services);

@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class DirectInvoke<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class DirectInvoke : InstructionBase
     {
-        DirectMethod<MethodID, InstanceInfo> _call;
-        public DirectInvoke(DirectMethod<MethodID, InstanceInfo> call)
+        DirectMethod _call;
+        public DirectInvoke(DirectMethod call)
         {
             _call = call;
         }
 
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             _call(context);            
         }

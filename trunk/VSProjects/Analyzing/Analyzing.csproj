@@ -80,12 +80,14 @@
     <Compile Include="EmitterBase.cs" />
     <Compile Include="GeneratorBase.cs" />
     <Compile Include="Instance.cs" />
+    <Compile Include="InstanceInfo.cs" />
     <Compile Include="LoaderBase.cs" />
     <Compile Include="IMachineSettings.cs" />
     <Compile Include="InstructionBatch.cs" />
     <Compile Include="InstructionInfo.cs" />
     <Compile Include="Label.cs" />
     <Compile Include="Machine.cs" />
+    <Compile Include="MethodID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VariableName.cs" />
     <Compile Include="VersionedName.cs" />

@@ -15,13 +15,13 @@ namespace Analyzing.Editing
     /// <returns>Value that will be pasted to transformation provider. The transformation provider decide, that it understand given value.</returns>
     public delegate object ValueProvider(TransformationServices services);
 
-    public class EditsProvider<MethodID, InstanceInfo>
+    public class EditsProvider
     {
         internal readonly CallTransformProvider TransformProvider;
 
-        readonly ExecutedBlock<MethodID, InstanceInfo> _block;
+        readonly ExecutedBlock _block;
 
-        internal EditsProvider(CallTransformProvider callProvider, ExecutedBlock<MethodID, InstanceInfo> block)
+        internal EditsProvider(CallTransformProvider callProvider, ExecutedBlock block)
         {
             if (callProvider == null)
             {
@@ -36,7 +36,7 @@ namespace Analyzing.Editing
             //find variable with valid scope
             var block = _block.PreviousBlock;
             var scopeEnds = new HashSet<VariableName>();
-            ExecutedBlock<MethodID, InstanceInfo> _firstScopeEnd = null;
+            ExecutedBlock _firstScopeEnd = null;
             while (block != null)
             {
                 scopeEnds.UnionWith(block.ScopeEnds(instance));
@@ -120,11 +120,11 @@ namespace Analyzing.Editing
         /// <param name="shiftedBlock"></param>
         /// <param name="target"></param>
         /// <param name="services"></param>
-        private bool shiftBehind(ExecutedBlock<MethodID, InstanceInfo> shiftedBlock, ExecutedBlock<MethodID, InstanceInfo> target, TransformationServices services)
+        private bool shiftBehind(ExecutedBlock shiftedBlock, ExecutedBlock target, TransformationServices services)
         {
             //cumulative list of blocks that has to be shifted
             //It has reverse ordering of transformations that will be generated            
-            var shiftedBlocks = new List<ExecutedBlock<MethodID, InstanceInfo>>();
+            var shiftedBlocks = new List<ExecutedBlock>();
             shiftedBlocks.Add(shiftedBlock);
           
             var borderInstances = new HashSet<Instance>();
@@ -161,7 +161,7 @@ namespace Analyzing.Editing
         }
 
 
-        private bool canCross(ExecutedBlock<MethodID, InstanceInfo> shiftedBlock, HashSet<Instance> borderInstances)
+        private bool canCross(ExecutedBlock shiftedBlock, HashSet<Instance> borderInstances)
         {
             foreach (var instance in shiftedBlock.AffectedInstances)
             {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class AssignArgument<MethodID, InstanceInfo> :  AssignBase<MethodID, InstanceInfo>
+    class AssignArgument :  AssignBase
     {
         private readonly uint _argumentNumber;
         private readonly VariableName _targetVariable;
@@ -17,7 +17,7 @@ namespace Analyzing.Execution.Instructions
             _targetVariable = targetVariable;
         }
 
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             if (context.CurrentArguments.Length > 0)
             {

@@ -14,18 +14,18 @@ using TypeSystem;
 namespace UnitTesting.Analyzing_TestUtils
 {
 
-    delegate void EmitDirector(EmitterBase<MethodID,InstanceInfo> emitter);
+    delegate void EmitDirector(EmitterBase emitter);
 
     public static class ExecutionUtils
     {
-        internal static AnalyzingResult<MethodID,InstanceInfo> Run(EmitDirector director)
+        internal static AnalyzingResult Run(EmitDirector director)
         {
-            var machine = new Machine<MethodID,InstanceInfo>(new MachineSettings());
+            var machine = new Machine(new MachineSettings());
             var loader = TestLoaderProvider.CreateStandardLoader(director);
             return machine.Run(loader);
         }
 
-        internal static TestCase AssertVariable(this AnalyzingResult<MethodID,InstanceInfo> result, string variable)
+        internal static TestCase AssertVariable(this AnalyzingResult result, string variable)
         {
             return new TestCase(result, variable);
         }
@@ -35,7 +35,7 @@ namespace UnitTesting.Analyzing_TestUtils
             return new MethodID(methodName);
         }
 
-        public static IEnumerable<CallContext<MethodID, InstanceInfo>> ChildContexts(this CallContext<MethodID, InstanceInfo> callContext)
+        public static IEnumerable<CallContext> ChildContexts(this CallContext callContext)
         {
             var block = callContext.EntryBlock;
             while (block != null)
@@ -51,10 +51,10 @@ namespace UnitTesting.Analyzing_TestUtils
 
     internal class TestCase
     {
-        private readonly AnalyzingResult<MethodID,InstanceInfo> _result;
+        private readonly AnalyzingResult _result;
         private readonly VariableName _variable;
 
-        internal TestCase(AnalyzingResult<MethodID,InstanceInfo> result, string variable)
+        internal TestCase(AnalyzingResult result, string variable)
         {            
             _result = result;
             _variable = new VariableName(variable);

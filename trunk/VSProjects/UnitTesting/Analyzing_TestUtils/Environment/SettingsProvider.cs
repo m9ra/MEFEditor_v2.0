@@ -53,7 +53,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
                 );
         }
 
-        private static DirectMethod<MethodID, InstanceInfo> generateAddOperator<T>(){
+        private static DirectMethod generateAddOperator<T>(){
             var param1 = Expression.Parameter(typeof(T), "op1");
             var param2 = Expression.Parameter(typeof(T), "op2");
 
@@ -63,7 +63,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             );
         }
 
-        private static DirectMethod<MethodID, InstanceInfo> generateSubOperator<T>()
+        private static DirectMethod generateSubOperator<T>()
         {
             var param1 = Expression.Parameter(typeof(T), "op1");
             var param2 = Expression.Parameter(typeof(T), "op2");
@@ -74,7 +74,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             );
         }
 
-        private static DirectMethod<MethodID,InstanceInfo> generateMathOperator<T>(BinaryExpression mathExpression,ParameterExpression param1, ParameterExpression param2)
+        private static DirectMethod generateMathOperator<T>(BinaryExpression mathExpression,ParameterExpression param1, ParameterExpression param2)
         {
             var addOperator=Expression.Lambda<Func<T, T, T>>(
                 mathExpression,
@@ -96,7 +96,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         
 
-        private static DirectMethod<MethodID, InstanceInfo> generateLesserThanOperator()
+        private static DirectMethod generateLesserThanOperator()
         {
             return (context) =>
             {
@@ -113,7 +113,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             return typeof(T).FullName + "." + name;
         }
 
-        internal static GeneratorBase<MethodID, InstanceInfo> MethodGenerator(VersionedName methodName)
+        internal static GeneratorBase MethodGenerator(VersionedName methodName)
         {
             //TODO for testing purposes is this used as method initializer - Refactor
             return new DirectorGenerator((e) =>

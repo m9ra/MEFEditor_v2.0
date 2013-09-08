@@ -10,14 +10,14 @@ namespace Analyzing.Execution.Instructions
     /// <summary>
     /// Prepares arguments for call invoking
     /// </summary>
-    class PreCall<MethodID, InstanceInfo> : InstructionBase<MethodID, InstanceInfo>
+    class PreCall : InstructionBase
     {
         readonly VariableName[] _arguments;
         public PreCall(IEnumerable<VariableName> arguments)
         {
             _arguments = arguments.ToArray();
         }
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             context.PrepareCall(_arguments);
         }

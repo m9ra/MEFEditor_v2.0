@@ -20,7 +20,7 @@ namespace TypeSystem
             _assemblies = new AssembliesManager(assemblies);
         }
 
-        public override GeneratorBase<MethodID, InstanceInfo> EntryPoint
+        public override GeneratorBase EntryPoint
         {
             get { throw new NotImplementedException(); }
         }
@@ -38,7 +38,7 @@ namespace TypeSystem
             throw new NotImplementedException("method not found");
         }
 
-        public override GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        public override GeneratorBase GetGenerator(VersionedName methodName)
         {
             return _assemblies.GetGenerator(methodName);
         }

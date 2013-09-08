@@ -17,7 +17,7 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         protected readonly Context Context;
 
-        protected EmitterBase<MethodID, InstanceInfo> E { get { return Context.Emitter; } }
+        protected EmitterBase E { get { return Context.Emitter; } }
 
         protected ValueProvider(Context context)
         {

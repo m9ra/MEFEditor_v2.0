@@ -8,10 +8,10 @@ using Analyzing.Execution;
 
 namespace Analyzing
 {
-    public delegate void DirectMethod<MethodID, InstanceInfo>(AnalyzingContext<MethodID, InstanceInfo> context);
+    public delegate void DirectMethod(AnalyzingContext context);
 
 
-    public interface IMachineSettings<InstanceInfo>
+    public interface IMachineSettings
     {
         InstanceInfo GetLiteralInfo(Type literalType);
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution.Instructions
 {
-    class Assign<MethodID, InstanceInfo> : AssignBase<MethodID,InstanceInfo>
+    class Assign : AssignBase
     {
         private readonly VariableName _sourceVariable;
         private readonly VariableName _targetVariable;
@@ -17,7 +17,7 @@ namespace Analyzing.Execution.Instructions
             _targetVariable = targetVariable;
         }
 
-        public override void Execute(AnalyzingContext<MethodID, InstanceInfo> context)
+        public override void Execute(AnalyzingContext context)
         {
             var sourceValue = context.GetValue(_sourceVariable);
             context.SetValue(_targetVariable, sourceValue);

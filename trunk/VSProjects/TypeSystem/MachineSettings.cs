@@ -9,7 +9,7 @@ using Analyzing.Execution;
 
 namespace TypeSystem
 {
-    public class MachineSettings:IMachineSettings<InstanceInfo>
+    public class MachineSettings:IMachineSettings
     {
         public InstanceInfo GetLiteralInfo(Type literalType)
         {

@@ -61,7 +61,7 @@ namespace TypeSystem
             return resolveMethod(method, staticArgumentInfo);
         }
 
-        internal GeneratorBase<MethodID, InstanceInfo> GetGenerator(VersionedName methodName)
+        internal GeneratorBase GetGenerator(VersionedName methodName)
         {
             return getGenerator(methodName.Name);
         }

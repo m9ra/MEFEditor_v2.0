@@ -8,7 +8,7 @@ using Analyzing.Execution;
 
 namespace Analyzing
 {
-    public abstract class EmitterBase<MethodID,InstanceInfo>
+    public abstract class EmitterBase
     {
         /// <summary>
         /// Create new instruction info for block starting with next emitted instruction
@@ -34,35 +34,35 @@ namespace Analyzing
         /// Get batch with instructions that has been emitted. Can be used for caching emitted instructions.
         /// </summary>
         /// <returns>Emitted instructions</returns>
-        public abstract InstructionBatch<MethodID, InstanceInfo> GetEmittedInstructions();
+        public abstract InstructionBatch GetEmittedInstructions();
 
         /// <summary>
         /// Insert given batch of instructions (as they were emitted)
         /// </summary>
         /// <param name="instructions">Inserted instructions</param>
-        public abstract void InsertInstructions(InstructionBatch<MethodID, InstanceInfo> instructions);
+        public abstract void InsertInstructions(InstructionBatch instructions);
 
-        public abstract AssignBuilder<MethodID,InstanceInfo> AssignLiteral(string targetVar, object literal);
+        public abstract AssignBuilder  AssignLiteral(string targetVar, object literal);
 
-        public abstract AssignBuilder<MethodID, InstanceInfo> AssignNewObject(string targetVar, InstanceInfo objectInfo);
+        public abstract AssignBuilder AssignNewObject(string targetVar, InstanceInfo objectInfo);
 
-        public abstract AssignBuilder<MethodID, InstanceInfo> Assign(string targetVar, string sourceVar);
+        public abstract AssignBuilder Assign(string targetVar, string sourceVar);
 
-        public abstract AssignBuilder<MethodID, InstanceInfo> AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition);
+        public abstract AssignBuilder AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition);
 
         /// <summary>
         /// Assigning last call return value into specified target variable
         /// </summary>
         /// <param name="targetVar">Variable where returned value will be assigned</param>
-        public abstract AssignBuilder<MethodID, InstanceInfo> AssignReturnValue(string targetVar, InstanceInfo staticInfo);
+        public abstract AssignBuilder AssignReturnValue(string targetVar, InstanceInfo staticInfo);
 
-        public abstract CallBuilder<MethodID, InstanceInfo> StaticCall(string typeFullname, MethodID method, params string[] inputVariables);
+        public abstract CallBuilder StaticCall(string typeFullname, MethodID method, params string[] inputVariables);
 
-        public abstract CallBuilder<MethodID,InstanceInfo> Call(MethodID method, string thisObjVariable, params string[] inputVariables);
+        public abstract CallBuilder Call(MethodID method, string thisObjVariable, params string[] inputVariables);
 
         public abstract void Return(string sourceVar);
 
-        public abstract void DirectInvoke(DirectMethod<MethodID, InstanceInfo> method);
+        public abstract void DirectInvoke(DirectMethod method);
 
         /// <summary>
         /// Creates label

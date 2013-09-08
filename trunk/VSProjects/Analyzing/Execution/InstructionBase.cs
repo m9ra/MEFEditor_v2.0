@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    abstract class InstructionBase<MethodID,InstanceInfo>
+    abstract class InstructionBase
     {
         /// <summary>
         /// Storage for instuction info
@@ -17,7 +17,7 @@ namespace Analyzing.Execution
         /// Execute instruction in given context
         /// </summary>
         /// <param name="context">Context where instruction is executed</param>
-        public abstract void Execute(AnalyzingContext<MethodID,InstanceInfo> context);
+        public abstract void Execute(AnalyzingContext context);
 
         /// <summary>
         /// Info for current instruction
