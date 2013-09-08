@@ -25,12 +25,6 @@ namespace AssemblyProviders.CSharp.Compiling
         }
     }
 
-    abstract class LValueProvider : ValueProvider
-    {
-        protected LValueProvider(Context context) : base(context) { }
-
-        public abstract string Storage { get; }
-    }
 
     abstract class RValueProvider : ValueProvider
     {
@@ -51,21 +45,7 @@ namespace AssemblyProviders.CSharp.Compiling
     }
 
 
-    class VariableValue : LValueProvider
-    {
-        private string _variableName;
-        private INodeAST _variableNode;
 
-        public VariableValue(VariableInfo variable, INodeAST variableNode, Context context)
-            : base(context)
-        {
-            variable.AddVariableUse(variableNode);
-            _variableName = variable.Name;
-            _variableNode = variableNode;
-        }
-
-        public override string Storage { get { return _variableName; } }
-    }
 
     class NewObjectValue : RValueProvider
     {
@@ -82,7 +62,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override void AssignInto(LValueProvider lValue)
         {
-            _storage=lValue.Storage;
+            _storage = lValue.Storage;
             E.AssignNewObject(_storage, _objectType);
             _ctorCall.Generate();
         }
@@ -120,17 +100,20 @@ namespace AssemblyProviders.CSharp.Compiling
     class LiteralValue : RValueProvider
     {
         private readonly object _literal;
+        private readonly InstanceInfo _literalInfo;
         private readonly INodeAST _literalNode;
-        public LiteralValue(object literal,INodeAST literalNode, Context context)
+        public LiteralValue(object literal, INodeAST literalNode, Context context)
             : base(context)
         {
             _literal = literal;
             _literalNode = literalNode;
+            _literalInfo = new InstanceInfo(_literal.GetType());
         }
 
         public override void AssignInto(LValueProvider lValue)
-        {            
-            var builder=E.AssignLiteral(lValue.Storage, _literal);
+        {
+            var storage = lValue.Storage;
+            var builder = E.AssignLiteral(storage, _literal);
             builder.RemoveProvider = new AssignRemove(_literalNode);
         }
 
@@ -141,11 +124,11 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override InstanceInfo GetResultInfo()
         {
-            throw new NotImplementedException();
+            return _literalInfo;
         }
 
         public override string GetStorage()
-        {            
+        {
             var temporaryName = E.GetTemporaryVariable();
             E.AssignLiteral(temporaryName, _literal);
             return temporaryName;
@@ -157,24 +140,25 @@ namespace AssemblyProviders.CSharp.Compiling
         }
     }
 
-    class VariableRValue: RValueProvider
+    class VariableRValue : RValueProvider
     {
         private readonly VariableInfo _variable;
         private readonly INodeAST _variableNode;
 
-        public VariableRValue(VariableInfo variable,INodeAST variableNode, Context context)
+        public VariableRValue(VariableInfo variable, INodeAST variableNode, Context context)
             : base(context)
         {
-            _variable = variable;    
+            _variable = variable;
             _variableNode = variableNode;
         }
 
         public override void AssignInto(LValueProvider lValue)
-        {            
-            var builder=E.Assign(lValue.Storage, _variable.Name);
+        {
+            var storage = lValue.Storage;
+            var builder = E.Assign(storage, _variable.Name);    
             builder.RemoveProvider = new AssignRemove(_variableNode);
         }
-        
+
         public override void Return()
         {
             E.Return(_variable.Name);
@@ -203,7 +187,7 @@ namespace AssemblyProviders.CSharp.Compiling
         private INodeAST _callNode;
         private RValueProvider _calledObject;
 
-        public CallRValue(INodeAST callNode,TypeMethodInfo methodInfo,RValueProvider calledObject,RValueProvider[] arguments, Context context)
+        public CallRValue(INodeAST callNode, TypeMethodInfo methodInfo, RValueProvider calledObject, RValueProvider[] arguments, Context context)
             : base(context)
         {
             _callNode = callNode;
@@ -220,14 +204,14 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override void AssignInto(LValueProvider lValue)
         {
-            generateCall();            
-            E.AssignReturnValue(lValue.Storage,_methodInfo.ReturnType);
+            generateCall();
+            E.AssignReturnValue(lValue.Storage, _methodInfo.ReturnType);
         }
 
         public override void Return()
-        {            
-            var temporaryName = E.GetTemporaryVariable();            
-            E.AssignReturnValue(temporaryName,_methodInfo.ReturnType);
+        {
+            var temporaryName = E.GetTemporaryVariable();
+            E.AssignReturnValue(temporaryName, _methodInfo.ReturnType);
             E.Return(temporaryName);
         }
 
@@ -238,16 +222,16 @@ namespace AssemblyProviders.CSharp.Compiling
             {
                 argVariables.Add(arg.GetStorage());
             }
-            
+
             if (_methodInfo.IsStatic)
-            {            
-                E.StaticCall(_methodInfo.TypeName,new MethodID(_methodInfo.Path), argVariables.ToArray());
+            {
+                E.StaticCall(_methodInfo.TypeName, new MethodID(_methodInfo.Path), argVariables.ToArray());
             }
             else
             {
-                var objStorage = _calledObject.GetStorage();                
-                
-                var builder=E.Call(new MethodID(_methodInfo.Path),objStorage, argVariables.ToArray());
+                var objStorage = _calledObject.GetStorage();
+
+                var builder = E.Call(new MethodID(_methodInfo.Path), objStorage, argVariables.ToArray());
                 builder.SetTransformationProvider(new CallProvider(_callNode));
             }
         }
@@ -269,29 +253,6 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             generateCall();
         }
-    }
-
-    class TemporaryVariableValue:LValueProvider
-    {
-        private readonly string _storage;
-
-        public TemporaryVariableValue(Context context,string storage=null)
-            : base(context)
-        {
-            if (storage == null)
-            {
-                _storage = E.GetTemporaryVariable();
-            }
-            else
-            {
-                _storage = storage;
-            }
-
-        }
-        public override string Storage
-        {
-            get { return _storage; }
-        }       
     }
 
     class TemporaryRVariableValue : RValueProvider
@@ -324,7 +285,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override InstanceInfo GetResultInfo()
         {
-            throw new NotImplementedException();
+            return E.VariableInfo(_storage);
         }
 
         public override string GetStorage()

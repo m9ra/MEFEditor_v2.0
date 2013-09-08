@@ -58,8 +58,13 @@ namespace AssemblyProviders.CSharp
         #region Info utilities
         private string statementText(INodeAST node)
         {
-            return node.StartingToken.Position.GetStrip(node.EndingToken.Position);
+            return node.ToString().Trim();
         }
+
+        private string conditionalBlockTest(INodeAST block){
+            return string.Format("{0}({1})",block.Value,block.Arguments[0]);
+        }
+
         #endregion
 
         #region Instruction generating
@@ -78,7 +83,8 @@ namespace AssemblyProviders.CSharp
                 var arg = _methodInfo.Arguments[i];
                 E.AssignArgument(arg.Name,arg.StaticInfo, i + 1); //argument 0 is always this object
 
-                var variable = new VariableInfo(arg.Name, arg.StaticInfo);
+                var variable = new VariableInfo(arg.Name);
+                variable.HintAssignedType(arg.StaticInfo);
                 declareVariable(variable);                
             }
 
@@ -103,26 +109,53 @@ namespace AssemblyProviders.CSharp
 
         private void generateBlock(INodeAST block)
         {
+            switch (block.Value)
+            {
+                case "if":
+                    generateIf(block);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private void generateIf(INodeAST ifBlock)
+        {
             var info = E.StartNewInfoBlock();
-            info.Comment = "\n---" + block.Value + " block---";
-            var condition = getRValue(block.Arguments[0]);
-     
+            info.Comment = "\n---" + conditionalBlockTest(ifBlock) +"---";
+
+            var condition = getRValue(ifBlock.Arguments[0]);
+            var ifBranch = ifBlock.Arguments[1];
+            var elseBranch = ifBlock.Arguments.Length > 2 ? ifBlock.Arguments[2] : null;
+
             var trueLbl = E.GetTemporaryLabel("_true");
             var falseLbl = E.GetTemporaryLabel("_false");
             var endLbl = E.GetTemporaryLabel("_end");
 
+            if (elseBranch == null)
+            {
+                //there is no false branch, jump directly to end
+                falseLbl = endLbl;
+            }
+
+            //generate condition block with jump table
             E.ConditionalJump(condition.GetStorage(), trueLbl);
             E.Jump(falseLbl);
 
+            //generate if branch
             E.SetLabel(trueLbl);
-            generateSubsequence(block.Arguments[1]);
+            generateSubsequence(ifBranch);
 
-            E.Jump(endLbl);
-            E.SetLabel(falseLbl);
+            if (elseBranch != null)
+            {
+                //if there is else branch generate it
+                E.Jump(endLbl);
+                E.SetLabel(falseLbl);
+                generateSubsequence(elseBranch);
+            }
 
-            generateSubsequence(block.Arguments[2]);
             E.SetLabel(endLbl);
-            //because of editation can proceed smoothly
+            //because of editing can proceed smoothly (detecting borders)
             E.Nop();
         }
 
@@ -199,7 +232,7 @@ namespace AssemblyProviders.CSharp
                     var nameNode = lValue.Arguments[1];
 
                     //TODO type resolving
-                    var variable = new VariableInfo(lValue, new InstanceInfo(typeNode.Value));
+                    var variable = new VariableInfo(lValue);
                     declareVariable(variable);
                     return new VariableValue(variable,lValue, _context);
 
@@ -216,20 +249,26 @@ namespace AssemblyProviders.CSharp
         private RValueProvider getRValue(INodeAST valueNode)
         {
             var value = valueNode.Value;
+            RValueProvider result;
 
             switch (valueNode.NodeType)
             {
                 case NodeTypes.call:
                 case NodeTypes.hierarchy:
-                    return resolveRHierarchy(valueNode);
+                    result= resolveRHierarchy(valueNode);
+                    break;
                 case NodeTypes.binaryOperator:
-                    return resolveBinary(valueNode);
+                    result= resolveBinary(valueNode);
+                    break;  
                 case  NodeTypes.prefixOperator:
-                    return resolveUnary(valueNode);
+                    result= resolveUnary(valueNode);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
-            throw new NotImplementedException();
+
+            _info.ReportNodeType(valueNode, result.GetResultInfo());
+            return result;  
         }
 
 

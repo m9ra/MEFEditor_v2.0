@@ -21,7 +21,14 @@ namespace TypeExperiments
         {
             return AssemblyUtils.Run(@"
                 var toDelete=""toDelete"";                
-                CallWithOptional(CallWithRequired(toDelete));                
+                CallWithOptional(CallWithRequired(toDelete));           
+                var x=1;
+                var y=2;
+                if(x<y){
+                    toDelete=""same"";
+                }     else{
+                    toDelete=""different"";
+                }
             ")
 
          .AddMethod("CallWithOptional", (c) =>

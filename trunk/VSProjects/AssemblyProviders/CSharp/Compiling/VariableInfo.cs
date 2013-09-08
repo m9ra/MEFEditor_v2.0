@@ -11,9 +11,11 @@ namespace AssemblyProviders.CSharp.Compiling
 {
     public class VariableInfo
     {
-        public readonly InstanceInfo Info;
+        public InstanceInfo Info { get; private set; }
 
         public readonly string Name;
+
+        public readonly bool IsImplicitlyTyped;
 
         public bool IsArgument { get { return Declaration == null; } }
 
@@ -21,17 +23,28 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private readonly List<INodeAST> _variableAssigns = new List<INodeAST>();
 
-        internal VariableInfo(INodeAST declaration,InstanceInfo info)
-        {
-            Info = info;
-            Declaration = declaration;
-            Name = declaration.Arguments[1].Value;            
+        internal VariableInfo(INodeAST declaration)
+        {            
+            Declaration = declaration;            
+            Name = declaration.Arguments[1].Value;
+
+            //TODO chained type names, namespace resolvings,..
+            var typeName = declaration.Arguments[0].Value;
+            if (typeName == "var")
+            {
+                IsImplicitlyTyped = true;
+            }
+            else
+            {
+                //not implicitly typed variable, we can determine type
+                IsImplicitlyTyped = false;
+                Info = new InstanceInfo(typeName);
+            }
         }
 
-        internal VariableInfo(string variableName, InstanceInfo info)
+        internal VariableInfo(string variableName)
         {
-            Name = variableName;
-            Info = info;
+            Name = variableName;            
         }
 
         internal IEnumerable<INodeAST> VariableAssigns
@@ -47,5 +60,13 @@ namespace AssemblyProviders.CSharp.Compiling
             _variableAssigns.Add(variableAssign);
         }
 
+        internal void HintAssignedType(InstanceInfo info)
+        {
+            if (Info != null)
+                //we already have type information
+                return;
+
+            Info = info;
+        }
     }
 }

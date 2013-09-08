@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+using TypeSystem;
 using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CSharp.Interfaces;
 
@@ -37,8 +39,6 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             return _callProviders[call];
         }
-
-
 
         internal void VariableNodeRemoved(INodeAST variableUse)
         {
@@ -75,8 +75,7 @@ namespace AssemblyProviders.CSharp.Transformations
             {
                 if (!_removedVariableUsings.Contains(usage))
                     continue;
-
-
+                
                 if (variable.Declaration == usage)
                 {
                     //it needs to be redeclared
@@ -112,21 +111,24 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private void redeclare(VariableInfo variable)
         {
-            var leavedUsages = variable.VariableAssigns.Except(_removedVariableUsings);
-            if (!leavedUsages.Any())
+            var leavedAssigns = variable.VariableAssigns.Except(_removedVariableUsings);
+            if (!leavedAssigns.Any())
             {
                 //variable has been completly removed - it doesn't need to be redeclared
                 return;
             }
-
-            var variableUse = leavedUsages.First();
-            var redeclarationPoint = getRedeclarationNode(variableUse);
+                                    
+            var variableAssign = leavedAssigns.First();
+            var redeclarationPoint = getRedeclarationNode(variableAssign);
             var beforeStatementOffset = _source.BeforeStatementOffset(redeclarationPoint);
+            var isUninitializedDeclaration=variableAssign != redeclarationPoint;
 
+            var redeclarationType = resolveRedeclarationType(variable, variableAssign,!isUninitializedDeclaration);
 
-            var toWrite = variable.Info.TypeName + " ";
-            if (variableUse != redeclarationPoint)
+            var toWrite = redeclarationType + " ";
+            if (isUninitializedDeclaration)
             {
+                //redeclare on previous line with full variable name
                 toWrite += variable.Name+";\n";
             }
 
@@ -134,6 +136,61 @@ namespace AssemblyProviders.CSharp.Transformations
             Strips.Write(beforeStatementOffset,toWrite);
         }
 
+        private string resolveRedeclarationType(VariableInfo variable, INodeAST assignedVariable,bool canUseImpicit)
+        {
+            var variableType = resolveVariableType(variable);
+            if (variableType == null)
+            {
+                throw new NotSupportedException("Cannot redeclare variable, because of missing type info");
+            }
+
+            
+            if (!variable.IsImplicitlyTyped || !canUseImpicit)
+            {
+                //keep convetion on explicit variable typing
+                //or we cannot use implicit typing e.g. because of uninitialized variable delcaration
+                return variableType.TypeName;
+            }
+
+            var assignedType=resolveAssignType(assignedVariable);
+            if (assignedType == null || assignedType.TypeName!=variableType.TypeName)
+            {
+                //we don't know type of assignedType, or implicit type is different,
+                //so whole type name is needed
+                return variableType.TypeName;
+            }
+
+            //assigned type matches to variable type and implicit type convetion is used
+            return "var";
+        }
+
+        private InstanceInfo resolveVariableType(VariableInfo variable)
+        {
+            if (!variable.IsImplicitlyTyped)
+            {
+                return variable.Info;
+            }
+
+            foreach (var assignedVar in variable.VariableAssigns)
+            {
+                var type = resolveAssignType(assignedVar);
+                if (type != null)
+                    //first typed assign determine type
+                    return type;
+            }
+            return null;
+        }
+
+        private InstanceInfo resolveAssignType(INodeAST assignedVariable)
+        {
+            var assignedNode = assignedVariable.Parent.Arguments[1];
+            return resolveNodeType(assignedNode);
+        }
+
+        private InstanceInfo resolveNodeType(INodeAST node)
+        {
+            return _source.CompilationInfo.GetNodeType(node);
+        }
 
     }
 }

@@ -17,6 +17,8 @@ namespace UnitTesting
     [TestClass]
     public class Parsing_Testing
     {
+        static readonly ParameterInfo SingleStringParamInfo = new ParameterInfo("p", InstanceInfo.Create<string>());
+        static readonly ParameterInfo SingleIntParamInfo = new ParameterInfo("n", InstanceInfo.Create<int>());
 
         [TestMethod]
         public void BasicParsing()
@@ -98,8 +100,8 @@ namespace UnitTesting
             ")
 
             .AddMethod("System.String.CustomMethod", @"
-                return parameterName;
-             ", parameters: new ParameterInfo("parameterName", new InstanceInfo("System.String")))
+                return p;
+             ", parameters: SingleStringParamInfo)
 
             .AssertVariable("result").HasValue("Argument value");
         }
@@ -120,14 +122,14 @@ namespace UnitTesting
 
                 c.SetField(thisObj, "inputData", arg);
 
-            }, "TestObj", new ParameterInfo("p", InstanceInfo.Create<string>()))
+            }, "TestObj", SingleStringParamInfo)
 
             .AddMethod("TestObj.GetInput", (c) =>
             {
                 var thisObj = c.CurrentArguments[0];
                 var data = c.GetField(thisObj, "inputData");
                 c.Return(data);
-            }, false, new ParameterInfo("p", InstanceInfo.Create<string>()))
+            }, false, SingleStringParamInfo)
 
             .AssertVariable("result").HasValue("input");
 
@@ -151,7 +153,7 @@ namespace UnitTesting
                 }else{
                     return fib(n-1)+fib(n-2);
                 }
-            ",returnType:"System.Int32", parameters: new ParameterInfo("n", new InstanceInfo("System.Int32")))
+            ", returnType: "System.Int32", parameters: SingleIntParamInfo)
 
             .AssertVariable("result").HasValue(13);
         }
@@ -169,7 +171,7 @@ namespace UnitTesting
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.RemoveArgument(arg, 1, ".reject");
-            }, false, new ParameterInfo("parameter", new InstanceInfo("System.String")))
+            }, false, SingleStringParamInfo)
 
             .AddEditAction("arg", ".reject")
             .AssertSourceEquivalence(@"
@@ -213,7 +215,7 @@ namespace UnitTesting
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.ChangeArgument(arg, 1, "Change", (s) => "input3");
-            }, false, new ParameterInfo("parameter", new InstanceInfo("System.String")))
+            }, false, SingleStringParamInfo)
 
             .AddEditAction("arg", "Change")
             .AssertSourceEquivalence(@"
@@ -236,7 +238,7 @@ namespace UnitTesting
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
                 c.Edits.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
-            }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
+            }, false, SingleStringParamInfo)
 
             .UserAction((c) =>
             {
@@ -271,7 +273,7 @@ namespace UnitTesting
                 var e = c.Edits;
                 e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
 
-            }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
+            }, false, SingleStringParamInfo)
 
 
             .UserAction((c) =>
@@ -314,7 +316,7 @@ namespace UnitTesting
                 var e = c.Edits;
                 e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
 
-            }, false, new ParameterInfo("p", new InstanceInfo("System.String")))
+            }, false,SingleStringParamInfo)
 
 
             .UserAction((c) =>
@@ -351,14 +353,14 @@ namespace UnitTesting
          {
              var arg = c.CurrentArguments[1];
              c.Return(arg);
-         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
-         
+         }, "System.String", SingleStringParamInfo)
+
          .AddRemoveAction("toDelete")
 
          .AssertSourceEquivalence(@"
             var anotherDeleted=""force redeclaration"";         
          ");
-         ;
+            ;
 
         }
 
@@ -375,7 +377,7 @@ namespace UnitTesting
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         }, "", SingleStringParamInfo)
 
          .AddRemoveAction("toDelete")
 
@@ -399,13 +401,13 @@ namespace UnitTesting
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         }, "", SingleStringParamInfo)
 
-         .AddMethod("CallWithRequired",(c) =>
+         .AddMethod("CallWithRequired", (c) =>
          {
-             var arg = c.CurrentArguments[1];             
+             var arg = c.CurrentArguments[1];
              c.Return(arg);
-         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         }, "", SingleStringParamInfo)
 
          .AddRemoveAction("toDelete")
 
@@ -446,14 +448,14 @@ namespace UnitTesting
                 var toDelete=b;
                 a=b=c;              
             ")
-                    
+
          .AddRemoveAction("toDelete")
 
          .AssertSourceEquivalence(@"
                 var a=""valA"";                
                 var c=""valC"";
                 
-                var b;        
+                System.String b;        
                 a=b=c;      
          ");
             ;
