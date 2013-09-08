@@ -24,5 +24,10 @@ namespace TypeSystem
         {
             return _manager.CreateSearcher();
         }
+
+        public ComponentInfo GetComponentInfo()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

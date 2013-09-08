@@ -8,7 +8,7 @@ namespace Analyzing.Execution
 {
     class DataInstance<InstanceInfo>:Instance
     {
-        readonly Dictionary<string, Instance> _fields = new Dictionary<string, Instance>();
+        readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
 
         readonly InstanceInfo _info;
 
@@ -22,12 +22,12 @@ namespace Analyzing.Execution
             _info = info;
         }
 
-        internal void SetField(string fieldName, Instance value)
+        internal void SetField(string fieldName, object value)
         {
             _fields[fieldName] = value;
         }
 
-        internal Instance GetField(string fieldName)
+        internal object GetField(string fieldName)
         {
             return _fields[fieldName];
         }

@@ -88,13 +88,13 @@ namespace Analyzing.Execution
         }
 
 
-        public void SetField(Instance obj, string fieldName, Instance value)
+        public void SetField(Instance obj, string fieldName, object value)
         {
             var dataInstance = obj as DataInstance<InstanceInfo>;
             dataInstance.SetField(fieldName, value);
         }
 
-        public Instance GetField(Instance obj, string fieldName)
+        public object GetField(Instance obj, string fieldName)
         {
             var dataInstance = obj as DataInstance<InstanceInfo>;
             return dataInstance.GetField(fieldName);

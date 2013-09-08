@@ -23,7 +23,7 @@ namespace TypeSystem
         HashSet<string> _registeredDirectTypes = new HashSet<string>();
 
         /// <summary>
-        /// Registered direct calls
+        /// Registered direct methods
         /// </summary>
         public Dictionary<string, MethodItem> DirectMethods = new Dictionary<string, MethodItem>();
 

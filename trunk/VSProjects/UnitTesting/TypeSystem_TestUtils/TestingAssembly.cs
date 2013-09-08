@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using Analyzing;
 using TypeSystem;
+using TypeSystem.Runtime;
+
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
 
@@ -21,12 +23,31 @@ namespace UnitTesting.TypeSystem_TestUtils
         List<EditAction> _editActions = new List<EditAction>();
         List<ResultAction> _userActions = new List<ResultAction>();
 
+        internal readonly TestAssemblyCollection Assemblies;
+
+        internal readonly AssemblyLoader Loader;
+
+        /// <summary>
+        /// because of accessing runtime adding services for testing purposes
+        /// </summary>
+        public readonly RuntimeAssembly Runtime;
+
         /// <summary>
         /// Simulate actions from user
         /// </summary>
         public IEnumerable<ResultAction> UserActions { get { return _userActions; } }
         public IEnumerable<EditAction> EditActions { get { return _editActions; } }
-        
+
+
+
+        public TestingAssembly(RuntimeAssembly runtime)
+        {
+            Assemblies = new TestAssemblyCollection(runtime,this);
+            Runtime = runtime;
+
+            Loader = new AssemblyLoader(Assemblies);
+        }
+
         public TestingAssembly AddMethod(string path, string code, bool isStatic = false,string returnType="", params ParameterInfo[] parameters)
         {
             var info = getInfo(path, isStatic,returnType, parameters);
@@ -53,6 +74,15 @@ namespace UnitTesting.TypeSystem_TestUtils
             var method = new DirectGenerator(source);
 
             addMethod(method, info);
+            return this;
+        }
+
+        public TestingAssembly AddToRuntime<T>()
+            where T:RuntimeTypeDefinition
+        {
+            var runtimeTypeDef= Activator.CreateInstance<T>();
+            Runtime.AddDefinition(runtimeTypeDef);
+
             return this;
         }
 
@@ -128,8 +158,5 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         #endregion
 
-
-
- 
     }
 }

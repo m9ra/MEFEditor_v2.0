@@ -13,8 +13,13 @@ namespace UnitTesting.TypeSystem_TestUtils
         internal TestAssemblyCollection(params AssemblyProvider[] assemblies)
         {
             foreach (var assembly in assemblies) {
-                addAssembly(assembly);
+                Add(assembly);
             }
+        }
+
+        internal void Add(AssemblyProvider assembly)
+        {
+            addAssembly(assembly);
         }
     }
 }

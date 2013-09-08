@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{807BE5F4-84D5-4035-8905-9D196A957AF0}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{D9591DC4-83D6-477F-A23A-495F65F5B934}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TypeExperiments</RootNamespace>
-    <AssemblyName>TypeExperiments</AssemblyName>
+    <RootNamespace>MEFAnalyzers</RootNamespace>
+    <AssemblyName>MEFAnalyzers</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -41,30 +40,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PrinterIAL.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="DirectoryCatalogDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResearchSources.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analyzing\Analyzing.csproj">
       <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
       <Name>Analyzing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AssemblyProviders\AssemblyProviders.csproj">
-      <Project>{7be9c607-8e00-44d7-958c-60519ba569b7}</Project>
-      <Name>AssemblyProviders</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
       <Name>TypeSystem</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UnitTesting\UnitTesting.csproj">
-      <Project>{a95a1df1-8c3d-4ed0-8e6b-758994261909}</Project>
-      <Name>UnitTesting</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

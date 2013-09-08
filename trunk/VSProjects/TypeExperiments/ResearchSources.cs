@@ -70,7 +70,7 @@ namespace TypeExperiments
             .AddMethod("TestObj.GetInput", (c) =>
             {
                 var thisObj = c.CurrentArguments[0];
-                var data = c.GetField(thisObj, "inputData");
+                var data = c.GetField(thisObj, "inputData") as Instance;
                 c.Return(data);
             }, false, new ParameterInfo("p", InstanceInfo.Create<string>()))
 

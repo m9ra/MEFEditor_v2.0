@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using TypeSystem;
+using TypeSystem.Runtime;
+
 using Analyzing;
 using Analyzing.Execution;
 
@@ -24,7 +26,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public static TestingAssembly Run(string entryMethod)
         {
-            var assembly = new TestingAssembly();
+            var runtime = new RuntimeAssembly();
+            var assembly = new TestingAssembly(runtime);
             assembly.AddMethod(EntryMethodName, entryMethod);
 
             addStandardMethods(assembly);
@@ -35,11 +38,11 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static AnalyzingResult GetResult(this TestingAssembly assembly)
         {
             var directAssembly = SettingsProvider.CreateDirectAssembly();
-            var testAssemblies = new TestAssemblyCollection(assembly, directAssembly);
-            var loader = new AssemblyLoader(testAssemblies);
+            assembly.Assemblies.Add(directAssembly);
+
             var entryLoader = new EntryPointLoader(
                 new VersionedName(EntryMethodName, 0)
-                , loader);
+                , assembly.Loader);
 
 
             var machine = new Machine(new MachineSettings());

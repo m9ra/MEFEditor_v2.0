@@ -59,6 +59,8 @@
     <Compile Include="Machine_Testing.cs" />
     <Compile Include="Parsing_Testing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RuntimeAssembly_Testing.cs" />
+    <Compile Include="RuntimeTypeDefinitions\SimpleType.cs" />
     <Compile Include="SourceWriting_Testing.cs" />
     <Compile Include="TypeSystem_TestUtils\AssemblyUtils.cs" />
     <Compile Include="TypeSystem_TestUtils\EntryPointLoader.cs" />
