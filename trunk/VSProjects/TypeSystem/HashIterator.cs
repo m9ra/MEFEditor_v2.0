@@ -23,11 +23,11 @@ namespace TypeSystem
 
     public class HashIterator : SearchIterator
     {
-        readonly private Dictionary<string, MethodItem> _methods = new Dictionary<string, MethodItem>();
+        readonly private HashedMethodContainer _methods;
 
         readonly string _actualPath;
 
-        public HashIterator(Dictionary<string, MethodItem> methods, string actualPath = "")
+        public HashIterator(HashedMethodContainer methods, string actualPath = "")
         {
             _methods = methods;
             _actualPath = actualPath;
@@ -40,13 +40,9 @@ namespace TypeSystem
 
         public override IEnumerable<TypeMethodInfo> FindMethods(string searchedName)
         {
-            var name = extendPath(searchedName);
+            var path = extendPath(searchedName);
 
-            MethodItem method;
-            if (_methods.TryGetValue(name, out method))
-            {
-                yield return method.Info;
-            }
+            return _methods.AccordingPath(path);
         }
 
 

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Analyzing;
 using Analyzing.Execution;
 
+using TypeSystem.Runtime.Building;
+
 namespace TypeSystem.Runtime
 {
     /// <summary>
@@ -21,16 +23,6 @@ namespace TypeSystem.Runtime
     /// </summary>
     public abstract class RuntimeTypeDefinition
     {
-        /// <summary>
-        /// Fields defined in type definition
-        /// </summary>
-        private readonly List<Field> _fields = new List<Field>();
-
-        /// <summary>
-        /// Fullname of defined type
-        /// </summary>
-        internal protected string FullName { get; protected set; }
-
         /// <summary>
         /// Available type services
         /// </summary>
@@ -52,13 +44,9 @@ namespace TypeSystem.Runtime
         internal protected Instance[] CurrentArguments { get { return Context.CurrentArguments; } }
 
 
-        internal InstanceInfo TypeInfo
-        {
-            get
-            {
-                return new InstanceInfo(FullName);
-            }
-        }
+        abstract internal InstanceInfo TypeInfo{get;}
+
+        abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
         
         internal void Initialize(RuntimeAssembly containingAssembly, TypeServices typeServices)
         {
@@ -71,13 +59,7 @@ namespace TypeSystem.Runtime
             Services = typeServices;
             ContainingAssembly = containingAssembly;
         }
-
-        internal void RegisterProperty(Field directProperty, out string storage)
-        {
-            _fields.Add(directProperty);
-            storage = string.Format("@prop_{0}_{1}_{2}", _fields.Count, directProperty, GetType());
-        }
-
+        
         internal void Invoke(AnalyzingContext context,DirectMethod methodToInvoke)
         {
             Context = context;
@@ -91,7 +73,7 @@ namespace TypeSystem.Runtime
                 Context = null;
             }
         }
-
+        
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)
         {
             throw new NotImplementedException();
@@ -100,11 +82,6 @@ namespace TypeSystem.Runtime
         protected void AddArg(int argIndex, string editName, ValueProvider valueProvider)
         {
             throw new NotImplementedException();
-        }
-
-        protected void Simulate<T>()
-        {
-            FullName = typeof(T).FullName;
         }
     }
 }

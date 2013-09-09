@@ -25,25 +25,12 @@ namespace TypeSystem
             get { throw new NotImplementedException(); }
         }
 
-        public override VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo)
+        public override GeneratorBase StaticResolve(MethodID method)
         {
-            var thisInfo = staticArgumentInfo[0];
-
-            VersionedName callName;
-            if (_assemblies.TryResolveMethod(method, staticArgumentInfo, out callName))
-            {
-                return callName;
-            }
-
-            throw new NotImplementedException("method not found");
+            return _assemblies.StaticResolve(method);
         }
 
-        public override GeneratorBase GetGenerator(VersionedName methodName)
-        {
-            return _assemblies.GetGenerator(methodName);
-        }
-
-        public override VersionedName ResolveStaticInitializer(InstanceInfo info)
+        public override GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             throw new NotImplementedException();
         }

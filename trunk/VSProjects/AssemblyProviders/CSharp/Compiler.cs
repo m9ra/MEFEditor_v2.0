@@ -74,13 +74,13 @@ namespace AssemblyProviders.CSharp
             
             if (_methodInfo.HasThis)
             {
-                E.AssignArgument("this", _methodInfo.ThisType, 0);
+                E.AssignArgument("this", _methodInfo.DeclaringType, 0);
             }
 
             //generate argument assigns
-            for (uint i = 0; i < _methodInfo.Arguments.Length; ++i)
+            for (uint i = 0; i < _methodInfo.Parameters.Length; ++i)
             {
-                var arg = _methodInfo.Arguments[i];
+                var arg = _methodInfo.Parameters[i];
                 E.AssignArgument(arg.Name,arg.StaticInfo, i + 1); //argument 0 is always this object
 
                 var variable = new VariableInfo(arg.Name);
@@ -324,26 +324,35 @@ namespace AssemblyProviders.CSharp
         }
 
         private RValueProvider resolveMathOperator(INodeAST lNode, string op, INodeAST rNode)
-        {
-            //translate method according to operators table
-            var method = _mathOperatorMethods[op];
-            
+        {            
             var lOperandProvider = getRValue(lNode);
             var rOperandProvider = getRValue(rNode);
                         
             var lTypeInfo= lOperandProvider.GetResultInfo();
-            method = lTypeInfo.TypeName + "." + method;
+            var rTypeInfo = rOperandProvider.GetResultInfo();
 
             var lOperand = lOperandProvider.GetStorage();
             var rOperand = rOperandProvider.GetStorage();
+            
+            var opMethodId = findOperator(lTypeInfo, rTypeInfo, op);
+            E.Call(opMethodId, lOperand, rOperand);
 
-            //TODO properly determine which call is needed (MethodSearcher)
-            E.Call(new MethodID(method), lOperand, rOperand);
             var result = E.GetTemporaryVariable();
-
             E.AssignReturnValue(result, lTypeInfo);
-
             return new TemporaryRVariableValue(_context, result);
+        }
+
+        private MethodID findOperator(InstanceInfo lOp, InstanceInfo rOp,string op)
+        {
+            //translate method according to operators table
+            var method = _mathOperatorMethods[op];
+
+            var searcher=_context.CreateSearcher();
+            searcher.SetCalledObject(lOp);
+            searcher.Dispatch(method);
+
+            //TODO properly determine which call is needed (number hiearchy - overloading)
+            return searcher.FoundResult.First().MethodID;
         }
 
         private RValueProvider[] getArguments(INodeAST node)
@@ -464,6 +473,10 @@ namespace AssemblyProviders.CSharp
             if (calledObject != null)
             {
                 searcher.SetCalledObject(calledObject.GetResultInfo());
+            }
+            else
+            {
+                searcher.ExtendName("", _methodInfo.DeclaringType.TypeName);
             }
 
             while (currNode != null)

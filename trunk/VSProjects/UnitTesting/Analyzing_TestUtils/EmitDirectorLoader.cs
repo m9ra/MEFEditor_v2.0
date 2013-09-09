@@ -5,24 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Analyzing;
-using TypeSystem;
 
-
-namespace UnitTesting.TypeSystem_TestUtils
+namespace UnitTesting.Analyzing_TestUtils
 {
-    class EntryPointLoader:LoaderBase
+    class EmitDirectorLoader:LoaderBase
     {
-        readonly LoaderBase _wrapped;
-        readonly MethodID _entryPointName;
-        internal EntryPointLoader(MethodID entryPointName,LoaderBase wrapped)
+        private readonly EmitDirector _director;
+        private readonly LoaderBase _wrapped;
+
+        internal EmitDirectorLoader(EmitDirector director, LoaderBase wrappedLoader)
         {
-            _entryPointName = entryPointName;
-            _wrapped = wrapped;
+            _director = director;
+            _wrapped = wrappedLoader;
         }
 
         public override GeneratorBase EntryPoint
         {
-            get { return _wrapped.StaticResolve(_entryPointName); }
+            get { return new EmitDirectorGenerator(_director); }
         }
 
         public override GeneratorBase StaticResolve(MethodID method)

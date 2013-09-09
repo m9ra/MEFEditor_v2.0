@@ -30,12 +30,12 @@ namespace Analyzing.Execution
 
         public readonly ExecutedBlock EntryBlock;
 
-        public readonly VersionedName Name;
+        public readonly MethodID Name;
 
         public readonly InstructionBatch Program;
                 
 
-        internal CallContext(IMachineSettings settings, LoaderBase loader, VersionedName name,CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
+        internal CallContext(IMachineSettings settings, LoaderBase loader, MethodID name,CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
             Name = name;

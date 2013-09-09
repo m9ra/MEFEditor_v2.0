@@ -9,13 +9,13 @@ using Analyzing;
 namespace TypeSystem
 {
     public class TypeMethodInfo
-    {
-        public readonly string TypeName;
+    {        
         public readonly string MethodName;
         public readonly bool IsStatic;
-        public readonly ParameterInfo[] Arguments;
-        public readonly InstanceInfo ThisType;
+        public readonly ParameterInfo[] Parameters;
+        public readonly InstanceInfo DeclaringType;
         public readonly InstanceInfo ReturnType;
+        public readonly MethodID MethodID;
 
         public bool HasThis { get { return !IsStatic; } }
 
@@ -23,9 +23,10 @@ namespace TypeSystem
         {
             get
             {
-                if (TypeName != "")
+                var typeName = DeclaringType.TypeName;
+                if (typeName != "")
                 {
-                    return TypeName + "." + MethodName;
+                    return typeName + "." + MethodName;
                 }
                 else
                 {
@@ -34,15 +35,18 @@ namespace TypeSystem
             }
         }
 
-        public TypeMethodInfo(InstanceInfo thisType, string methodName, InstanceInfo returnType, ParameterInfo[] parameters, bool isStatic)
+        public TypeMethodInfo(InstanceInfo declaringType, string methodName, InstanceInfo returnType, ParameterInfo[] parameters, bool isStatic)
         {
-            TypeName = thisType.TypeName;
+            if (declaringType == null)
+                throw new ArgumentNullException("thisType");
+
+            DeclaringType = declaringType;
+
             MethodName = methodName;
             IsStatic = isStatic;
-            Arguments = parameters;
-            ThisType = thisType;
-            //TODO correct return type
+            Parameters = parameters;                        
             ReturnType = returnType;
+            MethodID = Naming.Method(declaringType,methodName,parameters);
         }        
     }
 }

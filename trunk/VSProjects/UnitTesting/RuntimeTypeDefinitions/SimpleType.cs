@@ -8,7 +8,7 @@ using TypeSystem.Runtime;
 
 namespace UnitTesting.RuntimeTypeDefinitions
 {
-    class SimpleType:RuntimeTypeDefinition
+    class SimpleType:DataTypeDefinition
     {
         public readonly Field<string> TestProperty;
 

@@ -18,9 +18,9 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly Source Source;
 
-        TypeServices _services;
+        private readonly TypeServices _services;
 
-        public ParsedGenerator(TypeMethodInfo info,Source source)
+        public ParsedGenerator(TypeMethodInfo info,Source source,TypeServices services)
         {
             if (info == null)
                 throw new ArgumentNullException("info");
@@ -28,16 +28,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             if (source == null)
                 throw new ArgumentNullException("source");
 
-            
-
             Source = source;
             Info = info;
-        }
-
-        internal void SetServices(TypeServices services)
-        {
             _services = services;
         }
+
 
         protected override void generate(EmitterBase emitter)
         {

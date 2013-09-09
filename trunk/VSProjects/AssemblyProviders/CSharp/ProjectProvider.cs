@@ -11,18 +11,13 @@ using TypeSystem;
 namespace AssemblyProviders.CSharp
 {
     public class ProjectProvider:AssemblyProvider
-    {
-        protected override string resolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override GeneratorBase getGenerator(string methodName)
-        {
-            throw new NotImplementedException();
-        }
-
+    {        
         public override SearchIterator CreateRootIterator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override GeneratorBase GetMethodGenerator(MethodID method)
         {
             throw new NotImplementedException();
         }

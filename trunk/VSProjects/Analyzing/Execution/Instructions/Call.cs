@@ -10,24 +10,24 @@ namespace Analyzing.Execution.Instructions
 {
     class Call : InstructionBase
     {
-        private readonly VersionedName _methodGeneratorName;
+        private readonly MethodID _method;
 
         internal CallTransformProvider TransformProvider { get; set; }
         
-        internal Call(VersionedName methodGeneratorName)
+        internal Call(MethodID methodGeneratorName)
         {
-            _methodGeneratorName = methodGeneratorName;            
+            _method = methodGeneratorName;            
         }
 
         public override void Execute(AnalyzingContext context)
         {
-            var generator = context.GetGenerator(_methodGeneratorName);
-            context.FetchCallInstructions(_methodGeneratorName,generator);            
+            var generator = context.GetGenerator(_method);
+            context.FetchCallInstructions(_method,generator);            
         }
 
         public override string ToString()
         {
-            return string.Format("call {0}", _methodGeneratorName);
+            return string.Format("call {0}", _method);
         }
     }
 }

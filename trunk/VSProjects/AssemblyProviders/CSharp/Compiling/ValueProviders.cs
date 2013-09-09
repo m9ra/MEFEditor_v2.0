@@ -225,13 +225,13 @@ namespace AssemblyProviders.CSharp.Compiling
 
             if (_methodInfo.IsStatic)
             {
-                E.StaticCall(_methodInfo.TypeName, new MethodID(_methodInfo.Path), argVariables.ToArray());
+                E.StaticCall(_methodInfo.DeclaringType, _methodInfo.MethodID, argVariables.ToArray());
             }
             else
             {
                 var objStorage = _calledObject.GetStorage();
 
-                var builder = E.Call(new MethodID(_methodInfo.Path), objStorage, argVariables.ToArray());
+                var builder = E.Call(_methodInfo.MethodID, objStorage, argVariables.ToArray());
                 builder.SetTransformationProvider(new CallProvider(_callNode));
             }
         }

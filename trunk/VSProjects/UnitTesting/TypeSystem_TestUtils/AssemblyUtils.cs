@@ -22,13 +22,18 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static Instance EXTERNAL_INPUT { get; set; }
         public static Instance REPORTED_INSTANCE { get; internal set; }
 
-        public static readonly string EntryMethodName = "EntryMethod";
+        public static readonly TypeMethodInfo EntryMethodInfo=new TypeMethodInfo(
+            new InstanceInfo("Test"),
+            "EntryMethod",
+            new InstanceInfo("Syste.Void"),
+            new ParameterInfo[]{},
+            false
+            );
 
-        public static TestingAssembly Run(string entryMethod)
+        public static TestingAssembly Run(string entryMethodSource)
         {
-            var runtime = new RuntimeAssembly();
-            var assembly = new TestingAssembly(runtime);
-            assembly.AddMethod(EntryMethodName, entryMethod);
+            var assembly = SettingsProvider.CreateTestingAssembly();
+            assembly.AddMethod(EntryMethodInfo.Path, entryMethodSource, EntryMethodInfo.IsStatic,EntryMethodInfo.ReturnType.TypeName, EntryMethodInfo.Parameters);
 
             addStandardMethods(assembly);
 
@@ -37,13 +42,12 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public static AnalyzingResult GetResult(this TestingAssembly assembly)
         {
-            var directAssembly = SettingsProvider.CreateDirectAssembly();
-            assembly.Assemblies.Add(directAssembly);
-
             var entryLoader = new EntryPointLoader(
-                new VersionedName(EntryMethodName, 0)
+                EntryMethodInfo.MethodID
                 , assembly.Loader);
 
+
+            assembly.Runtime.BuildAssembly();
 
             var machine = new Machine(new MachineSettings());
             var entryObj = machine.CreateDirectInstance("EntryObject");
@@ -74,8 +78,10 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public static string GetEntrySource(this TestingAssembly assembly)
         {
-            return assembly.GetSource(EntryMethodName);
+            return assembly.GetSource(EntryMethodInfo.MethodID);
         }
+
+
 
         private static string normalizeCode(string code)
         {
@@ -141,7 +147,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         private static void addStandardMethods(TestingAssembly assembly)
         {
-            assembly.AddMethod("Report", (c) =>
+            assembly.AddMethod("Test.Report", (c) =>
             {
                 AssemblyUtils.REPORTED_INSTANCE = c.CurrentArguments[1];
             }, false, new ParameterInfo("p", new InstanceInfo("System.String")));

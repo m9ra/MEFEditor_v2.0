@@ -28,10 +28,12 @@ namespace UnitTesting
         [TestMethod]
         public void DirectCall()
         {
+            var toLower = Naming.Method<string>("ToLower");
+
             ExecutionUtils.Run((e) =>
             {
                 e.AssignLiteral("var1", "HELLO");
-                e.Call("ToLower".Method(), "var1");
+                e.Call(toLower, "var1");
                 e.AssignReturnValue("var2",InstanceInfo.Create<string>());
             })
             .AssertVariable("var2").HasValue("hello");
@@ -40,11 +42,13 @@ namespace UnitTesting
         [TestMethod]
         public void DirectCall_withArguments()
         {
+            var toString = Naming.Method<int>("ToString", typeof(string));
+
             ExecutionUtils.Run((e) =>
             {
                 e.AssignLiteral("var1", 25);
                 e.AssignLiteral("format", "Number: {0}");
-                e.Call("ToString".Method(), "var1", "format");
+                e.Call(toString, "var1", "format");
                 e.AssignReturnValue("var2", InstanceInfo.Create<string>());
             })
             .AssertVariable("var2").HasValue(25.ToString("Number: {0}"));
@@ -53,11 +57,13 @@ namespace UnitTesting
         [TestMethod]
         public void InjectedMethodCall_adding()
         {
+            var add = Naming.Method<int>("add_operator", typeof(int));
+
             ExecutionUtils.Run((e) =>
             {
                 e.AssignLiteral("var1", 40);
                 e.AssignLiteral("var2", 2);
-                e.Call("add_operator".Method(), "var1", "var2");
+                e.Call(add, "var1", "var2");
                 e.AssignReturnValue("var3", InstanceInfo.Create<string>());
             })
             .AssertVariable("var3").HasValue(40 + 2);
@@ -66,6 +72,9 @@ namespace UnitTesting
         [TestMethod]
         public void ConditionalLoop_iteration()
         {
+            var add = Naming.Method<int>("add_operator", typeof(int));
+            var equals = Naming.Method<int>("Equals", typeof(int));
+
             ExecutionUtils.Run((e) =>
             {
                 var start = e.CreateLabel("start");
@@ -76,9 +85,9 @@ namespace UnitTesting
                 e.AssignLiteral("increment", 0);
 
                 e.SetLabel(start);
-                e.Call("add_operator".Method(), "increment", "step");
+                e.Call(add, "increment", "step");
                 e.AssignReturnValue("increment", InstanceInfo.Create<int>());
-                e.Call("Equals".Method(), "increment", "stop");
+                e.Call(equals, "increment", "stop");
                 e.AssignReturnValue("condition",InstanceInfo.Create<bool>());
                 e.ConditionalJump("condition", end);
                 e.Jump(start);
@@ -86,5 +95,7 @@ namespace UnitTesting
             })
             .AssertVariable("increment").HasValue(100);
         }
+
+
     }
 }

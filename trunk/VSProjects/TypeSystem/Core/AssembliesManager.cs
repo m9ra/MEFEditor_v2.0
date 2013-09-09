@@ -28,48 +28,19 @@ namespace TypeSystem.Core
             }
         }
 
-        internal bool TryResolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo,out VersionedName name)
+        internal GeneratorBase StaticResolve(MethodID method)
         {
             foreach (var assembly in _assemblies)
             {
-                var methodName = assembly.ResolveMethod(method,staticArgumentInfo);
-                if (methodName != null)
-                {
-                    name=createVersionedName(methodName);
-                    bindName(name, assembly);
-                    return true;
-                }
-            }
+                var generator = assembly.GetMethodGenerator(method);
 
-            name=default(VersionedName);
-            return false;
-        }
-        
-        internal GeneratorBase GetGenerator(VersionedName methodName)
-        {
-            //TODO: Ask binded provider for generator or get cached one
-
-            foreach (var assembly in _assemblies)
-            {
-                var generator = assembly.GetGenerator(methodName);
                 if (generator != null)
                 {
                     return generator;
                 }
             }
 
-            throw new NotSupportedException("Invalid method name");
-        }
-
-        private void bindName(VersionedName name, AssemblyProvider provider)
-        {
-            //throw new NotImplementedException("When name is found, we remember provider of the name");
-        }
-
-        private VersionedName createVersionedName(string methodName)
-        {
-            //todo  
-            return new VersionedName(methodName, 42);
+            throw new NotSupportedException("Invalid method: " + method);
         }
 
         private void onAssemblyAdd(AssemblyProvider assembly)

@@ -56,7 +56,7 @@ namespace Analyzing
         /// <param name="targetVar">Variable where returned value will be assigned</param>
         public abstract AssignBuilder AssignReturnValue(string targetVar, InstanceInfo staticInfo);
 
-        public abstract CallBuilder StaticCall(string typeFullname, MethodID method, params string[] inputVariables);
+        public abstract CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID method, params string[] inputVariables);
 
         public abstract CallBuilder Call(MethodID method, string thisObjVariable, params string[] inputVariables);
 

@@ -10,124 +10,63 @@ using Analyzing;
 using Analyzing.Execution;
 
 using TypeSystem;
+using TypeSystem.Runtime;
+
+using UnitTesting.RuntimeTypeDefinitions;
+using UnitTesting.TypeSystem_TestUtils;
 
 namespace UnitTesting.Analyzing_TestUtils.Environment
 {
     class SettingsProvider
     {
-        internal static readonly TypeSystem.Settings TypeSettings;
         internal static readonly TypeSystem.MachineSettings MachineSettings;
+
+        private static readonly Type[] directTypes = new Type[]{
+            typeof(string),
+            typeof(bool)
+        };
+
+        private static readonly Type[] mathTypes = new Type[]{
+            typeof(int),typeof(double)
+        };
 
         static SettingsProvider()
         {
             MachineSettings = new MachineSettings();
 
-            TypeSettings = new TypeSystem.Settings(
-                typeof(int),typeof(string),typeof(double),typeof(bool)
-                );
-
-            addDirectMath<int>();
-            addDirectComparing<int>();
         }
 
-        private static void addDirectMath<Type>()
+        internal static RuntimeAssembly CreateRuntime()
         {
-            var opInfo=new InstanceInfo(typeof(Type).FullName);
-            var op1 = new ParameterInfo("op1", opInfo);
-            var op2 = new ParameterInfo("op2", opInfo);
-
-            TypeSettings.AddDirectMethod<Type>("add_operator".Method(),new ParameterInfo[]{op1,op2}, generateAddOperator<Type>());
-            TypeSettings.AddDirectMethod<Type>("sub_operator".Method(), new ParameterInfo[] { op1, op2 }, generateSubOperator<Type>());
-        }
-
-        private static void addDirectComparing<Type>()
-        {
-            var opInfo = new InstanceInfo(typeof(Type).FullName);
-            var op1 = new ParameterInfo("op1", opInfo);
-            var op2 = new ParameterInfo("op2", opInfo);
-
-            TypeSettings.AddDirectMethod<Type>(
-                "lesser_operator".Method(),
-                new ParameterInfo[] { op1, op2 },
-                generateLesserThanOperator()
-                );
-        }
-
-        private static DirectMethod generateAddOperator<T>(){
-            var param1 = Expression.Parameter(typeof(T), "op1");
-            var param2 = Expression.Parameter(typeof(T), "op2");
-
-            return generateMathOperator<T>(
-                Expression.Add(param1, param2)
-                , param1, param2
-            );
-        }
-
-        private static DirectMethod generateSubOperator<T>()
-        {
-            var param1 = Expression.Parameter(typeof(T), "op1");
-            var param2 = Expression.Parameter(typeof(T), "op2");
-
-            return generateMathOperator<T>(
-                Expression.Subtract(param1, param2)
-                ,param1,param2
-            );
-        }
-
-        private static DirectMethod generateMathOperator<T>(BinaryExpression mathExpression,ParameterExpression param1, ParameterExpression param2)
-        {
-            var addOperator=Expression.Lambda<Func<T, T, T>>(
-                mathExpression,
-                new ParameterExpression[] { param1, param2 }
-                ).Compile();
+            var runtime = new RuntimeAssembly();
             
 
-            return (context) =>
+            foreach (var directType in directTypes)
             {
-                var op1=(T)context.CurrentArguments[0].DirectValue;
-                var op2=(T)context.CurrentArguments[1].DirectValue;
-                var result=addOperator(op1, op2);
-                var resultInstance = context.CreateDirectInstance(result);
+                addType(runtime, typeof(DirectTypeDefinition<>), directType);
+            }
 
-                context.Return(resultInstance);
-            };
-        }
-
-
-        
-
-        private static DirectMethod generateLesserThanOperator()
-        {
-            return (context) =>
+            foreach (var mathType in mathTypes)
             {
-                var op1 = context.CurrentArguments[0].DirectValue as IComparable;
-                var op2 = context.CurrentArguments[1].DirectValue;
+                addType(runtime, typeof(MathDirectType<>), mathType);
+            }
 
-                var result = context.CreateDirectInstance(op1.CompareTo(op2) <0);
-                context.Return(result);
-            };
+            return runtime;
         }
 
-        private static string methodIdentifier<T>(string name)
+        private static void addType(RuntimeAssembly runtime, Type directDefinition, Type directType)
         {
-            return typeof(T).FullName + "." + name;
+            var addDirectDefinition = runtime.GetType().GetMethod("AddDirectDefinition");
+            var directTypeDef = directDefinition.MakeGenericType(directType);
+            var runtimeType = Activator.CreateInstance(directTypeDef);
+
+            var genericAdd = addDirectDefinition.MakeGenericMethod(directType);
+            genericAdd.Invoke(runtime, new object[] { runtimeType });
         }
 
-        internal static GeneratorBase MethodGenerator(VersionedName methodName)
+        internal static TestingAssembly CreateTestingAssembly()
         {
-            //TODO for testing purposes is this used as method initializer - Refactor
-            return new DirectorGenerator((e) =>
-            {
-                e.AssignLiteral("result", 111);
-                e.Return("result");
-            });
-        }
-
-        internal static DirectAssembly CreateDirectAssembly()
-        {
-            var assembly = new DirectAssembly(TypeSettings);
-
-            return assembly;
+            return new TestingAssembly(CreateRuntime());
         }
     }
 }

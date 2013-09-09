@@ -19,7 +19,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
     public class TestingAssembly : AssemblyProvider
     {
-        Dictionary<string, MethodItem> _methods = new Dictionary<string, MethodItem>();
+        HashedMethodContainer _methods = new HashedMethodContainer();
         List<EditAction> _editActions = new List<EditAction>();
         List<ResultAction> _userActions = new List<ResultAction>();
 
@@ -48,11 +48,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             Loader = new AssemblyLoader(Assemblies);
         }
 
-        public TestingAssembly AddMethod(string path, string code, bool isStatic = false,string returnType="", params ParameterInfo[] parameters)
+        public TestingAssembly AddMethod(string path, string code, bool isStatic = false,string returnType="System.Void", params ParameterInfo[] parameters)
         {
             var info = getInfo(path, isStatic,returnType, parameters);
             var source = new Source("{" + code + "}");
-            var method = new ParsedGenerator(info, source);
+            var method = new ParsedGenerator(info, source,TypeServices);
 
 
             addMethod(method, info);
@@ -61,7 +61,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public TestingAssembly AddMethod(string path, DirectMethod source, bool isStatic = false, params ParameterInfo[] parameters)
         {
-            var info = getInfo(path, isStatic,"", parameters);
+            var info = getInfo(path, isStatic,"System.Void", parameters);
             var method = new DirectGenerator(source);
 
             addMethod(method, info);
@@ -78,7 +78,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         }
 
         public TestingAssembly AddToRuntime<T>()
-            where T:RuntimeTypeDefinition
+            where T:DataTypeDefinition
         {
             var runtimeTypeDef= Activator.CreateInstance<T>();
             Runtime.AddDefinition(runtimeTypeDef);
@@ -107,9 +107,10 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
-        public string GetSource(string methodPath)
+        public string GetSource(MethodID method)
         {
-            return (_methods[methodPath].Generator as ParsedGenerator).Source.Code;
+            var parsedGenerator=_methods.AccordingId(method) as ParsedGenerator;
+            return parsedGenerator.Source.Code;
         }
 
         #region Assembly provider implementatation
@@ -117,31 +118,18 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             return new HashIterator(_methods);
         }
-        protected override string resolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo)
+        
+        public override GeneratorBase GetMethodGenerator(MethodID method)
         {
-            return method.MethodName;
+            return _methods.AccordingId(method);
         }
 
-        protected override GeneratorBase getGenerator(string methodName)
-        {
-            if (!_methods.ContainsKey(methodName))
-            {
-                return null;
-            }
-            var generator = _methods[methodName].Generator;
-            var parsedGenerator = generator as ParsedGenerator;
-            if (parsedGenerator != null)
-            {
-                parsedGenerator.SetServices(TypeServices);
-            }
-            return generator;
-        }
         #endregion
 
         #region Private utils
         private void addMethod(GeneratorBase method, TypeMethodInfo info)
         {
-            _methods.Add(info.Path, new MethodItem(method, info));
+            _methods.AddItem(new MethodItem(method, info));
         }
 
         private TypeMethodInfo getInfo(string path, bool isStatic, string returnType, params ParameterInfo[] parameters)

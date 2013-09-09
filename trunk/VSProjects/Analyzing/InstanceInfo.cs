@@ -12,6 +12,10 @@ namespace Analyzing
 
         public InstanceInfo(string typeName)
         {
+            if (typeName == null || typeName == "")
+            {
+                throw new NotSupportedException("Unsupported typename: " + typeName);
+            }
             TypeName = typeName;
         }
 

@@ -20,14 +20,23 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// Registered runtime methods
         /// </summary>
-        private readonly Dictionary<string, MethodItem> _runtimeMethods = new Dictionary<string, MethodItem>();
+        private readonly HashedMethodContainer _runtimeMethods = new HashedMethodContainer();
 
-        private readonly Dictionary<string, GeneratorProvider> _providers;
+        /// <summary>
+        /// Registered direct types
+        /// </summary>
+        private readonly Dictionary<Type, RuntimeTypeDefinition> _directTypes = new Dictionary<Type, RuntimeTypeDefinition>();
 
+        /// <summary>
+        /// Registered data types
+        /// </summary>
+        private readonly List<DataTypeDefinition> _dataTypes = new List<DataTypeDefinition>();
+
+        private readonly Dictionary<string, GeneratorProvider> _methodGeneratorProviders;
 
         public RuntimeAssembly()
         {
-            _providers = new Dictionary<string, GeneratorProvider>()
+            _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
             {
                 {"_method_",_createMethod},
                 {"_get_",_createProperty},
@@ -35,50 +44,53 @@ namespace TypeSystem.Runtime
             };
         }
 
-
         /// <summary>
         /// Add runtime type definition into runtime assembly
         /// </summary>
         /// <param name="definition">Added type definition</param>
-        public void AddDefinition(RuntimeTypeDefinition definition)
+        public void AddDefinition(DataTypeDefinition definition)
+        {
+            _dataTypes.Add(definition);
+        }
+
+        public void AddDirectDefinition<T>(DirectTypeDefinition<T> definition)
+        {
+            _directTypes[typeof(T)] = definition;
+        }
+
+        public void BuildAssembly()
         {
             if (this.TypeServices == null)
             {
                 throw new NotSupportedException("Cannot add definitions until type services are initialized");
             }
 
-            registerDefinition(definition);
+            foreach (var directType in _directTypes.Values)
+            {
+                buildDefinition(directType);
+            }
+
+            foreach (var dataType in _dataTypes)
+            {
+                buildDefinition(dataType);
+            }
+        }
+
+        internal bool IsInDirectCover(Type type)
+        {
+            return _directTypes.ContainsKey(type);
         }
 
         #region Assembly provider implementation
 
-
-        protected override string resolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo)
-        {
-            //TODO better method resolving
-            var name = Name.From(method, staticArgumentInfo);
-
-            if (_runtimeMethods.ContainsKey(name.Name))
-            {
-                return name.Name;
-            }
-
-            //there is no such a method
-            return null;
-        }
-
-        protected override GeneratorBase getGenerator(string methodName)
-        {
-            if (_runtimeMethods.ContainsKey(methodName))
-            {
-                return _runtimeMethods[methodName].Generator;
-            }
-            return null;
-        }
-
         public override SearchIterator CreateRootIterator()
         {
             return new HashIterator(_runtimeMethods);
+        }
+
+        public override GeneratorBase GetMethodGenerator(MethodID method)
+        {
+            return _runtimeMethods.AccordingId(method);
         }
 
         #endregion
@@ -89,18 +101,17 @@ namespace TypeSystem.Runtime
         /// Register given definition into runtime assembly
         /// </summary>
         /// <param name="definition">Registered definition</param>
-        private void registerDefinition(RuntimeTypeDefinition definition)
+        private void buildDefinition(RuntimeTypeDefinition definition)
         {
             //every definition needs initialization
             definition.Initialize(this, this.TypeServices);
-
-            //TODO inheritance resolving
+                        
             //get all methods defined by definition
-            var methodGenerators = getMethodGenerators(definition);
+            var methodGenerators = definition.GetMethods();
             foreach (var generator in methodGenerators)
             {
                 var item = new MethodItem(generator, generator.MethodInfo);
-                _runtimeMethods.Add(item.Info.Path, item);
+                _runtimeMethods.AddItem(item);
             }
         }
 
@@ -109,7 +120,7 @@ namespace TypeSystem.Runtime
         /// </summary>
         /// <param name="definition">Definition which methods are resolved</param>
         /// <returns>Method generators for defined methods</returns>
-        private IEnumerable<RuntimeMethodGenerator> getMethodGenerators(RuntimeTypeDefinition definition)
+        internal IEnumerable<RuntimeMethodGenerator> GetMethodGenerators(RuntimeTypeDefinition definition)
         {
             var result = new List<RuntimeMethodGenerator>();
             foreach (var method in definition.GetType().GetMethods())
@@ -117,7 +128,7 @@ namespace TypeSystem.Runtime
                 var name = method.Name;
 
                 //create method definition according to it's prefix
-                foreach (var provider in _providers)
+                foreach (var provider in _methodGeneratorProviders)
                 {
                     if (name.StartsWith(provider.Key))
                     {
@@ -179,7 +190,7 @@ namespace TypeSystem.Runtime
         {
             if (name == "ctor")
             {
-                var nameParts = definition.FullName.Split('.');
+                var nameParts = definition.TypeInfo.TypeName.Split('.');
                 name = nameParts.Last();
             }
             var builder = buildMethod(definition, method, name);
@@ -193,5 +204,7 @@ namespace TypeSystem.Runtime
         }
 
         #endregion
+
+
     }
 }

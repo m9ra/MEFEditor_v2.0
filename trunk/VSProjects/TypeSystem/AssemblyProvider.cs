@@ -10,23 +10,21 @@ using TypeSystem.Core;
 
 namespace TypeSystem
 {
-    internal delegate void ChangeEvent(VersionedName name);
+    internal delegate void ChangeEvent(MethodID name);
 
     public abstract class AssemblyProvider
     {
         #region Template method API
 
+        public abstract GeneratorBase GetMethodGenerator(MethodID method);
+
         protected TypeServices TypeServices { get; private set; }
-
-        protected abstract string resolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo);
-
-        protected abstract GeneratorBase getGenerator(string methodName);
 
         public abstract SearchIterator CreateRootIterator();
 
         #endregion
 
-        protected void ReportInvalidation(VersionedName name)
+        protected void ReportInvalidation(MethodID name)
         {
             throw new NotImplementedException();
         }
@@ -56,16 +54,6 @@ namespace TypeSystem
             throw new NotImplementedException();
         }
 
-        internal string ResolveMethod(MethodID method, InstanceInfo[] staticArgumentInfo)
-        {
-            return resolveMethod(method, staticArgumentInfo);
-        }
-
-        internal GeneratorBase GetGenerator(VersionedName methodName)
-        {
-            return getGenerator(methodName.Name);
-        }
-
         internal void SetServices(TypeServices services)
         {
             if (TypeServices != null)
@@ -81,6 +69,6 @@ namespace TypeSystem
             TypeServices = null;
         }
 
-        
+
     }
 }

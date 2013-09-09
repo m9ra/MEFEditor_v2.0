@@ -17,8 +17,8 @@ namespace UnitTesting
     [TestClass]
     public class Parsing_Testing
     {
-        static readonly ParameterInfo SingleStringParamInfo = new ParameterInfo("p", InstanceInfo.Create<string>());
-        static readonly ParameterInfo SingleIntParamInfo = new ParameterInfo("n", InstanceInfo.Create<int>());
+        public static readonly ParameterInfo SingleStringParamInfo = new ParameterInfo("p", InstanceInfo.Create<string>());
+        public static readonly ParameterInfo SingleIntParamInfo = new ParameterInfo("n", InstanceInfo.Create<int>());
 
         [TestMethod]
         public void BasicParsing()
@@ -49,7 +49,7 @@ namespace UnitTesting
                 var test=ParsedMethod();
             ")
 
-            .AddMethod("ParsedMethod", @"
+            .AddMethod("Test.ParsedMethod", @"
                 return ""ParsedValue"";
             ")
 
@@ -60,18 +60,28 @@ namespace UnitTesting
         public void Emit_staticCall()
         {
             AssemblyUtils.Run(@"
-                var test=StaticClass.StaticMethod();
+                var test=StaticClass.StaticMethod(""CallArg"");
             ")
 
-            .AddMethod("StaticClass.StaticMethod", @"
-                return ""ValueFromStaticCall"";
-            ", true)
+            .AddMethod("StaticClass.StaticMethod", (c) =>
+            {
+                var self = c.CurrentArguments[0];
+                var arg = c.CurrentArguments[1].DirectValue as string;
+                var field = c.GetField(self, "StaticField");
 
-            .AddMethod("StaticClass.StaticClass", @"
-                return ""Initialization value"";
-            ", true)
+                var result = c.CreateDirectInstance(field + "_" + arg);
+                c.Return(result);
+            }
+            , true, SingleStringParamInfo)
 
-            .AssertVariable("test").HasValue("ValueFromStaticCall");
+            .AddMethod("StaticClass.#initializer", (c) =>
+            {
+                var self = c.CurrentArguments[0];
+                c.SetField(self, "StaticField", "InitValue");
+            }
+            , true)
+
+            .AssertVariable("test").HasValue("InitValue_CallArg");
         }
 
         [TestMethod]
@@ -147,7 +157,7 @@ namespace UnitTesting
                 var result=fib(7);
             ")
 
-            .AddMethod("fib", @"    
+            .AddMethod("Test.fib", @"    
                 if(n<3){
                     return 1;
                 }else{
@@ -167,7 +177,7 @@ namespace UnitTesting
                 DirectMethod(arg);
             ")
 
-            .AddMethod("DirectMethod", (c) =>
+            .AddMethod("Test.DirectMethod", (c) =>
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.RemoveArgument(arg, 1, ".reject");
@@ -188,7 +198,7 @@ namespace UnitTesting
                 DirectMethod(arg=""input2"");
             ")
 
-            .AddMethod("DirectMethod", (c) =>
+            .AddMethod("Test.DirectMethod", (c) =>
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.RemoveArgument(arg, 1, ".reject");
@@ -211,7 +221,7 @@ namespace UnitTesting
                 DirectMethod(arg=""input2"");
             ")
 
-            .AddMethod("DirectMethod", (c) =>
+            .AddMethod("Test.DirectMethod", (c) =>
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.ChangeArgument(arg, 1, "Change", (s) => "input3");
@@ -233,7 +243,7 @@ namespace UnitTesting
                 DirectMethod(""input2"");
             ")
 
-            .AddMethod("DirectMethod", (c) =>
+            .AddMethod("Test.DirectMethod", (c) =>
             {
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
@@ -267,7 +277,7 @@ namespace UnitTesting
                 DirectMethod(""input2"");             
             ")
 
-            .AddMethod("DirectMethod", (c) =>
+            .AddMethod("Test.DirectMethod", (c) =>
             {
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
@@ -310,13 +320,13 @@ namespace UnitTesting
                 arg=""scope end"";
             ")
 
-            .AddMethod("DirectMethod", (c) =>
+            .AddMethod("Test.DirectMethod", (c) =>
             {
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
                 e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
 
-            }, false,SingleStringParamInfo)
+            }, false, SingleStringParamInfo)
 
 
             .UserAction((c) =>
@@ -349,7 +359,7 @@ namespace UnitTesting
                 anotherDeleted=""force redeclaration"";                  
             ")
 
-         .AddMethod("PassThrough", (c) =>
+         .AddMethod("Test.PassThrough", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Return(arg);
@@ -372,12 +382,12 @@ namespace UnitTesting
                 CallWithOptional(toDelete);                
             ")
 
-         .AddMethod("CallWithOptional", (c) =>
+         .AddMethod("Test.CallWithOptional", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "", SingleStringParamInfo)
+         }, "System.String", SingleStringParamInfo)
 
          .AddRemoveAction("toDelete")
 
@@ -396,18 +406,18 @@ namespace UnitTesting
                 CallWithOptional(CallWithRequired(toDelete));                
             ")
 
-         .AddMethod("CallWithOptional", (c) =>
+         .AddMethod("Test.CallWithOptional", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "", SingleStringParamInfo)
+         }, "System.String", SingleStringParamInfo)
 
-         .AddMethod("CallWithRequired", (c) =>
+         .AddMethod("Test.CallWithRequired", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Return(arg);
-         }, "", SingleStringParamInfo)
+         }, "System.String", SingleStringParamInfo)
 
          .AddRemoveAction("toDelete")
 

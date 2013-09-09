@@ -103,26 +103,25 @@ namespace Analyzing.Execution
             return new AssignBuilder(result);  
         }
 
-        public override CallBuilder StaticCall(string typeFullname, MethodID methodID, params string[] inputVariables)
+        public override CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID methodID, params string[] inputVariables)
         {
             var inputArgumentVars = translateVariables(inputVariables);
-            var sharedThisVar = getSharedVar(typeFullname);
+            var sharedThisVar = getSharedVar(sharedInstanceInfo);
             var callArgVars = new VariableName[] { sharedThisVar }.Concat(inputArgumentVars).ToArray();
 
-            var generatorName = _loader.ResolveCallName(methodID, getInfo(callArgVars));
-            var initializatorName = _loader.ResolveStaticInitializer(variableInfo(sharedThisVar));
+            var initializerID = _settings.GetSharedInitializer(sharedInstanceInfo);
 
-            var ensureInitialization = new EnsureInitialized(sharedThisVar, initializatorName);
-            var lateInitialization = new LateReturnInitialization(sharedThisVar);
+            if (initializerID.NeedsDynamicResolving)
+            {
+                throw new NotImplementedException();
+            }
+            
+            var ensureInitialization = new EnsureInitialized(sharedThisVar,sharedInstanceInfo, initializerID);
             var preCall = new PreCall(callArgVars);
-            var call = new Call(generatorName);
 
             emitInstruction(ensureInitialization);
-            emitInstruction(lateInitialization);
             emitInstruction(preCall);
-            emitInstruction(call);
-
-            return new CallBuilder(call);
+            return emitCall(methodID);
         }
 
         public override CallBuilder Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
@@ -133,17 +132,11 @@ namespace Analyzing.Execution
             var inputArgumentVars = translateVariables(inputVariables);
             var callArgVars = new VariableName[] { thisVar }.Concat(inputArgumentVars).ToArray();
 
-            var generatorName = _loader.ResolveCallName(methodID, getInfo(callArgVars));
-
             var preCall = new PreCall(callArgVars);
-            var call = new Call(generatorName);
-
+            
             emitInstruction(preCall);
-            emitInstruction(call);
-
-            return new CallBuilder(call);
+            return emitCall(methodID);
         }
-
 
         public override void DirectInvoke(DirectMethod method)
         {
@@ -272,19 +265,29 @@ namespace Analyzing.Execution
             _instructions.Add(instruction);
         }
 
+        private CallBuilder emitCall(MethodID methodID)
+        {
+            if (methodID.NeedsDynamicResolving)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                var call = new Call(methodID);
+                emitInstruction(call);
+
+                var builder = new CallBuilder(call);
+                return builder;
+            }
+        }
+
         #endregion
 
         #region Private variable services
 
-        private VariableName getSharedVar(string typeFullname)
+        private VariableName getSharedVar(InstanceInfo sharedInstanceInfo)
         {
-            var shared = new VariableName("shared_" + typeFullname);
-
-            if (!_staticVariableInfo.ContainsKey(shared))
-            {
-                _staticVariableInfo[shared] = _settings.GetSharedInstanceInfo(typeFullname);
-            }
-            return shared;
+            return getVariable("#shared_" + sharedInstanceInfo.TypeName, sharedInstanceInfo);            
         }
 
         private VariableName getVariable(string variable, Type type = null)

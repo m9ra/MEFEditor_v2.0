@@ -10,7 +10,7 @@ namespace TypeSystem
 {
     public class MethodSearcher
     {
-        List<SearchIterator> _activeIteartors = new List<SearchIterator>();
+        LinkedList<SearchIterator> _activeIteartors = new LinkedList<SearchIterator>();
         List<TypeMethodInfo> _foundMethods = new List<TypeMethodInfo>();
 
         public bool HasResults { get { return _foundMethods.Count > 0; } }
@@ -21,27 +21,24 @@ namespace TypeSystem
         {
             foreach (var assembly in assemblies)
             {
-                _activeIteartors.Add(assembly.CreateRootIterator());
+                _activeIteartors.AddLast(assembly.CreateRootIterator());
             }
         }
 
-        public void ExtendName(string suffix)
+        public void ExtendName(params string[] suffixes)
         {
-            var oldCount=_activeIteartors.Count;
-            for (int i = 0; i < oldCount; ++i)
-            {
-                var iterator = _activeIteartors[i];
-                var newIterator = iterator.ExtendName(suffix);
-                if (newIterator == null)
-                {
-                    //TODO performance improvement
-                    _activeIteartors.RemoveAt(i);
-                    --oldCount;
+            var currentIterator = _activeIteartors.First;
+            
+            while (currentIterator != null)
+            {                
+                foreach(var suffix in suffixes){
+                    var newIt=currentIterator.Value.ExtendName(suffix);
+                    _activeIteartors.AddFirst(newIt);                    
                 }
-                else
-                {
-                    _activeIteartors[i] = newIterator;
-                }
+
+                var lastIt = currentIterator;
+                currentIterator = currentIterator.Next;
+                _activeIteartors.Remove(lastIt);
             }
         }
 

@@ -9,13 +9,14 @@ namespace Analyzing.Execution.Instructions
     class EnsureInitialized : InstructionBase
     {
         private readonly VariableName _targetVariable;
-        private readonly VersionedName _initializator;
+        private readonly MethodID _initializator;
+        private readonly InstanceInfo _sharedInstanceInfo;
 
-
-        internal EnsureInitialized(VariableName targetVariable, VersionedName initializator)
+        internal EnsureInitialized(VariableName targetVariable, InstanceInfo sharedInstanceInfo, MethodID initializator)
         {
             _targetVariable = targetVariable;
             _initializator = initializator;
+            _sharedInstanceInfo = sharedInstanceInfo;
         }
 
         public override void Execute(AnalyzingContext context)
@@ -26,11 +27,14 @@ namespace Analyzing.Execution.Instructions
                 return;
             }
 
+            //create shared instance
+            var sharedInstance = context.CreateInstance(_sharedInstanceInfo);
+            context.SetValue(_targetVariable, sharedInstance);
+
             //run initializer generator
             var generator = context.GetGenerator(_initializator);
-            context.PrepareCall();
-            context.FetchCallInstructions(_initializator,generator);
-            //NOTE: call value is supposed to be assigned by late return initialization
+            context.PrepareCall(_targetVariable);
+            context.FetchCallInstructions(_initializator, generator);            
         }
 
         public override string ToString()

@@ -27,7 +27,7 @@ namespace TypeExperiments
         static ConsoleColor ArgumentTypeColor = ConsoleColor.Magenta;
         static ConsoleColor ArgumentColor = ConsoleColor.DarkMagenta;
 
-        static ConsoleColor NameColor = ConsoleColor.Cyan;
+        static ConsoleColor MethodColor = ConsoleColor.Cyan;
         static ConsoleColor StringColor = ConsoleColor.Green;
         static ConsoleColor NumberColor = ConsoleColor.DarkGreen;
         static ConsoleColor BoolColor = ConsoleColor.DarkGreen;
@@ -151,7 +151,7 @@ namespace TypeExperiments
             }
             else
             {
-                print(NameColor, argumentPart);
+                print(MethodColor, argumentPart);
             }
         }
 
@@ -175,6 +175,9 @@ namespace TypeExperiments
                     break;
                 case "[System.Boolean]":
                     print(BoolColor, valuePart);
+                    break;
+                case "[Method]":
+                    print(MethodColor, valuePart);
                     break;
                 default:
                     print(ArgumentTypeColor, typePart);

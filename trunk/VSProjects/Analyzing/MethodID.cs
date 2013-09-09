@@ -8,9 +8,18 @@ namespace Analyzing
 {
     public class MethodID
     {
+        /// <summary>
+        /// Name of requested method
+        /// </summary>
         public readonly string MethodName;
 
-        public MethodID(string methodName)
+        /// <summary>
+        /// Determine that method needs dynamic resolution for versioned name
+        /// <remarks>This is usefull for virtual methods</remarks>
+        /// </summary>
+        public readonly bool NeedsDynamicResolving;
+
+        public MethodID(string methodName, bool needsDynamicResolving)
         {
             MethodName = methodName;
         }
@@ -29,12 +38,19 @@ namespace Analyzing
                 return false;
             }
 
-            return o.MethodName == MethodName;
+            return o.MethodName == MethodName && o.NeedsDynamicResolving == NeedsDynamicResolving;
         }
 
         public override int GetHashCode()
         {
             return MethodName.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            var type = NeedsDynamicResolving ? "VirtMethod" : "Method";
+
+            return string.Format("[{0}]{1}", type, MethodName);
         }
     }
 }

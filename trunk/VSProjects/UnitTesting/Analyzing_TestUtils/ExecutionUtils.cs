@@ -11,6 +11,9 @@ using Analyzing.Execution;
 
 using TypeSystem;
 
+using UnitTesting.TypeSystem_TestUtils;
+using UnitTesting.Analyzing_TestUtils.Environment;
+
 namespace UnitTesting.Analyzing_TestUtils
 {
 
@@ -20,8 +23,11 @@ namespace UnitTesting.Analyzing_TestUtils
     {
         internal static AnalyzingResult Run(EmitDirector director)
         {
-            var machine = new Machine(new MachineSettings());
-            var loader = TestLoaderProvider.CreateStandardLoader(director);
+            var machine = new Machine(SettingsProvider.MachineSettings);
+
+            var assembly=SettingsProvider.CreateTestingAssembly();
+            assembly.Runtime.BuildAssembly();
+            var loader = new EmitDirectorLoader(director,assembly.Loader);
             return machine.Run(loader);
         }
 
@@ -29,12 +35,7 @@ namespace UnitTesting.Analyzing_TestUtils
         {
             return new TestCase(result, variable);
         }
-
-        internal static MethodID Method(this string methodName)
-        {
-            return new MethodID(methodName);
-        }
-
+        
         public static IEnumerable<CallContext> ChildContexts(this CallContext callContext)
         {
             var block = callContext.EntryBlock;

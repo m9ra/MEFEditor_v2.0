@@ -50,7 +50,7 @@ namespace Analyzing
         private AnalyzingResult run()
         {
             var context = new Execution.AnalyzingContext(_settings,_loader,_entryArguments);
-            context.FetchCallInstructions(new VersionedName("EntryPoint",0),_loader.EntryPoint);
+            context.FetchCallInstructions(new MethodID("EntryPoint",false),_loader.EntryPoint);
 
             while (!context.IsExecutionEnd)
             {

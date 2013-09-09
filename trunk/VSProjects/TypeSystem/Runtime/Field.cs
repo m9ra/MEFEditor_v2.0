@@ -15,12 +15,12 @@ namespace TypeSystem.Runtime
     {
         protected readonly string Storage;
 
-        protected readonly RuntimeTypeDefinition DefiningType;
+        protected readonly DataTypeDefinition DefiningType;
 
-        public Field(RuntimeTypeDefinition definingType)
+        public Field(DataTypeDefinition definingType)
         {
             DefiningType = definingType;
-            DefiningType.RegisterProperty(this, out Storage);
+            DefiningType.RegisterField(this, out Storage);
         }
     }
 
@@ -31,7 +31,7 @@ namespace TypeSystem.Runtime
     /// </summary>
     public class Field<FieldType>:Field
     {
-        public Field(RuntimeTypeDefinition definingType)
+        public Field(DataTypeDefinition definingType)
             :base(definingType)
         {
             

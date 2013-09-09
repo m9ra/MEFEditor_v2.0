@@ -11,7 +11,7 @@ using TypeSystem.Runtime;
 
 namespace MEFAnalyzers
 {
-    public class DirectoryCatalogDefinition : RuntimeTypeDefinition
+    public class DirectoryCatalogDefinition : DataTypeDefinition
     {
         public readonly Field<List<Instance>> Components;
         public readonly Field<string> Path;

@@ -87,7 +87,6 @@ namespace Analyzing.Execution
             CurrentCall.SetValue(targetVaraiable, value);
         }
 
-
         public void SetField(Instance obj, string fieldName, object value)
         {
             var dataInstance = obj as DataInstance<InstanceInfo>;
@@ -110,7 +109,7 @@ namespace Analyzing.Execution
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(VersionedName name, GeneratorBase generator)
+        internal void FetchCallInstructions(MethodID name, GeneratorBase generator)
         {
             var argumentValues = getArgumentValues(_preparedArguments);
             //preparing is just for single call
@@ -160,9 +159,16 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="methodName">Name of method generator</param>
         /// <returns>Instruction generator for given name</returns>
-        internal GeneratorBase GetGenerator(VersionedName methodName)
+        internal GeneratorBase GetGenerator(MethodID method, params InstanceInfo[] arguments)
         {
-            return _loader.GetGenerator(methodName);
+            if (method.NeedsDynamicResolving)
+            {
+                return _loader.DynamicResolve(method, arguments);
+            }
+            else
+            {
+                return _loader.StaticResolve(method);
+            }
         }
 
         /// <summary>

@@ -25,5 +25,11 @@ namespace TypeSystem
         {
             return (bool)condition.DirectValue;
         }
+
+
+        public MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
+        {
+            return Naming.Method(sharedInstanceInfo, "#initializer", new ParameterInfo[] { });
+        }
     }
 }

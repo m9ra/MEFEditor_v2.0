@@ -16,10 +16,20 @@ namespace Analyzing
         /// </summary>
         public abstract GeneratorBase EntryPoint { get; }
 
-        public abstract VersionedName ResolveCallName(MethodID method, InstanceInfo[] staticArgumentInfo);
+        /// <summary>
+        /// Resolve method with static argument info
+        /// </summary>
+        /// <param name="method">Resolved method</param>
+        /// <param name="staticArgumentInfo">Static argument info, collected from argument variables</param>
+        /// <returns>Resolved method name</returns>
+        public abstract GeneratorBase StaticResolve(MethodID method);
 
-        public abstract GeneratorBase GetGenerator(VersionedName methodName);
-
-        public abstract VersionedName ResolveStaticInitializer(InstanceInfo info);
+        /// <summary>
+        /// Resolve method with dynamic argument info
+        /// </summary>
+        /// <param name="method">Resolved method</param>
+        /// <param name="dynamicArgumentInfo">Dynamic argument info, collected from argument instances</param>
+        /// <returns>Resolved method</returns>
+        public abstract GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo);
     }
 }

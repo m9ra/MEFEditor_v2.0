@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using UnitTesting;
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 
@@ -17,6 +18,9 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+        public static readonly ParameterInfo SingleStringParamInfo = Parsing_Testing.SingleStringParamInfo;
+        public static readonly ParameterInfo SingleIntParamInfo = Parsing_Testing.SingleIntParamInfo;
+
         static internal TestingAssembly InstanceRemoving()
         {
             return AssemblyUtils.Run(@"
@@ -31,18 +35,18 @@ namespace TypeExperiments
                 }
             ")
 
-         .AddMethod("CallWithOptional", (c) =>
+         .AddMethod("Test.CallWithOptional", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         }, "System.String", new ParameterInfo("p", InstanceInfo.Create<string>()))
 
-         .AddMethod("CallWithRequired", (c) =>
+         .AddMethod("Test.CallWithRequired", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Return(arg);
-         }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         }, "System.String", new ParameterInfo("p", InstanceInfo.Create<string>()))
 
          .AddRemoveAction("toDelete")
 
@@ -50,6 +54,32 @@ namespace TypeExperiments
 
         }
 
+        static internal TestingAssembly StaticCall()
+        {
+            return AssemblyUtils.Run(@"
+                var test=StaticClass.StaticMethod(""CallArg"");
+            ")
+
+            .AddMethod("StaticClass.StaticMethod", (c) =>
+            {
+                var self = c.CurrentArguments[0];
+                var arg = c.CurrentArguments[1].DirectValue as string;
+                var field = c.GetField(self, "StaticField");
+
+                var result = c.CreateDirectInstance(field + "_" + arg);
+                c.Return(result);
+            }
+            , true, SingleStringParamInfo)
+
+            .AddMethod("StaticClass.#initializer", (c) =>
+            {
+                var self = c.CurrentArguments[0];
+                c.SetField(self, "StaticField", "InitValue");
+            }
+            , true)
+
+             ;
+        }
 
         static internal TestingAssembly EditProvider()
         {
@@ -60,10 +90,10 @@ namespace TypeExperiments
             ")
 
             .AddMethod("TestObj.TestObj", (c) =>
-            {                
-                var thisObj= c.CurrentArguments[0];
+            {
+                var thisObj = c.CurrentArguments[0];
                 var arg = c.CurrentArguments[1];
-                c.SetField(thisObj, "inputData", arg);                
+                c.SetField(thisObj, "inputData", arg);
 
             }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
 
@@ -101,40 +131,7 @@ var result=fib(" + n + @");
     }else{
         return fib(n-1)+fib(n-2);
     }
-",returnType: "System.Int32", parameters: new ParameterInfo("n", InstanceInfo.Create<int>()));
+", returnType: "System.Int32", parameters: new ParameterInfo("n", InstanceInfo.Create<int>()));
         }
-
-
-
-
-
-        static internal TestingAssembly StaticCall()
-        {
-            return AssemblyUtils.Run(@"
-var test=StaticClass.StaticMethod(""aaa"",153);
-var test2=test;
-var test3=4;
-
-if(true){
-    test3=2;
-}else{
-    test3=1;
-}
-")
-
- .AddMethod("StaticClass.StaticMethod", @"
-        return arg1;
-", true, "System.Int32",
- new ParameterInfo("arg1", InstanceInfo.Create<string>()),
- new ParameterInfo("arg2", InstanceInfo.Create<int>())
- )
-
-
- .AddMethod("StaticClass.StaticClass", @"
-    return ""Initialization value"";
-", true);
-
-        }
-
     }
 }
