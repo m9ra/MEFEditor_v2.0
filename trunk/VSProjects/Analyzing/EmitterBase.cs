@@ -42,7 +42,7 @@ namespace Analyzing
         /// <param name="instructions">Inserted instructions</param>
         public abstract void InsertInstructions(InstructionBatch instructions);
 
-        public abstract AssignBuilder  AssignLiteral(string targetVar, object literal);
+        public abstract AssignBuilder  AssignLiteral(string targetVar, object literal,InstanceInfo literalInfo=null);
 
         public abstract AssignBuilder AssignNewObject(string targetVar, InstanceInfo objectInfo);
 

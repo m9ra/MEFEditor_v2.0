@@ -48,10 +48,12 @@
     <Compile Include="CSharp\CodeInstructions\NodeTools.cs" />
     <Compile Include="CSharp\CodeInstructions\ValueProviders.cs" />
     <Compile Include="CSharp\Compiler.cs" />
+    <Compile Include="CSharp\Compiling\CallActivation.cs" />
     <Compile Include="CSharp\Compiling\CompilationInfo.cs" />
     <Compile Include="CSharp\Compiling\Context.cs" />
     <Compile Include="CSharp\Compiling\LValueProviders.cs" />
-    <Compile Include="CSharp\Compiling\ValueProviders.cs" />
+    <Compile Include="CSharp\Compiling\MethodSelector.cs" />
+    <Compile Include="CSharp\Compiling\RValueProviders.cs" />
     <Compile Include="CSharp\Compiling\VariableInfo.cs" />
     <Compile Include="CSharp\Interfaces\AST.cs" />
     <Compile Include="CSharp\Interfaces\CodeInstructions.cs" />
@@ -85,6 +87,10 @@
     <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
       <Name>TypeSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Utilities.csproj">
+      <Project>{7c9e6dff-b855-47bb-be22-b4c0c45b73eb}</Project>
+      <Name>Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

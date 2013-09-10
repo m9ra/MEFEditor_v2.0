@@ -10,6 +10,8 @@ namespace Analyzing
     {
         public readonly string TypeName;
 
+        public static readonly InstanceInfo Void = new InstanceInfo(typeof(void));
+
         public InstanceInfo(string typeName)
         {
             if (typeName == null || typeName == "")

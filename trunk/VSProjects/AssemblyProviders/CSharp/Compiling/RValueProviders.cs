@@ -155,7 +155,7 @@ namespace AssemblyProviders.CSharp.Compiling
         public override void AssignInto(LValueProvider lValue)
         {
             var storage = lValue.Storage;
-            var builder = E.Assign(storage, _variable.Name);    
+            var builder = E.Assign(storage, _variable.Name);
             builder.RemoveProvider = new AssignRemove(_variableNode);
         }
 
@@ -180,65 +180,99 @@ namespace AssemblyProviders.CSharp.Compiling
         }
     }
 
-    class CallRValue : RValueProvider
+    class DefaultArgValue : RValueProvider
     {
-        private TypeMethodInfo _methodInfo;
-        private RValueProvider[] _arguments;
-        private INodeAST _callNode;
-        private RValueProvider _calledObject;
+        private readonly object _defaultValue;
+        private readonly InstanceInfo _resultType;
 
-        public CallRValue(INodeAST callNode, TypeMethodInfo methodInfo, RValueProvider calledObject, RValueProvider[] arguments, Context context)
+        internal DefaultArgValue(object defaultValue,InstanceInfo resultType, Context context)
             : base(context)
         {
-            _callNode = callNode;
-            _methodInfo = methodInfo;
-            _arguments = arguments;
-            _calledObject = calledObject;
+            _defaultValue = defaultValue;
+            _resultType = resultType;
+        }
 
-            if (_calledObject == null && !methodInfo.IsStatic)
-            {
-                throw new NotSupportedException();
-            }
+        public override void AssignInto(LValueProvider lValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Return()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override InstanceInfo GetResultInfo()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetStorage()
+        {
+            var tmp=E.GetTemporaryVariable("default");
+            E.AssignLiteral(tmp, _defaultValue, _resultType);
+            return tmp;
+        }
+
+        public override void Generate()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class CallRValue : RValueProvider
+    {
+        private readonly CallActivation _activation;
+
+        internal TypeMethodInfo MethodInfo { get { return _activation.MethodInfo; } }
+
+        public CallRValue(CallActivation activation, Context context)
+            : base(context)
+        {
+            if (activation == null)
+                throw new ArgumentNullException("activation");
+
+            _activation = activation;
         }
 
 
         public override void AssignInto(LValueProvider lValue)
         {
             generateCall();
-            E.AssignReturnValue(lValue.Storage, _methodInfo.ReturnType);
+            E.AssignReturnValue(lValue.Storage, MethodInfo.ReturnType);
         }
 
         public override void Return()
         {
             var temporaryName = E.GetTemporaryVariable();
-            E.AssignReturnValue(temporaryName, _methodInfo.ReturnType);
+            E.AssignReturnValue(temporaryName, MethodInfo.ReturnType);
             E.Return(temporaryName);
         }
 
         private void generateCall()
         {
             var argVariables = new List<string>();
-            foreach (var arg in _arguments)
+            foreach (var arg in _activation.Arguments)
             {
                 argVariables.Add(arg.GetStorage());
             }
 
-            if (_methodInfo.IsStatic)
+            if (_activation.MethodInfo.IsStatic)
             {
-                E.StaticCall(_methodInfo.DeclaringType, _methodInfo.MethodID, argVariables.ToArray());
+                E.StaticCall(MethodInfo.DeclaringType, MethodInfo.MethodID, argVariables.ToArray());
             }
             else
             {
-                var objStorage = _calledObject.GetStorage();
+                var objStorage = _activation.CalledObject.GetStorage();
 
-                var builder = E.Call(_methodInfo.MethodID, objStorage, argVariables.ToArray());
-                builder.SetTransformationProvider(new CallProvider(_callNode));
+                var builder = E.Call(MethodInfo.MethodID, objStorage, argVariables.ToArray());
+                builder.SetTransformationProvider(new CallProvider(_activation.CallNode));
             }
         }
 
         public override InstanceInfo GetResultInfo()
         {
-            return _methodInfo.ReturnType;
+            return MethodInfo.ReturnType;
         }
 
         public override string GetStorage()

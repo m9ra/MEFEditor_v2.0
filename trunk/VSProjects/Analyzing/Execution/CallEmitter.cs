@@ -51,7 +51,7 @@ namespace Analyzing.Execution
         }
 
         #region Emittor API implementation
-        public override AssignBuilder AssignLiteral(string targetVar, object literal)
+        public override AssignBuilder AssignLiteral(string targetVar, object literal,InstanceInfo literalInfo)
         {
             var target = getVariable(targetVar, literal.GetType());
             var literalInstance = new DirectInstance(literal);

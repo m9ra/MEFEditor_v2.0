@@ -17,9 +17,6 @@ namespace UnitTesting
     [TestClass]
     public class Parsing_Testing
     {
-        public static readonly ParameterInfo SingleStringParamInfo = new ParameterInfo("p", InstanceInfo.Create<string>());
-        public static readonly ParameterInfo SingleIntParamInfo = new ParameterInfo("n", InstanceInfo.Create<int>());
-
         [TestMethod]
         public void BasicParsing()
         {
@@ -51,7 +48,7 @@ namespace UnitTesting
 
             .AddMethod("Test.ParsedMethod", @"
                 return ""ParsedValue"";
-            ")
+            ", Method.String_NoParam)
 
             .AssertVariable("test").HasValue("ParsedValue");
         }
@@ -72,14 +69,14 @@ namespace UnitTesting
                 var result = c.CreateDirectInstance(field + "_" + arg);
                 c.Return(result);
             }
-            , true, SingleStringParamInfo)
+            , Method.StaticString_StringParam)
 
             .AddMethod("StaticClass.#initializer", (c) =>
             {
                 var self = c.CurrentArguments[0];
                 c.SetField(self, "StaticField", "InitValue");
             }
-            , true)
+            , Method.StaticInitializer)
 
             .AssertVariable("test").HasValue("InitValue_CallArg");
         }
@@ -94,7 +91,7 @@ namespace UnitTesting
 
             .AddMethod("System.String.CustomMethod", @"
                 return ""Custom result"";
-            ")
+            ", Method.String_NoParam)
 
             .AssertVariable("result").HasValue("Custom result");
         }
@@ -111,7 +108,7 @@ namespace UnitTesting
 
             .AddMethod("System.String.CustomMethod", @"
                 return p;
-             ", parameters: SingleStringParamInfo)
+             ", Method.String_StringParam)
 
             .AssertVariable("result").HasValue("Argument value");
         }
@@ -132,14 +129,14 @@ namespace UnitTesting
 
                 c.SetField(thisObj, "inputData", arg);
 
-            }, "TestObj", SingleStringParamInfo)
+            }, Method.Ctor_StringParam)
 
             .AddMethod("TestObj.GetInput", (c) =>
             {
                 var thisObj = c.CurrentArguments[0];
                 var data = c.GetField(thisObj, "inputData") as Instance;
                 c.Return(data);
-            }, false, SingleStringParamInfo)
+            }, Method.String_NoParam)
 
             .AssertVariable("result").HasValue("input");
 
@@ -163,7 +160,7 @@ namespace UnitTesting
                 }else{
                     return fib(n-1)+fib(n-2);
                 }
-            ", returnType: "System.Int32", parameters: SingleIntParamInfo)
+            ", Method.Int_IntParam)
 
             .AssertVariable("result").HasValue(13);
         }
@@ -181,7 +178,7 @@ namespace UnitTesting
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.RemoveArgument(arg, 1, ".reject");
-            }, false, SingleStringParamInfo)
+            }, Method.Void_StringParam)
 
             .AddEditAction("arg", ".reject")
             .AssertSourceEquivalence(@"
@@ -202,7 +199,7 @@ namespace UnitTesting
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.RemoveArgument(arg, 1, ".reject");
-            }, false, new ParameterInfo("parameter", new InstanceInfo("System.String")))
+            }, Method.Void_StringParam)
 
             .AddEditAction("arg", ".reject")
             .AssertSourceEquivalence(@"
@@ -225,7 +222,7 @@ namespace UnitTesting
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.ChangeArgument(arg, 1, "Change", (s) => "input3");
-            }, false, SingleStringParamInfo)
+            }, Method.Void_StringParam)
 
             .AddEditAction("arg", "Change")
             .AssertSourceEquivalence(@"
@@ -248,7 +245,7 @@ namespace UnitTesting
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
                 c.Edits.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
-            }, false, SingleStringParamInfo)
+            }, Method.Void_StringParam)
 
             .UserAction((c) =>
             {
@@ -256,6 +253,7 @@ namespace UnitTesting
             })
 
             .AddEditAction("this", "Append")
+
             .AssertSourceEquivalence(@"
                 var arg=""input"";
                 DirectMethod(""input2"",arg);
@@ -283,7 +281,7 @@ namespace UnitTesting
                 var e = c.Edits;
                 e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
 
-            }, false, SingleStringParamInfo)
+            }, Method.Void_StringParam)
 
 
             .UserAction((c) =>
@@ -326,7 +324,7 @@ namespace UnitTesting
                 var e = c.Edits;
                 e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
 
-            }, false, SingleStringParamInfo)
+            }, Method.Void_StringParam)
 
 
             .UserAction((c) =>
@@ -363,7 +361,7 @@ namespace UnitTesting
          {
              var arg = c.CurrentArguments[1];
              c.Return(arg);
-         }, "System.String", SingleStringParamInfo)
+         }, Method.String_StringParam)
 
          .AddRemoveAction("toDelete")
 
@@ -387,7 +385,7 @@ namespace UnitTesting
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "System.String", SingleStringParamInfo)
+         }, Method.String_StringParam)
 
          .AddRemoveAction("toDelete")
 
@@ -411,13 +409,13 @@ namespace UnitTesting
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "System.String", SingleStringParamInfo)
+         }, Method.String_StringParam)
 
          .AddMethod("Test.CallWithRequired", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Return(arg);
-         }, "System.String", SingleStringParamInfo)
+         }, Method.String_StringParam)
 
          .AddRemoveAction("toDelete")
 

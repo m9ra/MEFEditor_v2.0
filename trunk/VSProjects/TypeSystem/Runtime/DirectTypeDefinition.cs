@@ -49,10 +49,10 @@ namespace TypeSystem.Runtime
                 {
                     var directMethod = generateDirectMethod(method);
 
-                    var paramsInfo = new List<ParameterInfo>();
+                    var paramsInfo = new List<TypeParameterInfo>();
                     foreach (var param in method.GetParameters())
                     {
-                        var paramInfo = new ParameterInfo(param.Name, new InstanceInfo(param.ParameterType));
+                        var paramInfo = TypeParameterInfo.From(param);
                         paramsInfo.Add(paramInfo);
                     }
 

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using UnitTesting;
+using UnitTesting.RuntimeTypeDefinitions;
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 
@@ -18,8 +19,19 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
-        public static readonly ParameterInfo SingleStringParamInfo = Parsing_Testing.SingleStringParamInfo;
-        public static readonly ParameterInfo SingleIntParamInfo = Parsing_Testing.SingleIntParamInfo;
+
+        static internal TestingAssembly RuntimeCall_Default()
+        {
+            return AssemblyUtils.Run(@"                
+                var test=new SimpleType(""CtorValue"");      
+                var result=test.Concat();      
+            ")
+
+           .AddToRuntime<SimpleType>()
+
+           ;
+        }
+
 
         static internal TestingAssembly InstanceRemoving()
         {
@@ -40,13 +52,13 @@ namespace TypeExperiments
              var arg = c.CurrentArguments[1];
              c.Edits.SetOptional(1);
              c.Return(arg);
-         }, "System.String", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         }, Method.String_StringParam)
 
          .AddMethod("Test.CallWithRequired", (c) =>
          {
              var arg = c.CurrentArguments[1];
              c.Return(arg);
-         }, "System.String", new ParameterInfo("p", InstanceInfo.Create<string>()))
+         }, Method.String_StringParam)
 
          .AddRemoveAction("toDelete")
 
@@ -68,15 +80,13 @@ namespace TypeExperiments
 
                 var result = c.CreateDirectInstance(field + "_" + arg);
                 c.Return(result);
-            }
-            , true, SingleStringParamInfo)
+            }, Method.StaticString_StringParam)
 
             .AddMethod("StaticClass.#initializer", (c) =>
             {
                 var self = c.CurrentArguments[0];
                 c.SetField(self, "StaticField", "InitValue");
-            }
-            , true)
+            }, Method.StaticInitializer)
 
              ;
         }
@@ -95,19 +105,18 @@ namespace TypeExperiments
                 var arg = c.CurrentArguments[1];
                 c.SetField(thisObj, "inputData", arg);
 
-            }, "", new ParameterInfo("p", InstanceInfo.Create<string>()))
+            }, Method.Ctor_StringParam)
 
             .AddMethod("TestObj.GetInput", (c) =>
             {
                 var thisObj = c.CurrentArguments[0];
                 var data = c.GetField(thisObj, "inputData") as Instance;
                 c.Return(data);
-            }, false, new ParameterInfo("p", InstanceInfo.Create<string>()))
+            }, Method.String_StringParam)
 
 
             ;
         }
-
 
         static object acceptInstance(EditsProvider edits, TransformationServices services)
         {
@@ -123,15 +132,16 @@ namespace TypeExperiments
         static internal TestingAssembly Fibonacci(int n)
         {
             return AssemblyUtils.Run(@"
-var result=fib(" + n + @");
+                var result=fib(" + n + @");
+            ")
 
-").AddMethod("fib", @"    
-    if(n<3){
-        return 1;
-    }else{
-        return fib(n-1)+fib(n-2);
-    }
-", returnType: "System.Int32", parameters: new ParameterInfo("n", InstanceInfo.Create<int>()));
+            .AddMethod("fib", @"    
+                if(n<3){
+                    return 1;
+                }else{
+                    return fib(n-1)+fib(n-2);
+                }
+            ", Method.Int_IntParam);
         }
     }
 }

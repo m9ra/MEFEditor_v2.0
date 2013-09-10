@@ -18,7 +18,7 @@ namespace TypeSystem
             return new MethodID(string.Format("{0}.{1}_{2}", typeof(CalledType).FullName, methodName, paramTypes.Length), false);
         }
 
-        public static MethodID Method(InstanceInfo declaringType, string methodName, params ParameterInfo[] parameters)
+        public static MethodID Method(InstanceInfo declaringType, string methodName, params TypeParameterInfo[] parameters)
         {
             var parCount = parameters == null ? 0 : parameters.Length;
             return new MethodID(string.Format("{0}.{1}_{2}",declaringType.TypeName,methodName,parCount),false);

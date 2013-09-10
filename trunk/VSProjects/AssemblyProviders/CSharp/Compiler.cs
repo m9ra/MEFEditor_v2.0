@@ -49,7 +49,7 @@ namespace AssemblyProviders.CSharp
         private Compiler(CodeNode method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)
         {
             _method = method;
-            _info=_method.SourceToken.Position.Source.CompilationInfo;
+            _info = _method.SourceToken.Position.Source.CompilationInfo;
             _methodInfo = methodInfo;
             E = emitter;
             _context = new Context(emitter, services);
@@ -61,8 +61,9 @@ namespace AssemblyProviders.CSharp
             return node.ToString().Trim();
         }
 
-        private string conditionalBlockTest(INodeAST block){
-            return string.Format("{0}({1})",block.Value,block.Arguments[0]);
+        private string conditionalBlockTest(INodeAST block)
+        {
+            return string.Format("{0}({1})", block.Value, block.Arguments[0]);
         }
 
         #endregion
@@ -71,7 +72,7 @@ namespace AssemblyProviders.CSharp
         private void generateInstructions()
         {
             E.StartNewInfoBlock().Comment = "===Compiler initialization===";
-            
+
             if (_methodInfo.HasThis)
             {
                 E.AssignArgument("this", _methodInfo.DeclaringType, 0);
@@ -81,11 +82,11 @@ namespace AssemblyProviders.CSharp
             for (uint i = 0; i < _methodInfo.Parameters.Length; ++i)
             {
                 var arg = _methodInfo.Parameters[i];
-                E.AssignArgument(arg.Name,arg.StaticInfo, i + 1); //argument 0 is always this object
+                E.AssignArgument(arg.Name, arg.Type, i + 1); //argument 0 is always this object
 
                 var variable = new VariableInfo(arg.Name);
-                variable.HintAssignedType(arg.StaticInfo);
-                declareVariable(variable);                
+                variable.HintAssignedType(arg.Type);
+                declareVariable(variable);
             }
 
             //generate method body
@@ -122,7 +123,7 @@ namespace AssemblyProviders.CSharp
         private void generateIf(INodeAST ifBlock)
         {
             var info = E.StartNewInfoBlock();
-            info.Comment = "\n---" + conditionalBlockTest(ifBlock) +"---";
+            info.Comment = "\n---" + conditionalBlockTest(ifBlock) + "---";
 
             var condition = getRValue(ifBlock.Arguments[0]);
             var ifBranch = ifBlock.Arguments[1];
@@ -182,7 +183,7 @@ namespace AssemblyProviders.CSharp
                     break;
                 case NodeTypes.hierarchy:
                     generateHierarchy(statement);
-                    break;                    
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -210,13 +211,13 @@ namespace AssemblyProviders.CSharp
 
         private void generateCall(INodeAST statement)
         {
-            var call = resolveRHierarchy(statement);            
+            var call = resolveRHierarchy(statement);
             call.Generate();
         }
 
         private void generateBinary(INodeAST statement)
         {
-            var binary= resolveBinary(statement);            
+            var binary = resolveBinary(statement);
             binary.Generate();
         }
 
@@ -234,7 +235,7 @@ namespace AssemblyProviders.CSharp
                     //TODO type resolving
                     var variable = new VariableInfo(lValue);
                     declareVariable(variable);
-                    return new VariableValue(variable,lValue, _context);
+                    return new VariableValue(variable, lValue, _context);
 
                 case NodeTypes.hierarchy:
                     //TODO resolve hierarchy
@@ -255,31 +256,31 @@ namespace AssemblyProviders.CSharp
             {
                 case NodeTypes.call:
                 case NodeTypes.hierarchy:
-                    result= resolveRHierarchy(valueNode);
+                    result = resolveRHierarchy(valueNode);
                     break;
                 case NodeTypes.binaryOperator:
-                    result= resolveBinary(valueNode);
-                    break;  
-                case  NodeTypes.prefixOperator:
-                    result= resolveUnary(valueNode);
+                    result = resolveBinary(valueNode);
+                    break;
+                case NodeTypes.prefixOperator:
+                    result = resolveUnary(valueNode);
                     break;
                 default:
                     throw new NotImplementedException();
             }
 
             _info.ReportNodeType(valueNode, result.GetResultInfo());
-            return result;  
+            return result;
         }
 
 
         private RValueProvider resolveUnary(INodeAST unary)
         {
-            var operand=unary.Arguments[0];
+            var operand = unary.Arguments[0];
             switch (unary.Value)
             {
-                case "new":                    
-                    var objectType=resolveCtorType(operand);
-                    var nObject=new NewObjectValue(objectType,_context);
+                case "new":
+                    var objectType = resolveCtorType(operand);
+                    var nObject = new NewObjectValue(objectType, _context);
 
                     RValueProvider ctorCall;
                     if (!tryGetCall(operand, out ctorCall, nObject))
@@ -298,18 +299,21 @@ namespace AssemblyProviders.CSharp
         {
             var lNode = binary.Arguments[0];
             var rNode = binary.Arguments[1];
-            
-            if(_mathOperatorMethods.ContainsKey(binary.Value)){
-                return resolveMathOperator(lNode,binary.Value,rNode);
-            }else{
-                return resolveAssignOperator(lNode,binary.Value,rNode);
+
+            if (_mathOperatorMethods.ContainsKey(binary.Value))
+            {
+                return resolveMathOperator(lNode, binary.Value, rNode);
+            }
+            else
+            {
+                return resolveAssignOperator(lNode, binary.Value, rNode);
             }
         }
 
         private RValueProvider resolveAssignOperator(INodeAST lNode, string op, INodeAST rNode)
         {
             switch (op)
-            {              
+            {
                 case "=":
                     var lValue = getLValue(lNode);
                     var rValue = getRValue(rNode);
@@ -317,23 +321,23 @@ namespace AssemblyProviders.CSharp
                     rValue.AssignInto(lValue);
 
                     var lVar = getVariableInfo(lValue.Storage);
-                    return new VariableRValue(lVar,lNode,_context);
+                    return new VariableRValue(lVar, lNode, _context);
                 default:
                     throw new NotImplementedException();
             }
         }
 
         private RValueProvider resolveMathOperator(INodeAST lNode, string op, INodeAST rNode)
-        {            
+        {
             var lOperandProvider = getRValue(lNode);
             var rOperandProvider = getRValue(rNode);
-                        
-            var lTypeInfo= lOperandProvider.GetResultInfo();
+
+            var lTypeInfo = lOperandProvider.GetResultInfo();
             var rTypeInfo = rOperandProvider.GetResultInfo();
 
             var lOperand = lOperandProvider.GetStorage();
             var rOperand = rOperandProvider.GetStorage();
-            
+
             var opMethodId = findOperator(lTypeInfo, rTypeInfo, op);
             E.Call(opMethodId, lOperand, rOperand);
 
@@ -342,12 +346,12 @@ namespace AssemblyProviders.CSharp
             return new TemporaryRVariableValue(_context, result);
         }
 
-        private MethodID findOperator(InstanceInfo lOp, InstanceInfo rOp,string op)
+        private MethodID findOperator(InstanceInfo lOp, InstanceInfo rOp, string op)
         {
             //translate method according to operators table
             var method = _mathOperatorMethods[op];
 
-            var searcher=_context.CreateSearcher();
+            var searcher = _context.CreateSearcher();
             searcher.SetCalledObject(lOp);
             searcher.Dispatch(method);
 
@@ -355,17 +359,19 @@ namespace AssemblyProviders.CSharp
             return searcher.FoundResult.First().MethodID;
         }
 
-        private RValueProvider[] getArguments(INodeAST node)
+        private Argument[] getArguments(INodeAST node)
         {
-            var args = new List<RValueProvider>();
-            foreach (var arg in node.Arguments)
+            var args = new List<Argument>();
+            foreach (var argNode in node.Arguments)
             {
-                args.Add(getRValue(arg));
+                //TODO resolve named arguments
+                var arg = new Argument(getRValue(argNode));
+                args.Add(arg);
             }
 
             return args.ToArray();
         }
-      
+
         private RValueProvider resolveRHierarchy(INodeAST node)
         {
             //first token can be literal/variable/call
@@ -394,31 +400,31 @@ namespace AssemblyProviders.CSharp
                     throw new NotSupportedException("Unknown hierarchy construction on " + node);
                 }
             }
-            
+
             return result;
         }
-        
+
         private bool tryGetLiteral(INodeAST literalNode, out RValueProvider literal)
         {
-            var literalToken=literalNode.Value;
+            var literalToken = literalNode.Value;
             if (literalToken.Contains('"'))
             {
                 literalToken = literalToken.Replace("\"", "");
-                literal = new LiteralValue(literalToken,literalNode, _context);
+                literal = new LiteralValue(literalToken, literalNode, _context);
                 return true;
             }
 
             int num;
             if (int.TryParse(literalToken, out num))
             {
-                literal = new LiteralValue(num,literalNode, _context);
+                literal = new LiteralValue(num, literalNode, _context);
                 return true;
             }
 
             bool bl;
             if (bool.TryParse(literalToken, out bl))
             {
-                literal = new LiteralValue(bl,literalNode, _context);
+                literal = new LiteralValue(bl, literalNode, _context);
                 return true;
             }
 
@@ -431,9 +437,9 @@ namespace AssemblyProviders.CSharp
         {
             var variableName = variableNode.Value;
             VariableInfo varInfo;
-            if (_declaredVariables.TryGetValue(variableName,out varInfo))
+            if (_declaredVariables.TryGetValue(variableName, out varInfo))
             {
-                variable = new VariableRValue(varInfo,variableNode, _context);
+                variable = new VariableRValue(varInfo, variableNode, _context);
                 return true;
             }
 
@@ -499,17 +505,14 @@ namespace AssemblyProviders.CSharp
                 if (searcher.HasResults)
                 {
                     //TODO method chaining
-                    //TODO overloading
-                    var methodInfo = searcher.FoundResult.First();
-                    var arguments = getArguments(currNode);
 
-                    //TODO this object resolution
-                    if (calledObject == null && !methodInfo.IsStatic)
+                    var callActivation = findMatchingActivation(calledObject, currNode, searcher.FoundResult);
+                    if (callActivation == null)
                     {
-                        calledObject = new TemporaryRVariableValue(_context,"this");
+                        break;
                     }
 
-                    call = new CallRValue(currNode,methodInfo,calledObject, arguments, _context);
+                    call = new CallRValue(callActivation, _context);
                     return true;
                 }
 
@@ -519,14 +522,37 @@ namespace AssemblyProviders.CSharp
                     searcher.ExtendName(currNode.Value);
                     currNode = nextNode;
                 }
-                else {
+                else
+                {
                     //call has to be found
-                    break;   
+                    break;
                 }
             }
 
             call = null;
             return false;
+        }
+
+        private CallActivation findMatchingActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
+        {
+            var selector = new MethodSelector(methods,_context);
+            var arguments = getArguments(callNode);
+            var callActivation = selector.CreateCallActivation(arguments);
+
+            if (callActivation != null)
+            {
+                callActivation.SetCallNode(callNode);
+                //TODO better this object resolution
+                if (calledObject == null && !callActivation.MethodInfo.IsStatic)
+                {
+                    calledObject = new TemporaryRVariableValue(_context, "this");
+                }
+
+                callActivation.CalledObject = calledObject;
+            }
+
+
+            return callActivation;
         }
 
         private void declareVariable(VariableInfo variable)

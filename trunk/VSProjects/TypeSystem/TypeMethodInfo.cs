@@ -12,7 +12,7 @@ namespace TypeSystem
     {        
         public readonly string MethodName;
         public readonly bool IsStatic;
-        public readonly ParameterInfo[] Parameters;
+        public readonly TypeParameterInfo[] Parameters;
         public readonly InstanceInfo DeclaringType;
         public readonly InstanceInfo ReturnType;
         public readonly MethodID MethodID;
@@ -35,7 +35,7 @@ namespace TypeSystem
             }
         }
 
-        public TypeMethodInfo(InstanceInfo declaringType, string methodName, InstanceInfo returnType, ParameterInfo[] parameters, bool isStatic)
+        public TypeMethodInfo(InstanceInfo declaringType, string methodName, InstanceInfo returnType, TypeParameterInfo[] parameters, bool isStatic)
         {
             if (declaringType == null)
                 throw new ArgumentNullException("thisType");

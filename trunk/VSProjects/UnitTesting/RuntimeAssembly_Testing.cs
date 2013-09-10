@@ -29,5 +29,20 @@ namespace UnitTesting
 
             ;
         }
+
+        [TestMethod]
+        public void RuntimeType_CallWithDefault()
+        {
+            AssemblyUtils.Run(@"                
+                var test=new SimpleType(""CtorValue"");      
+                var result=test.Concat();      
+            ")
+
+            .AddToRuntime<SimpleType>()
+
+            .AssertVariable("result").HasValue("CtorValue_CallDefault")
+
+            ;
+        }
     }
 }

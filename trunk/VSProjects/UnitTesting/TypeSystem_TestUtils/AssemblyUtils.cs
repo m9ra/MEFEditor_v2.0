@@ -22,18 +22,12 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static Instance EXTERNAL_INPUT { get; set; }
         public static Instance REPORTED_INSTANCE { get; internal set; }
 
-        public static readonly TypeMethodInfo EntryMethodInfo=new TypeMethodInfo(
-            new InstanceInfo("Test"),
-            "EntryMethod",
-            new InstanceInfo("Syste.Void"),
-            new ParameterInfo[]{},
-            false
-            );
+    
 
         public static TestingAssembly Run(string entryMethodSource)
         {
             var assembly = SettingsProvider.CreateTestingAssembly();
-            assembly.AddMethod(EntryMethodInfo.Path, entryMethodSource, EntryMethodInfo.IsStatic,EntryMethodInfo.ReturnType.TypeName, EntryMethodInfo.Parameters);
+            assembly.AddMethod(Method.EntryMethodPath, entryMethodSource, Method.Entry_NoParam);
 
             addStandardMethods(assembly);
 
@@ -43,7 +37,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static AnalyzingResult GetResult(this TestingAssembly assembly)
         {
             var entryLoader = new EntryPointLoader(
-                EntryMethodInfo.MethodID
+                Method.EntryInfo.MethodID
                 , assembly.Loader);
 
 
@@ -78,7 +72,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public static string GetEntrySource(this TestingAssembly assembly)
         {
-            return assembly.GetSource(EntryMethodInfo.MethodID);
+            return assembly.GetSource(Method.EntryInfo.MethodID);
         }
 
 
@@ -150,7 +144,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             assembly.AddMethod("Test.Report", (c) =>
             {
                 AssemblyUtils.REPORTED_INSTANCE = c.CurrentArguments[1];
-            }, false, new ParameterInfo("p", new InstanceInfo("System.String")));
+            }, Method.Void_StringParam);
         }
 
     }

@@ -56,7 +56,7 @@
     <Compile Include="MachineSettings.cs" />
     <Compile Include="MethodSearcher.cs" />
     <Compile Include="Naming.cs" />
-    <Compile Include="ParameterInfo.cs" />
+    <Compile Include="TypeParameterInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runtime\RuntimeAssembly.cs" />
     <Compile Include="TypeMethodInfo.cs" />

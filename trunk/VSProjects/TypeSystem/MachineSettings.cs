@@ -29,7 +29,7 @@ namespace TypeSystem
 
         public MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
         {
-            return Naming.Method(sharedInstanceInfo, "#initializer", new ParameterInfo[] { });
+            return Naming.Method(sharedInstanceInfo, "#initializer", new TypeParameterInfo[] { });
         }
     }
 }

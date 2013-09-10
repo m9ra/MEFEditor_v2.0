@@ -38,20 +38,19 @@ namespace TypeSystem.Runtime.Building
 
         #region Internal API of builder
 
-        internal void AddRawParam(System.Reflection.ParameterInfo param, string typeName)
+        internal void AddRawParam(ParameterInfo param, string typeName)
         {
-            var rawArg = getRawArg();
-            var paramInfo = new ParameterInfo(param.Name, new InstanceInfo(typeName));
-            addParam(rawArg, paramInfo);
+            throw new NotImplementedException("Find conversion type in attribute");
+            /*var rawArg = getRawArg();
+            addParam(rawArg, param);*/
         }
 
-        internal void AddUnwrappedParam(System.Reflection.ParameterInfo param)
+        internal void AddUnwrappedParam(ParameterInfo param)
         {
             var rawArg = getRawArg();
             var unwrapped = Expression.Call(this.GetType(), "Unwrap", new Type[] { param.ParameterType }, rawArg);
 
-            var paramInfo = new ParameterInfo(param.Name, new InstanceInfo(param.ParameterType));
-            addParam(unwrapped, paramInfo);
+            addParam(unwrapped, param);
         }
 
         internal RuntimeMethodGenerator CreateGenerator()
@@ -93,10 +92,24 @@ namespace TypeSystem.Runtime.Building
         private TypeMethodInfo createMethodInfo()
         {
             var returnType = new InstanceInfo(_methodInfo.ReturnType);
+            var parameters = createParameters(_parameters);
+
 
             //TODO shared methods
-            var result = new TypeMethodInfo(_declaringType.TypeInfo, _methodName, returnType, _parameters.ToArray(), false);
+            var result = new TypeMethodInfo(_declaringType.TypeInfo, _methodName, returnType, parameters, _methodInfo.IsStatic);
             return result;
+        }
+
+        private TypeParameterInfo[] createParameters(IEnumerable<ParameterInfo> parameters)
+        {
+            var result = new List<TypeParameterInfo>();
+            foreach (var param in parameters)
+            {
+                result.Add(TypeParameterInfo.From(param));
+            }
+
+
+            return result.ToArray();
         }
 
         private Expression getRawArg()

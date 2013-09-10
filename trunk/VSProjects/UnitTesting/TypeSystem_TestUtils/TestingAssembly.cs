@@ -48,34 +48,27 @@ namespace UnitTesting.TypeSystem_TestUtils
             Loader = new AssemblyLoader(Assemblies);
         }
 
-        public TestingAssembly AddMethod(string path, string code, bool isStatic = false,string returnType="System.Void", params ParameterInfo[] parameters)
+        public TestingAssembly AddMethod(string methodPath, string code,MethodDescription description)
         {
-            var info = getInfo(path, isStatic,returnType, parameters);
+            var methodInfo = description.CreateInfo(methodPath);
+
             var source = new Source("{" + code + "}");
-            var method = new ParsedGenerator(info, source,TypeServices);
+            var method = new ParsedGenerator(methodInfo, source,TypeServices);
+            addMethod(method, methodInfo);
 
-
-            addMethod(method, info);
             return this;
         }
 
-        public TestingAssembly AddMethod(string path, DirectMethod source, bool isStatic = false, params ParameterInfo[] parameters)
+        public TestingAssembly AddMethod(string methodPath, DirectMethod source,MethodDescription description)
         {
-            var info = getInfo(path, isStatic,"System.Void", parameters);
-            var method = new DirectGenerator(source);
+            var methodInfo = description.CreateInfo(methodPath);
 
-            addMethod(method, info);
+            var method = new DirectGenerator(source);
+            addMethod(method, methodInfo);
+
             return this;
         }
 
-        public TestingAssembly AddMethod(string path, DirectMethod source, string returnType, params ParameterInfo[] parameters)
-        {
-            var info = getInfo(path, false, returnType, parameters);
-            var method = new DirectGenerator(source);
-
-            addMethod(method, info);
-            return this;
-        }
 
         public TestingAssembly AddToRuntime<T>()
             where T:DataTypeDefinition
@@ -132,7 +125,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             _methods.AddItem(new MethodItem(method, info));
         }
 
-        private TypeMethodInfo getInfo(string path, bool isStatic, string returnType, params ParameterInfo[] parameters)
+        private TypeMethodInfo getInfo(string path, bool isStatic, string returnType, params TypeParameterInfo[] parameters)
         {
             var nameParts = path.Split('.');
             var methodName = nameParts.Last();

@@ -66,6 +66,8 @@
     <Compile Include="SourceWriting_Testing.cs" />
     <Compile Include="TypeSystem_TestUtils\AssemblyUtils.cs" />
     <Compile Include="TypeSystem_TestUtils\EntryPointLoader.cs" />
+    <Compile Include="TypeSystem_TestUtils\Method.cs" />
+    <Compile Include="TypeSystem_TestUtils\MethodDescription.cs" />
     <Compile Include="TypeSystem_TestUtils\TestingAssembly.cs" />
     <Compile Include="TypeSystem_TestUtils\ParsedGenerator.cs" />
     <Compile Include="TypeSystem_TestUtils\TestAssemblyCollection.cs" />

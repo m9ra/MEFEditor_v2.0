@@ -18,6 +18,8 @@ namespace UnitTesting.RuntimeTypeDefinitions
     {
         readonly Type directType;
 
+
+
         public MathDirectType()
         {
             directType = typeof(T);
@@ -39,10 +41,10 @@ namespace UnitTesting.RuntimeTypeDefinitions
         {
             var thisInfo = InstanceInfo.Create<T>();
 
-            var op1 = new ParameterInfo("op1", thisInfo);
-            var op2 = new ParameterInfo("op2", thisInfo);
+            var op1 = TypeParameterInfo.Create("op1", thisInfo);
+            var op2 = TypeParameterInfo.Create("op2", thisInfo);
 
-            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new ParameterInfo[] { op2 }, false);
+            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new TypeParameterInfo[] { op2 }, false);
             return methodInfo;
         }
 

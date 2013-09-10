@@ -8,7 +8,7 @@ using TypeSystem.Runtime;
 
 namespace UnitTesting.RuntimeTypeDefinitions
 {
-    class SimpleType:DataTypeDefinition
+    public class SimpleType:DataTypeDefinition
     {
         public readonly Field<string> TestProperty;
 
@@ -23,7 +23,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             TestProperty.Set(data);
         }
 
-        public string _method_Concat(string concated)
+        public string _method_Concat(string concated="CallDefault")
         {
             return TestProperty.Get()+"_"+concated;
         }
