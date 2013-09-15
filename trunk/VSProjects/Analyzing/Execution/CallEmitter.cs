@@ -11,15 +11,6 @@ namespace Analyzing.Execution
     class CallEmitter : EmitterBase
     {
         /// <summary>
-        /// Owning loader - is used for resolving
-        /// </summary>
-        readonly LoaderBase _loader;
-        /// <summary>
-        /// Available machine settings
-        /// </summary>
-        readonly IMachineSettings _settings;
-
-        /// <summary>
         /// Instructions emitted by this emitter
         /// </summary>
         readonly List<InstructionBase> _instructions = new List<InstructionBase>();
@@ -42,21 +33,22 @@ namespace Analyzing.Execution
         /// </summary>
         private InstructionInfo _currentBlockInfo = new InstructionInfo();
 
+        private readonly AnalyzingContext _context;
 
-
-        internal CallEmitter(IMachineSettings settings, LoaderBase loader)
+        internal CallEmitter(AnalyzingContext context)
         {
-            _settings = settings;
-            _loader = loader;
+            _context = context;
         }
 
         #region Emittor API implementation
-        public override AssignBuilder AssignLiteral(string targetVar, object literal,InstanceInfo literalInfo)
-        {
-            var target = getVariable(targetVar, literal.GetType());
-            var literalInstance = new DirectInstance(literal);
 
-            var result=new AssignLiteral(target, literalInstance);
+        public override AssignBuilder AssignLiteral(string targetVar, object literal, InstanceInfo literalInfo)
+        {
+            var literalInstance = _context.CreateDirectInstance(literal, literalInfo);
+            var target = getVariable(targetVar, literal.GetType());
+
+
+            var result = new AssignLiteral(target, literalInstance);
             emitInstruction(result);
 
             return new AssignBuilder(result);
@@ -70,7 +62,7 @@ namespace Analyzing.Execution
             var result = new Assign(target, source);
             emitInstruction(result);
 
-            return new AssignBuilder(result);  
+            return new AssignBuilder(result);
         }
 
         public override AssignBuilder AssignArgument(string targetVar, InstanceInfo staticInfo, uint argumentPosition)
@@ -80,27 +72,27 @@ namespace Analyzing.Execution
             var result = new AssignArgument(target, argumentPosition);
             emitInstruction(result);
 
-            return new AssignBuilder(result);  
+            return new AssignBuilder(result);
         }
 
         public override AssignBuilder AssignReturnValue(string targetVar, InstanceInfo returnInfo)
-        {            
-            var target = getVariable(targetVar,returnInfo);
+        {
+            var target = getVariable(targetVar, returnInfo);
 
             var result = new AssignReturnValue(target);
             emitInstruction(result);
 
-            return new AssignBuilder(result);  
+            return new AssignBuilder(result);
         }
 
         public override AssignBuilder AssignNewObject(string targetVar, InstanceInfo objectInfo)
         {
             var target = getVariable(targetVar, objectInfo);
 
-            var result=new AssignNewObject(target,objectInfo);
+            var result = new AssignNewObject(target, objectInfo);
             emitInstruction(result);
 
-            return new AssignBuilder(result);  
+            return new AssignBuilder(result);
         }
 
         public override CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID methodID, params string[] inputVariables)
@@ -109,14 +101,14 @@ namespace Analyzing.Execution
             var sharedThisVar = getSharedVar(sharedInstanceInfo);
             var callArgVars = new VariableName[] { sharedThisVar }.Concat(inputArgumentVars).ToArray();
 
-            var initializerID = _settings.GetSharedInitializer(sharedInstanceInfo);
+            var initializerID = _context.Settings.GetSharedInitializer(sharedInstanceInfo);
 
             if (initializerID.NeedsDynamicResolving)
             {
                 throw new NotImplementedException();
             }
-            
-            var ensureInitialization = new EnsureInitialized(sharedThisVar,sharedInstanceInfo, initializerID);
+
+            var ensureInitialization = new EnsureInitialized(sharedThisVar, sharedInstanceInfo, initializerID);
             var preCall = new PreCall(callArgVars);
 
             emitInstruction(ensureInitialization);
@@ -133,7 +125,7 @@ namespace Analyzing.Execution
             var callArgVars = new VariableName[] { thisVar }.Concat(inputArgumentVars).ToArray();
 
             var preCall = new PreCall(callArgVars);
-            
+
             emitInstruction(preCall);
             return emitCall(methodID);
         }
@@ -219,7 +211,7 @@ namespace Analyzing.Execution
 
             return CreateLabel(labelName);
         }
-        
+
         public override InstanceInfo VariableInfo(string variable)
         {
             return variableInfo(getVariable(variable));
@@ -287,7 +279,7 @@ namespace Analyzing.Execution
 
         private VariableName getSharedVar(InstanceInfo sharedInstanceInfo)
         {
-            return getVariable("#shared_" + sharedInstanceInfo.TypeName, sharedInstanceInfo);            
+            return getVariable("#shared_" + sharedInstanceInfo.TypeName, sharedInstanceInfo);
         }
 
         private VariableName getVariable(string variable, Type type = null)
@@ -296,7 +288,7 @@ namespace Analyzing.Execution
 
             if (type != null)
             {
-                info = _settings.GetLiteralInfo(type);
+                info = _context.Settings.GetNativeInfo(type);
             }
 
             return getVariable(variable, info);
@@ -347,6 +339,6 @@ namespace Analyzing.Execution
         #endregion
 
 
-    
+
     }
 }

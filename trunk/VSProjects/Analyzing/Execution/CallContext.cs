@@ -35,13 +35,13 @@ namespace Analyzing.Execution
         public readonly InstructionBatch Program;
                 
 
-        internal CallContext(IMachineSettings settings, LoaderBase loader, MethodID name,CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
+        internal CallContext(AnalyzingContext context, MethodID name,CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
         {
             ArgumentValues = argumentValues;
             Name = name;
             TransformProvider = transformProvider;
 
-            var emitter = new CallEmitter(settings, loader);
+            var emitter = new CallEmitter(context);
             generator.Generate(emitter);
 
             Program = emitter.GetEmittedInstructions();

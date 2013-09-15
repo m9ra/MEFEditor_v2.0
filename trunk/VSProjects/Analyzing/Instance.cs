@@ -12,11 +12,18 @@ namespace Analyzing
     {
         readonly List<Edit> _edits = new List<Edit>();
 
+        public readonly InstanceInfo Info;
+
         public bool IsDirty { get; private set; }
 
         public IEnumerable<Edit> Edits { get { return _edits; } }
 
         public abstract object DirectValue { get; }
+
+        internal Instance(InstanceInfo info)
+        {
+            Info = info;
+        }
 
         internal void AddEdit(Edit edit)
         {

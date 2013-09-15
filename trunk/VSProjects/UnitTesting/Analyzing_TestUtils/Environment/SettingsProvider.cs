@@ -19,8 +19,6 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 {
     class SettingsProvider
     {
-        internal static readonly TypeSystem.MachineSettings MachineSettings;
-
         private static readonly Type[] directTypes = new Type[]{
             typeof(string),
             typeof(bool)
@@ -30,16 +28,26 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             typeof(int),typeof(double)
         };
 
+        private static List<Instance> _instances = new List<Instance>();
+
         static SettingsProvider()
         {
-            MachineSettings = new MachineSettings();
+        }
 
+        internal static Machine CreateMachine()
+        {
+            return new Machine(new MachineSettings(onInstanceCreated));
+        }
+
+        internal static TestingAssembly CreateTestingAssembly()
+        {
+            return new TestingAssembly(CreateRuntime());
         }
 
         internal static RuntimeAssembly CreateRuntime()
         {
             var runtime = new RuntimeAssembly();
-            
+
 
             foreach (var directType in directTypes)
             {
@@ -64,9 +72,9 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             genericAdd.Invoke(runtime, new object[] { runtimeType });
         }
 
-        internal static TestingAssembly CreateTestingAssembly()
+        private static void onInstanceCreated(Instance instance)
         {
-            return new TestingAssembly(CreateRuntime());
+            _instances.Add(instance);
         }
     }
 }

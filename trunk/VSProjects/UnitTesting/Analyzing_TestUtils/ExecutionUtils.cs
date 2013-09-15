@@ -23,7 +23,7 @@ namespace UnitTesting.Analyzing_TestUtils
     {
         internal static AnalyzingResult Run(EmitDirector director)
         {
-            var machine = new Machine(SettingsProvider.MachineSettings);
+            var machine = SettingsProvider.CreateMachine();
 
             var assembly=SettingsProvider.CreateTestingAssembly();
             assembly.Runtime.BuildAssembly();

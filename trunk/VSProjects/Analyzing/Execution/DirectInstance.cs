@@ -8,13 +8,14 @@ using Analyzing.Editing;
 
 namespace Analyzing.Execution
 {
-    public class DirectInstance:Instance
+    public class DirectInstance : Instance
     {
         private readonly object _directValue;
         public override object DirectValue { get { return _directValue; } }
 
-        
-        internal DirectInstance(object directValue)
+
+        internal DirectInstance(object directValue, InstanceInfo info)
+            : base(info)
         {
             _directValue = directValue;
         }
@@ -23,7 +24,7 @@ namespace Analyzing.Execution
         {
             if (DirectValue != null)
             {
-                return string.Format("[{0}]{1}",DirectValue.GetType(), DirectValue.ToString());
+                return string.Format("[{0}]{1}", DirectValue.GetType(), DirectValue.ToString());
             }
             else
             {
@@ -31,7 +32,7 @@ namespace Analyzing.Execution
             }
         }
 
-    
+
 
     }
 }

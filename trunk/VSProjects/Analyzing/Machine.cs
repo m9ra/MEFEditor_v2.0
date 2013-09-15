@@ -14,43 +14,49 @@ namespace Analyzing
     /// </summary>
     public class Machine
     {
-        LoaderBase _loader;
-        IMachineSettings _settings;
-        Instance[] _entryArguments;
+        internal readonly IMachineSettings Settings;
 
         public Machine(IMachineSettings settings)
         {
-            _settings = settings;    
+            Settings = settings;
         }
 
-
-
-        public Instance CreateDirectInstance(object directObject)
+        public Instance CreateDirectInstance(object directObject, InstanceInfo info)
         {
-            return new DirectInstance(directObject);
+            var instance = new DirectInstance(directObject, info);
+
+            Settings.InstanceCreated(instance);
+
+            return instance;
         }
 
+        internal Instance CreateDataInstance(InstanceInfo info)
+        {
+            var instance = new DataInstance(info);
+
+            Settings.InstanceCreated(instance);
+
+            return instance;
+        }
+        
         /// <summary>
         /// Run analysis of program loaded via given loader. Execution starts from loader.EntryPoint
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
         /// <returns>Result of analysis</returns>
-        public AnalyzingResult Run(LoaderBase loader,params Instance[] arguments)
+        public AnalyzingResult Run(LoaderBase loader, params Instance[] arguments)
         {
-            _loader = loader;
-            _entryArguments=arguments;
-
-            return run();
+            return run(loader, arguments);
         }
 
         /// <summary>
         /// Run instructions present in _cachedLoader
         /// </summary>
         /// <returns>Result of analysis</returns>
-        private AnalyzingResult run()
+        private AnalyzingResult run(LoaderBase loader, params Instance[] arguments)
         {
-            var context = new Execution.AnalyzingContext(_settings,_loader,_entryArguments);
-            context.FetchCallInstructions(new MethodID("EntryPoint",false),_loader.EntryPoint);
+            var context = new Execution.AnalyzingContext(this, loader, arguments);
+            context.FetchCallInstructions(new MethodID("EntryPoint", false), loader.EntryPoint);
 
             while (!context.IsExecutionEnd)
             {
@@ -66,6 +72,5 @@ namespace Analyzing
 
             return context.GetResult();
         }
-
     }
 }

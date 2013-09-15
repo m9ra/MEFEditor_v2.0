@@ -14,7 +14,9 @@ namespace Analyzing.Execution
         /// <summary>
         /// Available machine settings
         /// </summary>
-        IMachineSettings _settings;
+        internal IMachineSettings Settings { get { return Machine.Settings; } }
+
+        internal readonly Machine Machine;
         /// <summary>
         /// Current call stack
         /// </summary>
@@ -61,9 +63,9 @@ namespace Analyzing.Execution
         /// </summary>
         public EditsProvider Edits { get; private set; }
 
-        internal AnalyzingContext(IMachineSettings settings, LoaderBase loader, Instance[] arguments)
+        internal AnalyzingContext(Machine machine, LoaderBase loader, Instance[] arguments)
         {
-            _settings = settings;
+            Machine = machine;
             _loader = loader;
             _entryArguments = arguments;
         }
@@ -89,13 +91,13 @@ namespace Analyzing.Execution
 
         public void SetField(Instance obj, string fieldName, object value)
         {
-            var dataInstance = obj as DataInstance<InstanceInfo>;
+            var dataInstance = obj as DataInstance;
             dataInstance.SetField(fieldName, value);
         }
 
         public object GetField(Instance obj, string fieldName)
         {
-            var dataInstance = obj as DataInstance<InstanceInfo>;
+            var dataInstance = obj as DataInstance;
             return dataInstance.GetField(fieldName);
         }
 
@@ -115,7 +117,7 @@ namespace Analyzing.Execution
             //preparing is just for single call
             _preparedArguments = null;
             var callTransformProvider = Edits == null ? null : Edits.TransformProvider;
-            var call = new CallContext(_settings, _loader, name, callTransformProvider, generator, argumentValues);
+            var call = new CallContext(this, name, callTransformProvider, generator, argumentValues);
 
             if (_entryContext == null)
             {
@@ -178,7 +180,7 @@ namespace Analyzing.Execution
         internal AnalyzingResult GetResult()
         {
             var removeProvider = new InstanceRemoveProvider(_entryContext);
-            return new AnalyzingResult(_entryContext,removeProvider.Remove);
+            return new AnalyzingResult(_entryContext, removeProvider.Remove);
         }
 
         /// <summary>
@@ -193,7 +195,7 @@ namespace Analyzing.Execution
             {
                 return _entryArguments;
             }
-   
+
             var values = new List<Instance>();
             foreach (var argument in arguments)
             {
@@ -214,14 +216,25 @@ namespace Analyzing.Execution
             return CurrentCall.Contains(targetVariable);
         }
 
-        public Instance CreateDirectInstance<T>(T data)
+        public Instance CreateDirectInstance(object data, Type type = null)
         {
-            return new DirectInstance(data);
+            if (type == null)
+            {
+                type = data.GetType();
+            }
+
+            var info = Settings.GetNativeInfo(type);
+            return CreateDirectInstance(data, info);
+        }
+
+        public Instance CreateDirectInstance(object data, InstanceInfo info)
+        {
+            return Machine.CreateDirectInstance(data, info);
         }
 
         public Instance CreateInstance(InstanceInfo info)
         {
-            return new DataInstance<InstanceInfo>(info);
+            return Machine.CreateDataInstance(info);
         }
 
         internal void Jump(Label target)
@@ -231,7 +244,7 @@ namespace Analyzing.Execution
 
         internal bool IsTrue(VariableName condition)
         {
-            return _settings.IsTrue(GetValue(condition));
+            return Settings.IsTrue(GetValue(condition));
         }
 
         internal void Prepare(InstructionBase instruction)
@@ -246,7 +259,7 @@ namespace Analyzing.Execution
             }
             else
             {
-                Edits = new EditsProvider(call.TransformProvider,CurrentCall.CurrentBlock);                
+                Edits = new EditsProvider(call.TransformProvider, CurrentCall.CurrentBlock);
             }
         }
 

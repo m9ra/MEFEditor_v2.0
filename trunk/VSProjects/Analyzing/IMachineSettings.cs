@@ -13,10 +13,12 @@ namespace Analyzing
 
     public interface IMachineSettings
     {
-        InstanceInfo GetLiteralInfo(Type literalType);
+        InstanceInfo GetNativeInfo(Type literalType);
 
         bool IsTrue(Instance condition);
 
         MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo);
+
+        void InstanceCreated(Instance instance);
     }
 }

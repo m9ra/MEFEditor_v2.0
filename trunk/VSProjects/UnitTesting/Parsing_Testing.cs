@@ -139,8 +139,6 @@ namespace UnitTesting
             }, Method.String_NoParam)
 
             .AssertVariable("result").HasValue("input");
-
-            ;
         }
 
         [TestMethod]
@@ -302,7 +300,6 @@ namespace UnitTesting
                 arg=""tight scope end"";
                 arg=""another scope end"";
             ");
-            ;
         }
 
         [TestMethod]
@@ -343,7 +340,6 @@ namespace UnitTesting
                 Report(arg);
                 arg=""scope end"";
             ");
-            ;
         }
 
         [TestMethod]
@@ -368,8 +364,6 @@ namespace UnitTesting
          .AssertSourceEquivalence(@"
             var anotherDeleted=""force redeclaration"";         
          ");
-            ;
-
         }
 
         [TestMethod]
@@ -392,38 +386,34 @@ namespace UnitTesting
          .AssertSourceEquivalence(@"
             CallWithOptional();         
          ");
-            ;
-
         }
 
         [TestMethod]
         public void Edit_RemoveFromCallCascade()
         {
             AssemblyUtils.Run(@"
-                var toDelete=""toDelete"";                
-                CallWithOptional(CallWithRequired(toDelete));                
-            ")
+            var toDelete=""toDelete"";                
+            CallWithOptional(CallWithRequired(toDelete));                
+         ")
 
-         .AddMethod("Test.CallWithOptional", (c) =>
-         {
-             var arg = c.CurrentArguments[1];
-             c.Edits.SetOptional(1);
-             c.Return(arg);
-         }, Method.String_StringParam)
+            .AddMethod("Test.CallWithOptional", (c) =>
+            {
+                var arg = c.CurrentArguments[1];
+                c.Edits.SetOptional(1);
+                c.Return(arg);
+            }, Method.String_StringParam)
 
-         .AddMethod("Test.CallWithRequired", (c) =>
-         {
-             var arg = c.CurrentArguments[1];
-             c.Return(arg);
-         }, Method.String_StringParam)
+            .AddMethod("Test.CallWithRequired", (c) =>
+            {
+                var arg = c.CurrentArguments[1];
+                c.Return(arg);
+            }, Method.String_StringParam)
 
-         .AddRemoveAction("toDelete")
+            .AddRemoveAction("toDelete")
 
-         .AssertSourceEquivalence(@"
+            .AssertSourceEquivalence(@"
             CallWithOptional();         
          ");
-            ;
-
         }
 
         [TestMethod]
@@ -440,8 +430,6 @@ namespace UnitTesting
          .AssertSourceEquivalence(@"
                 
          ");
-            ;
-
         }
 
 
@@ -466,8 +454,6 @@ namespace UnitTesting
                 System.String b;        
                 a=b=c;      
          ");
-            ;
-
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    class DataInstance<InstanceInfo>:Instance
+    class DataInstance : Instance
     {
         readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
 
@@ -18,6 +18,7 @@ namespace Analyzing.Execution
         }
 
         internal DataInstance(InstanceInfo info)
+            : base(info)
         {
             _info = info;
         }
