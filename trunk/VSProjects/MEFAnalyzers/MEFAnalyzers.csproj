@@ -40,6 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompositionEngine\CompositionContext.cs" />
+    <Compile Include="CompositionEngine\CompositionProvider.cs" />
+    <Compile Include="CompositionEngine\Joins.cs" />
+    <Compile Include="CompositionEngine\CompositionResult.cs" />
+    <Compile Include="CompositionEngine\ComponentStorage.cs" />
+    <Compile Include="CompositionEngine\CompositionWorker.cs" />
     <Compile Include="DirectoryCatalogDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -51,6 +57,10 @@
     <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
       <Name>TypeSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Utilities.csproj">
+      <Project>{7c9e6dff-b855-47bb-be22-b4c0c45b73eb}</Project>
+      <Name>Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
