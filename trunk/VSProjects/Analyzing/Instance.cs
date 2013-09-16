@@ -22,6 +22,10 @@ namespace Analyzing
 
         internal Instance(InstanceInfo info)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
             Info = info;
         }
 

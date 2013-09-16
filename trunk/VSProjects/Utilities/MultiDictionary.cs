@@ -23,7 +23,7 @@ namespace Utilities
             return storage.Add(value);
         }
 
-        public IEnumerable<TValue> GetValues(TKey key)
+        public IEnumerable<TValue> GetExports(TKey key)
         {
               HashSet<TValue> storage;
               if (!_data.TryGetValue(key, out storage))

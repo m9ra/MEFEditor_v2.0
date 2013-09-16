@@ -14,6 +14,8 @@ namespace TypeSystem.Core
 
         readonly TypeServices _services;
 
+        readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
+
         internal AssembliesManager(AssemblyCollection assemblies)
         {
             _services = new TypeServices(this);
@@ -43,9 +45,23 @@ namespace TypeSystem.Core
             throw new NotSupportedException("Invalid method: " + method);
         }
 
+        internal ComponentInfo GetComponentInfo(Instance instance)
+        {
+            ComponentInfo result;
+            _components.TryGetValue(instance.Info, out result);
+            return result;
+        }
+
+
+        internal MethodSearcher CreateSearcher()
+        {
+            return new MethodSearcher(_assemblies);
+        }
+
         private void onAssemblyAdd(AssemblyProvider assembly)
         {
             assembly.SetServices(_services);
+            assembly.OnComponentAdded += _onComponentAdded;
         }
 
         private void onAssemblyRemove(AssemblyProvider assembly)
@@ -53,9 +69,11 @@ namespace TypeSystem.Core
             assembly.UnloadServices();
         }
 
-        internal MethodSearcher CreateSearcher()
+
+        private void _onComponentAdded(InstanceInfo instanceInfo, ComponentInfo componentInfo)
         {
-            return new MethodSearcher(_assemblies);
+            _components.Add(instanceInfo, componentInfo);
         }
+
     }
 }

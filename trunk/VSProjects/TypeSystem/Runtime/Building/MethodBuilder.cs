@@ -40,9 +40,10 @@ namespace TypeSystem.Runtime.Building
 
         internal void AddRawParam(ParameterInfo param, string typeName)
         {
-            throw new NotImplementedException("Find conversion type in attribute");
-            /*var rawArg = getRawArg();
-            addParam(rawArg, param);*/
+            //TODO: throw new NotImplementedException("Find conversion type in attribute");
+
+            var rawArg = getRawArg();
+            addParam(rawArg, param);
         }
 
         internal void AddUnwrappedParam(ParameterInfo param)

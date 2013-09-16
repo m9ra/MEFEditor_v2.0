@@ -12,8 +12,12 @@ namespace TypeSystem
 {
     internal delegate void ChangeEvent(MethodID name);
 
+    internal delegate void ComponentAdded(InstanceInfo type, ComponentInfo component);
+
     public abstract class AssemblyProvider
     {
+        internal event ComponentAdded OnComponentAdded;
+
         #region Template method API
 
         public abstract GeneratorBase GetMethodGenerator(MethodID method);
@@ -29,9 +33,10 @@ namespace TypeSystem
             throw new NotImplementedException();
         }
 
-        protected void AddComponent()
+        protected void AddComponent(InstanceInfo type, ComponentInfo component)
         {
-            throw new NotImplementedException();
+            if (OnComponentAdded != null)
+                OnComponentAdded(type, component);
         }
 
         protected void RemoveComponent()

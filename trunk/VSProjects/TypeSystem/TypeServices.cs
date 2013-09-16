@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using TypeSystem.Core;
 
+using Analyzing;
+
 namespace TypeSystem
 {
     /// <summary>
@@ -25,9 +27,9 @@ namespace TypeSystem
             return _manager.CreateSearcher();
         }
 
-        public ComponentInfo GetComponentInfo()
+        public ComponentInfo GetComponentInfo(Instance instance)
         {
-            throw new NotImplementedException();
+            return _manager.GetComponentInfo(instance);
         }
     }
 }

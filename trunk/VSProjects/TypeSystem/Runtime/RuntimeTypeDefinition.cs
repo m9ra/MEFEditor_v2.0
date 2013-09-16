@@ -29,6 +29,11 @@ namespace TypeSystem.Runtime
         protected TypeServices Services { get; private set; }
 
         /// <summary>
+        /// Component info of type (null if type is not a component)
+        /// </summary>
+        internal protected ComponentInfo ComponentInfo { get; protected set; }
+
+        /// <summary>
         /// Assembly where type builded from this definition is present
         /// </summary>
         protected RuntimeAssembly ContainingAssembly { get; private set; }

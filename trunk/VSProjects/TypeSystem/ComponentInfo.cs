@@ -56,6 +56,13 @@ namespace TypeSystem
         /// Constructor marked as importing constructor, or paramless constructor.
         /// </summary>
         public MethodID ImportingConstructor { get; private set; }
+
+        public ComponentInfo(Import[] imports, Export[] exports, Export[] selfExports)
+        {
+            SelfExports = selfExports;
+            Exports = exports;
+            Imports = imports;
+        }
     }
 
     /// <summary>
@@ -101,6 +108,12 @@ namespace TypeSystem
         /// Type of exported value.
         /// </summary>
         public InstanceInfo ExportType { get; private set; }
+
+        public Export(InstanceInfo exportType)
+        {
+            ExportType = exportType;
+            Contract = exportType.TypeName;
+        }
     }
 
     /// <summary>
@@ -125,6 +138,12 @@ namespace TypeSystem
         /// Type for Importing setter/parameter.
         /// </summary>
         public InstanceInfo ImportType { get; private set; }
+
+        public ImportTypeInfo(InstanceInfo importType)
+        {
+            ImportType = importType;
+            ItemType = importType;
+        }
     }
 
     /// <summary>
@@ -158,5 +177,11 @@ namespace TypeSystem
         /// Determine if import can accept more than one export
         /// </summary>
         public bool AllowMany { get; private set; }
+
+        public Import(InstanceInfo importType)
+        {
+            ImportTypeInfo = new ImportTypeInfo(importType);
+            Contract = ImportTypeInfo.ImportType.TypeName;
+        }
     }
 }

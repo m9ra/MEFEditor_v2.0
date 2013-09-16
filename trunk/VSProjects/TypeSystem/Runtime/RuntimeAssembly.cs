@@ -73,6 +73,10 @@ namespace TypeSystem.Runtime
             foreach (var dataType in _dataTypes)
             {
                 buildDefinition(dataType);
+                if (dataType.ComponentInfo != null)
+                {
+                    AddComponent(dataType.TypeInfo, dataType.ComponentInfo);
+                }
             }
         }
 
@@ -179,7 +183,14 @@ namespace TypeSystem.Runtime
         /// <returns>True if parameter needs wrapping, false otherwise</returns>
         private bool needWrapping(System.Reflection.ParameterInfo par)
         {
-            return !par.GetType().IsSubclassOf(typeof(Instance));
+            var parType = par.ParameterType;
+            var instType = typeof(Instance);
+
+            var isInstance=instType == parType;
+            var hasInstanceParent=instType.IsSubclassOf(parType);
+
+
+            return !isInstance && !hasInstanceParent;
         }
 
         #endregion
@@ -200,7 +211,9 @@ namespace TypeSystem.Runtime
 
         private RuntimeMethodGenerator _createProperty(RuntimeTypeDefinition definition, System.Reflection.MethodInfo method, string name)
         {
-            throw new NotImplementedException();
+            var builder = buildMethod(definition, method, method.Name.Substring(1));
+
+            return builder.CreateGenerator();
         }
 
         #endregion

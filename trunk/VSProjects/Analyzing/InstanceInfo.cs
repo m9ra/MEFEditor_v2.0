@@ -36,5 +36,21 @@ namespace Analyzing
         {
             return TypeName;
         }
+
+
+        public override int GetHashCode()
+        {
+            return TypeName.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as InstanceInfo;
+            if (o == null)
+            {
+                return false;
+            }
+            return TypeName.Equals(o.TypeName);
+        }
     }
 }

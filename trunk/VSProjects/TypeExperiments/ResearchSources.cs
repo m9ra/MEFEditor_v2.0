@@ -15,10 +15,29 @@ using Analyzing;
 using Analyzing.Execution;
 using Analyzing.Editing;
 
+using MEFAnalyzers;
+
+
 namespace TypeExperiments
 {
     static class ResearchSources
     {
+
+        static internal TestingAssembly CompositionTester()
+        {
+
+            return AssemblyUtils.Run(@"        
+                var partImport=new StringImport();       
+                var partExport=new StringExport(""ExportedValue"");
+                var test=new CompositionTester(partImport,partExport);   
+                var importValue=partImport.Import;                   
+            ")
+
+            .AddToRuntime<CompositionTesterDefinition>()
+            .AddToRuntime<StringImport>()
+            .AddToRuntime<StringExport>()
+            ;
+        }
 
         static internal TestingAssembly RuntimeCall_Default()
         {
@@ -42,7 +61,7 @@ namespace TypeExperiments
                 var y=2;
                 if(x<y){
                     toDelete=""same"";
-                }     else{
+                }else{
                     toDelete=""different"";
                 }
             ")

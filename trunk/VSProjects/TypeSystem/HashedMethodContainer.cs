@@ -23,7 +23,7 @@ namespace TypeSystem
 
         public IEnumerable<TypeMethodInfo> AccordingPath(string path)
         {
-            return _methodPaths.GetValues(path);
+            return _methodPaths.GetExports(path);
         }
 
         public GeneratorBase AccordingId(MethodID method)

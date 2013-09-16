@@ -51,7 +51,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <summary>
         /// Instance on which is Import/Export defined.
         /// </summary>
-        public readonly Instance Instance;
+        internal readonly ComponentRef Instance;
         /// <summary>
         /// Point which belongs to this join point.
         /// </summary>
@@ -99,7 +99,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="instance">Instance where is export defined.</param>
         /// <param name="export">Export which join point is created.</param>
-        public JoinPoint(Instance instance, Export export)
+        internal JoinPoint(ComponentRef instance, Export export)
         {
             Point = export;
             Contract = export.Contract;
@@ -112,7 +112,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="instance">Instance where is import defined.</param>
         /// <param name="import">Import which join point is created.</param>
-        public JoinPoint(Instance instance, Import import)
+        internal JoinPoint(ComponentRef instance, Import import)
         {
             IsPrerequesity = import.IsPrerequisity;
             Point = import;

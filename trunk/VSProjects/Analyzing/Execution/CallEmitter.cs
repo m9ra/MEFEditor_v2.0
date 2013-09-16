@@ -47,7 +47,6 @@ namespace Analyzing.Execution
             var literalInstance = _context.CreateDirectInstance(literal, literalInfo);
             var target = getVariable(targetVar, literal.GetType());
 
-
             var result = new AssignLiteral(target, literalInstance);
             emitInstruction(result);
 

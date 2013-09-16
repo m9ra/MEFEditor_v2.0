@@ -58,7 +58,7 @@ namespace Analyzing.Execution
         /// <returns>Names of variables</returns>
         public IEnumerable<VariableName> ScopeStarts(Instance instance)
         {
-            return _scopeStarts.GetValues(instance);
+            return _scopeStarts.GetExports(instance);
         }
 
         /// <summary>
@@ -68,12 +68,12 @@ namespace Analyzing.Execution
         /// <returns>Names of variables</returns>
         public IEnumerable<VariableName> ScopeEnds(Instance instance)
         {
-            return _scopeEnds.GetValues(instance);
+            return _scopeEnds.GetExports(instance);
         }
 
         public IEnumerable<RemoveTransformProvider> RemoveProviders(Instance instance)
         {
-            foreach (var provider in _removeProviders.GetValues(instance))
+            foreach (var provider in _removeProviders.GetExports(instance))
             {
                 yield return provider;
             }

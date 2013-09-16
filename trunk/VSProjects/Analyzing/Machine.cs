@@ -23,6 +23,10 @@ namespace Analyzing
 
         public Instance CreateDirectInstance(object directObject, InstanceInfo info)
         {
+            if (info == null)
+            {
+                info = Settings.GetNativeInfo(directObject.GetType());
+            }
             var instance = new DirectInstance(directObject, info);
 
             Settings.InstanceCreated(instance);

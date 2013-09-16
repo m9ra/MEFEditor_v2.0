@@ -58,11 +58,14 @@
     <Compile Include="AssemblyProviders_TestUtils\SourceTest.cs" />
     <Compile Include="AssemblyProviders_TestUtils\SourceUtils.cs" />
     <Compile Include="Machine_Testing.cs" />
+    <Compile Include="MEFAnalyzers_Testing.cs" />
     <Compile Include="Parsing_Testing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntimeAssembly_Testing.cs" />
+    <Compile Include="RuntimeTypeDefinitions\StringExport.cs" />
     <Compile Include="RuntimeTypeDefinitions\MathDirectType.cs" />
     <Compile Include="RuntimeTypeDefinitions\SimpleType.cs" />
+    <Compile Include="RuntimeTypeDefinitions\StringImport.cs" />
     <Compile Include="SourceWriting_Testing.cs" />
     <Compile Include="TypeSystem_TestUtils\AssemblyUtils.cs" />
     <Compile Include="TypeSystem_TestUtils\EntryPointLoader.cs" />
@@ -80,6 +83,10 @@
     <ProjectReference Include="..\AssemblyProviders\AssemblyProviders.csproj">
       <Project>{7be9c607-8e00-44d7-958c-60519ba569b7}</Project>
       <Name>AssemblyProviders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MEFAnalyzers\MEFAnalyzers.csproj">
+      <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
+      <Name>MEFAnalyzers</Name>
     </ProjectReference>
     <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>

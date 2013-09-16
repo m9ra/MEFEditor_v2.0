@@ -14,22 +14,13 @@ namespace MEFAnalyzers.CompositionEngine
 
     public class CompositionContext
     {
-        internal bool HasImports(Instance instance)
+        private readonly TypeServices _services;
+        internal CompositionContext(TypeServices services)
         {
-            throw new NotImplementedException();
-        }
-
-        internal bool IsInstanceConstructed(Instance inst)
-        {
-            throw new NotImplementedException();
+            _services = services;
         }
 
         internal bool IsSubType(InstanceInfo expType, string importItem)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal IEnumerable<TypeMethodInfo> GetMethods(InstanceInfo metadataType)
         {
             throw new NotImplementedException();
         }
@@ -39,27 +30,18 @@ namespace MEFAnalyzers.CompositionEngine
             throw new NotImplementedException();
         }
 
-        internal IEnumerable<Export> GetExports(Instance instance)
+        internal ComponentRef CreateArray(InstanceInfo instanceInfo, IEnumerable<ComponentRef> instances)
         {
             throw new NotImplementedException();
         }
 
-        internal IEnumerable<Export> GetSelfExports(Instance instance)
+        internal ComponentRef Register(Instance component)
         {
-            throw new NotImplementedException();
+            var info = _services.GetComponentInfo(component);
+            return new ComponentRef(this, component, info);
         }
 
-        internal ComponentInfo GetComponentInfo(Instance inst)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void AddCall(Instance inst, MethodID constr, params Instance[] args)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal Instance CreateArray(InstanceInfo instanceInfo, IEnumerable<Instance> instances)
+        internal IEnumerable<TypeMethodInfo> GetMethods(InstanceInfo metadataType)
         {
             throw new NotImplementedException();
         }
@@ -69,12 +51,5 @@ namespace MEFAnalyzers.CompositionEngine
             throw new NotImplementedException();
         }
     }
-
-
-
-   
-
-
-  
 
 }

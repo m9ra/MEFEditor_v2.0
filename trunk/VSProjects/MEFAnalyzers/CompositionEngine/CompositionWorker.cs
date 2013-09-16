@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Diagnostics;
+
 using Analyzing;
 using TypeSystem;
 using Utilities;
@@ -16,26 +18,9 @@ namespace MEFAnalyzers.CompositionEngine
     class CompositionWorker
     {
         /// <summary>
-        /// Instances which has been constructed
-        /// </summary>
-        HashSet<Instance> _constructedInstances = new HashSet<Instance>();
-        /// <summary>
-        /// Instances with all imports satisfied
-        /// </summary>
-        HashSet<Instance> _satisfiedInstances = new HashSet<Instance>();
-        /// <summary>
-        /// Instances which has satisfied preimports
-        /// </summary>
-        HashSet<Instance> _preImportsSatisfied = new HashSet<Instance>();
-        /// <summary>
-        /// Instances which satisfiing failed
-        /// </summary>
-        HashSet<Instance> _failedInstances = new HashSet<Instance>();
-
-        /// <summary>
         /// Instances, which prerequisities are currently satisfied - used for circular dependency checking
         /// </summary>
-        HashSet<Instance> _prereqInstances = new HashSet<Instance>();
+        HashSet<ComponentRef> _currentPrereqInstances = new HashSet<ComponentRef>();
 
         ComponentStorage _componentsStorage;
         List<Action> _composeActions = new List<Action>();
@@ -67,41 +52,33 @@ namespace MEFAnalyzers.CompositionEngine
             }
 
             foreach (var inst in _componentsStorage.GetComponents())
-                if (hasImports(inst))
-                    if (!satisfyComponent(inst))
-                    {
-                        _failed = true;
-                        return;
-                    }
-        }
-
-        /// <summary>
-        /// Determine if instance has imports.
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <returns>True if instance has imports.</returns>
-        private bool hasImports(Instance instance)
-        {
-            return _context.HasImports(instance);
-        }
-
-        private bool satisfyComponent(Instance inst)
-        {
-            if (_satisfiedInstances.Contains(inst)) return true; //instance has already been satisfied
-            if (_failedInstances.Contains(inst)) return false; //instance has been proceeded, but failed
-
-            bool satisfied = satisfyPreImports(inst);
-            if (!satisfied)
             {
-                _failedInstances.Add(inst);
-                return false;
+                if (!inst.HasImports)
+                    //there is nothing to import
+                    continue;
+
+                if (!satisfyComponent(inst))
+                {
+                    //composition has failed
+                    _failed = true;
+                    return;
+                }
             }
+        }
 
-            satisfied = satisfyNormImports(inst);
 
-            if (!satisfied) _failedInstances.Add(inst);
-            else _satisfiedInstances.Add(inst);
+        private bool satisfyComponent(ComponentRef inst)
+        {
+            if (inst.IsSatisfied)
+                //instance has already been satisfied
+                return true;
 
+            if (inst.ComposingFailed)
+                //instance has been proceeded, but failed
+                return false;
+
+
+            var satisfied = satisfyPreImports(inst) && satisfyNormImports(inst);
             return satisfied;
         }
 
@@ -110,20 +87,23 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="inst"></param>
         /// <returns></returns>
-        private bool satisfyNormImports(Instance inst)
+        private bool satisfyNormImports(ComponentRef inst)
         {
-            var hasSatisfiedImports = _constructedInstances.Contains(inst) || _context.IsInstanceConstructed(inst);
-            if (!hasSatisfiedImports) throw new NotSupportedException("InternalError:Cant satisfy imports before prerequisities are satisfied");
-            foreach (var imp in getImportsRaw(inst))
+            if (!inst.HasSatisfiedPreImports)
+                throw new NotSupportedException("InternalError:Cant satisfy imports before prerequisities are satisfied");
+
+            foreach (var import in inst.Imports)
             {
-                if (imp.IsPrerequisity)
+                if (import.IsPrerequisity)
                     //satisfy only normal imports, because prerequisities has to be satisfied now
                     continue;
 
-                if (!satisfyImport(inst, imp))
+                if (!satisfyImport(inst, import))
                     //composition failed
                     return false;
             }
+
+            inst.IsSatisfied = true;
             return true;
         }
 
@@ -132,36 +112,33 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="inst"></param>
         /// <returns></returns>
-        private bool satisfyPreImports(Instance inst)
+        private bool satisfyPreImports(ComponentRef inst)
         {
-            if (_failedInstances.Contains(inst))
-                //has been already proceeded         
+            if (inst.ComposingFailed)
+                //has been already proceeded
                 return false;
 
-            if (_prereqInstances.Contains(inst))
+            if (_currentPrereqInstances.Contains(inst))
                 //circular dependency
                 return false;
 
-            if (_preImportsSatisfied.Contains(inst))
+            if (!inst.NeedsPrerequisitySatisfiing)
                 //has been already satisfied
                 return true;
 
-            if (_context.IsInstanceConstructed(inst))
-                //prerequisities was solved before constructing
-                return true;
 
-            var preImports = new List<Instance>();
+            var preImports = new List<ComponentRef>();
             bool satisfied = true;
 
-            _prereqInstances.Add(inst); //avoid dependency cycling
+            _currentPrereqInstances.Add(inst); //avoid dependency cycling
 
-            foreach (var pre in getImportsRaw(inst))
+            foreach (var import in inst.Imports)
             {
-                if (!pre.IsPrerequisity)
+                if (!import.IsPrerequisity)
                     //satisfy only prerequisities
                     continue;
 
-                if (satisfyImport(inst, pre))
+                if (satisfyImport(inst, import))
                     //import was satisfied
                     continue;
 
@@ -169,18 +146,18 @@ namespace MEFAnalyzers.CompositionEngine
                 break;
             }
 
-            _prereqInstances.Remove(inst);
+            _currentPrereqInstances.Remove(inst);
 
             if (!satisfied)
             {
-                _failedInstances.Add(inst);
+                inst.CompositionError("Prerequisities hasn't been satisfied");
                 return false;
             }
 
-            if (!enqConstructor(inst))
+            if (!constructInstance(inst))
                 return false;
 
-            _preImportsSatisfied.Add(inst);
+            inst.HasSatisfiedPreImports = true;
             return true;
         }
 
@@ -192,42 +169,35 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="component"></param>
         /// <param name="import"></param>
         /// <returns></returns>
-        bool satisfyImport(Instance component, Import import)
+        bool satisfyImport(ComponentRef component, Import import)
         {
-            if (import.Setter == null && _context.IsInstanceConstructed(component))
+            if (import.IsPrerequisity && component.IsConstructed)
                 //instance is already constructed - dont need satisfy via importing constructor
                 return true;
 
-            var components = getComponents(import);
-            bool hasCandidates = components.Length > 0;
-            components.Except(_prereqInstances);
-            JoinPoint imp = getImport(import, component);
+            var candidates = getExportCandidates(import);
+            //determine that import has any candidates 
+            //(even those, that cannot be used for import because of missing initialization)
+            var hasAnyCandidates = candidates.Any();
 
-            if (components.Length == 0 && !import.AllowDefault)
-            {
-                string error = "Can't satisfy import";
-                if (hasCandidates)
-                    error += ", there are probably circular dependencies in prerequisity imports";
-                else
-                    error = noMatchingExportError(imp, error);
+            //filter candidates that are initialized now (circular dependency)
+            //TODO: this is probably incorrect behaviour from v1.1
+            candidates = candidates.Except(_currentPrereqInstances);
+            var hasInitializedCandidates=candidates.Any();
 
-                //set error to import
-                setError(imp, error);
+            if (!hasInitializedCandidates && !import.AllowDefault)            
+                return noInitializedCandidatesError(component, import, hasAnyCandidates);
 
-                if (import.IsPrerequisity)
-                    setWarning(getExports(component), "Because of unsatisfied prerequisity import, exports cannot be provided");
-                return false;
-            }
+            if (candidates.Count() > 1 && !import.AllowMany)            
+                return tooManyCandidatesError(component, import, candidates);
 
-            if (components.Length > 1 && !import.AllowMany)
-            {
-                setError(imp, "There are more than one matching component for export satisfiyng");
-                foreach (var expProvider in components)
-                    makeErrorJoins(imp, expProvider, "Matching export in ambiguous component");
-                return false;
-            }
+            return satisfyFromCandidates(component, import, candidates);
+        }
 
-            foreach (var candidate in components)
+        private bool satisfyFromCandidates(ComponentRef component, Import import, IEnumerable<ComponentRef> candidates)
+        {
+            var importPoint = component.GetPoint(import);
+            foreach (var candidate in candidates)
             {
                 if (!satisfyPreImports(candidate))
                 {
@@ -235,8 +205,8 @@ namespace MEFAnalyzers.CompositionEngine
                         //error has been already set
                         return false;
 
-                    setError(imp, "Cannot satisfy import, because depending component cannot be instantiated");
-                    makeErrorJoins(imp, candidate, "This export cannot be provided before prerequisity imports are satisfied");
+                    setError(importPoint, "Cannot satisfy import, because depending component cannot be instantiated");
+                    makeErrorJoins(importPoint, candidate, "This export cannot be provided before prerequisity imports are satisfied");
 
                     //satisfy all needed requirments
                     return false;
@@ -248,6 +218,67 @@ namespace MEFAnalyzers.CompositionEngine
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// find exports which satisfies import from exportsProvider (exportsProvider has been instatiated and its exports has to match into import)
+        /// found exports are added into storage
+        /// 
+        /// provide type checking of join, on fail set errors and return false
+        /// </summary>
+        /// <param name="component"></param>
+        /// <param name="import"></param>
+        /// <param name="exportsProvider"></param>
+        private bool satisfyImport(ComponentRef component, Import import, ComponentRef exportsProvider)
+        {
+            Debug.Assert(exportsProvider.IsConstructed,"candidate has to be constructed before providing exports");
+
+            var importPoint = component.GetPoint(import);
+            foreach (var exportPoint in exportsProvider.ExportPoints)
+            {
+                if (match(import, exportPoint))
+                {
+                    var join = new Join(importPoint, exportPoint);
+                    _joins.Add(join);
+
+                    if (!typeCheck(join)) return false;
+                    _storage.Add(importPoint, exportPoint);
+                }
+            }
+
+            if (import.IsPrerequisity)
+                // else it will be set via importing constructor
+                enqSetter(importPoint);
+
+            return true;
+        }
+
+        private bool tooManyCandidatesError(ComponentRef component, Import import, IEnumerable<ComponentRef> candidates)
+        {
+            var importPoint = component.GetPoint(import);
+            setError(importPoint, "There are more than one matching component for export satisfiyng");
+            foreach (var expProvider in candidates)
+                makeErrorJoins(importPoint, expProvider, "Matching export in ambiguous component");
+            return false;
+        }
+
+        private bool noInitializedCandidatesError(ComponentRef component, Import import, bool hasAnyCandidates)
+        {
+            var importPoint = component.GetPoint(import);
+
+            string error = "Can't satisfy import";
+            if (hasAnyCandidates)
+                error += ", there are probably circular dependencies in prerequisity imports";
+            else
+                error = noMatchingExportError(importPoint, error);
+
+            //set error to import
+            setError(importPoint, error);
+
+            if (import.IsPrerequisity)
+                setWarning(component.ExportPoints, "Because of unsatisfied prerequisity import, exports cannot be provided");
+
+            return false;
         }
 
         /// <summary>
@@ -286,10 +317,10 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="imp"></param>
         /// <param name="exportProvider"></param>
         /// <param name="expWarning"></param>
-        private void makeErrorJoins(JoinPoint imp, Instance exportProvider, string expWarning)
+        private void makeErrorJoins(JoinPoint imp, ComponentRef exportProvider, string expWarning)
         {
             var exps = new List<JoinPoint>();
-            foreach (var exp in getExports(exportProvider))
+            foreach (var exp in exportProvider.ExportPoints)
             {
                 if (!match(imp.Point as Import, exp)) continue;
                 exps.Add(exp);
@@ -309,38 +340,7 @@ namespace MEFAnalyzers.CompositionEngine
             }
         }
 
-        /// <summary>
-        /// find exports which satisfies import from exportsProvider (exportsProvider has been instatiated and its exports has to match into import)
-        /// found exports are added into storage
-        /// 
-        /// provide type checking of join, on fail set errors and return false
-        /// </summary>
-        /// <param name="component"></param>
-        /// <param name="import"></param>
-        /// <param name="exportsProvider"></param>
-        private bool satisfyImport(Instance component, Import import, Instance exportsProvider)
-        {
-            if (!_constructedInstances.Contains(exportsProvider) && !_context.IsInstanceConstructed(exportsProvider))
-                throw new NotSupportedException("candidate has to be constructed before providing exports");
 
-            var imp = getImport(import, component);
-            foreach (var exp in getExports(exportsProvider))
-            {
-                if (match(import, exp))
-                {
-                    var join = new Join(imp, exp);
-                    _joins.Add(join);
-
-                    if (!typeCheck(join)) return false;
-                    _storage.Add(imp, exp);
-                }
-            }
-
-            if (import.Setter != null)  // else it will be set via importing constructor
-                enqSetter(imp);
-
-            return true;
-        }
 
         private bool typeCheck(Join join)
         {
@@ -368,14 +368,14 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="import"></param>
         /// <returns></returns>
-        Instance[] getComponents(Import import)
+        IEnumerable<ComponentRef> getExportCandidates(Import import)
         {
             var candidates = _componentsStorage.GetComponents(import.Contract);
-            var result = new List<Instance>();
+            var result = new List<ComponentRef>();
             foreach (var candidate in candidates)
             {
                 var matchingExps = new List<JoinPoint>();
-                foreach (var exp in getExports(candidate))
+                foreach (var exp in candidate.ExportPoints)
                 {
                     if (match(import, exp))
                         matchingExps.Add(exp);
@@ -395,7 +395,7 @@ namespace MEFAnalyzers.CompositionEngine
                 //here are all candidates matching export                
                 result.Add(candidate);
             }
-            return result.ToArray();
+            return result;
         }
 
         /// <summary>
@@ -495,23 +495,7 @@ namespace MEFAnalyzers.CompositionEngine
                 return _context.IsSubType(testedType, setterType);
         }
 
-
-        /// <summary>
-        /// Return exports which are declared by instance
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        JoinPoint[] getExports(Instance instance)
-        {
-            var result = new List<JoinPoint>();
-            foreach (var exp in _context.GetExports(instance))
-                result.Add(getExport(exp, instance));
-            foreach (var exp in _context.GetSelfExports(instance))
-                result.Add(getExport(exp, instance));
-
-            return result.ToArray();
-        }
-
+        
         /// <summary>
         /// return all matching imports in all components
         /// </summary>
@@ -523,61 +507,22 @@ namespace MEFAnalyzers.CompositionEngine
             var result = new List<JoinPoint>();
             var candidates = _componentsStorage.GetComponents(import.Contract);
             foreach (var candidate in candidates)
-                foreach (var exp in getExports(candidate))
+                foreach (var exp in candidate.ExportPoints)
                     if (match(import, exp, metaDataTest)) result.Add(exp);
 
             return result.ToArray();
         }
 
+      
 
-        /// <summary>
-        /// Return joinpoint for given export
-        /// </summary>
-        /// <param name="export"></param>
-        /// <param name="component"></param>
-        /// <returns></returns>
-        private JoinPoint getExport(Export export, Instance component)
-        {
-            return _componentsStorage.Translate(export, component);
-        }
-
-
-        /// <summary>
-        /// Return all declared imports for this instance
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        private JoinPoint[] getImports(Instance instance)
-        {
-            var result = new List<JoinPoint>();
-            foreach (var imp in getImportsRaw(instance))
-                result.Add(getImport(imp, instance));
-            return result.ToArray();
-        }
-
-
-        private IEnumerable<Import> getImportsRaw(Instance instance)
-        {
-            throw new NotImplementedException();
-        }
-        /// <summary>
-        /// Return JoinPoint for given import
-        /// </summary>
-        /// <param name="import"></param>
-        /// <param name="component"></param>
-        /// <returns></returns>
-        private JoinPoint getImport(Import import, Instance component)
-        {
-            return _componentsStorage.Translate(import, component);
-        }
-
+      
         /// <summary>
         /// enqueue setter call which satisfy import from exports
         /// </summary>
         /// <param name="import"></param>    
         private void enqSetter(JoinPoint import)
         {
-            var exps = _storage.GetValues(import);
+            var exps = _storage.GetExports(import);
             if (exps == null) return; //allow default doesnt require setter
 
             foreach (var exp in exps)
@@ -590,45 +535,42 @@ namespace MEFAnalyzers.CompositionEngine
         {
             var imp = import.Point as Import;
 
-            _context.AddCall(import.Instance, imp.Setter, createExport(import));
+            import.Instance.Call(imp.Setter, createExport(import));
         }
         /// <summary>
         /// enqueue call importing/default constructor on instance
         /// </summary>
         /// <param name="inst"></param>        
-        private bool enqConstructor(Instance inst)
+        private bool constructInstance(ComponentRef inst)
         {
-            if (_constructedInstances.Contains(inst)) throw new NotSupportedException("InternalError: Cant construct instance twice");
-            if (!_context.IsInstanceConstructed(inst))
-            { //test if instance was added into composition in constructed state
-                if (_context.GetComponentInfo(inst).ImportingConstructor == null)
-                {
-                    setError(getExports(inst), "Cannot provide exports because of missing importing or parameter less constructor");
-                    setError(getImports(inst), "Cannot set imports, because of missing importing or parameter less constructor");
-                    _failed = true;
-                    return false;
-                }
-                _composeActions.Add(() => callImportingConstructor(inst));
+            Debug.Assert(!inst.IsConstructed, "InternalError: Cant construct instance twice");
+
+            //test if instance was added into composition in constructed state
+            if (!inst.HasImportingConstructor)
+            {
+                setError(inst.ExportPoints, "Cannot provide exports because of missing importing or parameter less constructor");
+                setError(inst.ImportPoints, "Cannot set imports, because of missing importing or parameter less constructor");
+                _failed = true;
+                return false;
             }
-            _constructedInstances.Add(inst);
+            callImportingConstructor(inst);
+
+            
             return true;
         }
 
-        private void callImportingConstructor(Instance inst)
-        {
-            var info = _context.GetComponentInfo(inst);
-            var constr = info.ImportingConstructor;
+        private void callImportingConstructor(ComponentRef component)
+        {            
+            var args = new List<ComponentRef>();
 
-            var args = new List<Instance>();
-
-            foreach (var import in info.Imports)
+            foreach (var import in component.Imports)
                 if (import.Setter == null) //has to be satisfied via importing constructor
                 {
-                    var imp = getImport(import, inst);
+                    var imp =component.GetPoint(import);
                     args.Add(createExport(imp));
                 }
 
-            _context.AddCall(inst, constr, args.ToArray());
+            component.Construct(component.ComponentInfo.ImportingConstructor, args.ToArray());
         }
 
         /// <summary>
@@ -637,9 +579,9 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="imp"></param>
         /// <returns></returns>
-        private Instance createExport(JoinPoint imp)
+        private ComponentRef createExport(JoinPoint imp)
         {
-            var exps = _storage.GetValues(imp);
+            var exps = _storage.GetExports(imp);
             switch (exps.Count())
             {
                 case 0:
@@ -653,7 +595,7 @@ namespace MEFAnalyzers.CompositionEngine
             }
         }
 
-        private Instance callExportGetter(JoinPoint import, JoinPoint export)
+        private ComponentRef callExportGetter(JoinPoint import, JoinPoint export)
         {
             var exp = export.Point as Export;
             var imp = import.Point as Import;
@@ -700,8 +642,8 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="context">Available interpreting services.</param>
         /// <param name="meta">Proxied meta data object.</param>
         /// <returns></returns>
-        private Instance metaDataProxyMethod(TypeMethodInfo proxiedMethod, MetaExport meta)
-        {
+        private ComponentRef metaDataProxyMethod(TypeMethodInfo proxiedMethod, MetaExport meta)
+        {/*
             var name = proxiedMethod.MethodName;
             if (name.Length < 4 || name.Substring(0, 4) != "get_")
                 return null;
@@ -715,18 +657,19 @@ namespace MEFAnalyzers.CompositionEngine
             if (result == null)
                 result = null;
 
-            return result;
+            return result*/
+            throw new NotImplementedException();
         }
 
-        private Instance callManyExportGetter(JoinPoint import, IEnumerable<JoinPoint> exps)
+        private ComponentRef callManyExportGetter(JoinPoint import, IEnumerable<JoinPoint> exps)
         {
-            var instances = new List<Instance>();
+            var exportedComponents = new List<ComponentRef>();
 
             foreach (var exp in exps)
-                instances.Add(callExportGetter(import, exp));
+                exportedComponents.Add(callExportGetter(import, exp));
 
 
-            Instance iCollectionToSet;
+            ComponentRef iCollectionToSet;
             TypeMethodInfo addMethod;
 
             if (isICollectionImport(import, out iCollectionToSet, out addMethod))
@@ -739,8 +682,10 @@ namespace MEFAnalyzers.CompositionEngine
                     return null;
                 }
 
-                foreach (var inst in instances)
-                    _context.AddCall(iCollectionToSet, addMethod.MethodID, inst);
+                foreach (var exportedComponent in exportedComponents)
+                {
+                    iCollectionToSet.Call(addMethod.MethodID, exportedComponent);
+                }
 
                 //because it will be set via setter
                 return iCollectionToSet;
@@ -749,12 +694,12 @@ namespace MEFAnalyzers.CompositionEngine
             {
                 //import will be filled with an array
                 var exportType = string.Format("System.Array<{0},1>", import.ImportManyItemType);
-                return _context.CreateArray(import.ImportManyItemType, instances);
+                return _context.CreateArray(import.ImportManyItemType, exportedComponents);
             }
         }
 
 
-        private bool isICollectionImport(JoinPoint import, out Instance iCollectionToSet, out TypeMethodInfo addMethod)
+        private bool isICollectionImport(JoinPoint import, out ComponentRef iCollectionToSet, out TypeMethodInfo addMethod)
         {
             var imp = import.Point as Import;
 
@@ -787,7 +732,7 @@ namespace MEFAnalyzers.CompositionEngine
                 return null;
 
             var getterName = "get_" + setter.MethodName.Substring(4);
-            var instType = import.Instance.Info;
+            var instType = import.Instance.Type;
 
             var overloads = _context.GetMethods(instType, getterName);
             if (overloads == null || overloads.Count() != 1)
@@ -804,7 +749,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="points"></param>
         /// <param name="error"></param>
-        private void setError(JoinPoint[] points, string error)
+        private void setError(IEnumerable<JoinPoint> points, string error)
         {
             foreach (var joinPoint in points) setError(joinPoint, error);
         }
@@ -822,7 +767,7 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
 
-        private void setWarning(JoinPoint[] points, string warning)
+        private void setWarning(IEnumerable<JoinPoint> points, string warning)
         {
             foreach (var point in points) setWarning(point, warning);
         }

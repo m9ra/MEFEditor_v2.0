@@ -42,10 +42,12 @@
   <ItemGroup>
     <Compile Include="CompositionEngine\CompositionContext.cs" />
     <Compile Include="CompositionEngine\CompositionProvider.cs" />
+    <Compile Include="CompositionEngine\ComponentRef.cs" />
     <Compile Include="CompositionEngine\Joins.cs" />
     <Compile Include="CompositionEngine\CompositionResult.cs" />
     <Compile Include="CompositionEngine\ComponentStorage.cs" />
     <Compile Include="CompositionEngine\CompositionWorker.cs" />
+    <Compile Include="CompositionTesterDefinition.cs" />
     <Compile Include="DirectoryCatalogDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

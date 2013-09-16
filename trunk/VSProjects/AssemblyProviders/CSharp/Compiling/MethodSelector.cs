@@ -162,7 +162,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 }
                 else
                 {
-                    var args = _argBindings.GetValues(param).ToArray();
+                    var args = _argBindings.GetExports(param).ToArray();
                     if (args.Length != 1)
                     {
                         throw new NotImplementedException("Resolve params argument");
