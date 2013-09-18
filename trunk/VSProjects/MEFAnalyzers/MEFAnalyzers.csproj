@@ -41,8 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompositionEngine\CompositionContext.cs" />
+    <Compile Include="CompositionEngine\CompositionGenerator.cs" />
     <Compile Include="CompositionEngine\CompositionProvider.cs" />
     <Compile Include="CompositionEngine\ComponentRef.cs" />
+    <Compile Include="CompositionEngine\InstanceRef.cs" />
     <Compile Include="CompositionEngine\Joins.cs" />
     <Compile Include="CompositionEngine\CompositionResult.cs" />
     <Compile Include="CompositionEngine\ComponentStorage.cs" />

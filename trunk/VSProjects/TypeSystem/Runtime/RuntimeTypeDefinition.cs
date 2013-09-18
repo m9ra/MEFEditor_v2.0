@@ -51,6 +51,11 @@ namespace TypeSystem.Runtime
 
         abstract internal InstanceInfo TypeInfo{get;}
 
+        protected InstanceInfo GetTypeInfo()
+        {
+            return TypeInfo;
+        }
+
         abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
         
         internal void Initialize(RuntimeAssembly containingAssembly, TypeServices typeServices)

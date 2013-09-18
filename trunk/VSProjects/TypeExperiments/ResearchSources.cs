@@ -22,13 +22,12 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
-
         static internal TestingAssembly CompositionTester()
         {
-
             return AssemblyUtils.Run(@"        
                 var partImport=new StringImport();       
                 var partExport=new StringExport(""ExportedValue"");
+
                 var test=new CompositionTester(partImport,partExport);   
                 var importValue=partImport.Import;                   
             ")
@@ -51,7 +50,6 @@ namespace TypeExperiments
            ;
         }
 
-
         static internal TestingAssembly InstanceRemoving()
         {
             return AssemblyUtils.Run(@"
@@ -60,9 +58,9 @@ namespace TypeExperiments
                 var x=1;
                 var y=2;
                 if(x<y){
-                    toDelete=""same"";
+                    toDelete=""smaller"";
                 }else{
-                    toDelete=""different"";
+                    toDelete=""greater"";
                 }
             ")
 
@@ -131,7 +129,7 @@ namespace TypeExperiments
                 var thisObj = c.CurrentArguments[0];
                 var data = c.GetField(thisObj, "inputData") as Instance;
                 c.Return(data);
-            }, Method.String_StringParam)
+            }, Method.String_NoParam)
 
 
             ;
@@ -154,7 +152,7 @@ namespace TypeExperiments
                 var result=fib(" + n + @");
             ")
 
-            .AddMethod("fib", @"    
+            .AddMethod("Test.fib", @"    
                 if(n<3){
                     return 1;
                 }else{

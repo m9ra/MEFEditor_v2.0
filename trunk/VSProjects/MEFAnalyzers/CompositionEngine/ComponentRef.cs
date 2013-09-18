@@ -14,23 +14,20 @@ namespace MEFAnalyzers.CompositionEngine
     /// <summary>
     /// Reference to instance occurance, used for manipulating instances during composition method creation
     /// </summary>
-    class ComponentRef
+    class ComponentRef : InstanceRef
     {
         private Dictionary<Import, JoinPoint> _importPoints = new Dictionary<Import, JoinPoint>();
         private Dictionary<Export, JoinPoint> _exportPoints = new Dictionary<Export, JoinPoint>();
 
-        private readonly CompositionContext _context;
+
         private Instance _component;
 
-        internal readonly InstanceInfo Type;
+
         internal readonly ComponentInfo ComponentInfo;
 
         internal bool HasSatisfiedPreImports;
 
         internal bool IsSatisfied;
-
-
-        internal bool IsComponent { get { return ComponentInfo != null; } }
 
         internal bool NeedsPrerequisitySatisfiing { get { return !HasSatisfiedPreImports && !ComposingFailed; } }
 
@@ -41,11 +38,15 @@ namespace MEFAnalyzers.CompositionEngine
 
         internal bool HasImports { get { return ComponentInfo.Imports.Length > 0; } }
 
-        internal bool IsConstructed { get; private set; }
+
 
         internal bool HasImportingConstructor { get { return ComponentInfo.ImportingConstructor != null; } }
 
+        public IEnumerable<Import> Imports { get { return ComponentInfo.Imports; } }
 
+        public IEnumerable<JoinPoint> ImportPoints { get { return _importPoints.Values; } }
+
+        public IEnumerable<JoinPoint> ExportPoints { get { return _exportPoints.Values; } }
 
         public IEnumerable<JoinPoint> Points
         {
@@ -59,23 +60,15 @@ namespace MEFAnalyzers.CompositionEngine
             }
         }
 
-        public IEnumerable<Import> Imports { get { return ComponentInfo.Imports; } }
 
-        public IEnumerable<JoinPoint> ImportPoints { get { return _importPoints.Values; } }
-
-        public IEnumerable<JoinPoint> ExportPoints { get { return _exportPoints.Values; } }
-
-        public ComponentRef(CompositionContext context, Instance component, ComponentInfo componentInfo)
+        public ComponentRef(CompositionContext context, Instance component, bool isConstructed, ComponentInfo componentInfo)
+            : base(context, component.Info, isConstructed)
         {
             _component = component;
-            _context = context;
-            Type = component.Info;
+
             ComponentInfo = componentInfo;
 
-            if (!IsComponent)
-            {
-                return;
-            }
+            HasSatisfiedPreImports = isConstructed;
 
             foreach (var exp in ComponentInfo.Exports)
                 addExport(exp);
@@ -92,18 +85,10 @@ namespace MEFAnalyzers.CompositionEngine
 
         internal JoinPoint GetPoint(Import import)
         {
-            throw new NotImplementedException();
+            return _importPoints[import];
         }
 
-        internal void Construct(MethodID constructor, ComponentRef[] instance)
-        {
-            throw new NotImplementedException();
-        }
 
-        internal void Call(MethodID methodID, ComponentRef inst)
-        {
-            throw new NotImplementedException();
-        }
 
         private void addExport(Export export)
         {
@@ -112,7 +97,8 @@ namespace MEFAnalyzers.CompositionEngine
             _exportPoints.Add(export, point);
         }
 
-        private void addImport(Import import){
+        private void addImport(Import import)
+        {
             var point = new JoinPoint(this, import);
 
             _importPoints.Add(import, point);

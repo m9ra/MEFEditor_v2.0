@@ -32,17 +32,24 @@ namespace MEFAnalyzers.CompositionEngine
         public readonly JoinPoint[] Points;
 
         /// <summary>
+        /// Generator for instructions providing composition
+        /// </summary>
+        internal readonly CompositionGenerator Generator;
+
+        /// <summary>
         /// Create CompositionResult.
         /// </summary>
         /// <param name="joins">Collected joins.</param>
         /// <param name="points">Collected points</param>
         /// <param name="error">Error which appeared during composition.</param>
-        public CompositionResult(Join[] joins, JoinPoint[] points, string error)
+        internal CompositionResult(Join[] joins, JoinPoint[] points,CompositionGenerator generator, string error)
         {
             Joins = joins;
             Points = points;
             Failed = error != null;
             Error = error;
+
+            Generator = generator;
         }
     }
 }

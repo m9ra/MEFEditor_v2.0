@@ -32,25 +32,16 @@ namespace MEFAnalyzers.CompositionEngine
         /// Create component storage from given components.
         /// </summary>
         /// <param name="components">Components which will be stored in storage.</param>
-        public ComponentStorage(CompositionContext context, IEnumerable<Instance> components)
+        public ComponentStorage(CompositionContext context)
         {
-            foreach (var component in components)
+            foreach (var component in context.Components)
             {
-                var reference = context.Register(component);
-                if (_components.Contains(reference))
-                    //this component has already been registered
-                    continue;
-
-                if (!reference.IsComponent)
-                    //this is not a component - skip it
-                    continue;
-
-                _components.Add(reference);
+                _components.Add(component);
 
                 //register component contracts
-                foreach (var point in reference.Points)
+                foreach (var point in component.Points)
                 {
-                    _contrToComponents.Add(point.Contract, reference);
+                    _contrToComponents.Add(point.Contract, component);
                 }
             }
         }

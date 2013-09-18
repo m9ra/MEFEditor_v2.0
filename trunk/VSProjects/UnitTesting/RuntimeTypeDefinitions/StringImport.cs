@@ -19,8 +19,9 @@ namespace UnitTesting.RuntimeTypeDefinitions
             Import = new Field<string>(this);
             FullName = "StringImport";
 
-            var imports = new Import[] { new Import(InstanceInfo.Create<string>()) };
-            ComponentInfo = new ComponentInfo(imports, new Export[0], new Export[0]);
+            var builder = new ComponentInfoBuilder(GetTypeInfo());
+            builder.AddImport(InstanceInfo.Create<string>(), "Import");
+            ComponentInfo = builder.BuildInfo();
         }
 
         public void _method_ctor()

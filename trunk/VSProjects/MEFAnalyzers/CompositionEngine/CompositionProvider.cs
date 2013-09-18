@@ -28,19 +28,16 @@ namespace MEFAnalyzers.CompositionEngine
         /// <summary>
         /// Simulate composition according to given parts.
         /// </summary>
-        /// <param name="context">Services available for interpreting.</param>
+        /// <param name="context">Context of composition, contains list of components to be composed</param>
         /// <param name="parts">Parts which will be composed.</param>
         /// <returns>CompositionResult which is created according to composition simulation.</returns>
-        public static CompositionResult Compose(CompositionContext context, IEnumerable<Instance> parts)
+        public static CompositionResult Compose(CompositionContext context)
         {
-            if (parts == null) 
-                throw new ArgumentNullException("instances");
-
-            if (_processingCompositions > _processingCompositionsLimit) 
-                return new CompositionResult(null, null, "Limit of simultaneously processing compositions was reached - possible recursion in ImportingConstructor?");
+            if (_processingCompositions > _processingCompositionsLimit)
+                return new CompositionResult(null, null, null, "Limit of simultaneously processing compositions was reached - possible recursion in ImportingConstructor?");
 
             ++_processingCompositions;
-            var worker = new CompositionWorker(context, parts);
+            var worker = new CompositionWorker(context);
             var result = worker.GetResult();
             --_processingCompositions;
 

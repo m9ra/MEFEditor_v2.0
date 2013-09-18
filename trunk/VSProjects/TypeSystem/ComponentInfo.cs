@@ -57,8 +57,9 @@ namespace TypeSystem
         /// </summary>
         public MethodID ImportingConstructor { get; private set; }
 
-        public ComponentInfo(Import[] imports, Export[] exports, Export[] selfExports)
+        public ComponentInfo(InstanceInfo thisType,Import[] imports, Export[] exports, Export[] selfExports)
         {
+            ThisType = thisType;
             SelfExports = selfExports;
             Exports = exports;
             Imports = imports;
@@ -109,10 +110,11 @@ namespace TypeSystem
         /// </summary>
         public InstanceInfo ExportType { get; private set; }
 
-        public Export(InstanceInfo exportType)
+        public Export(InstanceInfo exportType,MethodID getter)
         {
             ExportType = exportType;
             Contract = exportType.TypeName;
+            Getter = getter;
         }
     }
 
@@ -168,7 +170,7 @@ namespace TypeSystem
         /// <summary>
         /// Determine if this import has to be satisfied before instance constructing
         /// </summary>
-        public bool IsPrerequisity { get; private set; }
+        public bool IsPrerequisity { get { return Setter == null; } }
         /// <summary>
         /// Determine if value can be default (no export needed)
         /// </summary>
@@ -178,10 +180,11 @@ namespace TypeSystem
         /// </summary>
         public bool AllowMany { get; private set; }
 
-        public Import(InstanceInfo importType)
+        public Import(InstanceInfo importType,MethodID setter)
         {
             ImportTypeInfo = new ImportTypeInfo(importType);
             Contract = ImportTypeInfo.ImportType.TypeName;
+            Setter = setter;
         }
     }
 }

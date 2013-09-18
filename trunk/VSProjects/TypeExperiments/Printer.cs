@@ -14,7 +14,7 @@ namespace TypeExperiments
     /// <summary>
     /// Prints Instruction Analyzing Language program in readable format
     /// </summary>
-    static class PrinterIAL
+    static class Printer
     {
         static ConsoleColor BySeparatorColor = ConsoleColor.Red;
         static ConsoleColor EqualsSeparatorColor = ConsoleColor.Red;
@@ -38,15 +38,22 @@ namespace TypeExperiments
         {
             foreach (var variable in context.Variables)
             {
-                var value=context.GetValue(variable);
-                var args=string.Format("{0} = {1}",variable,value);
+                var value = context.GetValue(variable);
+                var args = string.Format("{0} = {1}", variable, value);
 
                 printSeparatedArguments(args, "=", EqualsSeparatorColor);
                 Console.WriteLine();
             }
         }
-        
-        public static void Print(string code)
+
+
+        public static void Print(ConsoleColor color, string text, params object[] formatArgs)
+        {
+            Console.ForegroundColor = color;
+            Console.Write(text, formatArgs);
+        }
+
+        public static void PrintIAL(string code)
         {
             var lines = code.Split('\n');
 
@@ -65,7 +72,7 @@ namespace TypeExperiments
 
             }
 
-            Console.ForegroundColor = ConsoleColor.Gray;            
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         static void printComment(string comment)
@@ -79,7 +86,7 @@ namespace TypeExperiments
             else
             {
                 //comment, whitespace
-                print(CommentColor, comment);
+                Print(CommentColor, comment);
                 Console.WriteLine();
             }
         }
@@ -88,7 +95,7 @@ namespace TypeExperiments
         {
             var instruction = instructionLine.Split(new char[] { ' ' }, 2);
             var opCode = instruction[0].Trim();
-            print(OpcodeColor,"  " + opCode.PadRight(15));
+            Print(OpcodeColor, "  " + opCode.PadRight(15));
 
             if (instruction.Length > 1)
             {
@@ -116,7 +123,7 @@ namespace TypeExperiments
             printArguments(separedParts[0]);
             if (separedParts.Length > 1)
             {
-                print(separatorColor, separator);
+                Print(separatorColor, separator);
                 printArguments(separedParts[1]);
             }
         }
@@ -151,7 +158,7 @@ namespace TypeExperiments
             }
             else
             {
-                print(MethodColor, argumentPart);
+                Print(MethodColor, argumentPart);
             }
         }
 
@@ -162,36 +169,28 @@ namespace TypeExperiments
             switch (typePart)
             {
                 case "[Variable]":
-                    print(VariableColor, valuePart);
+                    Print(VariableColor, valuePart);
                     break;
                 case "[Label]":
-                    print(LabelColor, valuePart);
+                    Print(LabelColor, valuePart);
                     break;
                 case "[System.String]":
-                    print(StringColor, "\"{0}\"", valuePart);
+                    Print(StringColor, "\"{0}\"", valuePart);
                     break;
                 case "[System.Int32]":
-                    print(NumberColor, valuePart);
+                    Print(NumberColor, valuePart);
                     break;
                 case "[System.Boolean]":
-                    print(BoolColor, valuePart);
+                    Print(BoolColor, valuePart);
                     break;
                 case "[Method]":
-                    print(MethodColor, valuePart);
+                    Print(MethodColor, valuePart);
                     break;
                 default:
-                    print(ArgumentTypeColor, typePart);
-                    print(ArgumentColor, valuePart);
+                    Print(ArgumentTypeColor, typePart);
+                    Print(ArgumentColor, valuePart);
                     break;
             }
         }
-
-        static void print(ConsoleColor color, string text, params string[] formatArgs)
-        {
-            Console.ForegroundColor = color;
-            Console.Write(text, formatArgs);
-        }
-
- 
     }
 }

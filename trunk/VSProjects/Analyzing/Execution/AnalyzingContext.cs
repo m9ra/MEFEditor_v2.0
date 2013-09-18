@@ -116,6 +116,18 @@ namespace Analyzing.Execution
             var argumentValues = getArgumentValues(_preparedArguments);
             //preparing is just for single call
             _preparedArguments = null;
+
+            pushCall(name, generator, argumentValues);
+        }
+
+
+        public void DynamicCall(string methodNameHint, GeneratorBase generator, params Instance[] instances)
+        {
+            pushCall(new MethodID(methodNameHint, false), generator, instances);
+        }
+
+        private void pushCall(MethodID name, GeneratorBase generator, Instance[] argumentValues)
+        {
             var callTransformProvider = Edits == null ? null : Edits.TransformProvider;
             var call = new CallContext(this, name, callTransformProvider, generator, argumentValues);
 
@@ -262,6 +274,7 @@ namespace Analyzing.Execution
                 Edits = new EditsProvider(call.TransformProvider, CurrentCall.CurrentBlock);
             }
         }
+
 
     }
 }

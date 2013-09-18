@@ -23,7 +23,13 @@ namespace MEFAnalyzers
         public void _method_ctor(Instance part1, Instance part2)
         {
             var compositionContext = new CompositionContext(Services);
-            CompositionProvider.Compose(compositionContext, new Instance[] { part1, part2 });
+            compositionContext.AddConstructedComponents(part1, part2);
+            var composition=CompositionProvider.Compose(compositionContext);
+
+            if (!composition.Failed)
+            {
+                Context.DynamicCall("$dynamic_composition",composition.Generator, part1, part2);
+            }
         }
     }
 }

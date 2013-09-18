@@ -19,8 +19,9 @@ namespace UnitTesting.RuntimeTypeDefinitions
             Export = new Field<string>(this);
             FullName = "StringExport";
 
-            var exports = new Export[] { new Export(InstanceInfo.Create<string>()) };
-            ComponentInfo = new ComponentInfo(new Import[0], exports, new Export[0]);
+            var builder = new ComponentInfoBuilder(GetTypeInfo());
+            builder.AddExport(InstanceInfo.Create<string>(), "Export");
+            ComponentInfo = builder.BuildInfo();
         }
 
         public void _method_ctor(string toExport)
@@ -28,7 +29,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             Export.Set(toExport);
         }
 
-        public string _get_Import()
+        public string _get_Export()
         {
             return Export.Get();
         }

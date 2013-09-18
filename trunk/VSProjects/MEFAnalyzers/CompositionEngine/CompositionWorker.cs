@@ -12,6 +12,10 @@ using Utilities;
 
 namespace MEFAnalyzers.CompositionEngine
 {
+
+    delegate InstanceRef ExportLoader();
+
+
     /// <summary>
     /// Worker which is used for MEF composition simulation.
     /// </summary>
@@ -23,7 +27,6 @@ namespace MEFAnalyzers.CompositionEngine
         HashSet<ComponentRef> _currentPrereqInstances = new HashSet<ComponentRef>();
 
         ComponentStorage _componentsStorage;
-        List<Action> _composeActions = new List<Action>();
         List<Join> _joins = new List<Join>();
         bool _failed;
 
@@ -40,10 +43,10 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="context">Services available for interpreting.</param>
         /// <param name="parts">Parts to compose.</param>
-        public CompositionWorker(CompositionContext context, IEnumerable<Instance> parts)
+        public CompositionWorker(CompositionContext context)
         {
             _context = context;
-            _componentsStorage = new ComponentStorage(context, parts);
+            _componentsStorage = new ComponentStorage(context);
 
             if (_componentsStorage.Failed)
             {
@@ -183,12 +186,12 @@ namespace MEFAnalyzers.CompositionEngine
             //filter candidates that are initialized now (circular dependency)
             //TODO: this is probably incorrect behaviour from v1.1
             candidates = candidates.Except(_currentPrereqInstances);
-            var hasInitializedCandidates=candidates.Any();
+            var hasInitializedCandidates = candidates.Any();
 
-            if (!hasInitializedCandidates && !import.AllowDefault)            
+            if (!hasInitializedCandidates && !import.AllowDefault)
                 return noInitializedCandidatesError(component, import, hasAnyCandidates);
 
-            if (candidates.Count() > 1 && !import.AllowMany)            
+            if (candidates.Count() > 1 && !import.AllowMany)
                 return tooManyCandidatesError(component, import, candidates);
 
             return satisfyFromCandidates(component, import, candidates);
@@ -231,7 +234,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="exportsProvider"></param>
         private bool satisfyImport(ComponentRef component, Import import, ComponentRef exportsProvider)
         {
-            Debug.Assert(exportsProvider.IsConstructed,"candidate has to be constructed before providing exports");
+            Debug.Assert(exportsProvider.IsConstructed, "candidate has to be constructed before providing exports");
 
             var importPoint = component.GetPoint(import);
             foreach (var exportPoint in exportsProvider.ExportPoints)
@@ -246,7 +249,7 @@ namespace MEFAnalyzers.CompositionEngine
                 }
             }
 
-            if (import.IsPrerequisity)
+            if (!import.IsPrerequisity)
                 // else it will be set via importing constructor
                 enqSetter(importPoint);
 
@@ -352,7 +355,7 @@ namespace MEFAnalyzers.CompositionEngine
             var importItem = imp.AllowMany ? imp.ImportManyItemType.TypeName : imp.Contract;
             var importId = imp.AllowMany ? "Import item" : "Import";
 
-            if (!_context.IsSubType(expType, importItem))
+            if (!_context.IsOfType(expType, importItem))
             {
                 setError(imp, string.Format("{0} is of type {1}, so it cannot accept export of type {2}", importId, importItem, expType.TypeName));
                 setWarning(exp, "Export contract doesn't provide type safe identification");
@@ -492,10 +495,10 @@ namespace MEFAnalyzers.CompositionEngine
             if (arrayTest)
                 return setterType.TypeName.Contains(testedType.TypeName);
             else
-                return _context.IsSubType(testedType, setterType);
+                return _context.IsOfType(testedType, setterType);
         }
 
-        
+
         /// <summary>
         /// return all matching imports in all components
         /// </summary>
@@ -513,9 +516,9 @@ namespace MEFAnalyzers.CompositionEngine
             return result.ToArray();
         }
 
-      
 
-      
+
+
         /// <summary>
         /// enqueue setter call which satisfy import from exports
         /// </summary>
@@ -528,7 +531,7 @@ namespace MEFAnalyzers.CompositionEngine
             foreach (var exp in exps)
                 _joins.Add(new Join(import, exp));
 
-            _composeActions.Add(() => callSetter(import));
+            callSetter(import);
         }
 
         private void callSetter(JoinPoint import) //call setter
@@ -543,9 +546,6 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="inst"></param>        
         private bool constructInstance(ComponentRef inst)
         {
-            Debug.Assert(!inst.IsConstructed, "InternalError: Cant construct instance twice");
-
-            //test if instance was added into composition in constructed state
             if (!inst.HasImportingConstructor)
             {
                 setError(inst.ExportPoints, "Cannot provide exports because of missing importing or parameter less constructor");
@@ -553,20 +553,19 @@ namespace MEFAnalyzers.CompositionEngine
                 _failed = true;
                 return false;
             }
-            callImportingConstructor(inst);
 
-            
+            callImportingConstructor(inst);
             return true;
         }
 
         private void callImportingConstructor(ComponentRef component)
-        {            
-            var args = new List<ComponentRef>();
+        {
+            var args = new List<InstanceRef>();
 
             foreach (var import in component.Imports)
                 if (import.Setter == null) //has to be satisfied via importing constructor
                 {
-                    var imp =component.GetPoint(import);
+                    var imp = component.GetPoint(import);
                     args.Add(createExport(imp));
                 }
 
@@ -579,7 +578,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         /// <param name="imp"></param>
         /// <returns></returns>
-        private ComponentRef createExport(JoinPoint imp)
+        private InstanceRef createExport(JoinPoint imp)
         {
             var exps = _storage.GetExports(imp);
             switch (exps.Count())
@@ -595,43 +594,48 @@ namespace MEFAnalyzers.CompositionEngine
             }
         }
 
-        private ComponentRef callExportGetter(JoinPoint import, JoinPoint export)
+        private InstanceRef callExportGetter(JoinPoint import, JoinPoint export)
         {
             var exp = export.Point as Export;
             var imp = import.Point as Import;
-            var info = imp.ImportTypeInfo;
+            var importInfo = imp.ImportTypeInfo;
 
-            /*     InstanceLoader loader;
 
-                 if (exp.Getter == null)
-                     //self export
-                     loader = () => export.Instance;
-                 else
-                     loader = () => export.Instance.CallMethod(exp.Getter, new CallInfo(_context.Context));
+            ExportLoader loader;
+            if (exp.Getter == null)
+            {
+                //self export
+                loader = () => export.Instance;
+            }
+            else
+            {
+                //export from getter
+                loader = () => export.Instance.CallWithReturn(exp.Getter);
+            }
 
-                 if (info.IsItemLazy)
-                 {
-                     var valMeta = new ValueWithMetadata(loader);
 
-                     //generic for created lazy object
-                     var lazyParam = info.ItemType.FullName;
+            if (importInfo.IsItemLazy)
+            {
+                /*   var valMeta = new ValueWithMetadata(loader);
 
-                     if (info.MetaDataType != null)
-                     {
-                         lazyParam += "," + info.MetaDataType.FullName;
-                         var proxyType = string.Format("System.Proxy<{0}>", info.MetaDataType.FullName);
+                   //generic for created lazy object
+                   var lazyParam = info.ItemType.FullName;
 
-                         ProxyMethodCall proxyMethod = (m, i) => metaDataProxyMethod(m, i, exp.Meta);
-                         valMeta.Metadata = _context.InstanceCreator.CreateInstance(proxyType, proxyMethod);
-                     }
+                   if (info.MetaDataType != null)
+                   {
+                       lazyParam += "," + info.MetaDataType.FullName;
+                       var proxyType = string.Format("System.Proxy<{0}>", info.MetaDataType.FullName);
 
-                     var lazyTypeName = string.Format("System.Lazy<{0}>", lazyParam);
+                       ProxyMethodCall proxyMethod = (m, i) => metaDataProxyMethod(m, i, exp.Meta);
+                       valMeta.Metadata = _context.InstanceCreator.CreateInstance(proxyType, proxyMethod);
+                   }
 
-                     return _context.InstanceCreator.CreateInstance(lazyTypeName, valMeta);
-                 }
-                 else return loader();*/
+                   var lazyTypeName = string.Format("System.Lazy<{0}>", lazyParam);
 
-            throw new NotImplementedException();
+                   return _context.InstanceCreator.CreateInstance(lazyTypeName, valMeta);*/
+                throw new NotImplementedException();
+            }
+            else return loader();
         }
 
 
@@ -661,12 +665,12 @@ namespace MEFAnalyzers.CompositionEngine
             throw new NotImplementedException();
         }
 
-        private ComponentRef callManyExportGetter(JoinPoint import, IEnumerable<JoinPoint> exps)
+        private InstanceRef callManyExportGetter(JoinPoint import, IEnumerable<JoinPoint> exps)
         {
-            var exportedComponents = new List<ComponentRef>();
+            var exportValues = new List<InstanceRef>();
 
             foreach (var exp in exps)
-                exportedComponents.Add(callExportGetter(import, exp));
+                exportValues.Add(callExportGetter(import, exp));
 
 
             ComponentRef iCollectionToSet;
@@ -682,9 +686,9 @@ namespace MEFAnalyzers.CompositionEngine
                     return null;
                 }
 
-                foreach (var exportedComponent in exportedComponents)
+                foreach (var exportedValue in exportValues)
                 {
-                    iCollectionToSet.Call(addMethod.MethodID, exportedComponent);
+                    iCollectionToSet.Call(addMethod.MethodID, exportedValue);
                 }
 
                 //because it will be set via setter
@@ -694,7 +698,7 @@ namespace MEFAnalyzers.CompositionEngine
             {
                 //import will be filled with an array
                 var exportType = string.Format("System.Array<{0},1>", import.ImportManyItemType);
-                return _context.CreateArray(import.ImportManyItemType, exportedComponents);
+                return _context.CreateArray(import.ImportManyItemType, exportValues);
             }
         }
 
@@ -790,17 +794,19 @@ namespace MEFAnalyzers.CompositionEngine
         /// <returns>CompositionResult collected during composition simulation.</returns>
         internal CompositionResult GetResult()
         {
-            if (_componentsStorage.Failed) return new CompositionResult(_joins.ToArray(), _componentsStorage.GetPoints(), _componentsStorage.Error);
+            var joins = _joins.ToArray();
+            var points = _componentsStorage.GetPoints();
+
+            if (_componentsStorage.Failed)
+                return new CompositionResult(joins, points,_context.Generator, _componentsStorage.Error);
 
             string error = null;
-            if (!_failed)
+            if (_failed)
             {
-                foreach (var act in _composeActions) act();
+                error = "Composition failed because there were some errors";
             }
-            if (_failed) error = "Composition failed because there were some errors";
 
-            var result = new CompositionResult(_joins.ToArray(), _componentsStorage.GetPoints(), error);
-            return result;
+            return new CompositionResult(joins, points, _context.Generator, error);
         }
     }
 }
