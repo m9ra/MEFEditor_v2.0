@@ -10,7 +10,7 @@ namespace Analyzing.Execution
 {
     public class DirectInstance : Instance
     {
-        private readonly object _directValue;
+        private object _directValue;
         public override object DirectValue { get { return _directValue; } }
 
 
@@ -32,7 +32,9 @@ namespace Analyzing.Execution
             }
         }
 
-
-
+        internal void Initialize(object data)
+        {
+            _directValue = data;
+        }
     }
 }

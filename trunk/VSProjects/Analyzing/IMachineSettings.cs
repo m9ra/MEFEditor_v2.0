@@ -13,6 +13,8 @@ namespace Analyzing
 
     public interface IMachineSettings
     {
+        bool IsDirect(InstanceInfo typeInfo);
+
         InstanceInfo GetNativeInfo(Type literalType);
 
         bool IsTrue(Instance condition);

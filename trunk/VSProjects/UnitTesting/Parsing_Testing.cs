@@ -66,7 +66,7 @@ namespace UnitTesting
                 var arg = c.CurrentArguments[1].DirectValue as string;
                 var field = c.GetField(self, "StaticField");
 
-                var result = c.CreateDirectInstance(field + "_" + arg);
+                var result = c.Machine.CreateDirectInstance(field + "_" + arg);
                 c.Return(result);
             }
             , Method.StaticString_StringParam)

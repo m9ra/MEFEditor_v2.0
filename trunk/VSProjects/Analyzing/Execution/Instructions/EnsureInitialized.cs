@@ -28,7 +28,7 @@ namespace Analyzing.Execution.Instructions
             }
 
             //create shared instance
-            var sharedInstance = context.CreateInstance(_sharedInstanceInfo);
+            var sharedInstance = context.Machine.CreateInstance(_sharedInstanceInfo);
             context.SetValue(_targetVariable, sharedInstance);
 
             //run initializer generator

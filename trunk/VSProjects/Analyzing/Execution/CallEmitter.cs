@@ -44,7 +44,7 @@ namespace Analyzing.Execution
 
         public override AssignBuilder AssignLiteral(string targetVar, object literal, InstanceInfo literalInfo)
         {
-            var literalInstance = _context.CreateDirectInstance(literal, literalInfo);
+            var literalInstance = _context.Machine.CreateDirectInstance(literal, literalInfo);
             var target = getVariable(targetVar, literal.GetType());
 
             var result = new AssignLiteral(target, literalInstance);

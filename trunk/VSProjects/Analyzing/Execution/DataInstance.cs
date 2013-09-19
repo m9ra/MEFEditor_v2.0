@@ -14,7 +14,7 @@ namespace Analyzing.Execution
 
         public override object DirectValue
         {
-            get { throw new NotImplementedException(); }
+            get { throw new NotSupportedException("Only direct instances have direct value"); }
         }
 
         internal DataInstance(InstanceInfo info)

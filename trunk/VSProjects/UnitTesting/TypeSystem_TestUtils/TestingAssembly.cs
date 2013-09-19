@@ -12,6 +12,7 @@ using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
 
 using UnitTesting.Analyzing_TestUtils;
+using UnitTesting.Analyzing_TestUtils.Environment;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
@@ -32,6 +33,8 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// </summary>
         public readonly RuntimeAssembly Runtime;
 
+        public readonly MachineSettings Settings;
+
         /// <summary>
         /// Simulate actions from user
         /// </summary>
@@ -40,26 +43,27 @@ namespace UnitTesting.TypeSystem_TestUtils
 
 
 
-        public TestingAssembly(RuntimeAssembly runtime)
+        public TestingAssembly(MachineSettings settings)
         {
-            Assemblies = new TestAssemblyCollection(runtime,this);
-            Runtime = runtime;
+            Settings = settings;
+            Runtime = settings.Runtime;
+            Assemblies = new TestAssemblyCollection(Runtime, this);
 
             Loader = new AssemblyLoader(Assemblies);
         }
 
-        public TestingAssembly AddMethod(string methodPath, string code,MethodDescription description)
+        public TestingAssembly AddMethod(string methodPath, string code, MethodDescription description)
         {
             var methodInfo = description.CreateInfo(methodPath);
 
             var source = new Source("{" + code + "}");
-            var method = new ParsedGenerator(methodInfo, source,TypeServices);
+            var method = new ParsedGenerator(methodInfo, source, TypeServices);
             addMethod(method, methodInfo);
 
             return this;
         }
 
-        public TestingAssembly AddMethod(string methodPath, DirectMethod source,MethodDescription description)
+        public TestingAssembly AddMethod(string methodPath, DirectMethod source, MethodDescription description)
         {
             var methodInfo = description.CreateInfo(methodPath);
 
@@ -71,11 +75,17 @@ namespace UnitTesting.TypeSystem_TestUtils
 
 
         public TestingAssembly AddToRuntime<T>()
-            where T:DataTypeDefinition
+            where T : DataTypeDefinition
         {
-            var runtimeTypeDef= Activator.CreateInstance<T>();
+            var runtimeTypeDef = Activator.CreateInstance<T>();
             Runtime.AddDefinition(runtimeTypeDef);
 
+            return this;
+        }
+
+        public TestingAssembly AddDirectToRuntime<T>()
+        {
+            SettingsProvider.AddDirectType(Runtime, typeof(DirectTypeDefinition<>), typeof(T));
             return this;
         }
 
@@ -102,7 +112,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public string GetSource(MethodID method)
         {
-            var parsedGenerator=_methods.AccordingId(method) as ParsedGenerator;
+            var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
             return parsedGenerator.Source.Code;
         }
 
@@ -111,7 +121,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             return new HashIterator(_methods);
         }
-        
+
         public override GeneratorBase GetMethodGenerator(MethodID method)
         {
             return _methods.AccordingId(method);

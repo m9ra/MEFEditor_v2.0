@@ -21,12 +21,16 @@ namespace Analyzing
             Settings = settings;
         }
 
-        public Instance CreateDirectInstance(object directObject, InstanceInfo info)
+        public Instance CreateDirectInstance(object directObject, InstanceInfo info=null)
         {
             if (info == null)
             {
                 info = Settings.GetNativeInfo(directObject.GetType());
             }
+
+            if (!Settings.IsDirect(info))
+                throw new NotSupportedException("Cannot create direct instance from not direct info");
+
             var instance = new DirectInstance(directObject, info);
 
             Settings.InstanceCreated(instance);
@@ -34,10 +38,14 @@ namespace Analyzing
             return instance;
         }
 
-        internal Instance CreateDataInstance(InstanceInfo info)
+        internal Instance CreateInstance(InstanceInfo info)
         {
-            var instance = new DataInstance(info);
+            if (Settings.IsDirect(info))
+            {
+                return CreateDirectInstance(null, info);
+            }
 
+            var instance = new DataInstance(info);
             Settings.InstanceCreated(instance);
 
             return instance;

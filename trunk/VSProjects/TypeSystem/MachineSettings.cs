@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Analyzing;
 using Analyzing.Execution;
 
+using TypeSystem.Runtime;
+
 namespace TypeSystem
 {
     public delegate void OnInstanceCreated(Instance instance);
@@ -15,10 +17,14 @@ namespace TypeSystem
     {
         private readonly OnInstanceCreated _onInstanceCreated;
 
+        public readonly RuntimeAssembly Runtime;
+
         public MachineSettings(OnInstanceCreated onInstanceCreated)
         {
             if (onInstanceCreated == null)
                 throw new ArgumentNullException("onInstanceCreated");
+
+            Runtime = new RuntimeAssembly();
 
             _onInstanceCreated = onInstanceCreated;
         }
@@ -46,6 +52,11 @@ namespace TypeSystem
         public void InstanceCreated(Instance instance)
         {
             _onInstanceCreated(instance);   
+        }
+
+        public bool IsDirect(InstanceInfo typeInfo)
+        {
+            return Runtime.IsDirectType(typeInfo);
         }
     }
 }

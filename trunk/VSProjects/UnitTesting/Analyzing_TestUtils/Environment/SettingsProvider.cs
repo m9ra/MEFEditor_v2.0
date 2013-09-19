@@ -30,39 +30,40 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         private static List<Instance> _instances = new List<Instance>();
 
+        
+
         static SettingsProvider()
         {
         }
 
-        internal static Machine CreateMachine()
+        internal static Machine CreateMachine(MachineSettings settings)
         {
-            return new Machine(new MachineSettings(onInstanceCreated));
+            return new Machine(settings);
         }
 
         internal static TestingAssembly CreateTestingAssembly()
         {
-            return new TestingAssembly(CreateRuntime());
+            var settings = new MachineSettings(onInstanceCreated);
+            InitializeRuntime(settings.Runtime);
+            var assembly= new TestingAssembly(settings);
+            
+            return assembly;
         }
 
-        internal static RuntimeAssembly CreateRuntime()
+        internal static void InitializeRuntime(RuntimeAssembly runtime)
         {
-            var runtime = new RuntimeAssembly();
-
-
             foreach (var directType in directTypes)
             {
-                addType(runtime, typeof(DirectTypeDefinition<>), directType);
+                AddDirectType(runtime, typeof(DirectTypeDefinition<>), directType);
             }
 
             foreach (var mathType in mathTypes)
             {
-                addType(runtime, typeof(MathDirectType<>), mathType);
+                AddDirectType(runtime, typeof(MathDirectType<>), mathType);
             }
-
-            return runtime;
         }
 
-        private static void addType(RuntimeAssembly runtime, Type directDefinition, Type directType)
+        public static void AddDirectType(RuntimeAssembly runtime, Type directDefinition, Type directType)
         {
             var addDirectDefinition = runtime.GetType().GetMethod("AddDirectDefinition");
             var directTypeDef = directDefinition.MakeGenericType(directType);

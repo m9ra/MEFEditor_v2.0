@@ -43,30 +43,63 @@ namespace TypeSystem.Runtime
         private IEnumerable<RuntimeMethodGenerator> generateDirectMethods(Type type)
         {
             //TODO generic types
-            foreach (var method in type.GetMethods())
+            foreach (var method in publicMethods(type))
             {
-                if (isInDirectCover(method))
-                {
-                    var directMethod = generateDirectMethod(method);
+                yield return method;
+            }
 
-                    var paramsInfo = new List<TypeParameterInfo>();
-                    foreach (var param in method.GetParameters())
-                    {
-                        var paramInfo = TypeParameterInfo.From(param);
-                        paramsInfo.Add(paramInfo);
-                    }
-
-                    //TODO create proper info
-                    var typeInfo = new InstanceInfo(type);
-                    var returnInfo = new InstanceInfo(method.ReturnType);
-                    var info = new TypeMethodInfo(typeInfo, method.Name, returnInfo, paramsInfo.ToArray(), method.IsStatic);
-
-                    yield return new RuntimeMethodGenerator(directMethod, info);
-                }
+            foreach (var method in constructorMethods(type))
+            {
+                yield return method;
             }
         }
 
-        private DirectMethod generateDirectMethod(MethodInfo method)
+        private IEnumerable<RuntimeMethodGenerator> constructorMethods(Type type)
+        {
+            var ctorName = type.Name;
+            foreach (var ctor in type.GetConstructors())
+            {
+                if (!areParamsInDirectCover(ctor))
+                    continue;
+
+                var directMethod = generateDirectMethod(ctor);
+                var paramsInfo = getParametersInfo(ctor);
+
+                var returnInfo = InstanceInfo.Void;
+                var info = new TypeMethodInfo(TypeInfo, ctorName, returnInfo, paramsInfo.ToArray(), false);
+                yield return new RuntimeMethodGenerator(directMethod, info);
+            }
+        }
+
+        private IEnumerable<RuntimeMethodGenerator> publicMethods(Type type)
+        {
+            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            {
+                if (!isInDirectCover(method))
+                    continue;
+
+                var directMethod = generateDirectMethod(method);
+                var paramsInfo = getParametersInfo(method);
+
+                var returnInfo = new InstanceInfo(method.ReturnType);
+                var info = new TypeMethodInfo(TypeInfo, method.Name, returnInfo, paramsInfo.ToArray(), method.IsStatic);
+
+                yield return new RuntimeMethodGenerator(directMethod, info);
+            }
+        }
+
+        private static List<TypeParameterInfo> getParametersInfo(MethodBase method)
+        {
+            var paramsInfo = new List<TypeParameterInfo>();
+            foreach (var param in method.GetParameters())
+            {
+                var paramInfo = TypeParameterInfo.From(param);
+                paramsInfo.Add(paramInfo);
+            }
+            return paramsInfo;
+        }
+
+        private DirectMethod generateDirectMethod(MethodBase method)
         {
             return (context) =>
             {
@@ -84,10 +117,18 @@ namespace TypeSystem.Runtime
                     thisObj = args[0].DirectValue;
                 }
 
-                var returnValue = method.Invoke(thisObj, directArgs);
-                var returnInstance = context.CreateDirectInstance(returnValue);
-
-                context.Return(returnInstance);
+                if (method.IsConstructor)
+                {
+                    var ctor = method as ConstructorInfo;
+                    var constructedInstance=ctor.Invoke(directArgs);
+                    context.Initialize(args[0], constructedInstance);
+                }
+                else
+                {
+                    var returnValue = method.Invoke(thisObj, directArgs);
+                    var returnInstance = context.Machine.CreateDirectInstance(returnValue);
+                    context.Return(returnInstance);
+                }
             };
         }
 
@@ -99,6 +140,12 @@ namespace TypeSystem.Runtime
 
         private bool isInDirectCover(MethodInfo method)
         {
+            //TODO void
+            return areParamsInDirectCover(method) && isInDirectCover(method.ReturnType);
+        }
+
+        private bool areParamsInDirectCover(MethodBase method)
+        {
             foreach (var parameter in method.GetParameters())
             {
                 if (!isInDirectCover(parameter.ParameterType))
@@ -107,8 +154,7 @@ namespace TypeSystem.Runtime
                 }
             }
 
-            //TODO void
-            return isInDirectCover(method.ReturnType);
+            return true;
         }
 
         private bool isInDirectCover(Type type)

@@ -90,7 +90,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
                 var op1 = (T)context.CurrentArguments[0].DirectValue;
                 var op2 = (T)context.CurrentArguments[1].DirectValue;
                 var result = addOperator(op1, op2);
-                var resultInstance = context.CreateDirectInstance(result);
+                var resultInstance = context.Machine.CreateDirectInstance(result);
 
                 context.Return(resultInstance);
             };
@@ -103,7 +103,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
                 var op1 = context.CurrentArguments[0].DirectValue as IComparable;
                 var op2 = context.CurrentArguments[1].DirectValue;
 
-                var result = context.CreateDirectInstance(op1.CompareTo(op2) < 0);
+                var result = context.Machine.CreateDirectInstance(op1.CompareTo(op2) < 0);
                 context.Return(result);
             };
         }

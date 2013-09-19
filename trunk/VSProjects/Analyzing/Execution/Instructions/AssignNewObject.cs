@@ -19,7 +19,7 @@ namespace Analyzing.Execution.Instructions
 
         public override void Execute(AnalyzingContext context)
         {            
-            context.SetValue(_targetVariable, context.CreateInstance(_objectInfo));
+            context.SetValue(_targetVariable, context.Machine.CreateInstance(_objectInfo));
         }
 
         public override string ToString()

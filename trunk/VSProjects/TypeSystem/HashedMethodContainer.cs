@@ -12,12 +12,15 @@ namespace TypeSystem
 {
     public class HashedMethodContainer
     {
-        readonly private MultiDictionary<string,TypeMethodInfo> _methodPaths=new MultiDictionary<string,TypeMethodInfo>();
+        readonly private MultiDictionary<string, TypeMethodInfo> _methodPaths = new MultiDictionary<string, TypeMethodInfo>();
         readonly private Dictionary<MethodID, MethodItem> _methodIds = new Dictionary<MethodID, MethodItem>();
 
         public void AddItem(MethodItem item)
         {
-            _methodIds.Add(item.Info.MethodID, item);
+            //TODO better id's to avoid loosing methods
+            if (!_methodIds.ContainsKey(item.Info.MethodID))
+                _methodIds.Add(item.Info.MethodID, item);
+
             _methodPaths.Add(item.Info.Path, item.Info);
         }
 
@@ -37,7 +40,7 @@ namespace TypeSystem
             return null;
         }
 
-        public KeyValuePair<MethodID,MethodItem>[] MethodItems
+        public KeyValuePair<MethodID, MethodItem>[] MethodItems
         {
             get
             {

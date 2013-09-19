@@ -10,6 +10,7 @@ using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 
 using TypeSystem;
+using TypeSystem.Runtime;
 
 using Analyzing;
 using Analyzing.Execution;
@@ -22,6 +23,19 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+        static internal TestingAssembly ComplexDirectRuntime()
+        {
+            return AssemblyUtils.Run(@"                
+                var test=new System.Text.StringBuilder();
+                test.Append(""Data"");
+                var result=test.ToString();      
+            ")
+
+            .AddDirectToRuntime<StringBuilder>()
+            
+            ;
+        }
+
         static internal TestingAssembly CompositionTester()
         {
             return AssemblyUtils.Run(@"        
@@ -95,7 +109,7 @@ namespace TypeExperiments
                 var arg = c.CurrentArguments[1].DirectValue as string;
                 var field = c.GetField(self, "StaticField");
 
-                var result = c.CreateDirectInstance(field + "_" + arg);
+                var result = c.Machine.CreateDirectInstance(field + "_" + arg);
                 c.Return(result);
             }, Method.StaticString_StringParam)
 

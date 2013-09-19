@@ -27,6 +27,8 @@ namespace TypeSystem.Runtime
         /// </summary>
         private readonly Dictionary<Type, RuntimeTypeDefinition> _directTypes = new Dictionary<Type, RuntimeTypeDefinition>();
 
+        private readonly HashSet<InstanceInfo> _directTypeInfos = new HashSet<InstanceInfo>();
+
         /// <summary>
         /// Registered data types
         /// </summary>
@@ -34,7 +36,7 @@ namespace TypeSystem.Runtime
 
         private readonly Dictionary<string, GeneratorProvider> _methodGeneratorProviders;
 
-        public RuntimeAssembly()
+        internal RuntimeAssembly()
         {
             _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
             {
@@ -56,6 +58,7 @@ namespace TypeSystem.Runtime
         public void AddDirectDefinition<T>(DirectTypeDefinition<T> definition)
         {
             _directTypes[typeof(T)] = definition;
+            _directTypeInfos.Add(InstanceInfo.Create<T>());
         }
 
         public void BuildAssembly()
@@ -83,6 +86,11 @@ namespace TypeSystem.Runtime
         internal bool IsInDirectCover(Type type)
         {
             return _directTypes.ContainsKey(type);
+        }
+
+        internal bool IsDirectType(InstanceInfo typeInfo)
+        {
+            return _directTypeInfos.Contains(typeInfo);
         }
 
         #region Assembly provider implementation
@@ -217,7 +225,6 @@ namespace TypeSystem.Runtime
         }
 
         #endregion
-
 
     }
 }

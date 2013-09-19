@@ -23,9 +23,10 @@ namespace UnitTesting.Analyzing_TestUtils
     {
         internal static AnalyzingResult Run(EmitDirector director)
         {
-            var machine = SettingsProvider.CreateMachine();
+            var assembly = SettingsProvider.CreateTestingAssembly();
 
-            var assembly=SettingsProvider.CreateTestingAssembly();
+            var machine = SettingsProvider.CreateMachine(assembly.Settings);
+            
             assembly.Runtime.BuildAssembly();
             var loader = new EmitDirectorLoader(director,assembly.Loader);
             return machine.Run(loader);

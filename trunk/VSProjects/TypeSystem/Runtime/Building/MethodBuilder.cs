@@ -85,7 +85,7 @@ namespace TypeSystem.Runtime.Building
         /// <returns>Instance wrapping given data</returns>
         internal static Instance Wrap<T>(AnalyzingContext context, T data)
         {
-            return context.CreateDirectInstance(data);
+            return context.Machine.CreateDirectInstance(data);
         }
 
         #endregion

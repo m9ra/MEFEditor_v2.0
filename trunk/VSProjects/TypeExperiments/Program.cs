@@ -25,7 +25,7 @@ namespace TypeExperiments
             //force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
-            var assembly = ResearchSources.CompositionTester();
+            var assembly = ResearchSources.ComplexDirectRuntime();
 
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();

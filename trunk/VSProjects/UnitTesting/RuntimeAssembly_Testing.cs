@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Analyzing;
 using TypeSystem;
+using TypeSystem.Runtime;
 
 using UnitTesting.TypeSystem_TestUtils;
 using UnitTesting.AssemblyProviders_TestUtils;
@@ -44,5 +46,23 @@ namespace UnitTesting
 
             ;
         }
+
+        [TestMethod]
+        public void RuntimeType_DirectTypeWithoutInitializer()
+        {
+            AssemblyUtils.Run(@"                
+                var test=new System.Text.StringBuilder();
+                test.Append(""Data"");
+                test.Append(""2"");
+                var result=test.ToString();      
+            ")
+
+            .AddDirectToRuntime<StringBuilder>()
+
+            .AssertVariable("result").HasValue("Data2")
+
+            ;
+        }
+
     }
 }

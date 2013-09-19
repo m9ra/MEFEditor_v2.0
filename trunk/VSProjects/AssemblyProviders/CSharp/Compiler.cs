@@ -279,11 +279,12 @@ namespace AssemblyProviders.CSharp
             switch (unary.Value)
             {
                 case "new":
-                    var objectType = resolveCtorType(operand);
+                    INodeAST callNode;
+                    var objectType = resolveCtorType(operand,out callNode);
                     var nObject = new NewObjectValue(objectType, _context);
 
                     RValueProvider ctorCall;
-                    if (!tryGetCall(operand, out ctorCall, nObject))
+                    if (!tryGetCall(callNode, out ctorCall, nObject))
                     {
                         throw new NotSupportedException("Cannot construct object");
                     }
@@ -447,10 +448,11 @@ namespace AssemblyProviders.CSharp
             return false;
         }
 
-        private InstanceInfo resolveCtorType(INodeAST ctorCall)
+        private InstanceInfo resolveCtorType(INodeAST ctorCall,out INodeAST callNode)
         {
             var name = new StringBuilder();
 
+            callNode = null;
             while (ctorCall != null)
             {
                 if (name.Length > 0)
@@ -458,9 +460,9 @@ namespace AssemblyProviders.CSharp
                     name.Append('.');
                 }
                 name.Append(ctorCall.Value);
+                callNode = ctorCall;
                 ctorCall = ctorCall.Child;
             }
-
             return new InstanceInfo(name.ToString());
         }
 

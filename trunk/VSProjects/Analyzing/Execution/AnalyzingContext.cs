@@ -16,7 +16,7 @@ namespace Analyzing.Execution
         /// </summary>
         internal IMachineSettings Settings { get { return Machine.Settings; } }
 
-        internal readonly Machine Machine;
+        public readonly Machine Machine;
         /// <summary>
         /// Current call stack
         /// </summary>
@@ -227,26 +227,11 @@ namespace Analyzing.Execution
         {
             return CurrentCall.Contains(targetVariable);
         }
-
-        public Instance CreateDirectInstance(object data, Type type = null)
+                    
+        public void Initialize(Instance instance, object data)
         {
-            if (type == null)
-            {
-                type = data.GetType();
-            }
-
-            var info = Settings.GetNativeInfo(type);
-            return CreateDirectInstance(data, info);
-        }
-
-        public Instance CreateDirectInstance(object data, InstanceInfo info)
-        {
-            return Machine.CreateDirectInstance(data, info);
-        }
-
-        public Instance CreateInstance(InstanceInfo info)
-        {
-            return Machine.CreateDataInstance(info);
+            var directInstance = instance as DirectInstance;
+            directInstance.Initialize(data);
         }
 
         internal void Jump(Label target)
@@ -274,6 +259,7 @@ namespace Analyzing.Execution
                 Edits = new EditsProvider(call.TransformProvider, CurrentCall.CurrentBlock);
             }
         }
+
 
 
     }
