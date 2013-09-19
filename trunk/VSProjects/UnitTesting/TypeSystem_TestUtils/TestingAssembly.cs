@@ -56,8 +56,8 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             var methodInfo = description.CreateInfo(methodPath);
 
-            var source = new Source("{" + code + "}");
-            var method = new ParsedGenerator(methodInfo, source, TypeServices);
+            var source = new Source("{" + code + "}",methodInfo);
+            var method = new ParsedGenerator(methodInfo, source, TypeServices);            
             addMethod(method, methodInfo);
 
             return this;
@@ -132,19 +132,15 @@ namespace UnitTesting.TypeSystem_TestUtils
         #region Private utils
         private void addMethod(GeneratorBase method, TypeMethodInfo info)
         {
-            _methods.AddItem(new MethodItem(method, info));
-        }
-
-        private TypeMethodInfo getInfo(string path, bool isStatic, string returnType, params TypeParameterInfo[] parameters)
-        {
-            var nameParts = path.Split('.');
-            var methodName = nameParts.Last();
-            var typeName = string.Join(".", nameParts.Take(nameParts.Count() - 1).ToArray());
-
-            var typeInfo = new InstanceInfo(typeName);
-            var returnInfo = new InstanceInfo(returnType);
-
-            return new TypeMethodInfo(typeInfo, methodName, returnInfo, parameters, isStatic);
+            if (info.HasGenericParameters)
+            {
+                var genericMethod = method as GenericMethodGenerator;
+                _methods.AddItem(new MethodItem(genericMethod.GetProvider(), info));
+            }
+            else
+            {
+                _methods.AddItem(new MethodItem(method, info));
+            }
         }
 
         #endregion

@@ -23,16 +23,39 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+
+        static internal TestingAssembly GenericTesting()
+        {
+            return AssemblyUtils.Run(@"                
+                var test=new Test();     
+                test.Generic<Test2>();
+            ")
+
+            .AddMethod("Test.Test", @"
+                
+            ", Method.Ctor_NoParam)
+
+            .AddMethod("Test.Generic<T>", @"
+                var x=new T();
+            ", Method.Void_NoParam)
+
+            .AddMethod("Test2.Test2", @"
+            ", Method.Ctor_NoParam);
+
+            ;
+        }
+
         static internal TestingAssembly ComplexDirectRuntime()
         {
             return AssemblyUtils.Run(@"                
                 var test=new System.Text.StringBuilder();
                 test.Append(""Data"");
+                test.Append(""2"");
                 var result=test.ToString();      
             ")
 
             .AddDirectToRuntime<StringBuilder>()
-            
+
             ;
         }
 

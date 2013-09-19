@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TypeSystem;
+
 using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
@@ -12,11 +14,12 @@ using AssemblyProviders.CSharp.Transformations;
 
 namespace AssemblyProviders.CSharp
 {
-
-
     public class Source
     {
-
+        /// <summary>
+        /// Contains method representing this source (e.g with generic parameters - it can be used for type translation)
+        /// </summary>
+        internal readonly TypeMethodInfo OriginalMethod;
         internal readonly EditContext EditContext;
         public readonly CompilationInfo CompilationInfo = new CompilationInfo();
 
@@ -30,9 +33,10 @@ namespace AssemblyProviders.CSharp
             }
         }
 
-        public Source(string code)
+        public Source(string code,TypeMethodInfo methodInfo)
         {
             OriginalCode = code;
+            OriginalMethod = methodInfo;
             EditContext = new EditContext(this,code);
         }
 

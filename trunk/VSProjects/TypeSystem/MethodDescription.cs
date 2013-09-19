@@ -4,33 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TypeSystem;
-
 using Analyzing;
 
-namespace UnitTesting.TypeSystem_TestUtils
+namespace TypeSystem
 {
     public class MethodDescription
     {
         public readonly InstanceInfo ReturnType;
-        public readonly TypeParameterInfo[] Parameters;
+        public readonly ParameterTypeInfo[] Parameters;
         public readonly bool IsStatic;
 
-        public MethodDescription(InstanceInfo returnType, bool isStatic, params TypeParameterInfo[] parameters)
+        public MethodDescription(InstanceInfo returnType, bool isStatic, params ParameterTypeInfo[] parameters)
         {
             ReturnType = returnType;
             IsStatic = isStatic;
             Parameters = parameters;
         }
 
-        internal TypeMethodInfo CreateInfo(string methodPath)
+        public TypeMethodInfo CreateInfo(string methodPath)
         {
             var methodName = nameFrom(methodPath);
             var typeName = typeFrom(methodPath);
 
             var declaringType = new InstanceInfo(typeName);
 
-            return new TypeMethodInfo(declaringType, methodName, ReturnType, Parameters, IsStatic);
+            var isGeneric = methodPath.Contains('<');
+
+            return new TypeMethodInfo(declaringType, methodName, ReturnType, Parameters, IsStatic, isGeneric);
         }
 
         private string nameFrom(string path)
@@ -47,17 +47,17 @@ namespace UnitTesting.TypeSystem_TestUtils
             return string.Join(".", parts.Take(parts.Length - 1));
         }
 
-        public static MethodDescription Create<T>(bool isStatic, params TypeParameterInfo[] parameters)
+        public static MethodDescription Create<T>(bool isStatic, params ParameterTypeInfo[] parameters)
         {
             return new MethodDescription(InstanceInfo.Create<T>(), isStatic, parameters);
         }
 
-        public static MethodDescription CreateInstance<T>(params TypeParameterInfo[] parameters)
+        public static MethodDescription CreateInstance<T>(params ParameterTypeInfo[] parameters)
         {
             return Create<T>(false, parameters);
         }
 
-        public static MethodDescription CreateStatic<T>(params TypeParameterInfo[] parameters)
+        public static MethodDescription CreateStatic<T>(params ParameterTypeInfo[] parameters)
         {
             return Create<T>(true, parameters);
         }

@@ -11,6 +11,7 @@ using TypeSystem;
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
 
+using UnitTesting.AssemblyProviders_TestUtils;
 
 namespace UnitTesting
 {
@@ -18,13 +19,41 @@ namespace UnitTesting
     public class Parsing_Testing
     {
         [TestMethod]
+        public void PathInfo_NoArg()
+        {
+            "Test.Call"
+            .AssertPath("Test.Call");
+        }
+
+        [TestMethod]
+        public void PathInfo_SingleArg()
+        {
+            "Test.Call<System.String>"
+            .AssertPath("Test.Call<>","System.String");
+        }
+
+        [TestMethod]
+        public void PathInfo_DoubleArg()
+        {
+            "Test.Call<System.String,System.Int32>"
+            .AssertPath("Test.Call<,>", "System.String","System.Int32");
+        }
+
+        [TestMethod]
+        public void PathInfo_NestedArg()
+        {
+            "Test.Call<List<System.String>>"
+            .AssertPath("Test.Call<>", "List<System.String>");
+        }
+
+        [TestMethod]
         public void BasicParsing()
         {
             var parser = new SyntaxParser();
             var result = parser.Parse(new Source(@"{
                 var test=System.String.test;
                 var test2=System.String.test();
-            }"));
+            }",Method.EntryInfo));
         }
 
 

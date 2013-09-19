@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Diagnostics;
+
 using Analyzing;
 using TypeSystem;
 using AssemblyProviders.CSharp.Interfaces;
@@ -53,6 +55,17 @@ namespace AssemblyProviders.CSharp
             _methodInfo = methodInfo;
             E = emitter;
             _context = new Context(emitter, services);
+
+            var genericArgs=methodInfo.Path.GenericArgs;
+            var genericParams=method.Source.OriginalMethod.Path.GenericArgs;
+
+            for (int i = 0; i < methodInfo.Path.GenericArgs.Count; ++i)
+            {
+                var genericArg = genericArgs[i];
+                var genericParam = genericParams[i];
+
+                _context.SetTypeMapping(genericParam, genericArg);
+            }
         }
 
         #region Info utilities
@@ -459,11 +472,14 @@ namespace AssemblyProviders.CSharp
                 {
                     name.Append('.');
                 }
+                
                 name.Append(ctorCall.Value);
                 callNode = ctorCall;
                 ctorCall = ctorCall.Child;
             }
-            return new InstanceInfo(name.ToString());
+
+            var typeName = _context.Map(name.ToString());
+            return new InstanceInfo(typeName);
         }
 
         private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
@@ -488,17 +504,21 @@ namespace AssemblyProviders.CSharp
             }
 
             while (currNode != null)
-            {
+            {                
+
                 var nextNode = currNode.Child;
                 //TODO add namespaces
-
+                
                 switch (currNode.NodeType)
                 {
                     case NodeTypes.hierarchy:
+                        Debug.Assert(currNode.Arguments.Length == 0);
+
                         searcher.Dispatch("get_" + currNode.Value);
                         break;
                     case NodeTypes.call:
-                        searcher.Dispatch(currNode.Value);
+                        //TODO this is not correct!!
+                        searcher.Dispatch(_context.Map(currNode.Value));
                         break;
                     default:
                         throw new NotSupportedException("Cannot resolve given node type inside hierarchy");

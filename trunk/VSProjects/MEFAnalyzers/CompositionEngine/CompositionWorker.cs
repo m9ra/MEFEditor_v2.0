@@ -525,7 +525,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="import"></param>    
         private void enqSetter(JoinPoint import)
         {
-            var exps = _storage.GetExports(import);
+            var exps = _storage.Get(import);
             if (exps == null) return; //allow default doesnt require setter
 
             foreach (var exp in exps)
@@ -580,7 +580,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <returns></returns>
         private InstanceRef createExport(JoinPoint imp)
         {
-            var exps = _storage.GetExports(imp);
+            var exps = _storage.Get(imp);
             switch (exps.Count())
             {
                 case 0:

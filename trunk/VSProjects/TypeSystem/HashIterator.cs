@@ -8,27 +8,45 @@ using Analyzing;
 
 namespace TypeSystem
 {
+    public delegate MethodItem GenericMethodProvider(PathInfo searchedPath, TypeMethodInfo genericMethod);
 
     public class MethodItem
     {
+        public readonly GenericMethodProvider MethodProvider;
         public readonly GeneratorBase Generator;
-        public readonly TypeMethodInfo Info;
+        public readonly TypeMethodInfo Info;        
 
         public MethodItem(GeneratorBase generator, TypeMethodInfo info)
         {
+            if (info.HasGenericParameters)
+                throw new NotSupportedException("Cannot create generic method item without GenericMethodProvider");
+
             Generator = generator;
             Info = info;
         }
+
+        public MethodItem(GenericMethodProvider methodProvider, TypeMethodInfo genericInfo)
+        {
+            MethodProvider = methodProvider;
+            Info = genericInfo;
+        }
     }
+
+    
 
     public class HashIterator : SearchIterator
     {
         readonly private HashedMethodContainer _methods;
 
-        readonly string _actualPath;
+        readonly PathInfo _actualPath;
 
-        public HashIterator(HashedMethodContainer methods, string actualPath = "")
+        public HashIterator(HashedMethodContainer methods, PathInfo actualPath = null)
         {
+            if (actualPath == null)
+            {
+                actualPath = new PathInfo("");
+            }
+
             _methods = methods;
             _actualPath = actualPath;
         }
@@ -45,17 +63,9 @@ namespace TypeSystem
             return _methods.AccordingPath(path);
         }
 
-
-        private string extendPath(string name)
+        private PathInfo extendPath(string suffix)
         {
-            if (_actualPath == "")
-            {
-                return name;
-            }
-            else
-            {
-                return string.Format("{0}.{1}", _actualPath, name);
-            }
+            return new PathInfo(_actualPath, suffix);
         }
     }
 }

@@ -25,13 +25,13 @@ namespace TypeSystem
 
         public void AddExport(InstanceInfo exportType, string getterName)
         {
-            var getterID = Naming.Method(_componentType, "get_"+getterName, new TypeParameterInfo[0]);
+            var getterID = Naming.Method(_componentType, "get_"+getterName, new ParameterTypeInfo[0]);
             _exports.Add(new Export(exportType, getterID));
         }
 
         public void AddImport(InstanceInfo importType, string setterName)
         {
-            var parameters = new TypeParameterInfo[] { TypeParameterInfo.Create("value", importType) };
+            var parameters = new ParameterTypeInfo[] { ParameterTypeInfo.Create("value", importType) };
             var setterID = Naming.Method(_componentType, "set_" + setterName, parameters);
             _imports.Add(new Import(importType, setterID));
         }

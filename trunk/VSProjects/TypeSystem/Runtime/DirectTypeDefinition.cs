@@ -66,7 +66,10 @@ namespace TypeSystem.Runtime
                 var paramsInfo = getParametersInfo(ctor);
 
                 var returnInfo = InstanceInfo.Void;
-                var info = new TypeMethodInfo(TypeInfo, ctorName, returnInfo, paramsInfo.ToArray(), false);
+                var info = new TypeMethodInfo(
+                    TypeInfo, ctorName,
+                    returnInfo, paramsInfo.ToArray(),
+                    false);
                 yield return new RuntimeMethodGenerator(directMethod, info);
             }
         }
@@ -82,18 +85,21 @@ namespace TypeSystem.Runtime
                 var paramsInfo = getParametersInfo(method);
 
                 var returnInfo = new InstanceInfo(method.ReturnType);
-                var info = new TypeMethodInfo(TypeInfo, method.Name, returnInfo, paramsInfo.ToArray(), method.IsStatic);
+                var info = new TypeMethodInfo(
+                    TypeInfo, method.Name, 
+                    returnInfo, paramsInfo.ToArray(),
+                    method.IsStatic);
 
                 yield return new RuntimeMethodGenerator(directMethod, info);
             }
         }
 
-        private static List<TypeParameterInfo> getParametersInfo(MethodBase method)
+        private static List<ParameterTypeInfo> getParametersInfo(MethodBase method)
         {
-            var paramsInfo = new List<TypeParameterInfo>();
+            var paramsInfo = new List<ParameterTypeInfo>();
             foreach (var param in method.GetParameters())
             {
-                var paramInfo = TypeParameterInfo.From(param);
+                var paramInfo = ParameterTypeInfo.From(param);
                 paramsInfo.Add(paramInfo);
             }
             return paramsInfo;
@@ -120,7 +126,7 @@ namespace TypeSystem.Runtime
                 if (method.IsConstructor)
                 {
                     var ctor = method as ConstructorInfo;
-                    var constructedInstance=ctor.Invoke(directArgs);
+                    var constructedInstance = ctor.Invoke(directArgs);
                     context.Initialize(args[0], constructedInstance);
                 }
                 else

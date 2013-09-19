@@ -53,7 +53,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <returns>Components available for contract.</returns>
         internal IEnumerable<ComponentRef> GetComponents(string contract)
         {
-            return _contrToComponents.GetExports(contract);
+            return _contrToComponents.Get(contract);
         }
 
         /// <summary>

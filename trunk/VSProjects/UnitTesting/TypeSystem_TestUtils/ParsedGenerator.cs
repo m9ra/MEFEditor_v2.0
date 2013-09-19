@@ -10,7 +10,12 @@ using Analyzing;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    class ParsedGenerator:GeneratorBase
+    interface GenericMethodGenerator
+    {
+        GenericMethodProvider GetProvider();
+    }
+
+    class ParsedGenerator : GeneratorBase, GenericMethodGenerator
     {
         static readonly SyntaxParser Parser = new SyntaxParser();
 
@@ -20,11 +25,11 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         private readonly TypeServices _services;
 
-        public ParsedGenerator(TypeMethodInfo info,Source source,TypeServices services)
+        public ParsedGenerator(TypeMethodInfo info, Source source, TypeServices services)
         {
             if (info == null)
                 throw new ArgumentNullException("info");
-            
+
             if (source == null)
                 throw new ArgumentNullException("source");
 
@@ -37,7 +42,19 @@ namespace UnitTesting.TypeSystem_TestUtils
         protected override void generate(EmitterBase emitter)
         {
             var method = Parser.Parse(Source);
-            Compiler.GenerateInstructions(method,Info,emitter,_services);
+            Compiler.GenerateInstructions(method, Info, emitter, _services);
+        }
+
+        public GenericMethodProvider GetProvider()
+        {
+            return genericMethodProvider;
+        }
+
+        private MethodItem genericMethodProvider(PathInfo searchPath, TypeMethodInfo genericMethod)
+        {
+            var newMethod = genericMethod.MakeGenericMethod(searchPath);            
+            var newGenerator = new ParsedGenerator(newMethod, Source, _services);
+            return new MethodItem(newGenerator, newMethod);
         }
     }
 }

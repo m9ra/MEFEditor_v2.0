@@ -75,8 +75,8 @@ namespace AssemblyProviders.CSharp.Compiling
 
     class ArgumentIterator
     {
-        private readonly Dictionary<string, TypeParameterInfo> _unresolvedParameters = new Dictionary<string, TypeParameterInfo>();
-        private readonly MultiDictionary<TypeParameterInfo, RValueProvider> _argBindings = new MultiDictionary<TypeParameterInfo, RValueProvider>();
+        private readonly Dictionary<string, ParameterTypeInfo> _unresolvedParameters = new Dictionary<string, ParameterTypeInfo>();
+        private readonly MultiDictionary<ParameterTypeInfo, RValueProvider> _argBindings = new MultiDictionary<ParameterTypeInfo, RValueProvider>();
 
         private readonly TypeMethodInfo _overload;
 
@@ -118,9 +118,9 @@ namespace AssemblyProviders.CSharp.Compiling
             return IsValid;
         }
 
-        private TypeParameterInfo getParamToMatch(Argument argument)
+        private ParameterTypeInfo getParamToMatch(Argument argument)
         {
-            TypeParameterInfo paramToMatch = null;
+            ParameterTypeInfo paramToMatch = null;
             if (argument.IsNamed)
             {
                 _unresolvedParameters.TryGetValue(argument.Name, out paramToMatch);
@@ -133,12 +133,12 @@ namespace AssemblyProviders.CSharp.Compiling
             return paramToMatch;
         }
 
-        private TypeParameterInfo getCurrentParam()
+        private ParameterTypeInfo getCurrentParam()
         {
             return _overload.Parameters[_orderedArgIndex];
         }
 
-        private void bind(TypeParameterInfo param, Argument arg)
+        private void bind(ParameterTypeInfo param, Argument arg)
         {
             //TODO resolve score, inheritance,..
             _argBindings.Add(param, arg.Value);
@@ -162,7 +162,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 }
                 else
                 {
-                    var args = _argBindings.GetExports(param).ToArray();
+                    var args = _argBindings.Get(param).ToArray();
                     if (args.Length != 1)
                     {
                         throw new NotImplementedException("Resolve params argument");
@@ -179,7 +179,7 @@ namespace AssemblyProviders.CSharp.Compiling
             return activation;
         }
 
-        private bool isUnresolved(TypeParameterInfo param)
+        private bool isUnresolved(ParameterTypeInfo param)
         {
             return _unresolvedParameters.ContainsKey(param.Name);
         }

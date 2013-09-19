@@ -13,6 +13,7 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         public readonly EmitterBase Emitter;
         public readonly TypeServices Services;
+        private readonly Dictionary<string, string> _genericMapping = new Dictionary<string, string>();
 
         public Context(EmitterBase emitter,TypeServices services)
         {
@@ -30,6 +31,25 @@ namespace AssemblyProviders.CSharp.Compiling
         public MethodSearcher CreateSearcher()
         {
             return Services.CreateSearcher();
+        }
+
+        internal void SetTypeMapping(string genericParam, string genericArg)
+        {
+            _genericMapping[genericParam] = genericArg;
+        }
+
+        internal string Map(string name)
+        {
+            string result;
+
+            if (_genericMapping.TryGetValue(name, out result))
+            {
+                //mapping has been found
+                return result;
+            }
+
+            //there is no mapping
+            return name;
         }
     }
 }

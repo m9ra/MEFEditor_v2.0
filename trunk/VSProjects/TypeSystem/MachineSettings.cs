@@ -46,7 +46,7 @@ namespace TypeSystem
 
         public MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
         {
-            return Naming.Method(sharedInstanceInfo, "#initializer", new TypeParameterInfo[] { });
+            return Naming.Method(sharedInstanceInfo, "#initializer", new ParameterTypeInfo[] { });
         }
 
         public void InstanceCreated(Instance instance)

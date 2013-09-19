@@ -41,10 +41,10 @@ namespace UnitTesting.RuntimeTypeDefinitions
         {
             var thisInfo = InstanceInfo.Create<T>();
 
-            var op1 = TypeParameterInfo.Create("op1", thisInfo);
-            var op2 = TypeParameterInfo.Create("op2", thisInfo);
+            var op1 = ParameterTypeInfo.Create("op1", thisInfo);
+            var op2 = ParameterTypeInfo.Create("op2", thisInfo);
 
-            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new TypeParameterInfo[] { op2 }, false);
+            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new ParameterTypeInfo[] { op2 }, false);
             return methodInfo;
         }
 

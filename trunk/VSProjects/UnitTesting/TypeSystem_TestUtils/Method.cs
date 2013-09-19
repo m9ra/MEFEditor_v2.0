@@ -13,9 +13,9 @@ namespace UnitTesting.TypeSystem_TestUtils
     public static class Method
     {        
 
-        public readonly static TypeParameterInfo StringParam1 = TypeParameterInfo.Create("p", InstanceInfo.Create<string>());
+        public readonly static ParameterTypeInfo StringParam1 = ParameterTypeInfo.Create("p", InstanceInfo.Create<string>());
 
-        public readonly static TypeParameterInfo IntParam1 = TypeParameterInfo.Create("n", InstanceInfo.Create<int>());
+        public readonly static ParameterTypeInfo IntParam1 = ParameterTypeInfo.Create("n", InstanceInfo.Create<int>());
 
 
         

@@ -95,18 +95,19 @@ namespace TypeSystem.Runtime.Building
             var returnType = new InstanceInfo(_methodInfo.ReturnType);
             var parameters = createParameters(_parameters);
 
-
-            //TODO shared methods
-            var result = new TypeMethodInfo(_declaringType.TypeInfo, _methodName, returnType, parameters, _methodInfo.IsStatic);
+            var result = new TypeMethodInfo(
+                _declaringType.TypeInfo, _methodName,
+                returnType, parameters,
+                _methodInfo.IsStatic);
             return result;
         }
 
-        private TypeParameterInfo[] createParameters(IEnumerable<ParameterInfo> parameters)
+        private ParameterTypeInfo[] createParameters(IEnumerable<ParameterInfo> parameters)
         {
-            var result = new List<TypeParameterInfo>();
+            var result = new List<ParameterTypeInfo>();
             foreach (var param in parameters)
             {
-                result.Add(TypeParameterInfo.From(param));
+                result.Add(ParameterTypeInfo.From(param));
             }
 
 
