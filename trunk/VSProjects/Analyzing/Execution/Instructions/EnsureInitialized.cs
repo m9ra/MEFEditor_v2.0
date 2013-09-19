@@ -33,7 +33,10 @@ namespace Analyzing.Execution.Instructions
 
             //run initializer generator
             var generator = context.GetGenerator(_initializator);
-            context.PrepareCall(_targetVariable);
+
+            var args = Arguments.Values();
+            args.Initialize(_targetVariable);
+            context.PrepareCall(args);
             context.FetchCallInstructions(_initializator, generator);            
         }
 

@@ -42,7 +42,7 @@ namespace Analyzing
         /// <param name="instructions">Inserted instructions</param>
         public abstract void InsertInstructions(InstructionBatch instructions);
 
-        public abstract AssignBuilder  AssignLiteral(string targetVar, object literal,InstanceInfo literalInfo=null);
+        public abstract AssignBuilder AssignLiteral(string targetVar, object literal, InstanceInfo literalInfo = null);
 
         public abstract AssignBuilder AssignNewObject(string targetVar, InstanceInfo objectInfo);
 
@@ -56,9 +56,9 @@ namespace Analyzing
         /// <param name="targetVar">Variable where returned value will be assigned</param>
         public abstract AssignBuilder AssignReturnValue(string targetVar, InstanceInfo staticInfo);
 
-        public abstract CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID method, params string[] inputVariables);
+        public abstract CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID method, Arguments arguments);
 
-        public abstract CallBuilder Call(MethodID method, string thisObjVariable, params string[] inputVariables);
+        public abstract CallBuilder Call(MethodID method, string thisObjVariable, Arguments arguments);
 
         public abstract void Return(string sourceVar);
 
@@ -72,7 +72,7 @@ namespace Analyzing
         /// <param name="identifier">Label identifier</param>
         /// <returns>Created label</returns>
         public abstract Label CreateLabel(string identifier);
-        
+
         /// <summary>
         /// Jumps at given target if instance under conditionVariable is resolved as true
         /// </summary>

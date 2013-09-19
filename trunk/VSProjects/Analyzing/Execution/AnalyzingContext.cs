@@ -37,7 +37,7 @@ namespace Analyzing.Execution
         /// <summary>
         /// Arguments prepared for call invoking
         /// </summary>
-        private VariableName[] _preparedArguments = null;
+        private Arguments _preparedArguments = null;
 
         /// <summary>
         /// Arguments for entry call
@@ -101,7 +101,7 @@ namespace Analyzing.Execution
             return dataInstance.GetField(fieldName);
         }
 
-        internal void PrepareCall(params VariableName[] arguments)
+        internal void PrepareCall(Arguments arguments)
         {
             _preparedArguments = arguments;
         }
@@ -200,7 +200,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="arguments">Names of argument variables where values are stored</param>
         /// <returns>Argument values</returns>
-        private Instance[] getArgumentValues(VariableName[] arguments)
+        private Instance[] getArgumentValues(Arguments arguments)
         {
             var isEntryContext = _callStack.Count == 0;
             if (isEntryContext)
@@ -209,7 +209,7 @@ namespace Analyzing.Execution
             }
 
             var values = new List<Instance>();
-            foreach (var argument in arguments)
+            foreach (var argument in arguments.ValueVariables)
             {
                 values.Add(GetValue(argument));
             }

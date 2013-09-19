@@ -12,10 +12,10 @@ namespace Analyzing.Execution.Instructions
     /// </summary>
     class PreCall : InstructionBase
     {
-        readonly VariableName[] _arguments;
-        public PreCall(IEnumerable<VariableName> arguments)
+        readonly Arguments _arguments;
+        public PreCall(Arguments arguments)
         {
-            _arguments = arguments.ToArray();
+            _arguments = arguments;
         }
         public override void Execute(AnalyzingContext context)
         {
@@ -24,7 +24,7 @@ namespace Analyzing.Execution.Instructions
 
         public override string ToString()
         {
-            return string.Format("prepare_call {0}", string.Join(", ",_arguments.Skip(0)));
+            return string.Format("prepare_call {0}", string.Join(", ",_arguments));
         }
     }
 }

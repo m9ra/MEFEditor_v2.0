@@ -257,15 +257,17 @@ namespace AssemblyProviders.CSharp.Compiling
                 argVariables.Add(arg.GetStorage());
             }
 
+            var args = Arguments.Values(argVariables.ToArray());
+
             if (_activation.MethodInfo.IsStatic)
             {
-                E.StaticCall(MethodInfo.DeclaringType, MethodInfo.MethodID, argVariables.ToArray());
+                E.StaticCall(MethodInfo.DeclaringType, MethodInfo.MethodID, args);
             }
             else
             {
                 var objStorage = _activation.CalledObject.GetStorage();
 
-                var builder = E.Call(MethodInfo.MethodID, objStorage, argVariables.ToArray());
+                var builder = E.Call(MethodInfo.MethodID, objStorage, args);
                 builder.SetTransformationProvider(new CallProvider(_activation.CallNode));
             }
         }

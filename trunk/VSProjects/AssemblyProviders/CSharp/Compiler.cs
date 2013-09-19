@@ -339,7 +339,7 @@ namespace AssemblyProviders.CSharp
             var rOperand = rOperandProvider.GetStorage();
 
             var opMethodId = findOperator(lTypeInfo, rTypeInfo, op);
-            E.Call(opMethodId, lOperand, rOperand);
+            E.Call(opMethodId, lOperand, Arguments.Values(rOperand));
 
             var result = E.GetTemporaryVariable();
             E.AssignReturnValue(result, lTypeInfo);
@@ -535,7 +535,7 @@ namespace AssemblyProviders.CSharp
 
         private CallActivation findMatchingActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
         {
-            var selector = new MethodSelector(methods,_context);
+            var selector = new MethodSelector(methods, _context);
             var arguments = getArguments(callNode);
             var callActivation = selector.CreateCallActivation(arguments);
 

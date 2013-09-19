@@ -33,8 +33,8 @@ namespace UnitTesting
             ExecutionUtils.Run((e) =>
             {
                 e.AssignLiteral("var1", "HELLO");
-                e.Call(toLower, "var1");
-                e.AssignReturnValue("var2",InstanceInfo.Create<string>());
+                e.Call(toLower, "var1", Arguments.Values());
+                e.AssignReturnValue("var2", InstanceInfo.Create<string>());
             })
             .AssertVariable("var2").HasValue("hello");
         }
@@ -48,7 +48,7 @@ namespace UnitTesting
             {
                 e.AssignLiteral("var1", 25);
                 e.AssignLiteral("format", "Number: {0}");
-                e.Call(toString, "var1", "format");
+                e.Call(toString, "var1", Arguments.Values("format"));
                 e.AssignReturnValue("var2", InstanceInfo.Create<string>());
             })
             .AssertVariable("var2").HasValue(25.ToString("Number: {0}"));
@@ -63,7 +63,7 @@ namespace UnitTesting
             {
                 e.AssignLiteral("var1", 40);
                 e.AssignLiteral("var2", 2);
-                e.Call(add, "var1", "var2");
+                e.Call(add, "var1", Arguments.Values("var2"));
                 e.AssignReturnValue("var3", InstanceInfo.Create<string>());
             })
             .AssertVariable("var3").HasValue(40 + 2);
@@ -85,10 +85,10 @@ namespace UnitTesting
                 e.AssignLiteral("increment", 0);
 
                 e.SetLabel(start);
-                e.Call(add, "increment", "step");
+                e.Call(add, "increment", Arguments.Values("step"));
                 e.AssignReturnValue("increment", InstanceInfo.Create<int>());
-                e.Call(equals, "increment", "stop");
-                e.AssignReturnValue("condition",InstanceInfo.Create<bool>());
+                e.Call(equals, "increment", Arguments.Values("stop"));
+                e.AssignReturnValue("condition", InstanceInfo.Create<bool>());
                 e.ConditionalJump("condition", end);
                 e.Jump(start);
                 e.SetLabel(end);

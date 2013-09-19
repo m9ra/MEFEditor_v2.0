@@ -128,9 +128,10 @@ namespace MEFAnalyzers.CompositionEngine
             return _instanceStorages[instance];
         }
 
-        private string[] getArgumentStorages(InstanceRef[] arguments)
+        private Arguments getArgumentStorages(InstanceRef[] arguments)
         {
-            return (from arg in arguments select getStorage(arg)).ToArray();
+            var argVars=(from arg in arguments select getStorage(arg)).ToArray();
+            return Arguments.Values(argVars);
         }
 
         private void checkMethodID(MethodID methodID)

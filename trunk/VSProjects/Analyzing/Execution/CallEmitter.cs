@@ -94,36 +94,34 @@ namespace Analyzing.Execution
             return new AssignBuilder(result);
         }
 
-        public override CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID methodID, params string[] inputVariables)
+        public override CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID methodID,Arguments arguments)
         {
-            var inputArgumentVars = translateVariables(inputVariables);
             var sharedThisVar = getSharedVar(sharedInstanceInfo);
-            var callArgVars = new VariableName[] { sharedThisVar }.Concat(inputArgumentVars).ToArray();
-
+     
             var initializerID = _context.Settings.GetSharedInitializer(sharedInstanceInfo);
 
             if (initializerID.NeedsDynamicResolving)
             {
                 throw new NotImplementedException();
             }
-
+            
             var ensureInitialization = new EnsureInitialized(sharedThisVar, sharedInstanceInfo, initializerID);
-            var preCall = new PreCall(callArgVars);
+
+            arguments.Initialize(sharedThisVar);
+            var preCall = new PreCall(arguments);
 
             emitInstruction(ensureInitialization);
             emitInstruction(preCall);
             return emitCall(methodID);
         }
 
-        public override CallBuilder Call(MethodID methodID, string thisObjVariable, params string[] inputVariables)
+        public override CallBuilder Call(MethodID methodID, string thisObjVariable, Arguments arguments)
         {
             var thisVar = getVariable(thisObjVariable);
             var thisType = variableInfo(thisVar);
 
-            var inputArgumentVars = translateVariables(inputVariables);
-            var callArgVars = new VariableName[] { thisVar }.Concat(inputArgumentVars).ToArray();
-
-            var preCall = new PreCall(callArgVars);
+            arguments.Initialize(thisVar);            
+            var preCall = new PreCall(arguments);
 
             emitInstruction(preCall);
             return emitCall(methodID);
@@ -326,18 +324,7 @@ namespace Analyzing.Execution
 
             return result;
         }
-
-        private IEnumerable<VariableName> translateVariables(string[] inputArguments)
-        {
-            foreach (var arg in inputArguments)
-            {
-                yield return new VariableName(arg);
-            }
-        }
-
+        
         #endregion
-
-
-
     }
 }
