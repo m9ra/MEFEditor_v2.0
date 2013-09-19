@@ -35,7 +35,7 @@ namespace Analyzing.Execution
 
         public override string ToString()
         {
-            return string.Format("[Data]{0}", _info);
+            return string.Format("[Data]{0}", _info.TypeName);
         }
     }
 }

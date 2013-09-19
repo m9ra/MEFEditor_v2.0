@@ -34,7 +34,7 @@ namespace Analyzing
 
         public override string ToString()
         {
-            return TypeName;
+            return "[InstanceInfo]" + TypeName;
         }
 
 

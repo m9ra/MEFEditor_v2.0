@@ -186,6 +186,9 @@ namespace TypeExperiments
                 case "[Method]":
                     Print(MethodColor, valuePart);
                     break;
+                case "[InstanceInfo]":
+                    Print(ArgumentTypeColor, valuePart);
+                    break;
                 default:
                     Print(ArgumentTypeColor, typePart);
                     Print(ArgumentColor, valuePart);

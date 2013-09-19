@@ -26,7 +26,7 @@ namespace Analyzing
 
         private Arguments(string[] valueArguments, InstanceInfo[] typeArguments)
         {
-            _typeArguments = typeArguments; 
+            _typeArguments = typeArguments;
 
             //reserve first index for thisObject
             ValueVariables = new VariableName[valueArguments.Length + 1];
@@ -47,6 +47,23 @@ namespace Analyzing
 
             ValueVariables[0] = calledObject;
             IsInitialized = true;
+        }
+
+        public override string ToString()
+        {
+            var args = new List<string>();
+
+            foreach (var type in _typeArguments)
+            {
+                args.Add(type.ToString());
+            }
+
+            foreach (var var in ValueVariables)
+            {
+                args.Add(var.ToString());
+            }
+
+            return string.Join(",", args.ToArray());
         }
     }
 }

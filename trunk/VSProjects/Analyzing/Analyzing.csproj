@@ -41,7 +41,7 @@
   <ItemGroup>
     <Compile Include="AnalyzingResult.cs" />
     <Compile Include="AssignBuilder.cs" />
-    <Compile Include="CallArguments.cs" />
+    <Compile Include="Arguments.cs" />
     <Compile Include="CallBuilder.cs" />
     <Compile Include="Editing\CallTransformProvider.cs" />
     <Compile Include="Editing\Edit.cs" />
