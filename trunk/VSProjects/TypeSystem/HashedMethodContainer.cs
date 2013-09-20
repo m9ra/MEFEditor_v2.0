@@ -26,7 +26,8 @@ namespace TypeSystem
 
         public IEnumerable<TypeMethodInfo> AccordingPath(PathInfo path)
         {
-            return from overload in accordingPath(path) select overload.Info;
+            var overloads=from overload in accordingPath(path) select overload.Info;
+            return overloads;
         }
 
         public GeneratorBase AccordingId(MethodID method)

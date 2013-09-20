@@ -192,6 +192,40 @@ namespace UnitTesting
             .AssertVariable("result").HasValue(13);
         }
 
+        [TestMethod]
+        public void Emit_GenericCall()
+        {
+            AssemblyUtils.Run(@"                
+                var test=new Test();     
+                var result=test.Generic<Test2>(""GenericCallArg"");
+            ")
+
+            .AddMethod("Test.Test", @"
+                
+            ", Method.Ctor_NoParam)
+
+            .AddMethod("Test.Generic<T>", @"
+                var x=new T(p);
+                return x.GetValue();
+            ", Method.Void_StringParam)
+
+            .AddMethod("Test2.Test2", (c) =>
+            {
+                var thisObj = c.CurrentArguments[0];
+                var arg = c.CurrentArguments[1];
+                c.SetField(thisObj, "value", arg.DirectValue);
+            }, Method.Ctor_StringParam)
+
+            .AddMethod("Test2.GetValue", (c) =>
+            {
+                var thisObj = c.CurrentArguments[0];
+                var value = c.GetField(thisObj, "value") as string;
+                var result = c.Machine.CreateDirectInstance("Test2_" + value, InstanceInfo.Create<string>());
+                c.Return(result);
+            }, Method.String_NoParam)
+
+            .AssertVariable("result").HasValue("Test2_GenericCallArg");
+        }
 
         [TestMethod]
         public void Edit_SimpleReject()

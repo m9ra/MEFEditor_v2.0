@@ -244,6 +244,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override void Return()
         {
+            generateCall();
             var temporaryName = E.GetTemporaryVariable();
             E.AssignReturnValue(temporaryName, MethodInfo.ReturnType);
             E.Return(temporaryName);
