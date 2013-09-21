@@ -56,8 +56,8 @@ namespace AssemblyProviders.CSharp
             E = emitter;
             _context = new Context(emitter, services);
 
-            var genericArgs=methodInfo.Path.GenericArgs;
-            var genericParams=method.Source.OriginalMethod.Path.GenericArgs;
+            var genericArgs = methodInfo.Path.GenericArgs;
+            var genericParams = method.Source.OriginalMethod.Path.GenericArgs;
 
             for (int i = 0; i < methodInfo.Path.GenericArgs.Count; ++i)
             {
@@ -292,21 +292,26 @@ namespace AssemblyProviders.CSharp
             switch (unary.Value)
             {
                 case "new":
-                    INodeAST callNode;
-                    var objectType = resolveCtorType(operand,out callNode);
-                    var nObject = new NewObjectValue(objectType, _context);
-
-                    RValueProvider ctorCall;
-                    if (!tryGetCall(callNode, out ctorCall, nObject))
-                    {
-                        throw new NotSupportedException("Cannot construct object");
-                    }
-
-                    nObject.SetCtor(ctorCall);
-                    return nObject;
+                    return resolveNew(operand);
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        private RValueProvider resolveNew(INodeAST newOperand)
+        {
+            INodeAST callNode;
+            var objectType = resolveCtorType(newOperand, out callNode);
+            var nObject = new NewObjectValue(objectType, _context);
+
+            var searcher = _context.CreateSearcher();
+            searcher.SetCalledObject(objectType);
+            searcher.Dispatch("#ctor");
+            var activation = findMatchingActivation(nObject, callNode, searcher.FoundResult);
+            var ctorCall = new CallRValue(activation, _context);
+
+            nObject.SetCtor(ctorCall);
+            return nObject;
         }
 
         private RValueProvider resolveBinary(INodeAST binary)
@@ -375,8 +380,14 @@ namespace AssemblyProviders.CSharp
 
         private Argument[] getArguments(INodeAST node)
         {
+            var argNodes= node.Arguments;
+            if (node.NodeType == NodeTypes.hierarchy && node.Indexer != null)
+            {
+                argNodes = node.Indexer.Arguments;
+            }
+
             var args = new List<Argument>();
-            foreach (var argNode in node.Arguments)
+            foreach (var argNode in argNodes)
             {
                 //TODO resolve named arguments
                 var arg = new Argument(getRValue(argNode));
@@ -390,18 +401,19 @@ namespace AssemblyProviders.CSharp
         {
             //first token can be literal/variable/call
             //other hierarchy tokens can only be calls (fields are resolved as calls to property getters)
-
             RValueProvider result;
 
-
             var hasBaseObject = tryGetLiteral(node, out result) || tryGetVariable(node, out result);
-            var hasCallExtending = node.Child != null;
+            var isIndexerCall = node.Indexer != null && node.NodeType == NodeTypes.hierarchy;
+            var hasCallExtending = node.Child != null || node.Indexer!=null;
 
             if (hasBaseObject && hasCallExtending)
             {
                 //object based call
                 var baseObject = result;
-                if (!tryGetCall(node.Child, out result, baseObject))
+                var callNode = isIndexerCall?node: node.Child;
+
+                if (!tryGetCall(callNode, out result, baseObject))
                 {
                     throw new NotSupportedException("Unknown object call hierarchy construction on " + node.Child);
                 }
@@ -461,7 +473,7 @@ namespace AssemblyProviders.CSharp
             return false;
         }
 
-        private InstanceInfo resolveCtorType(INodeAST ctorCall,out INodeAST callNode)
+        private InstanceInfo resolveCtorType(INodeAST ctorCall, out INodeAST callNode)
         {
             var name = new StringBuilder();
 
@@ -472,7 +484,7 @@ namespace AssemblyProviders.CSharp
                 {
                     name.Append('.');
                 }
-                
+
                 name.Append(ctorCall.Value);
                 callNode = ctorCall;
                 ctorCall = ctorCall.Child;
@@ -484,6 +496,12 @@ namespace AssemblyProviders.CSharp
 
         private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
         {
+            if (calledObject == null && callHierarchy.Indexer!=null && callHierarchy.NodeType==NodeTypes.hierarchy)
+            {
+                //prepare base object for indexer
+                
+            }
+
             //x without base can resolve to:            
             //[this namespace].this.get_x /this.set_x
             //[this namespace].[static class x]
@@ -504,7 +522,7 @@ namespace AssemblyProviders.CSharp
             }
 
             while (currNode != null)
-            {                
+            {
 
                 var nextNode = currNode.Child;
                 //TODO add namespaces
@@ -512,9 +530,15 @@ namespace AssemblyProviders.CSharp
                 switch (currNode.NodeType)
                 {
                     case NodeTypes.hierarchy:
-                        Debug.Assert(currNode.Arguments.Length == 0);
-
-                        searcher.Dispatch("get_" + currNode.Value);
+                        if (currNode.Indexer == null)
+                        {
+                            Debug.Assert(currNode.Arguments.Length == 0);
+                            searcher.Dispatch("get_" + currNode.Value);
+                        }
+                        else
+                        {                            
+                            searcher.Dispatch("get_Item");
+                        }
                         break;
                     case NodeTypes.call:
                         //TODO this is not correct!!
@@ -558,6 +582,8 @@ namespace AssemblyProviders.CSharp
         private CallActivation findMatchingActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
         {
             var selector = new MethodSelector(methods, _context);
+
+            var argNode = callNode;
             var arguments = getArguments(callNode);
             var callActivation = selector.CreateCallActivation(arguments);
 

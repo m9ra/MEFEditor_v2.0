@@ -21,7 +21,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
     {
         private static readonly Type[] directTypes = new Type[]{
             typeof(string),
-            typeof(bool)
+            typeof(bool),            
         };
 
         private static readonly Type[] mathTypes = new Type[]{

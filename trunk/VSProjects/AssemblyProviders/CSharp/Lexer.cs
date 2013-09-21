@@ -11,19 +11,31 @@ using AssemblyProviders.CSharp.Primitives;
 
 namespace AssemblyProviders.CSharp
 {
-    class Lexer:ILexer
+    public class Lexer:ILexer
     {
-        const string _tokenComments = @"/\*([^*]|\*[^/])*\*/|//.*";
-        const string _tokenString = "@\"[^\"]*\"|\"(\\\\.|[^\"])*\"";
-        const string _tokenNumber = @"[\d]+(\.[\d]+)?[fdl]?";
-        const string _tokenChar = @"'[^\\]'|'\\.'";
-        const string _tokenOperator = @"\+\+|--|&&|\|\||[-+\*/&<>!=|]=";
-        const string _tokenIdentif = @"[_a-zA-Z]\w*( *<[,_a-zA-Z\w ]+>)?";
-        const string _tokenSplit = "(" + _tokenComments + "|" + _tokenOperator + "|" + _tokenIdentif + "|" + _tokenString + "|" + _tokenNumber + "|" + _tokenChar + "|\\S)";
+        static readonly string _tokenComments = @"/\*([^*]|\*[^/])*\*/|//.*";
+        static readonly string _tokenString = "@\"[^\"]*\"|\"(\\\\.|[^\"])*\"";
+        static readonly string _tokenNumber = @"[\d]+(\.[\d]+)?[fdl]?";
+        static readonly string _tokenChar = @"'[^\\]'|'\\.'";
+        static readonly string _tokenOperator = @"\+\+|--|&&|\|\||[-+\*/&<>!=|]=";
+        static readonly string _tokenIdentif =
+@"
+[_a-zA-Z]\w*
+(
+ [ ]*<[ ]* 
+            (
+                (?<GEN> <)      | 
+                (?<-GEN> >)     | 
+                [_a-zA-Z]\w*    | 
+                [ ]*[\.,][ ]*
+            )* 
+ [ ]*>
+)?";
+        static readonly string _tokenSplit = "(" + _tokenComments + "|" + _tokenOperator + "|" + _tokenIdentif + "|" + _tokenString + "|" + _tokenNumber + "|" + _tokenChar + "|\\S)";
 
-        const string _baseMatch = @": *(base.+)";
+        static readonly string _baseMatch = @": *(base.+)";
 
-        static readonly Regex _tokenizer = new Regex(_tokenSplit, RegexOptions.Compiled);
+        static readonly Regex _tokenizer = new Regex(_tokenSplit, RegexOptions.Compiled| RegexOptions.IgnorePatternWhitespace);
         static readonly Regex _baseExtractor = new Regex(_baseMatch, RegexOptions.Compiled);
 
 
@@ -57,10 +69,19 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Create lexer for given object and language definition.
         /// </summary>        
-        internal Lexer(Source source)
+        public Lexer(Source source)
         {
             _source = source;
             createTokens(source.OriginalCode);
+        }
+
+        /// <summary>
+        /// Get tokens obtained from source
+        /// </summary>
+        /// <returns>Tokens</returns>
+        public IToken[] GetTokens()
+        {
+            return _tokens.ToArray();
         }
 
         private void createTokens(string code)

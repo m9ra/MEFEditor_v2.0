@@ -21,7 +21,7 @@ namespace AssemblyProviders.CSharp
         readonly ILexer _lexer;
         
         static readonly HashSet<string> KnownTokens = new HashSet<string>();
-        static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";",":", ",", ")", "}", "]" };
+        static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";",":", ",", ")", "}", "]"};
         static readonly HashSet<string> PrefOperators = new HashSet<string>() {"!", "throw", "out", "ref", "const", "return", "new", "-","+", "--", "++", "~" };
         static readonly HashSet<string> PostOperators = new HashSet<string>() { "++", "--" };        
         static readonly Dictionary<string, int> BinOperators = new Dictionary<string, int>(){

@@ -26,7 +26,7 @@ namespace UnitTesting
             ")
 
             .AddToRuntime<SimpleType>()
-            
+
             .AssertVariable("result").HasValue("CtorValue_CallArg")
 
             ;
@@ -48,12 +48,13 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void RuntimeType_DirectTypeWithoutInitializer()
+        public void RuntimeType_DirectClassType()
         {
             AssemblyUtils.Run(@"                
                 var test=new System.Text.StringBuilder();
                 test.Append(""Data"");
                 test.Append(""2"");
+
                 var result=test.ToString();      
             ")
 
@@ -64,5 +65,21 @@ namespace UnitTesting
             ;
         }
 
+        [TestMethod]
+        public void RuntimeType_DirectGenericClassType()
+        {
+            AssemblyUtils.Run(@"                
+                   var list=new System.Collections.Generic.List<System.String>();     
+                   list.Add(""AddedValue"");
+
+                   var result=list[0];
+           ")
+
+            .AddDirectToRuntime<System.Collections.Generic.List<string>>()
+
+            .AssertVariable("result").HasValue("AddedValue")
+
+            ;
+        }
     }
 }

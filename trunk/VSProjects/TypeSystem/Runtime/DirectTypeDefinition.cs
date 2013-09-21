@@ -56,7 +56,6 @@ namespace TypeSystem.Runtime
 
         private IEnumerable<RuntimeMethodGenerator> constructorMethods(Type type)
         {
-            var ctorName = type.Name;
             foreach (var ctor in type.GetConstructors())
             {
                 if (!areParamsInDirectCover(ctor))
@@ -67,7 +66,7 @@ namespace TypeSystem.Runtime
 
                 var returnInfo = InstanceInfo.Void;
                 var info = new TypeMethodInfo(
-                    TypeInfo, ctorName,
+                    TypeInfo, "#ctor",
                     returnInfo, paramsInfo.ToArray(),
                     false);
                 yield return new RuntimeMethodGenerator(directMethod, info);
@@ -86,7 +85,7 @@ namespace TypeSystem.Runtime
 
                 var returnInfo = new InstanceInfo(method.ReturnType);
                 var info = new TypeMethodInfo(
-                    TypeInfo, method.Name, 
+                    TypeInfo, method.Name,
                     returnInfo, paramsInfo.ToArray(),
                     method.IsStatic);
 
@@ -131,9 +130,15 @@ namespace TypeSystem.Runtime
                 }
                 else
                 {
+                    var methodInfo = method as MethodInfo;
                     var returnValue = method.Invoke(thisObj, directArgs);
-                    var returnInstance = context.Machine.CreateDirectInstance(returnValue);
-                    context.Return(returnInstance);
+
+                    var hasReturnValue = methodInfo.ReturnType != typeof(void);
+                    if (hasReturnValue)
+                    {
+                        var returnInstance = context.Machine.CreateDirectInstance(returnValue);
+                        context.Return(returnInstance);
+                    }
                 }
             };
         }

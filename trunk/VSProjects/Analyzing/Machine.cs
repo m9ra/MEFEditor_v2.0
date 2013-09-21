@@ -32,7 +32,6 @@ namespace Analyzing
                 throw new NotSupportedException("Cannot create direct instance from not direct info");
 
             var instance = new DirectInstance(directObject, info);
-
             Settings.InstanceCreated(instance);
 
             return instance;

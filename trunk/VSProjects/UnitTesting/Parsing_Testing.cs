@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Analyzing.Execution.Instructions;
@@ -19,6 +20,27 @@ namespace UnitTesting
     public class Parsing_Testing
     {
         [TestMethod]
+        public void Lexer_SimpleGeneric()
+        {
+            "a < b . c >"
+            .AssertTokens("a < b . c >");
+        }
+
+        [TestMethod]
+        public void Lexer_GenericCall()
+        {
+            "a.b<c.d<e>>(f,g)"
+            .AssertTokens("a", ".", "b<c.d<e>>", "(", "f", ",", "g", ")");
+        }
+
+        [TestMethod]
+        public void Lexer_ComparisonLikeExpression()
+        {
+            "a < b c > d"
+            .AssertTokens("a", "<", "b", "c", ">", "d");
+        }
+
+        [TestMethod]
         public void PathInfo_NoArg()
         {
             "Test.Call"
@@ -29,14 +51,14 @@ namespace UnitTesting
         public void PathInfo_SingleArg()
         {
             "Test.Call<System.String>"
-            .AssertPath("Test.Call<>","System.String");
+            .AssertPath("Test.Call<>", "System.String");
         }
 
         [TestMethod]
         public void PathInfo_DoubleArg()
         {
             "Test.Call<System.String,System.Int32>"
-            .AssertPath("Test.Call<,>", "System.String","System.Int32");
+            .AssertPath("Test.Call<,>", "System.String", "System.Int32");
         }
 
         [TestMethod]
@@ -47,13 +69,38 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void InstanceInfo_GenericSingleArgument()
+        {
+            Tools.AssertName<System.Collections.Generic.List<string>>("System.Collections.Generic.List<System.String>");
+        }
+
+        [TestMethod]
+        public void InstanceInfo_GenericTwoArguments()
+        {
+            Tools.AssertName<Dictionary<string, int>>("System.Collections.Generic.Dictionary<System.String,System.Int32>");
+        }
+
+        [TestMethod]
+        public void InstanceInfo_GenericNestedArgument()
+        {
+            Tools.AssertName<Dictionary<List<string>, int>>("System.Collections.Generic.Dictionary<System.Collections.Generic.List<System.String>,System.Int32>");
+        }
+
+
+        [TestMethod]
+        public void InstanceInfo_GenericChainedArgument()
+        {
+            Tools.AssertName<TestClass<string>.NestedClass<int>>("UnitTesting.TestClass<System.String>.UnitTesting.NestedClass<System.Int32>");
+        }
+
+        [TestMethod]
         public void BasicParsing()
         {
             var parser = new SyntaxParser();
             var result = parser.Parse(new Source(@"{
                 var test=System.String.test;
                 var test2=System.String.test();
-            }",Method.EntryInfo));
+            }", Method.EntryInfo));
         }
 
 
@@ -151,7 +198,7 @@ namespace UnitTesting
                 var result = obj.GetInput();          
             ")
 
-            .AddMethod("TestObj.TestObj", (c) =>
+            .AddMethod("TestObj.#ctor", (c) =>
             {
                 var arg = c.CurrentArguments[1];
                 var thisObj = c.CurrentArguments[0];
@@ -200,7 +247,7 @@ namespace UnitTesting
                 var result=test.Generic<Test2>(""GenericCallArg"");
             ")
 
-            .AddMethod("Test.Test", @"
+            .AddMethod("Test.#ctor", @"
                 
             ", Method.Ctor_NoParam)
 
@@ -209,7 +256,7 @@ namespace UnitTesting
                 return x.GetValue();
             ", Method.Void_StringParam)
 
-            .AddMethod("Test2.Test2", (c) =>
+            .AddMethod("Test2.#ctor", (c) =>
             {
                 var thisObj = c.CurrentArguments[0];
                 var arg = c.CurrentArguments[1];

@@ -57,5 +57,11 @@ namespace AssemblyProviders.CSharp.Primitives
 
         public Position Position { get; private set; }
 
+
+        public override string ToString()
+        {
+            return string.Format("[Token]{0}", Value);
+        }
+
     }
 }

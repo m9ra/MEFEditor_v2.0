@@ -85,7 +85,7 @@ namespace TypeSystem.Runtime
 
         internal bool IsInDirectCover(Type type)
         {
-            return _directTypes.ContainsKey(type);
+            return type == typeof(void) || _directTypes.ContainsKey(type);
         }
 
         internal bool IsDirectType(InstanceInfo typeInfo)
@@ -117,7 +117,7 @@ namespace TypeSystem.Runtime
         {
             //every definition needs initialization
             definition.Initialize(this, this.TypeServices);
-                        
+
             //get all methods defined by definition
             var methodGenerators = definition.GetMethods();
             foreach (var generator in methodGenerators)
@@ -145,7 +145,7 @@ namespace TypeSystem.Runtime
                     if (name.StartsWith(provider.Key))
                     {
                         var notPrefixedName = name.Substring(provider.Key.Length);
-                        var generator=provider.Value(definition, method, notPrefixedName);
+                        var generator = provider.Value(definition, method, notPrefixedName);
                         result.Add(generator);
                         break;
                     }
@@ -158,7 +158,7 @@ namespace TypeSystem.Runtime
         #endregion
 
         #region Runtime method building
-        
+
         /// <summary>
         /// Build method generator from given method info
         /// </summary>
@@ -194,8 +194,8 @@ namespace TypeSystem.Runtime
             var parType = par.ParameterType;
             var instType = typeof(Instance);
 
-            var isInstance=instType == parType;
-            var hasInstanceParent=instType.IsSubclassOf(parType);
+            var isInstance = instType == parType;
+            var hasInstanceParent = instType.IsSubclassOf(parType);
 
 
             return !isInstance && !hasInstanceParent;
@@ -209,8 +209,7 @@ namespace TypeSystem.Runtime
         {
             if (name == "ctor")
             {
-                var nameParts = definition.TypeInfo.TypeName.Split('.');
-                name = nameParts.Last();
+                name = "#ctor";
             }
             var builder = buildMethod(definition, method, name);
 

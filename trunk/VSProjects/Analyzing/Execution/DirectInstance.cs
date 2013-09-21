@@ -24,7 +24,7 @@ namespace Analyzing.Execution
         {
             if (DirectValue != null)
             {
-                return string.Format("[{0}]{1}", DirectValue.GetType(), DirectValue.ToString());
+                return string.Format("[{0}]{1}", Info.TypeName, DirectValue.ToString());
             }
             else
             {
