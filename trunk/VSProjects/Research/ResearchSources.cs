@@ -24,7 +24,22 @@ namespace TypeExperiments
     static class ResearchSources
     {
 
+
         static internal TestingAssembly GenericTesting()
+        {
+            return AssemblyUtils.Run(@"                
+                   var list=new System.Collections.Generic.List<System.String>();     
+                   list.Add(""test"");
+
+                   var result=list[0];
+               ")
+
+        //    .AddGenericToRuntime(typeof(List<>))
+
+            ;
+        }
+
+        static internal TestingAssembly ExplicitGenericTesting()
         {
             return AssemblyUtils.Run(@"                
                    var list=new System.Collections.Generic.List<System.String>();     

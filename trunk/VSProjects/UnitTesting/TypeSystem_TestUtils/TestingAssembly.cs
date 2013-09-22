@@ -89,6 +89,15 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
+        /// <summary>
+        /// Generic parameters has to be satisfiable by Instance
+        /// </summary>
+        /// <param name="genericType">Type which generic arguments will be substituted by Instance</param>
+        /// <returns></returns>
+        public TestingAssembly AddDirectGenericToRuntime(Type genericType) {
+            throw new NotImplementedException();
+        }
+
         public TestingAssembly UserAction(ResultAction action)
         {
             _userActions.Add(action);
