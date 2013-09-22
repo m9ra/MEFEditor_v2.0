@@ -51,14 +51,14 @@ namespace TypeSystem
             {
                 var genericParam = Path.GenericArgs[i];
                 var genericArg = searchPath.GenericArgs[i];
-
+                            
                 translations.Add(genericParam, genericArg);
             }
 
             //TODO translate parameters, return type,..
-            var generic= new TypeMethodInfo(
-                translate(DeclaringType,translations), searchPath.Name.Split('.').Last(), 
-                translate(ReturnType,translations), Parameters, 
+            var generic = new TypeMethodInfo(
+                translate(DeclaringType, translations), searchPath.Name.Split('.').Last(),
+                translate(ReturnType, translations), Parameters,
                 IsStatic, false);
 
             return generic;
@@ -67,7 +67,15 @@ namespace TypeSystem
         private InstanceInfo translate(InstanceInfo info, Dictionary<string, string> translations)
         {
             //TODO
-            return info;
+            var name = info.TypeName;
+            foreach (var pair in translations)
+            {
+                if (name == pair.Key)
+                    name = pair.Value;
+
+                name = name.Replace(pair.Key, pair.Value);
+            }
+            return new InstanceInfo(name);
         }
     }
 }

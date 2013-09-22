@@ -24,6 +24,11 @@ namespace TypeSystem.Runtime
     public abstract class RuntimeTypeDefinition
     {
         /// <summary>
+        /// Determine that runtime type definition is generic type
+        /// </summary>
+        public bool IsGeneric;
+
+        /// <summary>
         /// Available type services
         /// </summary>
         protected TypeServices Services { get; private set; }

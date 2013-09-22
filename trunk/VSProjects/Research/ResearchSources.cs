@@ -28,13 +28,13 @@ namespace TypeExperiments
         static internal TestingAssembly GenericTesting()
         {
             return AssemblyUtils.Run(@"                
-                   var list=new System.Collections.Generic.List<System.String>();     
-                   list.Add(""test"");
+                   var list=new System.Collections.Generic.Dictionary<System.String,System.Int32>();     
+                   list.Add(""key"", 1234);
 
-                   var result=list[0];
+                   var result=list[""key""];
                ")
 
-        //    .AddGenericToRuntime(typeof(List<>))
+            .AddWrappedGenericToRuntime(typeof(Dictionary<,>))
 
             ;
         }

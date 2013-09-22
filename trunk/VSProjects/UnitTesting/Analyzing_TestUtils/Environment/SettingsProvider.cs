@@ -30,7 +30,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         private static List<Instance> _instances = new List<Instance>();
 
-        
+
 
         static SettingsProvider()
         {
@@ -45,8 +45,8 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
         {
             var settings = new MachineSettings(onInstanceCreated);
             InitializeRuntime(settings.Runtime);
-            var assembly= new TestingAssembly(settings);
-            
+            var assembly = new TestingAssembly(settings);
+
             return assembly;
         }
 
@@ -65,12 +65,26 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         public static void AddDirectType(RuntimeAssembly runtime, Type directDefinition, Type directType)
         {
+            var isGeneric = directType.ContainsGenericParameters;
+            if (isGeneric)
+            {
+                var genericArgs = new List<Type>();
+                foreach (var param in directType.GetGenericArguments())
+                {
+                    genericArgs.Add(typeof(InstanceWrap));
+                }
+
+                directType = directType.MakeGenericType(genericArgs.ToArray());
+            }
+
             var addDirectDefinition = runtime.GetType().GetMethod("AddDirectDefinition");
             var directTypeDef = directDefinition.MakeGenericType(directType);
-            var runtimeType = Activator.CreateInstance(directTypeDef);
+            var runtimeType = Activator.CreateInstance(directTypeDef) as RuntimeTypeDefinition;
+            runtimeType.IsGeneric = isGeneric;
 
             var genericAdd = addDirectDefinition.MakeGenericMethod(directType);
             genericAdd.Invoke(runtime, new object[] { runtimeType });
+
         }
 
         private static void onInstanceCreated(Instance instance)

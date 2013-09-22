@@ -92,10 +92,12 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// <summary>
         /// Generic parameters has to be satisfiable by Instance
         /// </summary>
-        /// <param name="genericType">Type which generic arguments will be substituted by Instance</param>
+        /// <param name="genericType">Type which generic arguments will be substituted by WrappedInstance</param>
         /// <returns></returns>
-        public TestingAssembly AddDirectGenericToRuntime(Type genericType) {
-            throw new NotImplementedException();
+        public TestingAssembly AddWrappedGenericToRuntime(Type genericType) {
+
+            SettingsProvider.AddDirectType(Runtime, typeof(DirectTypeDefinition<>), genericType);
+            return this;
         }
 
         public TestingAssembly UserAction(ResultAction action)
@@ -136,6 +138,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             return _methods.AccordingId(method);
         }
 
+        public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
+        {
+            return _methods.AccordingGenericId(method, searchPath);
+        }
+
         #endregion
 
         #region Private utils
@@ -154,5 +161,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         #endregion
 
+
+   
     }
 }

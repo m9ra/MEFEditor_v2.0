@@ -21,5 +21,10 @@ namespace AssemblyProviders.CSharp
         {
             throw new NotImplementedException();
         }
+
+        public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

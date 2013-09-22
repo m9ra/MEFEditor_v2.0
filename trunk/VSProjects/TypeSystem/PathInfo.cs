@@ -81,6 +81,7 @@ namespace TypeSystem
                         //add argument to collected ones
                         GenericArgs.Add(argument.ToString());
                         argument.Clear();
+                        argumentEnd = false;
                     }
                 }
                 else
@@ -93,5 +94,28 @@ namespace TypeSystem
         }
 
 
+        /// <summary>
+        /// Creates name according to current generic arguments
+        /// </summary>
+        /// <returns>Created name</returns>
+        internal string CreateName()
+        {
+            var result = new StringBuilder();
+
+            var argIndex = 0;
+            for (int i = 0; i < Signature.Length; ++i)
+            {
+                var ch = Signature[i];
+
+                result.Append(ch);
+                if (ch == '<' || ch == ',')
+                {
+                    result.Append(GenericArgs[argIndex]);
+                    ++argIndex;
+                }
+            }
+
+            return result.ToString();
+        }
     }
 }

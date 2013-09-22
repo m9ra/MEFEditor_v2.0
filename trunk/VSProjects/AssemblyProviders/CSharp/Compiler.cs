@@ -380,7 +380,7 @@ namespace AssemblyProviders.CSharp
 
         private Argument[] getArguments(INodeAST node)
         {
-            var argNodes= node.Arguments;
+            var argNodes = node.Arguments;
             if (node.NodeType == NodeTypes.hierarchy && node.Indexer != null)
             {
                 argNodes = node.Indexer.Arguments;
@@ -405,13 +405,13 @@ namespace AssemblyProviders.CSharp
 
             var hasBaseObject = tryGetLiteral(node, out result) || tryGetVariable(node, out result);
             var isIndexerCall = node.Indexer != null && node.NodeType == NodeTypes.hierarchy;
-            var hasCallExtending = node.Child != null || node.Indexer!=null;
+            var hasCallExtending = node.Child != null || node.Indexer != null;
 
             if (hasBaseObject && hasCallExtending)
             {
                 //object based call
                 var baseObject = result;
-                var callNode = isIndexerCall?node: node.Child;
+                var callNode = isIndexerCall ? node : node.Child;
 
                 if (!tryGetCall(callNode, out result, baseObject))
                 {
@@ -496,10 +496,10 @@ namespace AssemblyProviders.CSharp
 
         private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
         {
-            if (calledObject == null && callHierarchy.Indexer!=null && callHierarchy.NodeType==NodeTypes.hierarchy)
+            if (calledObject == null && callHierarchy.Indexer != null && callHierarchy.NodeType == NodeTypes.hierarchy)
             {
                 //prepare base object for indexer
-                
+
             }
 
             //x without base can resolve to:            
@@ -514,7 +514,8 @@ namespace AssemblyProviders.CSharp
 
             if (calledObject != null)
             {
-                searcher.SetCalledObject(calledObject.GetResultInfo());
+                var calledObjectInfo = calledObject.GetResultInfo();
+                searcher.SetCalledObject(calledObjectInfo);
             }
             else
             {
@@ -526,7 +527,7 @@ namespace AssemblyProviders.CSharp
 
                 var nextNode = currNode.Child;
                 //TODO add namespaces
-                
+
                 switch (currNode.NodeType)
                 {
                     case NodeTypes.hierarchy:
@@ -536,7 +537,7 @@ namespace AssemblyProviders.CSharp
                             searcher.Dispatch("get_" + currNode.Value);
                         }
                         else
-                        {                            
+                        {
                             searcher.Dispatch("get_Item");
                         }
                         break;

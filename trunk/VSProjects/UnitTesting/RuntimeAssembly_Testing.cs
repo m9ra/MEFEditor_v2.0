@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -80,6 +81,22 @@ namespace UnitTesting
             .AssertVariable("result").HasValue("AddedValue")
 
             ;
+        }
+
+        [TestMethod]
+        public void RuntimType_DirectWrappedGenericClassType()
+        {
+            AssemblyUtils.Run(@"                
+                   var list=new System.Collections.Generic.Dictionary<System.String,System.Int32>();     
+                   list.Add(""key"", 1234);
+
+                   var result=list[""key""];
+               ")
+
+            .AddWrappedGenericToRuntime(typeof(Dictionary<,>))
+
+            .AssertVariable("result").HasValue(1234);
+
         }
     }
 }

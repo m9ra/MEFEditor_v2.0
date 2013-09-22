@@ -251,8 +251,8 @@ namespace UnitTesting
                 
             ", Method.Ctor_NoParam)
 
-            .AddMethod("Test.Generic<T>", @"
-                var x=new T(p);
+            .AddMethod("Test.Generic<T1>", @"
+                var x=new T1(p);
                 return x.GetValue();
             ", Method.Void_StringParam)
 

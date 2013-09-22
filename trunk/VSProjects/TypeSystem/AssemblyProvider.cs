@@ -20,9 +20,11 @@ namespace TypeSystem
 
         #region Template method API
 
+        protected TypeServices TypeServices { get; private set; }
+
         public abstract GeneratorBase GetMethodGenerator(MethodID method);
 
-        protected TypeServices TypeServices { get; private set; }
+        public abstract GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath);
 
         public abstract SearchIterator CreateRootIterator();
 
@@ -73,7 +75,5 @@ namespace TypeSystem
         {
             TypeServices = null;
         }
-
-
     }
 }

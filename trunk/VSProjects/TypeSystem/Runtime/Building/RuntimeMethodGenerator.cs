@@ -29,5 +29,15 @@ namespace TypeSystem.Runtime.Building
         {
             emitter.DirectInvoke(_method);
         }
+
+        internal GenericMethodProvider GetProvider()
+        {
+            return (searchPath, info) =>
+            {
+                var genericMethod = info.MakeGenericMethod(searchPath);
+                var generator = new RuntimeMethodGenerator(_method, genericMethod);
+                return new MethodItem(generator, genericMethod);
+            };
+        }
     }
 }

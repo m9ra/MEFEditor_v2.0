@@ -27,7 +27,7 @@ namespace TypeSystem.Runtime
         /// </summary>
         private readonly Dictionary<Type, RuntimeTypeDefinition> _directTypes = new Dictionary<Type, RuntimeTypeDefinition>();
 
-        private readonly HashSet<InstanceInfo> _directTypeInfos = new HashSet<InstanceInfo>();
+        private readonly HashSet<string> _directSignatures = new HashSet<string>();
 
         /// <summary>
         /// Registered data types
@@ -58,7 +58,9 @@ namespace TypeSystem.Runtime
         public void AddDirectDefinition<T>(DirectTypeDefinition<T> definition)
         {
             _directTypes[typeof(T)] = definition;
-            _directTypeInfos.Add(InstanceInfo.Create<T>());
+
+            var instanceInfo = InstanceInfo.Create<T>();
+            _directSignatures.Add(new PathInfo(instanceInfo.TypeName).Signature);
         }
 
         public void BuildAssembly()
@@ -85,12 +87,16 @@ namespace TypeSystem.Runtime
 
         internal bool IsInDirectCover(Type type)
         {
-            return type == typeof(void) || _directTypes.ContainsKey(type);
+            return
+                type == typeof(void) ||
+                type == typeof(InstanceWrap) ||
+                _directTypes.ContainsKey(type);
         }
 
         internal bool IsDirectType(InstanceInfo typeInfo)
         {
-            return _directTypeInfos.Contains(typeInfo);
+            var signature = new PathInfo(typeInfo.TypeName).Signature;
+            return _directSignatures.Contains(signature);
         }
 
         #region Assembly provider implementation
@@ -98,6 +104,11 @@ namespace TypeSystem.Runtime
         public override SearchIterator CreateRootIterator()
         {
             return new HashIterator(_runtimeMethods);
+        }
+
+        public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
+        {
+            return _runtimeMethods.AccordingGenericId(method, searchPath);
         }
 
         public override GeneratorBase GetMethodGenerator(MethodID method)
@@ -122,7 +133,15 @@ namespace TypeSystem.Runtime
             var methodGenerators = definition.GetMethods();
             foreach (var generator in methodGenerators)
             {
-                var item = new MethodItem(generator, generator.MethodInfo);
+                MethodItem item;
+                if (generator.MethodInfo.HasGenericParameters)
+                {
+                    item = new MethodItem(generator.GetProvider(), generator.MethodInfo);
+                }
+                else
+                {
+                    item = new MethodItem(generator, generator.MethodInfo);
+                }
                 _runtimeMethods.AddItem(item);
             }
         }
@@ -224,6 +243,5 @@ namespace TypeSystem.Runtime
         }
 
         #endregion
-
     }
 }

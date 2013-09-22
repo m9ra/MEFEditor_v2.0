@@ -44,8 +44,7 @@ namespace Analyzing
 
             if (genericType.IsGenericParameter)
             {
-                //argument doesn't need stack with outer arguments
-                return GenericTypeName(genericArguments.Dequeue());
+                return genericType.Name;
             }
 
             var result = typeNamePrefix(genericType, genericArguments);

@@ -26,14 +26,14 @@ namespace TypeSystem
 
         public IEnumerable<TypeMethodInfo> AccordingPath(PathInfo path)
         {
-            var overloads=from overload in accordingPath(path) select overload.Info;
+            var overloads = from overload in accordingPath(path) select overload.Info;
             return overloads;
         }
 
         public GeneratorBase AccordingId(MethodID method)
         {
             MethodItem item;
-            if (_methodIds.TryGetValue(method, out item) || tryGetGeneric(method,out item))
+            if (_methodIds.TryGetValue(method, out item))
             {
                 if (item.Info.HasGenericParameters)
                 {
@@ -47,24 +47,18 @@ namespace TypeSystem
             return null;
         }
 
-        private bool tryGetGeneric(MethodID method, out MethodItem result)
+        public GeneratorBase AccordingGenericId(MethodID method, PathInfo searchPath)
         {
-            string path, paramDescr;
-            Naming.GetParts(method,out path, out paramDescr);
-
-            var searchPath = new PathInfo(path);
-            var overloads=accordingPath(searchPath);
+            var overloads = accordingPath(searchPath);
             foreach (var overload in overloads)
             {
                 if (overload.Info.MethodID.Equals(method))
                 {
-                    result = overload;
-                    return true;
+                    return overload.Generator;
                 }
             }
 
-            result = null;
-            return false;
+            return null;
         }
 
         private IEnumerable<MethodItem> accordingPath(PathInfo path)

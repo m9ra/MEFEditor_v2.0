@@ -16,6 +16,10 @@ namespace TypeExperiments
     /// </summary>
     static class Printer
     {
+        static readonly string[] usings = new[]{
+            typeof(List<>).Namespace,
+        };
+
         static ConsoleColor BySeparatorColor = ConsoleColor.Red;
         static ConsoleColor EqualsSeparatorColor = ConsoleColor.Red;
         static ConsoleColor IfSeparatorColor = ConsoleColor.Red;
@@ -46,9 +50,12 @@ namespace TypeExperiments
             }
         }
 
-
         public static void Print(ConsoleColor color, string text, params object[] formatArgs)
         {
+            foreach (var ns in usings)
+            {
+                text = text.Replace(ns, "@");
+            }
             Console.ForegroundColor = color;
             Console.Write(text, formatArgs);
         }
@@ -130,7 +137,7 @@ namespace TypeExperiments
 
         static void printArguments(string argumentsPart)
         {
-            var arguments = argumentsPart.Split(',');
+            var arguments = splitOutOfBrackets(',', argumentsPart);
             var first = true;
             foreach (var argument in arguments)
             {
@@ -146,6 +153,8 @@ namespace TypeExperiments
                 printArgument(argument.Trim());
             }
         }
+
+
 
         static void printArgument(string argumentPart)
         {
@@ -194,6 +203,45 @@ namespace TypeExperiments
                     Print(ArgumentColor, valuePart);
                     break;
             }
+        }
+
+        private static string[] splitOutOfBrackets(char splitCharacter, string data)
+        {
+            var result = new List<string>();
+            var bracketDetph = 0;
+
+            for (int i = 0; i < data.Length; ++i)
+            {
+                var ch = data[i];
+
+                if (bracketDetph == 0 && ch == splitCharacter)
+                {
+                    //split data
+                    var token1 = data.Substring(0, i);
+                    var token2 = data.Substring(i + 1);
+                    result.Add(token1);
+                    data = token2;
+                    i = -1;
+                    continue;
+                }
+
+                switch (ch)
+                {
+                    case '<':
+                    case '[':
+                    case '(':
+                        ++bracketDetph;
+                        break;
+                    case '>':
+                    case ']':
+                    case ')':
+                        --bracketDetph;
+                        break;
+                }
+            }
+            result.Add(data.Trim());
+
+            return result.ToArray();
         }
     }
 }

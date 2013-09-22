@@ -48,6 +48,7 @@
     <Compile Include="HashedMethodContainer.cs" />
     <Compile Include="MethodDescription.cs" />
     <Compile Include="PathInfo.cs" />
+    <Compile Include="InstanceWrap.cs" />
     <Compile Include="Runtime\DataTypeDefinition.cs" />
     <Compile Include="Runtime\DirectTypeDefinition.cs" />
     <Compile Include="Runtime\Field.cs" />
