@@ -23,7 +23,7 @@ namespace MEFAnalyzers.CompositionEngine
 
         private readonly Dictionary<InstanceRef, string> _instanceStorages = new Dictionary<InstanceRef, string>();
 
-        internal readonly CompositionGenerator Generator=new CompositionGenerator();
+        internal readonly CompositionGenerator Generator = new CompositionGenerator();
 
         internal IEnumerable<ComponentRef> Components { get { return _componentRefs; } }
 
@@ -77,9 +77,39 @@ namespace MEFAnalyzers.CompositionEngine
             return IsOfType(testedtype, type.TypeName);
         }
 
-        internal InstanceRef CreateArray(InstanceInfo instanceInfo, IEnumerable<InstanceRef> instances)
+        internal InstanceRef CreateArray(InstanceInfo itemType, IEnumerable<InstanceRef> instances)
         {
-            throw new NotImplementedException();
+            var instArray = instances.ToArray();
+
+            var arrayInfo = new InstanceInfo(string.Format("Array<{0},1>", itemType.TypeName));
+            var intParam = ParameterTypeInfo.Create("p", InstanceInfo.Create<int>());
+            var ctorID = Naming.Method(arrayInfo, "#ctor", intParam);
+            var setID = Naming.Method(arrayInfo, "set_Item", intParam, ParameterTypeInfo.Create("p2", itemType));
+
+            var arrayStorage = getFreeStorage("arr");
+
+            emit((e) =>
+            {
+                //array constrution
+                e.AssignNewObject(arrayStorage, arrayInfo);
+                var lengthVar = e.GetTemporaryVariable("len");
+                e.AssignLiteral(lengthVar, instArray.Length);
+                e.Call(ctorID, arrayStorage, Arguments.Values(lengthVar));
+
+                //set instances to appropriate indexes
+                var arrIndex = e.GetTemporaryVariable("set");
+                for (int i = 0; i < instArray.Length; ++i)
+                {
+                    var instStorage = getStorage(instArray[i]);
+                    e.AssignLiteral(arrIndex, i);
+                    e.Call(setID, arrayStorage, Arguments.Values(arrIndex,instStorage));
+                }
+            });
+
+            var array = new InstanceRef(this, arrayInfo, true);
+            _instanceStorages[array] = arrayStorage;
+
+            return array;
         }
 
         internal IEnumerable<TypeMethodInfo> GetMethods(InstanceInfo metadataType)
@@ -108,7 +138,7 @@ namespace MEFAnalyzers.CompositionEngine
             var args = getArgumentStorages(arguments);
 
 
-            var resultStorage = string.Format("inst_{0}", _instanceStorages.Count);
+            var resultStorage = getFreeStorage("ret");
             //TODO determine result type
             var resultInstance = new InstanceRef(this, null, true);
 
@@ -130,7 +160,7 @@ namespace MEFAnalyzers.CompositionEngine
 
         private Arguments getArgumentStorages(InstanceRef[] arguments)
         {
-            var argVars=(from arg in arguments select getStorage(arg)).ToArray();
+            var argVars = (from arg in arguments select getStorage(arg)).ToArray();
             return Arguments.Values(argVars);
         }
 
@@ -146,6 +176,12 @@ namespace MEFAnalyzers.CompositionEngine
         private void emit(EmitAction action)
         {
             Generator.EmitAction(action);
+        }
+
+        private string getFreeStorage(string nameHint)
+        {
+            //TODO check for presence
+            return string.Format("{0}_{1}", nameHint, _instanceStorages.Count);
         }
     }
 

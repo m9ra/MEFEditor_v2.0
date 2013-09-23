@@ -11,13 +11,17 @@ namespace Analyzing.Execution
     public class DirectInstance : Instance
     {
         private object _directValue;
+
+        private readonly Machine _machine;
+
         public override object DirectValue { get { return _directValue; } }
 
 
-        internal DirectInstance(object directValue, InstanceInfo info)
+        internal DirectInstance(object directValue, InstanceInfo info, Machine creatingMachine)
             : base(info)
         {
             _directValue = directValue;
+            _machine = creatingMachine;
         }
 
         public override string ToString()

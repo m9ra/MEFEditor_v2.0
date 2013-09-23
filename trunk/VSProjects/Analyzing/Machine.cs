@@ -21,7 +21,7 @@ namespace Analyzing
             Settings = settings;
         }
 
-        public Instance CreateDirectInstance(object directObject, InstanceInfo info=null)
+        public Instance CreateDirectInstance(object directObject, InstanceInfo info = null)
         {
             if (info == null)
             {
@@ -30,8 +30,8 @@ namespace Analyzing
 
             if (!Settings.IsDirect(info))
                 throw new NotSupportedException("Cannot create direct instance from not direct info");
-
-            var instance = new DirectInstance(directObject, info);
+            
+            var instance = new DirectInstance(directObject, info, this);
             Settings.InstanceCreated(instance);
 
             return instance;
@@ -49,7 +49,7 @@ namespace Analyzing
 
             return instance;
         }
-        
+
         /// <summary>
         /// Run analysis of program loaded via given loader. Execution starts from loader.EntryPoint
         /// </summary>

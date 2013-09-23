@@ -50,7 +50,7 @@ namespace TypeExperiments
         internal void Execute()
         {
             runExecution();
-
+            
             printEntryContext();
             printOtherContexts();
             printAdditionalInfo();
@@ -99,6 +99,7 @@ namespace TypeExperiments
         /// </summary>
         private void runExecution()
         {
+            _assembly.Runtime.BuildAssembly();
             _watch.Start();
             _result = _assembly.GetResult();
             _watch.Stop();

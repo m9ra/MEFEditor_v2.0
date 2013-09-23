@@ -180,11 +180,12 @@ namespace TypeSystem
         /// </summary>
         public bool AllowMany { get; private set; }
 
-        public Import(InstanceInfo importType,MethodID setter)
+        public Import(InstanceInfo importType,MethodID setter,bool allowMany=false)
         {
             ImportTypeInfo = new ImportTypeInfo(importType);
             Contract = ImportTypeInfo.ImportType.TypeName;
             Setter = setter;
+            AllowMany = allowMany;
         }
     }
 }

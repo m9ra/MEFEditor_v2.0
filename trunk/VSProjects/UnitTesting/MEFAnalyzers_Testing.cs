@@ -32,5 +32,24 @@ namespace UnitTesting
             .AddToRuntime<StringExport>()
             .AssertVariable("importValue").HasValue("ExportedValue");
         }
+
+        [TestMethod]
+        public void Compose_StringManyArrayImport_StringExport()
+        {
+            AssemblyUtils.Run(@"        
+                var partImport=new ManyStringImport();       
+                var partExport=new StringExport(""ExportedValue"");
+
+                var test=new CompositionTester(partImport,partExport);   
+                var importValues=partImport.Import;                   
+                var result=importValues[0];
+            ")
+
+            .AddToRuntime<CompositionTesterDefinition>()
+            .AddToRuntime<ManyStringImport>()
+            .AddToRuntime<StringExport>()
+            .AssertVariable("result").HasValue("ExportedValue");
+            ;
+        }
     }
 }

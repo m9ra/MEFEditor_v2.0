@@ -23,7 +23,36 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+        static internal TestingAssembly CompositionTester_ManyImport()
+        {
+            return AssemblyUtils.Run(@"        
+                var partImport=new ManyStringImport();       
+                var partExport=new StringExport(""ExportedValue"");
 
+                var test=new CompositionTester(partImport,partExport);   
+                var importValues=partImport.Import;                   
+                var result=importValues[0];
+            ")
+
+            .AddToRuntime<CompositionTesterDefinition>()
+            .AddToRuntime<ManyStringImport>()
+            .AddToRuntime<StringExport>()
+            ;
+        }
+
+        static internal TestingAssembly ArrayTesting()
+        {
+            return AssemblyUtils.Run(@"                
+                   var list=new System.Collections.Generic.List<System.String>();
+                   list.Add(""Item0"");                   
+                   var arr=list.ToArray();
+                   
+                   var result=arr[0];
+               ")
+
+               .AddWrappedGenericToRuntime(typeof(List<>))               
+            ;
+        }
 
         static internal TestingAssembly GenericTesting()
         {

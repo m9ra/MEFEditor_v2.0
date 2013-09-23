@@ -673,7 +673,7 @@ namespace MEFAnalyzers.CompositionEngine
                 exportValues.Add(callExportGetter(import, exp));
 
 
-            ComponentRef iCollectionToSet;
+            InstanceRef iCollectionToSet;
             TypeMethodInfo addMethod;
 
             if (isICollectionImport(import, out iCollectionToSet, out addMethod))
@@ -697,13 +697,12 @@ namespace MEFAnalyzers.CompositionEngine
             else
             {
                 //import will be filled with an array
-                var exportType = string.Format("System.Array<{0},1>", import.ImportManyItemType);
                 return _context.CreateArray(import.ImportManyItemType, exportValues);
             }
         }
 
 
-        private bool isICollectionImport(JoinPoint import, out ComponentRef iCollectionToSet, out TypeMethodInfo addMethod)
+        private bool isICollectionImport(JoinPoint import, out InstanceRef iCollectionToSet, out TypeMethodInfo addMethod)
         {
             var imp = import.Point as Import;
 
@@ -723,7 +722,11 @@ namespace MEFAnalyzers.CompositionEngine
               iCollectionToSet = getImportInstance(import);
 
               return true;*/
-            throw new NotImplementedException();
+            //TODO implement
+            iCollectionToSet = null;
+            addMethod = null;
+
+            return false;
         }
 
         private Instance getImportInstance(JoinPoint import)

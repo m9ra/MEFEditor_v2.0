@@ -28,6 +28,11 @@ namespace Analyzing
             {
                 TypeName = GenericTypeName(type);
             }
+            else if (type.IsArray)
+            {
+                //TODO determine dimensions
+                TypeName = string.Format("Array<{0},1>", GenericTypeName(type.GetElementType()));
+            }
             else
             {
                 TypeName = type.FullName;
@@ -58,7 +63,7 @@ namespace Analyzing
             else
             {
                 //repair generic name
-                var nameEnding = name.IndexOf('`');                
+                var nameEnding = name.IndexOf('`');
                 result.Append(name.Substring(0, nameEnding));
 
                 //handle generic arguments
@@ -82,10 +87,10 @@ namespace Analyzing
             {
                 //there is an outer declaring type - it preceeds it's name in notation
                 var declaringType = genericType.DeclaringType;
-                var declaringArgumentsCount=declaringType.GetGenericArguments().Length;
+                var declaringArgumentsCount = declaringType.GetGenericArguments().Length;
                 var substitutedArguments = genericArguments.Take(declaringArgumentsCount);
                 var substitutingQueue = new Queue<Type>(substitutedArguments);
-                
+
                 //prefix with declaring type name
                 result.Append(GenericTypeName(declaringType, substitutingQueue));
                 result.Append('.');

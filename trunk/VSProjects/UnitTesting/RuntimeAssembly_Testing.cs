@@ -84,7 +84,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void RuntimType_DirectWrappedGenericClassType()
+        public void RuntimeType_DirectWrappedGenericClassType()
         {
             AssemblyUtils.Run(@"                
                    var list=new System.Collections.Generic.Dictionary<System.String,System.Int32>();     
@@ -97,6 +97,23 @@ namespace UnitTesting
 
             .AssertVariable("result").HasValue(1234);
 
+        }
+
+        [TestMethod]
+        public void RuntimeType_ArrayReturnValueSupport()
+        {
+            AssemblyUtils.Run(@"                
+                   var list=new System.Collections.Generic.List<System.String>();
+                   list.Add(""Item0"");                   
+                   var arr=list.ToArray();
+                   
+                   var result=arr[0];
+            ")
+
+            .AddWrappedGenericToRuntime(typeof(List<>))
+
+            .AssertVariable("result").HasValue("Item0");
+            ;
         }
     }
 }

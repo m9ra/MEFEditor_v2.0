@@ -12,7 +12,7 @@ namespace TypeSystem
     /// <summary>
     /// Represents wrap over instance - forward object calls to wrapped instance (or direct value)
     /// </summary>
-    public sealed class InstanceWrap
+    public class InstanceWrap
     {
         internal readonly Instance Wrapped;
 

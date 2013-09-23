@@ -18,6 +18,11 @@ namespace TypeSystem.Runtime
     public class RuntimeAssembly : AssemblyProvider
     {
         /// <summary>
+        /// Determine that assembly has been builded
+        /// </summary>
+        private bool _isBuilded = false;
+
+        /// <summary>
         /// Registered runtime methods
         /// </summary>
         private readonly HashedMethodContainer _runtimeMethods = new HashedMethodContainer();
@@ -44,6 +49,11 @@ namespace TypeSystem.Runtime
                 {"_get_",_createProperty},
                 {"_set_",_createProperty},
             };
+
+            var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
+            arrayDefinition.IsGeneric = true;
+            arrayDefinition.ForcedInfo = new InstanceInfo("Array<ItemType,Dimension>");            
+            AddDirectDefinition<Array<InstanceWrap>>(arrayDefinition);
         }
 
         /// <summary>
@@ -59,12 +69,16 @@ namespace TypeSystem.Runtime
         {
             _directTypes[typeof(T)] = definition;
 
-            var instanceInfo = InstanceInfo.Create<T>();
-            _directSignatures.Add(new PathInfo(instanceInfo.TypeName).Signature);
+            var typeInfo = definition.TypeInfo;
+            _directSignatures.Add(new PathInfo(typeInfo.TypeName).Signature);
         }
 
         public void BuildAssembly()
         {
+            if (_isBuilded)
+                //assembly has been already builded
+                return;
+
             if (this.TypeServices == null)
             {
                 throw new NotSupportedException("Cannot add definitions until type services are initialized");
@@ -83,12 +97,14 @@ namespace TypeSystem.Runtime
                     AddComponent(dataType.TypeInfo, dataType.ComponentInfo);
                 }
             }
+            _isBuilded = true;
         }
 
         internal bool IsInDirectCover(Type type)
         {
             return
                 type == typeof(void) ||
+                type.IsArray ||
                 type == typeof(InstanceWrap) ||
                 _directTypes.ContainsKey(type);
         }

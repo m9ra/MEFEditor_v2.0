@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,6 +34,8 @@ namespace TypeSystem.Runtime
 
         protected DirectType This { get; private set; }
 
+        public InstanceInfo ForcedInfo;
+
         /// <summary>
         /// Type info of current DirectType (or generic definition if TypeDefinition is marked with IsGeneric)
         /// </summary>
@@ -40,6 +43,9 @@ namespace TypeSystem.Runtime
         {
             get
             {
+                if (ForcedInfo != null)
+                    return ForcedInfo;
+
                 var definingType = _directType;
                 if (IsGeneric)
                 {
@@ -136,7 +142,7 @@ namespace TypeSystem.Runtime
                 var directMethod = generateDirectMethod(methodDefinition);
                 var paramsInfo = getParametersInfo(methodDefinition);
 
-                var returnInfo = new InstanceInfo(methodDefinition.ReturnType);
+                var returnInfo = getInstanceInfo(methodDefinition.ReturnType);
                 var info = new TypeMethodInfo(
                     TypeInfo, methodDefinition.Name,
                     returnInfo, paramsInfo.ToArray(),
@@ -191,8 +197,9 @@ namespace TypeSystem.Runtime
             if (method.IsStatic)
                 return (c) => { throw new NotImplementedException(); };
 
+            var returnType = method.ReturnType;
             var hasReturnValue = method.ReturnType != typeof(void);
-            var needReturnUnWrapping = hasReturnValue && method.ReturnType == typeof(InstanceWrap);
+            var needReturnUnWrapping = hasReturnValue && returnType == typeof(InstanceWrap);
 
             var contextType = typeof(AnalyzingContext);
             var contextParameter = Expression.Parameter(contextType, "context");
@@ -216,7 +223,14 @@ namespace TypeSystem.Runtime
                 {
                     //Direct object has been returned - create its direct instance
                     var machine = Expression.PropertyOrField(contextParameter, "Machine");
-                    var instanceInfo = Expression.Constant(new InstanceInfo(method.ReturnType));
+                    var instanceInfo = Expression.Constant(new InstanceInfo(returnType));
+                    if (returnType.IsArray)
+                    {                        
+                        var arrayWrapType = typeof(Array<InstanceWrap>);
+                        var arrayWrapCtor = arrayWrapType.GetConstructor(new Type[] { typeof(IEnumerable), contextType });
+                        returnValue = Expression.New(arrayWrapCtor, returnValue, contextParameter);
+                    }
+
                     returnValue = Expression.Convert(returnValue, typeof(object));
                     returnValue = Expression.Call(machine, typeof(Machine).GetMethod("CreateDirectInstance"), returnValue, instanceInfo);
                 }
@@ -294,6 +308,11 @@ namespace TypeSystem.Runtime
 
         #region Direct type services
 
+        private InstanceInfo getInstanceInfo(Type type)
+        {
+            return new InstanceInfo(type);
+        }
+
         /// <summary>
         /// Determine that method is in direct cover
         /// </summary>
@@ -301,7 +320,6 @@ namespace TypeSystem.Runtime
         /// <returns>True if method is in direct cover, false otherwise</returns>
         private bool isInDirectCover(MethodInfo method)
         {
-            //TODO void
             return areParamsInDirectCover(method) && isInDirectCover(method.ReturnType);
         }
 
@@ -334,5 +352,7 @@ namespace TypeSystem.Runtime
         }
 
         #endregion
+
+
     }
 }

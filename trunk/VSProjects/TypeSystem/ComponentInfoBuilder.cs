@@ -31,9 +31,21 @@ namespace TypeSystem
 
         public void AddImport(InstanceInfo importType, string setterName)
         {
+            var setterID = getSetterID(importType, setterName);
+            _imports.Add(new Import(importType, setterID));
+        }
+
+        private MethodID getSetterID(InstanceInfo importType, string setterName)
+        {
             var parameters = new ParameterTypeInfo[] { ParameterTypeInfo.Create("value", importType) };
             var setterID = Naming.Method(_componentType, "set_" + setterName, parameters);
-            _imports.Add(new Import(importType, setterID));
+            return setterID;
+        }
+
+        public void AddManyImport(InstanceInfo importType, string setterName)
+        {
+            var setterID = getSetterID(importType, setterName);
+            _imports.Add(new Import(importType, setterID,true));
         }
 
         public ComponentInfo BuildInfo()

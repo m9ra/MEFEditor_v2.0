@@ -308,6 +308,10 @@ namespace AssemblyProviders.CSharp
             searcher.SetCalledObject(objectType);
             searcher.Dispatch("#ctor");
             var activation = findMatchingActivation(nObject, callNode, searcher.FoundResult);
+            if (activation == null)
+            {
+                throw new NotSupportedException("Constructor wasn't found");
+            }
             var ctorCall = new CallRValue(activation, _context);
 
             nObject.SetCtor(ctorCall);
@@ -415,7 +419,7 @@ namespace AssemblyProviders.CSharp
 
                 if (!tryGetCall(callNode, out result, baseObject))
                 {
-                    throw new NotSupportedException("Unknown object call hierarchy construction on " + node.Child);
+                    throw new NotSupportedException("Unknown object call hierarchy construction on " + callNode);
                 }
             }
             else if (!hasBaseObject)
@@ -491,17 +495,17 @@ namespace AssemblyProviders.CSharp
             }
 
             var typeName = _context.Map(name.ToString());
+            if (callNode.NodeType != NodeTypes.call && callNode.Indexer != null)
+            {
+                //array definition
+                typeName = string.Format("Array<{0},{1}>", typeName,callNode.Indexer.Arguments.Length);
+            }
+            
             return new InstanceInfo(typeName);
         }
 
         private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
         {
-            if (calledObject == null && callHierarchy.Indexer != null && callHierarchy.NodeType == NodeTypes.hierarchy)
-            {
-                //prepare base object for indexer
-
-            }
-
             //x without base can resolve to:            
             //[this namespace].this.get_x /this.set_x
             //[this namespace].[static class x]
@@ -535,10 +539,12 @@ namespace AssemblyProviders.CSharp
                         {
                             Debug.Assert(currNode.Arguments.Length == 0);
                             searcher.Dispatch("get_" + currNode.Value);
+                            searcher.Dispatch("set_" + currNode.Value);
                         }
                         else
                         {
                             searcher.Dispatch("get_Item");
+                            searcher.Dispatch("set_Item");
                         }
                         break;
                     case NodeTypes.call:

@@ -37,7 +37,14 @@ namespace TypeSystem
 
         public static ParameterTypeInfo From(ParameterInfo param)
         {
-            return new ParameterTypeInfo(param.Name, new InstanceInfo(param.ParameterType), param.DefaultValue, param.HasDefaultValue);
+            var name = param.Name;
+            if (name == null)
+            {
+                //default name
+                name = "p" + param.Position;
+            }
+
+            return new ParameterTypeInfo(name, new InstanceInfo(param.ParameterType), param.DefaultValue, param.HasDefaultValue);
         }
     }
 }

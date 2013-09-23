@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,7 +74,15 @@ namespace TypeSystem.Runtime.Building
         /// <returns>Unwrapped data</returns>
         internal static T Unwrap<T>(Instance instance)
         {
-            return (T)instance.DirectValue;
+            if (typeof(T).IsArray)
+            {
+                var arrayDef = instance.DirectValue as Array<InstanceWrap>;
+                return arrayDef.Unwrap<T>();
+            }
+            else
+            {
+                return (T)instance.DirectValue;
+            }
         }
 
         /// <summary>
@@ -85,7 +94,16 @@ namespace TypeSystem.Runtime.Building
         /// <returns>Instance wrapping given data</returns>
         internal static Instance Wrap<T>(AnalyzingContext context, T data)
         {
-            return context.Machine.CreateDirectInstance(data);
+            var machine = context.Machine;
+            if (typeof(T).IsArray)
+            {
+                var array = new Array<InstanceWrap>((IEnumerable)data, context);
+                return machine.CreateDirectInstance(array, InstanceInfo.Create<T>());
+            }
+            else
+            {
+                return machine.CreateDirectInstance(data);
+            }
         }
 
         #endregion
