@@ -35,16 +35,6 @@ namespace Analyzing.Execution
         private CallContext CurrentCall { get { return _callStack.Peek(); } }
 
         /// <summary>
-        /// Arguments prepared for call invoking
-        /// </summary>
-        private Arguments _preparedArguments = null;
-
-        /// <summary>
-        /// Arguments for entry call
-        /// </summary>
-        private Instance[] _entryArguments = null;
-
-        /// <summary>
         /// Array of arguments available for current call
         /// </summary>
         public Instance[] CurrentArguments { get { return CurrentCall.ArgumentValues; } }
@@ -63,11 +53,10 @@ namespace Analyzing.Execution
         /// </summary>
         public EditsProvider Edits { get; private set; }
 
-        internal AnalyzingContext(Machine machine, LoaderBase loader, Instance[] arguments)
+        internal AnalyzingContext(Machine machine, LoaderBase loader)
         {
             Machine = machine;
             _loader = loader;
-            _entryArguments = arguments;
         }
 
         /// <summary>
@@ -101,29 +90,20 @@ namespace Analyzing.Execution
             return dataInstance.GetField(fieldName);
         }
 
-        internal void PrepareCall(Arguments arguments)
-        {
-            _preparedArguments = arguments;
-        }
-
         /// <summary>
         /// Fetch instructions from given generator
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(MethodID name, GeneratorBase generator)
+        internal void FetchCallInstructions(MethodID name, GeneratorBase generator, Instance[] argumentValues)
         {
-            var argumentValues = getArgumentValues(_preparedArguments);
-            //preparing is just for single call
-            _preparedArguments = null;
-
             pushCall(name, generator, argumentValues);
         }
 
 
-        public void DynamicCall(string methodNameHint, GeneratorBase generator, params Instance[] instances)
+        public void DynamicCall(string methodNameHint, GeneratorBase generator, params Instance[] argumentValues)
         {
-            pushCall(new MethodID(methodNameHint, false), generator, instances);
+            pushCall(new MethodID(methodNameHint, false), generator, argumentValues);
         }
 
         private void pushCall(MethodID name, GeneratorBase generator, Instance[] argumentValues)
@@ -200,14 +180,8 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="arguments">Names of argument variables where values are stored</param>
         /// <returns>Argument values</returns>
-        private Instance[] getArgumentValues(Arguments arguments)
+        internal Instance[] GetArguments(Arguments arguments)
         {
-            var isEntryContext = _callStack.Count == 0;
-            if (isEntryContext)
-            {
-                return _entryArguments;
-            }
-
             var values = new List<Instance>();
             foreach (var argument in arguments.ValueVariables)
             {
@@ -227,7 +201,7 @@ namespace Analyzing.Execution
         {
             return CurrentCall.Contains(targetVariable);
         }
-                    
+
         public void Initialize(Instance instance, object data)
         {
             var directInstance = instance as DirectInstance;
@@ -259,8 +233,6 @@ namespace Analyzing.Execution
                 Edits = new EditsProvider(call.TransformProvider, CurrentCall.CurrentBlock);
             }
         }
-
-
 
     }
 }

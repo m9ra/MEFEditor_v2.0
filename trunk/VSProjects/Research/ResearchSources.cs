@@ -23,6 +23,47 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+        static internal TestingAssembly InterfaceCall()
+        {
+            var collectionType = InstanceInfo.Create<ICollection<string>>();
+            var testParam = ParameterTypeInfo.Create("p", new InstanceInfo("Test"));
+            var methodDescription = new MethodDescription(collectionType, false, new[] { testParam });
+
+            return AssemblyUtils.Run(@"
+                var test=new Test();
+                
+                var interface=Convert(test);
+                interface.Add(""AddedValue"");
+                var result=test.Get();
+            ")
+
+            .AddMethod("Test.Convert", (c) =>
+            {
+                c.Return(c.CurrentArguments[1]);
+            }, methodDescription)
+
+            .AddMethod("Test.#ctor", (c) =>
+            {
+            }, Method.Ctor_NoParam)
+
+            .AddMethod("Test.Add", (c) =>
+            {
+                var thisInstance = c.CurrentArguments[0];
+                var arg = c.CurrentArguments[1];
+                c.SetField(thisInstance, "data", arg);
+            }, Method.Void_StringParam.Implements(typeof(ICollection<string>)))
+
+            .AddMethod("Test.Get", (c) =>
+            {
+                var thisInstance = c.CurrentArguments[0];
+                var inst = c.GetField(thisInstance, "data") as Instance;
+                c.Return(inst);
+            }, Method.String_NoParam)
+
+            .AddWrappedGenericToRuntime(typeof(ICollection<>))
+            ;
+        }
+
         static internal TestingAssembly CompositionTester_ManyImport()
         {
             return AssemblyUtils.Run(@"        

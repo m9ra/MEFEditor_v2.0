@@ -14,15 +14,15 @@ namespace TypeSystem
     {
         public readonly GenericMethodProvider MethodProvider;
         public readonly GeneratorBase Generator;
-        public readonly TypeMethodInfo Info;        
+        public readonly TypeMethodInfo Info;
 
         public MethodItem(GeneratorBase generator, TypeMethodInfo info)
         {
             if (info.HasGenericParameters)
                 throw new NotSupportedException("Cannot create generic method item without GenericMethodProvider");
 
-            Generator = generator;
             Info = info;
+            Generator = Info.IsAbstract ? null : generator;
         }
 
         public MethodItem(GenericMethodProvider methodProvider, TypeMethodInfo genericInfo)
@@ -32,7 +32,7 @@ namespace TypeSystem
         }
     }
 
-    
+
 
     public class HashIterator : SearchIterator
     {

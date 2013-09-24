@@ -32,7 +32,7 @@ namespace TypeSystem
 
         public override GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
-            throw new NotImplementedException();
+            return _assemblies.DynamicResolve(method, dynamicArgumentInfo);
         }
     }
 }

@@ -24,6 +24,8 @@ namespace UnitTesting.TypeSystem_TestUtils
         List<EditAction> _editActions = new List<EditAction>();
         List<ResultAction> _userActions = new List<ResultAction>();
 
+        Dictionary<MethodID, MethodID> _explicitImplementations = new Dictionary<MethodID, MethodID>();
+
         internal readonly TestAssemblyCollection Assemblies;
 
         internal readonly AssemblyLoader Loader;
@@ -65,15 +67,15 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public TestingAssembly AddMethod(string methodPath, DirectMethod source, MethodDescription description)
         {
-            var methodInfo = description.CreateInfo(methodPath);
+
+            var methodInfo = buildDescription(description, methodPath);
 
             var method = new DirectGenerator(source);
             addMethod(method, methodInfo);
 
             return this;
         }
-
-
+        
         public TestingAssembly AddToRuntime<T>()
             where T : DataTypeDefinition
         {
@@ -128,6 +130,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         }
 
         #region Assembly provider implementatation
+
         public override SearchIterator CreateRootIterator()
         {
             return new HashIterator(_methods);
@@ -143,9 +146,34 @@ namespace UnitTesting.TypeSystem_TestUtils
             return _methods.AccordingGenericId(method, searchPath);
         }
 
+        public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        {
+            MethodID implementation;
+            _explicitImplementations.TryGetValue(method, out implementation);
+            return implementation;
+        }
+
+        public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Private utils
+
+        private TypeMethodInfo buildDescription(MethodDescription description,string methodPath)
+        {
+            var info= description.CreateInfo(methodPath);
+            foreach (var implementedType in description.Implemented)
+            {
+                var implementedMethod = Naming.ChangeDeclaringType(implementedType, info.MethodID, true);
+                _explicitImplementations[implementedMethod] = info.MethodID;
+            }
+
+            return info;
+        }
+
         private void addMethod(GeneratorBase method, TypeMethodInfo info)
         {
             if (info.HasGenericParameters)
@@ -159,9 +187,6 @@ namespace UnitTesting.TypeSystem_TestUtils
             }
         }
 
-        #endregion
-
-
-   
+        #endregion        
     }
 }

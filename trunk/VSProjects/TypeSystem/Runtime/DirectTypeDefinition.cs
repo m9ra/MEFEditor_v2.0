@@ -143,10 +143,13 @@ namespace TypeSystem.Runtime
                 var paramsInfo = getParametersInfo(methodDefinition);
 
                 var returnInfo = getInstanceInfo(methodDefinition.ReturnType);
+                var isAbstract = type.IsInterface || method.IsAbstract;
                 var info = new TypeMethodInfo(
                     TypeInfo, methodDefinition.Name,
                     returnInfo, paramsInfo.ToArray(),
-                    methodDefinition.IsStatic, IsGeneric);
+                    methodDefinition.IsStatic, IsGeneric,isAbstract);
+
+                
 
                 yield return new RuntimeMethodGenerator(directMethod, info);
             }

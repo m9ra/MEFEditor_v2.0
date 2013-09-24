@@ -26,5 +26,15 @@ namespace AssemblyProviders.CSharp
         {
             throw new NotImplementedException();
         }
+
+        public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

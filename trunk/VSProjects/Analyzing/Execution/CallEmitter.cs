@@ -94,25 +94,25 @@ namespace Analyzing.Execution
             return new AssignBuilder(result);
         }
 
-        public override CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID methodID,Arguments arguments)
+        public override CallBuilder StaticCall(InstanceInfo sharedInstanceInfo, MethodID methodID, Arguments arguments)
         {
             var sharedThisVar = getSharedVar(sharedInstanceInfo);
-     
+
             var initializerID = _context.Settings.GetSharedInitializer(sharedInstanceInfo);
 
             if (initializerID.NeedsDynamicResolving)
             {
                 throw new NotImplementedException();
             }
-            
+
             var ensureInitialization = new EnsureInitialized(sharedThisVar, sharedInstanceInfo, initializerID);
 
             arguments.Initialize(sharedThisVar);
-            var preCall = new PreCall(arguments);
+
 
             emitInstruction(ensureInitialization);
-            emitInstruction(preCall);
-            return emitCall(methodID);
+
+            return emitCall(methodID,arguments);
         }
 
         public override CallBuilder Call(MethodID methodID, string thisObjVariable, Arguments arguments)
@@ -120,11 +120,9 @@ namespace Analyzing.Execution
             var thisVar = getVariable(thisObjVariable);
             var thisType = variableInfo(thisVar);
 
-            arguments.Initialize(thisVar);            
-            var preCall = new PreCall(arguments);
+            arguments.Initialize(thisVar);
 
-            emitInstruction(preCall);
-            return emitCall(methodID);
+            return emitCall(methodID,arguments);
         }
 
         public override void DirectInvoke(DirectMethod method)
@@ -254,20 +252,13 @@ namespace Analyzing.Execution
             _instructions.Add(instruction);
         }
 
-        private CallBuilder emitCall(MethodID methodID)
+        private CallBuilder emitCall(MethodID methodID,Arguments arguments)
         {
-            if (methodID.NeedsDynamicResolving)
-            {
-                throw new NotImplementedException();
-            }
-            else
-            {
-                var call = new Call(methodID);
-                emitInstruction(call);
+            var call = new Call(methodID,arguments);
+            emitInstruction(call);
 
-                var builder = new CallBuilder(call);
-                return builder;
-            }
+            var builder = new CallBuilder(call);
+            return builder;
         }
 
         #endregion
@@ -324,7 +315,7 @@ namespace Analyzing.Execution
 
             return result;
         }
-        
+
         #endregion
     }
 }

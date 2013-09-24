@@ -28,6 +28,10 @@ namespace TypeSystem
 
         public abstract SearchIterator CreateRootIterator();
 
+        public abstract MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo);
+
+        public abstract MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo);
+
         #endregion
 
         protected void ReportInvalidation(MethodID name)
@@ -75,5 +79,7 @@ namespace TypeSystem
         {
             TypeServices = null;
         }
+
+
     }
 }

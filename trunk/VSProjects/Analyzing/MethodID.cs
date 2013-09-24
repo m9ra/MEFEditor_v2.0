@@ -22,6 +22,7 @@ namespace Analyzing
         public MethodID(string methodName, bool needsDynamicResolving)
         {
             MethodString = methodName;
+            NeedsDynamicResolving = needsDynamicResolving;
         }
 
         public override bool Equals(object obj)

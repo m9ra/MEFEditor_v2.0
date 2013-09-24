@@ -132,6 +132,18 @@ namespace TypeSystem.Runtime
             return _runtimeMethods.AccordingId(method);
         }
 
+        public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        {
+          //  throw new NotImplementedException();
+            return null;
+        }
+
+        public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
+        {
+            //throw new NotImplementedException();
+            return null;
+        }
+
         #endregion
 
         #region TypeDefinition building

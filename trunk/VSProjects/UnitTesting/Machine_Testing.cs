@@ -40,7 +40,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void DirectCall_withArguments()
+        public void DirectCall_WithArguments()
         {
             var toString = Naming.Method<int>("ToString", typeof(string));
 
@@ -70,7 +70,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void ConditionalLoop_iteration()
+        public void ConditionalLoop_Iteration()
         {
             var add = Naming.Method<int>("add_operator", typeof(int));
             var equals = Naming.Method<int>("Equals", typeof(int));

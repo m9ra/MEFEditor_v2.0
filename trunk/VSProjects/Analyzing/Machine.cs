@@ -30,7 +30,7 @@ namespace Analyzing
 
             if (!Settings.IsDirect(info))
                 throw new NotSupportedException("Cannot create direct instance from not direct info");
-            
+
             var instance = new DirectInstance(directObject, info, this);
             Settings.InstanceCreated(instance);
 
@@ -66,8 +66,8 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         private AnalyzingResult run(LoaderBase loader, params Instance[] arguments)
         {
-            var context = new Execution.AnalyzingContext(this, loader, arguments);
-            context.FetchCallInstructions(new MethodID("EntryPoint", false), loader.EntryPoint);
+            var context = new Execution.AnalyzingContext(this, loader);
+            context.FetchCallInstructions(new MethodID("EntryPoint", false), loader.EntryPoint, arguments);
 
             while (!context.IsExecutionEnd)
             {

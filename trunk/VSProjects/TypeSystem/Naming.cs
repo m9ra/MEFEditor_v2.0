@@ -17,19 +17,19 @@ namespace TypeSystem
         public static MethodID Method<CalledType>(string methodName, params Type[] paramTypes)
         {
             var path = typeof(CalledType).FullName + "." + methodName;
-            return method(path, paramDescription(paramTypes));
+            return method(path, paramDescription(paramTypes), false);
         }
 
         public static MethodID Method(InstanceInfo declaringType, string methodName, params ParameterTypeInfo[] parameters)
         {
             var path = declaringType.TypeName + "." + methodName;
 
-            return method(path, paramDescription(parameters));
+            return method(path, paramDescription(parameters), false);
         }
 
-        private static MethodID method(string methodPath, string paramDescription)
+        private static MethodID method(string methodPath, string paramDescription, bool needsDynamicResolution)
         {
-            return new MethodID(string.Format("{0}{1}{2}", methodPath, PathSplit, paramDescription), false);
+            return new MethodID(string.Format("{0}{1}{2}", methodPath, PathSplit, paramDescription), needsDynamicResolution);
         }
 
         private static string paramDescription(params object[] parameters)
@@ -75,7 +75,7 @@ namespace TypeSystem
             GetParts(changedMethod, out path, out description);
 
             var methodName = GetMethodName(path);
-            return method(type.TypeName + "." + methodName, description);
+            return method(type.TypeName + "." + methodName, description, needsDynamicResolving);
         }
     }
 }

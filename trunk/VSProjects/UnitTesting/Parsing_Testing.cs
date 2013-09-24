@@ -105,7 +105,7 @@ namespace UnitTesting
 
 
         [TestMethod]
-        public void Emit_variableAssign()
+        public void Emit_VariableAssign()
         {
             AssemblyUtils.Run(@"
                 var test=""hello"";
@@ -116,7 +116,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_call()
+        public void Emit_Call()
         {
             AssemblyUtils.Run(@"
                 var test=ParsedMethod();
@@ -130,7 +130,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_staticCall()
+        public void Emit_StaticCall()
         {
             AssemblyUtils.Run(@"
                 var test=StaticClass.StaticMethod(""CallArg"");
@@ -158,7 +158,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_objectCall()
+        public void Emit_ObjectCall()
         {
             AssemblyUtils.Run(@"
                 var obj=""Test string"";
@@ -174,7 +174,7 @@ namespace UnitTesting
 
 
         [TestMethod]
-        public void Emit_objectCall_withArguments()
+        public void Emit_ObjectCall_WithArguments()
         {
             AssemblyUtils.Run(@"
                 var obj=""Object value"";
@@ -190,7 +190,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_objectCreation_fieldsUsage()
+        public void Emit_ObjectCreation_FieldsUsage()
         {
             AssemblyUtils.Run(@"
                 var obj=new TestObj(""input"");
@@ -272,6 +272,49 @@ namespace UnitTesting
             }, Method.String_NoParam)
 
             .AssertVariable("result").HasValue("Test2_GenericCallArg");
+        }
+
+        [TestMethod]
+        public void Emit_VirtualCall()
+        {
+            var collectionType = InstanceInfo.Create<ICollection<string>>();
+            var testParam = ParameterTypeInfo.Create("p", new InstanceInfo("Test"));
+            var methodDescription = new MethodDescription(collectionType, false, new[] { testParam });
+
+            AssemblyUtils.Run(@"
+                var test=new Test();
+                
+                var interface=Convert(test);
+                interface.Add(""AddedValue"");
+                var result=test.Get();
+            ")
+
+            .AddMethod("Test.Convert", (c) =>
+            {
+                c.Return(c.CurrentArguments[1]);
+            }, methodDescription)
+
+            .AddMethod("Test.#ctor", (c) => { }, Method.Ctor_NoParam)
+
+            .AddMethod("Test.Add", (c) =>
+            {
+                var thisInstance = c.CurrentArguments[0];
+                var arg = c.CurrentArguments[1];
+                c.SetField(thisInstance, "data", arg);
+            }, Method.Void_StringParam.Implements(typeof(ICollection<string>)))
+
+            .AddMethod("Test.Get", (c) =>
+            {
+                var thisInstance = c.CurrentArguments[0];
+                var inst = c.GetField(thisInstance, "data") as Instance;
+                c.Return(inst);
+            }, Method.String_NoParam)
+
+            .AddWrappedGenericToRuntime(typeof(ICollection<>))
+
+            .AssertVariable("result").HasValue("AddedValue");
+
+           ;
         }
 
         [TestMethod]

@@ -40,6 +40,26 @@ namespace TypeSystem.Core
             return result;
         }
 
+        internal GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
+        {
+            //resolving of .NET objects depends only on this object type
+            var methodImplementation = tryDynamicResolve(method, dynamicArgumentInfo[0]);
+
+            return StaticResolve(methodImplementation);
+        }
+
+        private MethodID tryDynamicResolve(MethodID method, InstanceInfo dynamicInfo)
+        {
+            var result = dynamicExplicitResolve(method, dynamicInfo);
+
+            if (result == null)
+            {
+                result = dynamicGenericResolve(method, dynamicInfo);
+            }
+
+            return result;
+        }
+
         private GeneratorBase tryStaticResolve(MethodID method)
         {
             var result = staticExplicitResolve(method);
@@ -49,7 +69,7 @@ namespace TypeSystem.Core
                 result = staticGenericResolve(method);
             }
 
-            return result;  
+            return result;
         }
 
         /// <summary>
@@ -59,14 +79,11 @@ namespace TypeSystem.Core
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
         private GeneratorBase staticGenericResolve(MethodID method)
         {
-            //test if method is generic
-            string path, paramDescr;
-            Naming.GetParts(method, out path, out paramDescr);
-
-            var searchPath = new PathInfo(path);
+            var searchPath = getSearchPath(method);
             if (!searchPath.HasGenericArguments)
                 //there is no need for generic resolving
                 return null;
+
 
             foreach (var assembly in _assemblies)
             {
@@ -99,6 +116,39 @@ namespace TypeSystem.Core
             return null;
         }
 
+        private MethodID dynamicGenericResolve(MethodID method, InstanceInfo dynamicInfo)
+        {
+            var searchPath = getSearchPath(method);
+            if (!searchPath.HasGenericArguments)
+                //there is no need for generic resolving
+                return null;
+
+            foreach (var assembly in _assemblies)
+            {
+                var implementation = assembly.GetGenericImplementation(method, searchPath, dynamicInfo);
+                if (implementation != null)
+                {
+                    //implementation has been found
+                    return implementation;
+                }
+            }
+            return null;
+        }
+
+        private MethodID dynamicExplicitResolve(MethodID method, InstanceInfo dynamicInfo)
+        {
+            foreach (var assembly in _assemblies)
+            {
+                var implementation = assembly.GetImplementation(method, dynamicInfo);
+                if (implementation != null)
+                {
+                    //implementation has been found
+                    return implementation;
+                }
+            }
+            return null;
+        }
+
         internal ComponentInfo GetComponentInfo(Instance instance)
         {
             ComponentInfo result;
@@ -106,10 +156,9 @@ namespace TypeSystem.Core
             return result;
         }
 
-
         internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
         {
-            //TODO needs dynamic resolving ?
+            //TODO implement through resolving routines
             var implementedMethod = Naming.ChangeDeclaringType(type, abstractMethod, false);
 
             var generator = tryStaticResolve(implementedMethod);
@@ -119,7 +168,6 @@ namespace TypeSystem.Core
 
             return implementedMethod;
         }
-
 
         internal MethodSearcher CreateSearcher()
         {
@@ -137,10 +185,19 @@ namespace TypeSystem.Core
             assembly.UnloadServices();
         }
 
-
         private void _onComponentAdded(InstanceInfo instanceInfo, ComponentInfo componentInfo)
         {
             _components.Add(instanceInfo, componentInfo);
         }
+
+        private static PathInfo getSearchPath(MethodID method)
+        {
+            //test if method is generic
+            string path, paramDescr;
+            Naming.GetParts(method, out path, out paramDescr);
+
+            return new PathInfo(path);
+        }
+
     }
 }

@@ -21,7 +21,6 @@ namespace Analyzing
             TypeName = typeName;
         }
 
-
         public InstanceInfo(Type type)
         {
             if (type.IsGenericType)
@@ -31,6 +30,7 @@ namespace Analyzing
             else if (type.IsArray)
             {
                 //TODO determine dimensions
+                //TODO array nesting and generics
                 TypeName = string.Format("Array<{0},1>", GenericTypeName(type.GetElementType()));
             }
             else

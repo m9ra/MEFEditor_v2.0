@@ -12,6 +12,7 @@ namespace TypeSystem
     {
         public readonly InstanceInfo ReturnType;
         public readonly ParameterTypeInfo[] Parameters;
+        public readonly IEnumerable<InstanceInfo> Implemented;
         public readonly bool IsStatic;
 
         public MethodDescription(InstanceInfo returnType, bool isStatic, params ParameterTypeInfo[] parameters)
@@ -19,6 +20,15 @@ namespace TypeSystem
             ReturnType = returnType;
             IsStatic = isStatic;
             Parameters = parameters;
+            Implemented = new InstanceInfo[0];
+        }
+
+        public MethodDescription(InstanceInfo returnType, bool isStatic, IEnumerable<InstanceInfo> implemented, params ParameterTypeInfo[] parameters)
+        {
+            ReturnType = returnType;
+            IsStatic = isStatic;
+            Parameters = parameters;
+            Implemented = implemented;
         }
 
         public TypeMethodInfo CreateInfo(string methodPath)
@@ -60,6 +70,33 @@ namespace TypeSystem
         public static MethodDescription CreateStatic<T>(params ParameterTypeInfo[] parameters)
         {
             return Create<T>(true, parameters);
+        }
+
+        public MethodDescription Implements(params Type[] types)
+        {
+            var implemented = new List<InstanceInfo>();
+            foreach (var type in types)
+            {
+                implemented.Add(new InstanceInfo(type));
+            }
+            return new MethodDescription(ReturnType, IsStatic, implemented, Parameters);
+        }
+
+        public MethodDescription WithReturn(Type type)
+        {
+            var returnInfo = new InstanceInfo(type);
+            return WithReturn(returnInfo);
+        }
+
+        public MethodDescription WithReturn(string returnTypeName)
+        {
+            var returnInfo = new InstanceInfo(returnTypeName);
+            return WithReturn(returnInfo);
+        }
+
+        public MethodDescription WithReturn(InstanceInfo returnInfo)
+        {
+            return new MethodDescription(returnInfo, IsStatic, Implemented, Parameters);
         }
     }
 }

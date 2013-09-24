@@ -34,10 +34,7 @@ namespace Analyzing.Execution.Instructions
             //run initializer generator
             var generator = context.GetGenerator(_initializator);
 
-            var args = Arguments.Values();
-            args.Initialize(_targetVariable);
-            context.PrepareCall(args);
-            context.FetchCallInstructions(_initializator, generator);            
+            context.FetchCallInstructions(_initializator, generator, new Instance[] { sharedInstance });
         }
 
         public override string ToString()
