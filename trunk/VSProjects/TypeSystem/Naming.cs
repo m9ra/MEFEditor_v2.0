@@ -40,10 +40,42 @@ namespace TypeSystem
 
         internal static void GetParts(MethodID method, out string path, out string paramDescription)
         {
-            var parts = method.MethodName.Split(new char[] { PathSplit }, 2);
+            var parts = method.MethodString.Split(new char[] { PathSplit }, 2);
 
             path = parts[0];
             paramDescription = parts[1];
+        }
+
+        public static string GetMethodName(MethodID method)
+        {
+            if (method == null)
+                return null;
+
+            string path, description;
+            GetParts(method, out path, out description);
+
+            return GetMethodName(path);
+        }
+
+        public static string GetMethodName(string methodPath)
+        {
+            if (methodPath == null)
+                return null;
+
+            var nameStart = methodPath.LastIndexOf('.');
+            if (nameStart < 0)
+                return null;
+
+            return methodPath.Substring(nameStart + 1);
+        }
+
+        public static MethodID ChangeDeclaringType(InstanceInfo type, MethodID changedMethod, bool needsDynamicResolving)
+        {
+            string path, description;
+            GetParts(changedMethod, out path, out description);
+
+            var methodName = GetMethodName(path);
+            return method(type.TypeName + "." + methodName, description);
         }
     }
 }

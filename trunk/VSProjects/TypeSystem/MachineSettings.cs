@@ -31,7 +31,7 @@ namespace TypeSystem
 
         public InstanceInfo GetNativeInfo(Type literalType)
         {
-            return new InstanceInfo(literalType.FullName);
+            return new InstanceInfo(literalType);
         }
 
         public InstanceInfo GetSharedInstanceInfo(string typeFullname)

@@ -32,12 +32,7 @@ namespace TypeSystem.Core
 
         internal GeneratorBase StaticResolve(MethodID method)
         {
-            var result = staticExplicitResolve(method);
-
-            if (result == null)
-            {
-                result = staticGenericResolve(method);
-            }
+            var result = tryStaticResolve(method);
 
             if (result == null)
                 throw new NotSupportedException("Invalid method: " + method);
@@ -45,18 +40,31 @@ namespace TypeSystem.Core
             return result;
         }
 
+        private GeneratorBase tryStaticResolve(MethodID method)
+        {
+            var result = staticExplicitResolve(method);
+
+            if (result == null)
+            {
+                result = staticGenericResolve(method);
+            }
+
+            return result;  
+        }
+
         /// <summary>
         /// Resolve method generator with generic search on given method ID
         /// </summary>
         /// <param name="method">Resolved method</param>
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
-        private GeneratorBase staticGenericResolve(MethodID method) {
+        private GeneratorBase staticGenericResolve(MethodID method)
+        {
             //test if method is generic
             string path, paramDescr;
             Naming.GetParts(method, out path, out paramDescr);
 
             var searchPath = new PathInfo(path);
-            if (!searchPath.HasGenericArguments) 
+            if (!searchPath.HasGenericArguments)
                 //there is no need for generic resolving
                 return null;
 
@@ -99,6 +107,20 @@ namespace TypeSystem.Core
         }
 
 
+        internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
+        {
+            //TODO needs dynamic resolving ?
+            var implementedMethod = Naming.ChangeDeclaringType(type, abstractMethod, false);
+
+            var generator = tryStaticResolve(implementedMethod);
+            if (generator == null)
+                //method is not implemented
+                return null;
+
+            return implementedMethod;
+        }
+
+
         internal MethodSearcher CreateSearcher()
         {
             return new MethodSearcher(_assemblies);
@@ -120,6 +142,5 @@ namespace TypeSystem.Core
         {
             _components.Add(instanceInfo, componentInfo);
         }
-
     }
 }

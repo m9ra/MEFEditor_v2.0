@@ -31,5 +31,10 @@ namespace TypeSystem
         {
             return _manager.GetComponentInfo(instance);
         }
+
+        public MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
+        {
+            return _manager.TryGetImplementation(type, abstractMethod);
+        }
     }
 }

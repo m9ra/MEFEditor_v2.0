@@ -42,10 +42,10 @@ namespace TypeSystem
             return setterID;
         }
 
-        public void AddManyImport(InstanceInfo importType, string setterName)
+        public void AddManyImport(InstanceInfo importType,InstanceInfo itemType, string setterName)
         {
             var setterID = getSetterID(importType, setterName);
-            _imports.Add(new Import(importType, setterID,true));
+            _imports.Add(new Import(importType,itemType, setterID,true));
         }
 
         public ComponentInfo BuildInfo()

@@ -141,10 +141,13 @@ namespace TypeSystem
         /// </summary>
         public InstanceInfo ImportType { get; private set; }
 
-        public ImportTypeInfo(InstanceInfo importType)
+        public ImportTypeInfo(InstanceInfo importType,InstanceInfo itemType=null)
         {
+            if (itemType == null)
+                itemType = importType;
+
             ImportType = importType;
-            ItemType = importType;
+            ItemType = itemType;
         }
     }
 
@@ -183,7 +186,15 @@ namespace TypeSystem
         public Import(InstanceInfo importType,MethodID setter,bool allowMany=false)
         {
             ImportTypeInfo = new ImportTypeInfo(importType);
-            Contract = ImportTypeInfo.ImportType.TypeName;
+            Contract = ImportTypeInfo.ItemType.TypeName;
+            Setter = setter;
+            AllowMany = allowMany;
+        }
+
+        public Import(InstanceInfo importType, InstanceInfo itemType, MethodID setter, bool allowMany = false)
+        {
+            ImportTypeInfo = new ImportTypeInfo(importType,itemType);
+            Contract =ImportTypeInfo.ItemType.TypeName;
             Setter = setter;
             AllowMany = allowMany;
         }

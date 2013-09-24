@@ -102,7 +102,7 @@ namespace MEFAnalyzers.CompositionEngine
                 {
                     var instStorage = getStorage(instArray[i]);
                     e.AssignLiteral(arrIndex, i);
-                    e.Call(setID, arrayStorage, Arguments.Values(arrIndex,instStorage));
+                    e.Call(setID, arrayStorage, Arguments.Values(arrIndex, instStorage));
                 }
             });
 
@@ -112,19 +112,39 @@ namespace MEFAnalyzers.CompositionEngine
             return array;
         }
 
-        internal IEnumerable<TypeMethodInfo> GetMethods(InstanceInfo metadataType)
+
+        internal IEnumerable<TypeMethodInfo> GetOverloads(InstanceInfo type, string methodName)
         {
-            throw new NotImplementedException();
+            var searcher = _services.CreateSearcher();
+            searcher.SetCalledObject(type);
+            searcher.Dispatch(methodName);
+
+            return searcher.FoundResult;
         }
 
-        internal IEnumerable<TypeMethodInfo> GetMethods(InstanceInfo instType, string getterName)
+        internal TypeMethodInfo GetMethod(InstanceInfo type, string methodName)
         {
-            throw new NotImplementedException();
+            var method = TryGetMethod(type, methodName);
+            if (method == null)
+                throw new NotSupportedException("Cannot get " + methodName + " method for " + type.TypeName);
+
+            return method;
+        }
+
+        internal TypeMethodInfo TryGetMethod(InstanceInfo type, string methodName)
+        {
+            var overloads = GetOverloads(type, methodName);
+            if (overloads.Count() != 1)
+            {
+                return null;
+            }
+
+            return overloads.First();
         }
 
         internal void Call(InstanceRef calledInstance, MethodID methodID, InstanceRef[] arguments)
         {
-            checkMethodID(methodID);
+            checkNull(methodID);
             var inst = getStorage(calledInstance);
             var args = getArgumentStorages(arguments);
 
@@ -133,7 +153,7 @@ namespace MEFAnalyzers.CompositionEngine
 
         internal InstanceRef CallWithReturn(InstanceRef calledInstance, MethodID methodID, InstanceRef[] arguments)
         {
-            checkMethodID(methodID);
+            checkNull(methodID);
             var inst = getStorage(calledInstance);
             var args = getArgumentStorages(arguments);
 
@@ -164,7 +184,7 @@ namespace MEFAnalyzers.CompositionEngine
             return Arguments.Values(argVars);
         }
 
-        private void checkMethodID(MethodID methodID)
+        private void checkNull(MethodID methodID)
         {
             if (methodID == null)
             {
@@ -182,6 +202,11 @@ namespace MEFAnalyzers.CompositionEngine
         {
             //TODO check for presence
             return string.Format("{0}_{1}", nameHint, _instanceStorages.Count);
+        }
+
+        internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
+        {            
+            return _services.TryGetImplementation(type, abstractMethod);
         }
     }
 

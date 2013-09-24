@@ -26,7 +26,7 @@ namespace TypeExperiments
         static internal TestingAssembly CompositionTester_ManyImport()
         {
             return AssemblyUtils.Run(@"        
-                var partImport=new ManyStringImport();       
+                var partImport=new ICollectionStringImport();       
                 var partExport=new StringExport(""ExportedValue"");
 
                 var test=new CompositionTester(partImport,partExport);   
@@ -35,8 +35,10 @@ namespace TypeExperiments
             ")
 
             .AddToRuntime<CompositionTesterDefinition>()
-            .AddToRuntime<ManyStringImport>()
+            .AddToRuntime<ICollectionStringImport>()
             .AddToRuntime<StringExport>()
+            .AddDirectToRuntime<List<string>>()
+            .AddDirectToRuntime<ICollection<string>>()
             ;
         }
 
@@ -50,7 +52,7 @@ namespace TypeExperiments
                    var result=arr[0];
                ")
 
-               .AddWrappedGenericToRuntime(typeof(List<>))               
+               .AddWrappedGenericToRuntime(typeof(List<>))
             ;
         }
 

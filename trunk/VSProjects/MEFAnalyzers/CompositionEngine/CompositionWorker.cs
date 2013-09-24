@@ -432,33 +432,34 @@ namespace MEFAnalyzers.CompositionEngine
         /// <returns></returns>
         private bool testMetaData(InstanceInfo metadataType, MetaExport meta)
         {
-            foreach (var setter in _context.GetMethods(metadataType))
-            {
-                if (setter.Parameters.Length != 1)
-                    //is not valid setter method
-                    continue;
-                var setterType = setter.Parameters[0].Type;
+            throw new NotImplementedException();
+            /*   foreach (var setter in _context.GetOverloads(metadataType))
+               {
+                   if (setter.Parameters.Length != 1)
+                       //is not valid setter method
+                       continue;
+                   var setterType = setter.Parameters[0].Type;
 
-                var name = setter.MethodName;
-                if (name.Length < 5 || name.Substring(0, 4) != "set_")
-                    //is not valid setter name
-                    continue;
+                   var name = setter.MethodName;
+                   if (name.Length < 5 || name.Substring(0, 4) != "set_")
+                       //is not valid setter name
+                       continue;
 
-                name = name.Substring(4);
+                   name = name.Substring(4);
 
-                if (meta == null)
-                    //cannot satisfy metaDataType
-                    return false;
+                   if (meta == null)
+                       //cannot satisfy metaDataType
+                       return false;
 
-                IEnumerable<Instance> data = null;
-                meta.Data.TryGetValue(name, out data);
+                   IEnumerable<Instance> data = null;
+                   meta.Data.TryGetValue(name, out data);
 
-                var metaToSet = getMetaInst(setterType, data, meta.IsMultiple(name));
-                if (metaToSet == null)
-                    //not matching types
-                    return false;
-            }
-            return true;
+                   var metaToSet = getMetaInst(setterType, data, meta.IsMultiple(name));
+                   if (metaToSet == null)
+                       //not matching types
+                       return false;
+               }
+               return true;*/
         }
 
 
@@ -538,7 +539,10 @@ namespace MEFAnalyzers.CompositionEngine
         {
             var imp = import.Point as Import;
 
-            import.Instance.Call(imp.Setter, createExport(import));
+            var export = createExport(import);
+
+            if (export != null)
+                import.Instance.Call(imp.Setter, export);
         }
         /// <summary>
         /// enqueue call importing/default constructor on instance
@@ -674,7 +678,7 @@ namespace MEFAnalyzers.CompositionEngine
 
 
             InstanceRef iCollectionToSet;
-            TypeMethodInfo addMethod;
+            MethodID addMethod;
 
             if (isICollectionImport(import, out iCollectionToSet, out addMethod))
             {
@@ -682,13 +686,13 @@ namespace MEFAnalyzers.CompositionEngine
                 if (iCollectionToSet == null)
                 {
                     //there is no collection which could be set.
-                    setWarning(import, "Cannot get ICollection object, for importing exports.");
+                    setError(import, "Cannot get ICollection object, for importing exports.");
                     return null;
                 }
 
                 foreach (var exportedValue in exportValues)
                 {
-                    iCollectionToSet.Call(addMethod.MethodID, exportedValue);
+                    iCollectionToSet.Call(addMethod, exportedValue);
                 }
 
                 //because it will be set via setter
@@ -702,53 +706,46 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
 
-        private bool isICollectionImport(JoinPoint import, out InstanceRef iCollectionToSet, out TypeMethodInfo addMethod)
+        private bool isICollectionImport(JoinPoint import, out InstanceRef iCollectionToSet, out MethodID addMethod)
         {
             var imp = import.Point as Import;
 
-            /*  TypeMethodInfo addingMethod = null;
-              imp.ImportTypeInfo.ImportType.ForEachBaseType((fullname) =>
-              {
-                  addingMethod = Tools.GetCollectionAdd(fullname);
-                  return addingMethod != null;
-              });
-              addMethod = addingMethod;
-              iCollectionToSet = null;
+            var itemType = imp.ImportTypeInfo.ItemType;
+            var collectionTypeName = string.Format("System.Collections.Generic.ICollection<{0}>", itemType.TypeName);
+            var collectionType = new InstanceInfo(collectionTypeName);
+            var collectionAddMethod = _context.GetMethod(collectionType, "Add").MethodID;
 
-              if (addMethod == null)
-                  //cannot resolve type is ICollection
-                  return false;
+            addMethod = _context.TryGetImplementation(imp.ImportTypeInfo.ImportType, collectionAddMethod);
 
-              iCollectionToSet = getImportInstance(import);
-
-              return true;*/
-            //TODO implement
             iCollectionToSet = null;
-            addMethod = null;
+            if (addMethod == null)
+                //cannot resolve type as ICollection
+                return false;
 
-            return false;
+            iCollectionToSet = getImportInstance(import);
+            return true;
         }
 
-        private Instance getImportInstance(JoinPoint import)
+        private InstanceRef getImportInstance(JoinPoint import)
         {
             var imp = import.Point as Import;
 
             var setter = imp.Setter;
-            if (setter == null || !setter.MethodName.StartsWith("set_"))
+            var setterName = Naming.GetMethodName(setter);
+            if (setterName == null || !setterName.StartsWith("set_"))
                 //cannot find setter -> cannot get getter
                 return null;
 
-            var getterName = "get_" + setter.MethodName.Substring(4);
+            var getterName = "get_" + setterName.Substring(4);
             var instType = import.Instance.Type;
 
-            var overloads = _context.GetMethods(instType, getterName);
-            if (overloads == null || overloads.Count() != 1)
+            var getter = _context.TryGetMethod(instType, getterName);
+            if (getter == null)
                 //cannot resolve getter overload
                 return null;
 
 
-            //return import.Instance.CallMethod(overloads[0], new CallInfo(_context.Context));
-            throw new NotImplementedException();
+            return import.Instance.CallWithReturn(getter.MethodID);
         }
 
         /// <summary>
@@ -763,6 +760,7 @@ namespace MEFAnalyzers.CompositionEngine
 
         private void setError(JoinPoint point, string error)
         {
+            _failed = true;
             if (point.Error != null)
             {
                 if (point.Error.Contains(error))
@@ -801,7 +799,7 @@ namespace MEFAnalyzers.CompositionEngine
             var points = _componentsStorage.GetPoints();
 
             if (_componentsStorage.Failed)
-                return new CompositionResult(joins, points,_context.Generator, _componentsStorage.Error);
+                return new CompositionResult(joins, points, _context.Generator, _componentsStorage.Error);
 
             string error = null;
             if (_failed)
