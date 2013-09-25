@@ -31,10 +31,7 @@ namespace Analyzing.Execution.Instructions
             var sharedInstance = context.Machine.CreateInstance(_sharedInstanceInfo);
             context.SetValue(_targetVariable, sharedInstance);
 
-            //run initializer generator
-            var generator = context.GetGenerator(_initializator);
-
-            context.FetchCallInstructions(_initializator, generator, new Instance[] { sharedInstance });
+            context.FetchCall(_initializator, new Instance[] { sharedInstance });
         }
 
         public override string ToString()

@@ -25,18 +25,8 @@ namespace Analyzing.Execution.Instructions
         public override void Execute(AnalyzingContext context)
         {
             var argumentValues = context.GetArguments(_arguments);
-            InstanceInfo[] dynamicInfo = null;
-            if (_method.NeedsDynamicResolving)
-            {
-                dynamicInfo = new InstanceInfo[argumentValues.Length];
-                for (int i = 0; i < dynamicInfo.Length; ++i)
-                {
-                    dynamicInfo[i] = argumentValues[i].Info;
-                }
-            }
-
-            var generator = context.GetGenerator(_method, dynamicInfo);
-            context.FetchCallInstructions(_method, generator, argumentValues);
+           
+            context.FetchCall(_method,argumentValues);
         }
 
         public override string ToString()

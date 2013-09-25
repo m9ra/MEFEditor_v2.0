@@ -12,6 +12,8 @@ namespace TypeSystem.Runtime.Building
     {
         internal readonly TypeMethodInfo MethodInfo;
 
+        internal readonly IEnumerable<Type> ImplementTypes;
+
         private readonly DirectMethod _method;
 
         /// <summary>
@@ -19,10 +21,21 @@ namespace TypeSystem.Runtime.Building
         /// </summary>
         /// <param name="method">Method represented by this generator</param>
         /// <param name="methodInfo">Info of represented method</param>
-        internal RuntimeMethodGenerator(DirectMethod method, TypeMethodInfo methodInfo)
+        internal RuntimeMethodGenerator(DirectMethod method, TypeMethodInfo methodInfo, IEnumerable<Type> implementTypes)
         {
             MethodInfo = methodInfo;
+            ImplementTypes = implementTypes;
             _method = method;
+        }
+
+        internal IEnumerable<InstanceInfo> Implemented()
+        {
+            var implementedTypes = new List<InstanceInfo>();
+            foreach (var implemented in ImplementTypes)
+            {
+                implementedTypes.Add(new InstanceInfo(implemented));
+            }
+            return implementedTypes;
         }
 
         protected override void generate(EmitterBase emitter)
@@ -35,9 +48,11 @@ namespace TypeSystem.Runtime.Building
             return (searchPath, info) =>
             {
                 var genericMethod = info.MakeGenericMethod(searchPath);
-                var generator = new RuntimeMethodGenerator(_method, genericMethod);
+                var generator = new RuntimeMethodGenerator(_method, genericMethod, ImplementTypes);
                 return new MethodItem(generator, genericMethod);
             };
         }
+
+
     }
 }

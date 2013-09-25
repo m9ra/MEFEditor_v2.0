@@ -58,7 +58,7 @@ namespace TypeSystem.Runtime.Building
         internal RuntimeMethodGenerator CreateGenerator()
         {
             var directMethod = buildDirectMethod();
-            return new RuntimeMethodGenerator(directMethod, createMethodInfo());
+            return new RuntimeMethodGenerator(directMethod, createMethodInfo(), new Type[0]);
         }
 
         #endregion

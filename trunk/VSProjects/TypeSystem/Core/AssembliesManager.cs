@@ -43,12 +43,12 @@ namespace TypeSystem.Core
         internal GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             //resolving of .NET objects depends only on this object type
-            var methodImplementation = tryDynamicResolve(method, dynamicArgumentInfo[0]);
+            var methodImplementation = tryDynamicResolve(dynamicArgumentInfo[0], method);
 
             return StaticResolve(methodImplementation);
         }
 
-        private MethodID tryDynamicResolve(MethodID method, InstanceInfo dynamicInfo)
+        private MethodID tryDynamicResolve(InstanceInfo dynamicInfo, MethodID method)
         {
             var result = dynamicExplicitResolve(method, dynamicInfo);
 
@@ -158,15 +158,7 @@ namespace TypeSystem.Core
 
         internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
         {
-            //TODO implement through resolving routines
-            var implementedMethod = Naming.ChangeDeclaringType(type, abstractMethod, false);
-
-            var generator = tryStaticResolve(implementedMethod);
-            if (generator == null)
-                //method is not implemented
-                return null;
-
-            return implementedMethod;
+            return tryDynamicResolve(type, abstractMethod);
         }
 
         internal MethodSearcher CreateSearcher()

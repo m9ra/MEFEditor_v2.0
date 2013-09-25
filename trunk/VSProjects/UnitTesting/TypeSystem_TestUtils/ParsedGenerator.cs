@@ -52,7 +52,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         private MethodItem genericMethodProvider(PathInfo searchPath, TypeMethodInfo genericMethod)
         {
-            var newMethod = genericMethod.MakeGenericMethod(searchPath);            
+            var newMethod = genericMethod.MakeGenericMethod(searchPath);
             var newGenerator = new ParsedGenerator(newMethod, Source, _services);
             return new MethodItem(newGenerator, newMethod);
         }

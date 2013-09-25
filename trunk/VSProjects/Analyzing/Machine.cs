@@ -67,7 +67,7 @@ namespace Analyzing
         private AnalyzingResult run(LoaderBase loader, params Instance[] arguments)
         {
             var context = new Execution.AnalyzingContext(this, loader);
-            context.FetchCallInstructions(new MethodID("EntryPoint", false), loader.EntryPoint, arguments);
+            context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);
 
             while (!context.IsExecutionEnd)
             {

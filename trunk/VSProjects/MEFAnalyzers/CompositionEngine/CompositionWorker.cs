@@ -705,7 +705,6 @@ namespace MEFAnalyzers.CompositionEngine
             }
         }
 
-
         private bool isICollectionImport(JoinPoint import, out InstanceRef iCollectionToSet, out MethodID addMethod)
         {
             var imp = import.Point as Import;

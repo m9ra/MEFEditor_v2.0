@@ -14,7 +14,7 @@ namespace TypeSystem
     {
         public readonly GenericMethodProvider MethodProvider;
         public readonly GeneratorBase Generator;
-        public readonly TypeMethodInfo Info;
+        public readonly TypeMethodInfo Info;        
 
         public MethodItem(GeneratorBase generator, TypeMethodInfo info)
         {

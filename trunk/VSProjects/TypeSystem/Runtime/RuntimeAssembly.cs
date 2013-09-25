@@ -52,7 +52,7 @@ namespace TypeSystem.Runtime
 
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
             arrayDefinition.IsGeneric = true;
-            arrayDefinition.ForcedInfo = new InstanceInfo("Array<ItemType,Dimension>");            
+            arrayDefinition.ForcedInfo = new InstanceInfo("Array<ItemType,Dimension>");
             AddDirectDefinition<Array<InstanceWrap>>(arrayDefinition);
         }
 
@@ -134,14 +134,12 @@ namespace TypeSystem.Runtime
 
         public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
         {
-          //  throw new NotImplementedException();
-            return null;
+            return _runtimeMethods.GetImplementation(method, dynamicInfo);
         }
 
         public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
         {
-            //throw new NotImplementedException();
-            return null;
+            return _runtimeMethods.GetGenericImplementation(method, searchPath, dynamicInfo);
         }
 
         #endregion
@@ -170,7 +168,7 @@ namespace TypeSystem.Runtime
                 {
                     item = new MethodItem(generator, generator.MethodInfo);
                 }
-                _runtimeMethods.AddItem(item);
+                _runtimeMethods.AddItem(item, generator.Implemented());
             }
         }
 

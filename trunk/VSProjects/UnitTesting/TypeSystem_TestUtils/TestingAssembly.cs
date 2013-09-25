@@ -24,8 +24,6 @@ namespace UnitTesting.TypeSystem_TestUtils
         List<EditAction> _editActions = new List<EditAction>();
         List<ResultAction> _userActions = new List<ResultAction>();
 
-        Dictionary<MethodID, MethodID> _explicitImplementations = new Dictionary<MethodID, MethodID>();
-
         internal readonly TestAssemblyCollection Assemblies;
 
         internal readonly AssemblyLoader Loader;
@@ -56,11 +54,11 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public TestingAssembly AddMethod(string methodPath, string code, MethodDescription description)
         {
-            var methodInfo = description.CreateInfo(methodPath);
+            var methodInfo = buildDescription(description, methodPath);
 
-            var source = new Source("{" + code + "}",methodInfo);
-            var method = new ParsedGenerator(methodInfo, source, TypeServices);            
-            addMethod(method, methodInfo);
+            var source = new Source("{" + code + "}", methodInfo);
+            var method = new ParsedGenerator(methodInfo, source, TypeServices);
+            addMethod(method, methodInfo, description.Implemented);
 
             return this;
         }
@@ -71,11 +69,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             var methodInfo = buildDescription(description, methodPath);
 
             var method = new DirectGenerator(source);
-            addMethod(method, methodInfo);
+            addMethod(method, methodInfo, description.Implemented);
 
             return this;
         }
-        
+
         public TestingAssembly AddToRuntime<T>()
             where T : DataTypeDefinition
         {
@@ -96,7 +94,8 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// </summary>
         /// <param name="genericType">Type which generic arguments will be substituted by WrappedInstance</param>
         /// <returns></returns>
-        public TestingAssembly AddWrappedGenericToRuntime(Type genericType) {
+        public TestingAssembly AddWrappedGenericToRuntime(Type genericType)
+        {
 
             SettingsProvider.AddDirectType(Runtime, typeof(DirectTypeDefinition<>), genericType);
             return this;
@@ -148,45 +147,38 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
         {
-            MethodID implementation;
-            _explicitImplementations.TryGetValue(method, out implementation);
-            return implementation;
+            return _methods.GetImplementation(method, dynamicInfo);
         }
 
         public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
         {
-            throw new NotImplementedException();
+            return _methods.GetGenericImplementation(method, searchPath, dynamicInfo);
         }
 
         #endregion
 
         #region Private utils
 
-        private TypeMethodInfo buildDescription(MethodDescription description,string methodPath)
+        private TypeMethodInfo buildDescription(MethodDescription description, string methodPath)
         {
-            var info= description.CreateInfo(methodPath);
-            foreach (var implementedType in description.Implemented)
-            {
-                var implementedMethod = Naming.ChangeDeclaringType(implementedType, info.MethodID, true);
-                _explicitImplementations[implementedMethod] = info.MethodID;
-            }
-
+            var info = description.CreateInfo(methodPath);
             return info;
         }
 
-        private void addMethod(GeneratorBase method, TypeMethodInfo info)
+        private void addMethod(GeneratorBase method, TypeMethodInfo info, IEnumerable<InstanceInfo> implementedTypes)
         {
+            var implemented = implementedTypes.ToArray();
             if (info.HasGenericParameters)
             {
                 var genericMethod = method as GenericMethodGenerator;
-                _methods.AddItem(new MethodItem(genericMethod.GetProvider(), info));
+                _methods.AddItem(new MethodItem(genericMethod.GetProvider(), info), implemented);
             }
             else
             {
-                _methods.AddItem(new MethodItem(method, info));
+                _methods.AddItem(new MethodItem(method, info), implemented);
             }
         }
 
-        #endregion        
+        #endregion
     }
 }

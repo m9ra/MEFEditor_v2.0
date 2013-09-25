@@ -95,8 +95,20 @@ namespace Analyzing.Execution
         /// <param name="arguments">Names of variables where arguments are stored</param>
         /// </summary>
         /// <param name="generator">Generator of fetched instructions</param>
-        internal void FetchCallInstructions(MethodID name, GeneratorBase generator, Instance[] argumentValues)
+        internal void FetchCall(MethodID name, Instance[] argumentValues)
         {
+            InstanceInfo[] dynamicInfo = null;
+            if (name.NeedsDynamicResolving)
+            {
+                dynamicInfo = new InstanceInfo[argumentValues.Length];
+                for (int i = 0; i < dynamicInfo.Length; ++i)
+                {
+                    dynamicInfo[i] = argumentValues[i].Info;
+                }
+            }
+
+            var generator = getGenerator(name, dynamicInfo);
+
             pushCall(name, generator, argumentValues);
         }
 
@@ -153,7 +165,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="methodName">Name of method generator</param>
         /// <returns>Instruction generator for given name</returns>
-        internal GeneratorBase GetGenerator(MethodID method, params InstanceInfo[] arguments)
+        private GeneratorBase getGenerator(MethodID method, InstanceInfo[] arguments)
         {
             if (method.NeedsDynamicResolving)
             {

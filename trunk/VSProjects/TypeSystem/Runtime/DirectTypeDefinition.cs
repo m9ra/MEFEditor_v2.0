@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq.Expressions;
 
+using Utilities;
+
 using Analyzing;
 using Analyzing.Execution;
 
@@ -62,9 +64,9 @@ namespace TypeSystem.Runtime
         /// </summary>
         /// <param name="method">Added direct method which is invoked on method call</param>
         /// <param name="methodInfo">Info of added method</param>
-        protected void AddMethod(DirectMethod method, TypeMethodInfo methodInfo)
+        protected void AddMethod(DirectMethod method, TypeMethodInfo methodInfo, params Type[] implementTypes)
         {
-            _explicitGenerators.Add(new RuntimeMethodGenerator(method, methodInfo));
+            _explicitGenerators.Add(new RuntimeMethodGenerator(method, methodInfo, implementTypes.ToArray()));
         }
 
         /// <summary>
@@ -119,7 +121,7 @@ namespace TypeSystem.Runtime
                     TypeInfo, "#ctor",
                     returnInfo, paramsInfo.ToArray(),
                     false, IsGeneric);
-                yield return new RuntimeMethodGenerator(directMethod, info);
+                yield return new RuntimeMethodGenerator(directMethod, info, new Type[0]);
             }
         }
 
@@ -130,13 +132,28 @@ namespace TypeSystem.Runtime
         /// <returns>Generated methods</returns>
         private IEnumerable<RuntimeMethodGenerator> generatePublicMethods(Type type)
         {
+            //Get method mapping
+            var methodMapping = new MultiDictionary<MethodInfo, Type>();
+            if (!type.IsInterface)
+            {
+                foreach (var implementedInterface in type.GetInterfaces())
+                {
+                    //TODO generics
+                    var map = type.GetInterfaceMap(implementedInterface);
+                    foreach (var method in map.TargetMethods)
+                    {
+                        methodMapping.Add(method, map.InterfaceType);
+                    }
+                }
+            }
+
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
                 if (!isInDirectCover(method))
                     continue;
 
                 var methodDefinition = method;
-                if (method.IsGenericMethod)
+                if (IsGeneric && method.IsGenericMethod)
                     methodDefinition = method.GetGenericMethodDefinition();
 
                 var directMethod = generateDirectMethod(methodDefinition);
@@ -147,11 +164,10 @@ namespace TypeSystem.Runtime
                 var info = new TypeMethodInfo(
                     TypeInfo, methodDefinition.Name,
                     returnInfo, paramsInfo.ToArray(),
-                    methodDefinition.IsStatic, IsGeneric,isAbstract);
+                    methodDefinition.IsStatic, IsGeneric, isAbstract);
 
-                
 
-                yield return new RuntimeMethodGenerator(directMethod, info);
+                yield return new RuntimeMethodGenerator(directMethod, info, methodMapping.Get(method));
             }
         }
 
@@ -228,7 +244,7 @@ namespace TypeSystem.Runtime
                     var machine = Expression.PropertyOrField(contextParameter, "Machine");
                     var instanceInfo = Expression.Constant(new InstanceInfo(returnType));
                     if (returnType.IsArray)
-                    {                        
+                    {
                         var arrayWrapType = typeof(Array<InstanceWrap>);
                         var arrayWrapCtor = arrayWrapType.GetConstructor(new Type[] { typeof(IEnumerable), contextType });
                         returnValue = Expression.New(arrayWrapCtor, returnValue, contextParameter);
