@@ -36,5 +36,10 @@ namespace AssemblyProviders.CSharp
         {
             throw new NotImplementedException();
         }
+
+        public override InheritanceChain GetInheritanceChain(PathInfo typePath)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

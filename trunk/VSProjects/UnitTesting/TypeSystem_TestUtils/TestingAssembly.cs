@@ -155,6 +155,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             return _methods.GetGenericImplementation(methodID, methodSearchPath, implementingTypePath);
         }
 
+        public override InheritanceChain GetInheritanceChain(PathInfo typePath)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Private utils

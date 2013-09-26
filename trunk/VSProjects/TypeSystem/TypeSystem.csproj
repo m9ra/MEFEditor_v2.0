@@ -46,6 +46,7 @@
     <Compile Include="DirectGenerator.cs" />
     <Compile Include="Core\AssembliesManager.cs" />
     <Compile Include="HashedMethodContainer.cs" />
+    <Compile Include="InheritanceChain.cs" />
     <Compile Include="MethodDescription.cs" />
     <Compile Include="PathInfo.cs" />
     <Compile Include="InstanceWrap.cs" />

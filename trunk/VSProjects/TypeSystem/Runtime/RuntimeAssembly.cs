@@ -142,6 +142,11 @@ namespace TypeSystem.Runtime
             return _runtimeMethods.GetGenericImplementation(methodID, methodSearchPath,implementingTypePath);
         }
 
+        public override InheritanceChain GetInheritanceChain(PathInfo typePath)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region TypeDefinition building

@@ -32,6 +32,8 @@ namespace TypeSystem
 
         public abstract MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath);
 
+        public abstract InheritanceChain GetInheritanceChain(PathInfo typePath);
+
         #endregion
 
         protected void ReportInvalidation(MethodID name)
@@ -79,7 +81,5 @@ namespace TypeSystem
         {
             TypeServices = null;
         }
-
-
     }
 }

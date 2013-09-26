@@ -21,14 +21,16 @@ namespace TypeSystem.Core
             _services = new TypeServices(this);
 
             _assemblies = assemblies;
-            _assemblies.OnAdd += onAssemblyAdd;
-            _assemblies.OnRemove += onAssemblyRemove;
+            _assemblies.OnAdd += _onAssemblyAdd;
+            _assemblies.OnRemove += _onAssemblyRemove;
 
             foreach (var assembly in _assemblies)
             {
-                onAssemblyAdd(assembly);
+                _onAssemblyAdd(assembly);
             }
         }
+
+        #region Internal methods for accessing assemblies
 
         internal GeneratorBase StaticResolve(MethodID method)
         {
@@ -51,6 +53,57 @@ namespace TypeSystem.Core
 
             return methodImplementation;
         }
+
+        /// <summary>
+        /// Determine that assignedType can be assigned into variable with targetTypeName without any conversion calls (implicit nor explicit)
+        /// Only tests inheritance
+        /// </summary>
+        /// <param name="targetTypeName">Name of target variable type</param>
+        /// <param name="assignedTypeName">Name of assigned type</param>
+        /// <returns>True if assigned type is assignable, false otherwise</returns>
+        internal bool IsAssignable(string targetTypeName, string assignedTypeName)
+        {
+            if (targetTypeName == assignedTypeName)
+                return true;
+
+            var typePath = new PathInfo(targetTypeName);
+            foreach (var assembly in _assemblies)
+            {
+                var inheritanceChain = assembly.GetInheritanceChain(typePath);
+
+                if (inheritanceChain != null)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            throw new NotSupportedException("For type: " + targetTypeName + " there is no inheritance chain");
+        }
+
+        internal ComponentInfo GetComponentInfo(Instance instance)
+        {
+            ComponentInfo result;
+            _components.TryGetValue(instance.Info, out result);
+            return result;
+        }
+
+        internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
+        {
+            return tryDynamicResolve(type, abstractMethod);
+        }
+
+        /// <summary>
+        /// Creates method searcher, which can search in referenced assemblies
+        /// </summary>
+        /// <returns>Created method searcher</returns>
+        internal MethodSearcher CreateSearcher()
+        {
+            return new MethodSearcher(_assemblies);
+        }
+
+        #endregion
+
+        #region Private utility methods
 
         private MethodID tryDynamicResolve(InstanceInfo dynamicInfo, MethodID method)
         {
@@ -155,31 +208,17 @@ namespace TypeSystem.Core
             }
             return null;
         }
+        #endregion
 
-        internal ComponentInfo GetComponentInfo(Instance instance)
-        {
-            ComponentInfo result;
-            _components.TryGetValue(instance.Info, out result);
-            return result;
-        }
+        #region Event handlers
 
-        internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
-        {
-            return tryDynamicResolve(type, abstractMethod);
-        }
-
-        internal MethodSearcher CreateSearcher()
-        {
-            return new MethodSearcher(_assemblies);
-        }
-
-        private void onAssemblyAdd(AssemblyProvider assembly)
+        private void _onAssemblyAdd(AssemblyProvider assembly)
         {
             assembly.SetServices(_services);
             assembly.OnComponentAdded += _onComponentAdded;
         }
 
-        private void onAssemblyRemove(AssemblyProvider assembly)
+        private void _onAssemblyRemove(AssemblyProvider assembly)
         {
             assembly.UnloadServices();
         }
@@ -188,5 +227,7 @@ namespace TypeSystem.Core
         {
             _components.Add(instanceInfo, componentInfo);
         }
+
+        #endregion
     }
 }

@@ -59,17 +59,14 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
         /// <summary>
-        /// Determine that testedType is type(C# is operator type is testedType)
+        /// Determine that testedType is type(C# is operator analogy 'type is testedType')
         /// </summary>
         /// <param name="testedType"></param>
         /// <param name="testedType"></param>
         /// <returns></returns>
         internal bool IsOfType(InstanceInfo testedType, string type)
         {
-            if (testedType.TypeName == type)
-                return true;
-
-            throw new NotImplementedException();
+            return _services.IsAssignable(testedType.TypeName, type);
         }
 
         internal bool IsOfType(InstanceInfo testedtype, InstanceInfo type)
@@ -205,7 +202,7 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
         internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
-        {            
+        {
             return _services.TryGetImplementation(type, abstractMethod);
         }
     }
