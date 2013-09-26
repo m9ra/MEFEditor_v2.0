@@ -17,7 +17,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly static ParameterTypeInfo IntParam1 = ParameterTypeInfo.Create("n", InstanceInfo.Create<int>());
 
-
+        public readonly static ParameterTypeInfo StringICollectionParam1 = ParameterTypeInfo.Create("c", InstanceInfo.Create<InstanceInfo>());
+            
         
 
         public readonly static MethodDescription Void_NoParam = new MethodDescription(InstanceInfo.Void, false);
@@ -38,6 +39,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly static MethodDescription Ctor_StringParam = Void_StringParam;
 
+        public readonly static MethodDescription StringICollection_StringICollectionParam = MethodDescription.CreateInstance<ICollection<string>>(StringICollectionParam1);
+            
 
 
         public readonly static string EntryMethodPath = "Test.EntryMethod";

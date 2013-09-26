@@ -69,13 +69,23 @@ namespace TypeSystem
             return methodPath.Substring(nameStart + 1);
         }
 
-        public static MethodID ChangeDeclaringType(InstanceInfo type, MethodID changedMethod, bool needsDynamicResolving)
+
+        internal static PathInfo GetMethodPath(MethodID method)
+        {
+            string path, paramDescr;
+            Naming.GetParts(method, out path, out paramDescr);
+
+            return new PathInfo(path);
+        }
+
+        public static MethodID ChangeDeclaringType(string typeName, MethodID changedMethod, bool needsDynamicResolving)
         {
             string path, description;
             GetParts(changedMethod, out path, out description);
 
             var methodName = GetMethodName(path);
-            return method(type.TypeName + "." + methodName, description, needsDynamicResolving);
+            return method(typeName + "." + methodName, description, needsDynamicResolving);
         }
+
     }
 }

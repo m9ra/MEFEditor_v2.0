@@ -14,22 +14,46 @@ namespace TypeSystem
     {
         readonly private MultiDictionary<string, MethodItem> _methodPaths = new MultiDictionary<string, MethodItem>();
         readonly private Dictionary<MethodID, MethodItem> _methodIds = new Dictionary<MethodID, MethodItem>();
+
         readonly private Dictionary<Tuple<InstanceInfo, MethodID>, MethodID> _explicitImplementations = new Dictionary<Tuple<InstanceInfo, MethodID>, MethodID>();
+        readonly private Dictionary<Tuple<string, string>, MethodItem> _genericImplementations = new Dictionary<Tuple<string, string>, MethodItem>();
 
         public void AddItem(MethodItem item, IEnumerable<InstanceInfo> implementedTypes)
         {
-            foreach (var implementedType in implementedTypes)
-            {
-                var implementedMethod = Naming.ChangeDeclaringType(implementedType, item.Info.MethodID, true);
-                var implementsEntry = Tuple.Create(item.Info.DeclaringType, implementedMethod);
-                _explicitImplementations.Add(implementsEntry, item.Info.MethodID);
-            }
+            registerImplementedMethods(item, implementedTypes);
 
             //TODO better id's to avoid loosing methods
             if (!_methodIds.ContainsKey(item.Info.MethodID))
                 _methodIds.Add(item.Info.MethodID, item);
 
             _methodPaths.Add(item.Info.Path.Signature, item);
+        }
+
+        private void registerImplementedMethods(MethodItem item, IEnumerable<InstanceInfo> implementedTypes)
+        {
+            foreach (var implementedType in implementedTypes)
+            {
+                var implementingType = item.Info.DeclaringType;
+                var implementingMethodID = item.Info.MethodID;
+
+                if (!item.Info.HasGenericParameters)
+                {
+                    var implementedMethod = Naming.ChangeDeclaringType(implementedType.TypeName, implementingMethodID, true);
+                    var implementsEntry = Tuple.Create(implementingType, implementedMethod);
+                    _explicitImplementations.Add(implementsEntry, implementingMethodID);
+                }
+                else
+                {
+                    //TODO parse out only real generic parameters
+                    var implementingPath = new PathInfo(implementingType.TypeName);                    
+                    var genericImplementedMethod = Naming.ChangeDeclaringType(implementedType.TypeName, implementingMethodID, true);
+                    var implementedMethodPath = Naming.GetMethodPath(genericImplementedMethod);
+
+
+                    var genericImplementsEntry = Tuple.Create(implementingPath.Signature, implementedMethodPath.Signature);
+                    _genericImplementations.Add(genericImplementsEntry, item);
+                }
+            }
         }
 
         public IEnumerable<TypeMethodInfo> AccordingPath(PathInfo path)
@@ -71,18 +95,29 @@ namespace TypeSystem
 
         public MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
         {
-            MethodID implementation;
-
             var implementationEntry = Tuple.Create(dynamicInfo, method);
+
+            MethodID implementation;
             _explicitImplementations.TryGetValue(implementationEntry, out implementation);
 
             return implementation;
         }
 
-        public MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
+        public MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
             //TODO: throw new NotImplementedException();
-            return null;
+            var implementationEntry = Tuple.Create(implementingTypePath.Signature, methodSearchPath.Signature);
+
+            MethodItem implementation;
+            if (!_genericImplementations.TryGetValue(implementationEntry, out implementation))
+                //implementation not found
+                return null;
+
+            var implementingMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID,false);
+            var implementingMethodPath = Naming.GetMethodPath(implementingMethod);
+            var genericImplementation = implementation.MethodProvider(implementingMethodPath, implementation.Info);
+
+            return genericImplementation.Info.MethodID;
         }
 
         private IEnumerable<MethodItem> accordingPath(PathInfo path)

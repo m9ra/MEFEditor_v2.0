@@ -29,7 +29,7 @@ namespace Analyzing
         /// </summary>
         /// <param name="method">Resolved method</param>
         /// <param name="dynamicArgumentInfo">Dynamic argument info, collected from argument instances</param>
-        /// <returns>Resolved method</returns>
-        public abstract GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo);
+        /// <returns>Resolved method which will be asked for generator by StaticResolve</returns>
+        public abstract MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo);
     }
 }

@@ -30,7 +30,7 @@ namespace TypeSystem
             return _assemblies.StaticResolve(method);
         }
 
-        public override GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
+        public override MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             return _assemblies.DynamicResolve(method, dynamicArgumentInfo);
         }

@@ -40,12 +40,16 @@ namespace TypeSystem.Core
             return result;
         }
 
-        internal GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
+        internal MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
-            //resolving of .NET objects depends only on this object type
-            var methodImplementation = tryDynamicResolve(dynamicArgumentInfo[0], method);
+            //resolving of .NET objects depends only on called object type
+            var calledObjectType = dynamicArgumentInfo[0];
+            var methodImplementation = tryDynamicResolve(calledObjectType, method);
 
-            return StaticResolve(methodImplementation);
+            if (methodImplementation == null)
+                throw new NotSupportedException("Doesn't have " + calledObjectType + " implementation for: " + method);
+
+            return methodImplementation;
         }
 
         private MethodID tryDynamicResolve(InstanceInfo dynamicInfo, MethodID method)
@@ -79,7 +83,7 @@ namespace TypeSystem.Core
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
         private GeneratorBase staticGenericResolve(MethodID method)
         {
-            var searchPath = getSearchPath(method);
+            var searchPath = Naming.GetMethodPath(method);
             if (!searchPath.HasGenericArguments)
                 //there is no need for generic resolving
                 return null;
@@ -118,14 +122,17 @@ namespace TypeSystem.Core
 
         private MethodID dynamicGenericResolve(MethodID method, InstanceInfo dynamicInfo)
         {
-            var searchPath = getSearchPath(method);
+            var searchPath = Naming.GetMethodPath(method);
             if (!searchPath.HasGenericArguments)
                 //there is no need for generic resolving
                 return null;
 
+            var methodSignature = Naming.ChangeDeclaringType(searchPath.Signature, method, true);
+            var typePath = new PathInfo(dynamicInfo.TypeName);
+
             foreach (var assembly in _assemblies)
             {
-                var implementation = assembly.GetGenericImplementation(method, searchPath, dynamicInfo);
+                var implementation = assembly.GetGenericImplementation(method,searchPath, typePath);
                 if (implementation != null)
                 {
                     //implementation has been found
@@ -181,15 +188,5 @@ namespace TypeSystem.Core
         {
             _components.Add(instanceInfo, componentInfo);
         }
-
-        private static PathInfo getSearchPath(MethodID method)
-        {
-            //test if method is generic
-            string path, paramDescr;
-            Naming.GetParts(method, out path, out paramDescr);
-
-            return new PathInfo(path);
-        }
-
     }
 }

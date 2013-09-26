@@ -150,9 +150,9 @@ namespace UnitTesting.TypeSystem_TestUtils
             return _methods.GetImplementation(method, dynamicInfo);
         }
 
-        public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
-            return _methods.GetGenericImplementation(method, searchPath, dynamicInfo);
+            return _methods.GetGenericImplementation(methodID, methodSearchPath, implementingTypePath);
         }
 
         #endregion

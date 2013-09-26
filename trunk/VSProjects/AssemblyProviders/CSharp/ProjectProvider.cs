@@ -10,8 +10,8 @@ using TypeSystem;
 
 namespace AssemblyProviders.CSharp
 {
-    public class ProjectProvider:AssemblyProvider
-    {        
+    public class ProjectProvider : AssemblyProvider
+    {
         public override SearchIterator CreateRootIterator()
         {
             throw new NotImplementedException();
@@ -32,7 +32,7 @@ namespace AssemblyProviders.CSharp
             throw new NotImplementedException();
         }
 
-        public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
             throw new NotImplementedException();
         }

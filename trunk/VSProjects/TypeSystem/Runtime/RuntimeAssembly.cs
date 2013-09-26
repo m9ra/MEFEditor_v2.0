@@ -137,9 +137,9 @@ namespace TypeSystem.Runtime
             return _runtimeMethods.GetImplementation(method, dynamicInfo);
         }
 
-        public override MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo)
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
-            return _runtimeMethods.GetGenericImplementation(method, searchPath, dynamicInfo);
+            return _runtimeMethods.GetGenericImplementation(methodID, methodSearchPath,implementingTypePath);
         }
 
         #endregion

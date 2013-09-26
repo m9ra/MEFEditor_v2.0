@@ -25,11 +25,11 @@ namespace TypeExperiments
             //force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
-            var assembly = ResearchSources.CompositionTester_ManyImport();
+            var assembly = ResearchSources.GenericInterfaceCall();
             
             var executor = new AnalyzingResearchExecutor(assembly);
-            executor.Execute();            
-            
+            executor.Execute();
+
             Console.ReadKey();
         }
     }

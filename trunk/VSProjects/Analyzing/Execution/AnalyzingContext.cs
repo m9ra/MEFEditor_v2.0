@@ -107,7 +107,7 @@ namespace Analyzing.Execution
                 }
             }
 
-            var generator = getGenerator(name, dynamicInfo);
+            var generator = getGenerator(ref name, dynamicInfo);
 
             pushCall(name, generator, argumentValues);
         }
@@ -165,16 +165,14 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="methodName">Name of method generator</param>
         /// <returns>Instruction generator for given name</returns>
-        private GeneratorBase getGenerator(MethodID method, InstanceInfo[] arguments)
+        private GeneratorBase getGenerator(ref MethodID method, InstanceInfo[] arguments)
         {
             if (method.NeedsDynamicResolving)
             {
-                return _loader.DynamicResolve(method, arguments);
+                method = _loader.DynamicResolve(method, arguments);
             }
-            else
-            {
-                return _loader.StaticResolve(method);
-            }
+
+            return _loader.StaticResolve(method);
         }
 
         /// <summary>

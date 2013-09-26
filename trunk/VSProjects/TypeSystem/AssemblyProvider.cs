@@ -30,7 +30,7 @@ namespace TypeSystem
 
         public abstract MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo);
 
-        public abstract MethodID GetGenericImplementation(MethodID method, PathInfo searchPath, InstanceInfo dynamicInfo);
+        public abstract MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath);
 
         #endregion
 

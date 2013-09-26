@@ -29,7 +29,7 @@ namespace UnitTesting.Analyzing_TestUtils
             return _wrapped.StaticResolve(method);
         }
 
-        public override GeneratorBase DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
+        public override MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             return _wrapped.DynamicResolve(method, dynamicArgumentInfo);
         }

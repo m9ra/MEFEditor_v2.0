@@ -23,12 +23,28 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+        static internal TestingAssembly GenericInterfaceCall()
+        {
+            return AssemblyUtils.Run(@"
+                var list=new System.Collections.Generic.List<string>();               
+                var interface=Convert(list);
+                interface.Add(""AddedValue"");
+                var result=list[0];
+            ")
+
+            .AddMethod("Test.Convert", (c) =>
+            {
+                c.Return(c.CurrentArguments[1]);
+            },  Method.StringICollection_StringICollectionParam)
+
+            .AddWrappedGenericToRuntime(typeof(List<>))
+            .AddWrappedGenericToRuntime(typeof(ICollection<>))
+            ;
+        }
+
+
         static internal TestingAssembly InterfaceCall()
         {
-            var collectionType = InstanceInfo.Create<ICollection<string>>();
-            var testParam = ParameterTypeInfo.Create("p", new InstanceInfo("Test"));
-            var methodDescription = new MethodDescription(collectionType, false, new[] { testParam });
-
             return AssemblyUtils.Run(@"
                 var test=new Test();
                 
@@ -40,7 +56,7 @@ namespace TypeExperiments
             .AddMethod("Test.Convert", (c) =>
             {
                 c.Return(c.CurrentArguments[1]);
-            }, methodDescription)
+            },  Method.StringICollection_StringICollectionParam)
 
             .AddMethod("Test.#ctor", (c) =>
             {

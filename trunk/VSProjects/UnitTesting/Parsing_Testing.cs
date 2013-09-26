@@ -277,9 +277,7 @@ namespace UnitTesting
         [TestMethod]
         public void Emit_VirtualCall()
         {
-            var collectionType = InstanceInfo.Create<ICollection<string>>();
-            var testParam = ParameterTypeInfo.Create("p", new InstanceInfo("Test"));
-            var methodDescription = new MethodDescription(collectionType, false, new[] { testParam });
+
 
             AssemblyUtils.Run(@"
                 var test=new Test();
@@ -292,7 +290,7 @@ namespace UnitTesting
             .AddMethod("Test.Convert", (c) =>
             {
                 c.Return(c.CurrentArguments[1]);
-            }, methodDescription)
+            }, Method.StringICollection_StringICollectionParam)
 
             .AddMethod("Test.#ctor", (c) => { }, Method.Ctor_NoParam)
 
@@ -314,7 +312,29 @@ namespace UnitTesting
 
             .AssertVariable("result").HasValue("AddedValue");
 
-           ;
+            ;
+        }
+
+        [TestMethod]
+        public void Emit_VirtualGenericCall()
+        {            
+            AssemblyUtils.Run(@"
+                var list=new System.Collections.Generic.List<string>();               
+                var interface=Convert(list);
+                interface.Add(""AddedValue"");
+                var result=list[0];
+            ")
+
+            .AddMethod("Test.Convert", (c) =>
+            {
+                c.Return(c.CurrentArguments[1]);
+            }, Method.StringICollection_StringICollectionParam)
+
+            .AddWrappedGenericToRuntime(typeof(List<>))
+            .AddWrappedGenericToRuntime(typeof(ICollection<>))
+
+            .AssertVariable("result").HasValue("AddedValue")
+            ;
         }
 
         [TestMethod]
