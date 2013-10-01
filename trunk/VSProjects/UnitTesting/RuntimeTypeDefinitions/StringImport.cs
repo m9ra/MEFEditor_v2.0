@@ -13,14 +13,18 @@ namespace UnitTesting.RuntimeTypeDefinitions
     public class StringImport : DataTypeDefinition
     {
         public readonly Field<string> Import;
+        public readonly Field<string> PreImport;
 
         public StringImport()
         {
             Import = new Field<string>(this);
+            PreImport = new Field<string>(this);
             FullName = "StringImport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
             builder.AddImport(InstanceInfo.Create<string>(), "Import");
+            builder.SetImportingCtor();
+
             ComponentInfo = builder.BuildInfo();
         }
 

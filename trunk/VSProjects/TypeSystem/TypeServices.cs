@@ -52,5 +52,15 @@ namespace TypeSystem
         {
             return _manager.TryGetImplementation(type, abstractMethod);
         }
+
+        public TypeAssembly LoadAssembly(string assemblyPath)
+        {
+            return _manager.LoadAssembly(assemblyPath);
+        }
+
+        public void RegisterAssembly(string assemblyPath, AssemblyProvider assembly)
+        {
+            _manager.RegisterAssembly(assemblyPath, assembly);
+        }
     }
 }

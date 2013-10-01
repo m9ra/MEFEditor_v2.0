@@ -135,6 +135,9 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private ParameterTypeInfo getCurrentParam()
         {
+            if (_orderedArgIndex >= _overload.Parameters.Length)
+                return null;
+
             return _overload.Parameters[_orderedArgIndex];
         }
 

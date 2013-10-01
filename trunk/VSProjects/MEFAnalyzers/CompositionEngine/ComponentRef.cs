@@ -20,9 +20,6 @@ namespace MEFAnalyzers.CompositionEngine
         private Dictionary<Export, JoinPoint> _exportPoints = new Dictionary<Export, JoinPoint>();
 
 
-        private Instance _component;
-
-
         internal readonly ComponentInfo ComponentInfo;
 
         internal bool HasSatisfiedPreImports;
@@ -61,11 +58,9 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
 
-        public ComponentRef(CompositionContext context, Instance component, bool isConstructed, ComponentInfo componentInfo)
-            : base(context, component.Info, isConstructed)
+        public ComponentRef(CompositionContext context, bool isConstructed, ComponentInfo componentInfo)
+            : base(context, componentInfo.ComponentType, isConstructed)
         {
-            _component = component;
-
             ComponentInfo = componentInfo;
 
             HasSatisfiedPreImports = isConstructed;

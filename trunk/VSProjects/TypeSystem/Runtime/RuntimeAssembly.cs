@@ -41,7 +41,7 @@ namespace TypeSystem.Runtime
 
         private readonly Dictionary<string, GeneratorProvider> _methodGeneratorProviders;
 
-        internal RuntimeAssembly()
+        public RuntimeAssembly()
         {
             _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
             {
@@ -94,7 +94,7 @@ namespace TypeSystem.Runtime
                 buildDefinition(dataType);
                 if (dataType.ComponentInfo != null)
                 {
-                    AddComponent(dataType.TypeInfo, dataType.ComponentInfo);
+                    AddComponent(dataType.ComponentInfo);
                 }
             }
             _isBuilded = true;

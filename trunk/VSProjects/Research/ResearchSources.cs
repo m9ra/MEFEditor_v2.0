@@ -23,6 +23,34 @@ namespace TypeExperiments
 {
     static class ResearchSources
     {
+        static internal TestingAssembly CompositionTester_LoadAssembly()
+        {
+            var testAssembly = new RuntimeAssembly();
+            testAssembly.AddDefinition(new StringExport());
+
+            return AssemblyUtils.Run(@"        
+                var partExport=new StringExport(""PastedExport"");       
+                var partImport=new ICollectionStringImport();
+                
+                var test=new CompositionTester(""test.exe"");   
+                test.Add(partExport);
+                test.Add(partImport);
+                test.Compose();
+                
+                var import=partImport.Import;
+                var result1=import[0];
+                var result2=import[1];          
+            ")
+
+            .AddToRuntime<CompositionTesterDefinition>()
+            .AddToRuntime<StringExport>()
+            .AddToRuntime<ICollectionStringImport>()
+            .AddDirectToRuntime<List<string>>()
+            .AddDirectToRuntime<ICollection<string>>()
+            .RegisterAssembly("test.exe", testAssembly)
+            ;
+        }
+
         static internal TestingAssembly GenericInterfaceCall()
         {
             return AssemblyUtils.Run(@"
@@ -35,7 +63,7 @@ namespace TypeExperiments
             .AddMethod("Test.Convert", (c) =>
             {
                 c.Return(c.CurrentArguments[1]);
-            },  Method.StringICollection_StringICollectionParam)
+            }, Method.StringICollection_StringICollectionParam)
 
             .AddWrappedGenericToRuntime(typeof(List<>))
             .AddWrappedGenericToRuntime(typeof(ICollection<>))
@@ -56,7 +84,7 @@ namespace TypeExperiments
             .AddMethod("Test.Convert", (c) =>
             {
                 c.Return(c.CurrentArguments[1]);
-            },  Method.StringICollection_StringICollectionParam)
+            }, Method.StringICollection_StringICollectionParam)
 
             .AddMethod("Test.#ctor", (c) =>
             {

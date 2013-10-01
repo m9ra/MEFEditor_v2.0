@@ -21,11 +21,21 @@ namespace MEFAnalyzers.CompositionEngine
 
         private readonly HashSet<ComponentRef> _componentRefs = new HashSet<ComponentRef>();
 
+        private readonly List<Instance> _inputInstances = new List<Instance>();
+
         private readonly Dictionary<InstanceRef, string> _instanceStorages = new Dictionary<InstanceRef, string>();
 
         internal readonly CompositionGenerator Generator = new CompositionGenerator();
 
         internal IEnumerable<ComponentRef> Components { get { return _componentRefs; } }
+
+        public Instance[] InputInstances
+        {
+            get
+            {
+                return _inputInstances.ToArray();
+            }
+        }
 
         internal CompositionContext(TypeServices services)
         {
@@ -38,11 +48,28 @@ namespace MEFAnalyzers.CompositionEngine
             {
                 var component = components[i];
                 var info = _services.GetComponentInfo(component);
-                var componentRef = new ComponentRef(this, component, true, info);
+                var componentRef = new ComponentRef(this, true, info);
 
                 _componentRefs.Add(componentRef);
-                addArgumentComponent(i, component, componentRef);
+                addInputComponent(component, componentRef);
             }
+        }
+
+        internal void AddComponentType(ComponentInfo componentInfo)
+        {
+            var componentRef = new ComponentRef(this, false, componentInfo);
+
+            var compStorage = getFreeStorage("comp");
+
+            emit((e) =>
+            {
+                e.AssignNewObject(compStorage, componentInfo.ComponentType);
+            });
+
+            _instanceStorages[componentRef] = compStorage;
+            _componentRefs.Add(componentRef);
+
+
         }
 
         /// <summary>
@@ -51,8 +78,11 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="argumentIndex"></param>
         /// <param name="component"></param>
         /// <param name="componentRef"></param>
-        private void addArgumentComponent(int argumentIndex, Instance component, ComponentRef componentRef)
+        private void addInputComponent(Instance component, ComponentRef componentRef)
         {
+            var argumentIndex = _inputInstances.Count;
+
+            _inputInstances.Add(component);
             var storage = string.Format("arg_{0}", argumentIndex);
             emit((e) => e.AssignArgument(storage, component.Info, (uint)argumentIndex));
             _instanceStorages.Add(componentRef, storage);
@@ -205,6 +235,7 @@ namespace MEFAnalyzers.CompositionEngine
         {
             return _services.TryGetImplementation(type, abstractMethod);
         }
+
     }
 
 }

@@ -35,7 +35,7 @@ namespace TypeSystem
         /// <summary>
         /// Type of component
         /// </summary>
-        public InstanceInfo ThisType { get; private set; }
+        public InstanceInfo ComponentType { get; private set; }
         /// <summary>
         /// Exports defined on whole class.
         /// </summary>
@@ -57,12 +57,13 @@ namespace TypeSystem
         /// </summary>
         public MethodID ImportingConstructor { get; private set; }
 
-        public ComponentInfo(InstanceInfo thisType,Import[] imports, Export[] exports, Export[] selfExports)
+        public ComponentInfo(InstanceInfo thisType,MethodID importingCtor,Import[] imports, Export[] exports, Export[] selfExports)
         {
-            ThisType = thisType;
+            ComponentType = thisType;
             SelfExports = selfExports;
             Exports = exports;
             Imports = imports;
+            ImportingConstructor = importingCtor;
         }
     }
 

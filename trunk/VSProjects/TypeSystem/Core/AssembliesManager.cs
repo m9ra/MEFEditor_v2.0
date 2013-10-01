@@ -6,31 +6,62 @@ using System.Threading.Tasks;
 
 using Analyzing;
 
+using Utilities;
+
 namespace TypeSystem.Core
 {
     class AssembliesManager
     {
-        readonly AssemblyCollection _assemblies;
+        readonly AssemblyCollection _assembliesCollection;
+
+        /// <summary>
+        /// In these assemblies are searched generators
+        /// <remarks>May differ from method searcher providing assemblies - that are based on assembly references</remarks>
+        /// </summary>
+        readonly List<AssemblyProvider> _assemblies = new List<AssemblyProvider>();
 
         readonly TypeServices _services;
 
+        readonly MultiDictionary<AssemblyProvider, ComponentInfo> _assemblyComponents = new MultiDictionary<AssemblyProvider, ComponentInfo>();
+
         readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
+
+        readonly Dictionary<string, TypeAssembly> _loadedAssemblies = new Dictionary<string, TypeAssembly>();
 
         internal AssembliesManager(AssemblyCollection assemblies)
         {
             _services = new TypeServices(this);
 
-            _assemblies = assemblies;
-            _assemblies.OnAdd += _onAssemblyAdd;
-            _assemblies.OnRemove += _onAssemblyRemove;
+            _assembliesCollection = assemblies;
+            _assembliesCollection.OnAdd += _onAssemblyAdd;
+            _assembliesCollection.OnRemove += _onAssemblyRemove;
 
-            foreach (var assembly in _assemblies)
+            foreach (var assembly in _assembliesCollection)
             {
                 _onAssemblyAdd(assembly);
             }
         }
 
         #region Internal methods for accessing assemblies
+
+
+        internal IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
+        {
+            return _assemblyComponents.Get(assembly);
+        }
+
+        internal void RegisterAssembly(string assemblyPath, AssemblyProvider assembly)
+        {
+            _onAssemblyAdd(assembly);
+            var typeAssembly = new TypeAssembly(this, assembly);
+
+            _loadedAssemblies[assemblyPath] = typeAssembly;
+        }
+
+        internal TypeAssembly LoadAssembly(string assemblyPath)
+        {
+            return _loadedAssemblies[assemblyPath];
+        }
 
         internal GeneratorBase StaticResolve(MethodID method)
         {
@@ -98,7 +129,7 @@ namespace TypeSystem.Core
         /// <returns>Created method searcher</returns>
         internal MethodSearcher CreateSearcher()
         {
-            return new MethodSearcher(_assemblies);
+            return new MethodSearcher(_assembliesCollection);
         }
 
         #endregion
@@ -185,7 +216,7 @@ namespace TypeSystem.Core
 
             foreach (var assembly in _assemblies)
             {
-                var implementation = assembly.GetGenericImplementation(method,searchPath, typePath);
+                var implementation = assembly.GetGenericImplementation(method, searchPath, typePath);
                 if (implementation != null)
                 {
                     //implementation has been found
@@ -208,14 +239,16 @@ namespace TypeSystem.Core
             }
             return null;
         }
+
         #endregion
 
         #region Event handlers
 
         private void _onAssemblyAdd(AssemblyProvider assembly)
         {
+            _assemblies.Add(assembly);
             assembly.SetServices(_services);
-            assembly.OnComponentAdded += _onComponentAdded;
+            assembly.OnComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
         }
 
         private void _onAssemblyRemove(AssemblyProvider assembly)
@@ -223,9 +256,14 @@ namespace TypeSystem.Core
             assembly.UnloadServices();
         }
 
-        private void _onComponentAdded(InstanceInfo instanceInfo, ComponentInfo componentInfo)
+        private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
         {
-            _components.Add(instanceInfo, componentInfo);
+            _assemblyComponents.Add(assembly, componentInfo);
+
+            if (_components.ContainsKey(componentInfo.ComponentType))
+                //TODO how to handle same components
+                return;
+            _components.Add(componentInfo.ComponentType, componentInfo);
         }
 
         #endregion

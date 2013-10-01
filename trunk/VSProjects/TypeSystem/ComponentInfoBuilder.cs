@@ -18,6 +18,8 @@ namespace TypeSystem
 
         private readonly InstanceInfo _componentType;
 
+        private MethodID _importingCtor;
+
         public ComponentInfoBuilder(InstanceInfo componentType)
         {
             _componentType = componentType;
@@ -35,6 +37,22 @@ namespace TypeSystem
             _imports.Add(new Import(importType, setterID));
         }
 
+
+        public void SetImportingCtor(params InstanceInfo[] importingParameters)
+        {
+            var parameters=new ParameterTypeInfo[importingParameters.Length];
+
+            for (int i = 0; i < parameters.Length; ++i)
+            {
+                var importType=importingParameters[i];
+                parameters[i] = ParameterTypeInfo.Create("p",importType);
+                var preImport=new Import(importType,null);
+                _imports.Add(preImport);
+            }
+
+            _importingCtor = Naming.Method(_componentType, "#ctor", parameters);
+        }
+
         private MethodID getSetterID(InstanceInfo importType, string setterName)
         {
             var parameters = new ParameterTypeInfo[] { ParameterTypeInfo.Create("value", importType) };
@@ -50,7 +68,8 @@ namespace TypeSystem
 
         public ComponentInfo BuildInfo()
         {
-            return new ComponentInfo(_componentType,_imports.ToArray(), _exports.ToArray(), _selfExports.ToArray());
+            return new ComponentInfo(_componentType,_importingCtor,_imports.ToArray(), _exports.ToArray(), _selfExports.ToArray());
         }
+
     }
 }

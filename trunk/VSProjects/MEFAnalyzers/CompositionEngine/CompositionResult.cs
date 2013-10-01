@@ -50,6 +50,6 @@ namespace MEFAnalyzers.CompositionEngine
             Error = error;
 
             Generator = generator;
-        }
+        }        
     }
 }

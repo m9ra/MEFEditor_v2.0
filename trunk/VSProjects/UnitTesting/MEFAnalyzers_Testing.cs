@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Analyzing;
 using TypeSystem;
+using TypeSystem.Runtime;
 using MEFAnalyzers;
 
 using UnitTesting.TypeSystem_TestUtils;
@@ -31,7 +32,7 @@ namespace UnitTesting
             .AddToRuntime<CompositionTesterDefinition>()
             .AddToRuntime<StringImport>()
             .AddToRuntime<StringExport>()
-            .AssertVariable("importValue").HasValue("ExportedValue");
+            .AssertVariable("importValue").HasValue("Data:ExportedValue");
         }
 
         [TestMethod]
@@ -50,7 +51,7 @@ namespace UnitTesting
             .AddToRuntime<ManyStringImport>()
             .AddToRuntime<StringExport>()
             .AddWrappedGenericToRuntime(typeof(ICollection<>)) //because composition engine needs it
-            .AssertVariable("result").HasValue("ExportedValue");
+            .AssertVariable("result").HasValue("Data:ExportedValue");
             ;
         }
 
@@ -71,9 +72,48 @@ namespace UnitTesting
            .AddToRuntime<StringExport>()
            .AddDirectToRuntime<List<string>>()
            .AddDirectToRuntime<ICollection<string>>()
-           .AssertVariable("result").HasValue("ExportedValue")
+           .AssertVariable("result").HasValue("Data:ExportedValue")
 
            ;
+        }
+
+        [TestMethod]
+        public void Compose_PrerequisityImport_LoadedAssembly()
+        {
+            var testAssembly = new RuntimeAssembly();
+            testAssembly.AddDefinition(new StringExport());
+
+            AssemblyUtils.Run(@"        
+                var partExport=new StringExport(""PastedExport"");       
+                var partImport=new ICollectionStringImport();
+                
+                var test=new CompositionTester(""test.exe"");   
+                test.Add(partExport);
+                test.Add(partImport);
+                test.Compose();
+                
+                var import=partImport.Import;
+                var result1=import[0];
+                var result2=import[1];          
+            ")
+
+            .AddToRuntime<CompositionTesterDefinition>()
+            .AddToRuntime<StringExport>()
+            .AddToRuntime<ICollectionStringImport>()
+            .AddDirectToRuntime<List<string>>()
+            .AddDirectToRuntime<ICollection<string>>()
+            .RegisterAssembly("test.exe", testAssembly)
+
+            
+            //export from pasted export
+            .AssertVariable("result1").HasValue("Data:PastedExport")
+            
+            //export from referenced assembly, filled with pasted export via prerequisity import
+            .AssertVariable("result2").HasValue("Data:Data:PastedExport") 
+
+            ;
+
+
         }
     }
 }

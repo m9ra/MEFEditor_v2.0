@@ -185,5 +185,12 @@ namespace UnitTesting.TypeSystem_TestUtils
         }
 
         #endregion
+
+        public TestingAssembly RegisterAssembly(string assemblyPath, RuntimeAssembly testAssembly)
+        {
+            TypeServices.RegisterAssembly(assemblyPath, testAssembly);
+            testAssembly.BuildAssembly();
+            return this;
+        }
     }
 }

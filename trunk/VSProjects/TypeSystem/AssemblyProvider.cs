@@ -12,7 +12,7 @@ namespace TypeSystem
 {
     internal delegate void ChangeEvent(MethodID name);
 
-    internal delegate void ComponentAdded(InstanceInfo type, ComponentInfo component);
+    internal delegate void ComponentAdded(ComponentInfo component);
 
     public abstract class AssemblyProvider
     {
@@ -41,10 +41,10 @@ namespace TypeSystem
             throw new NotImplementedException();
         }
 
-        protected void AddComponent(InstanceInfo type, ComponentInfo component)
+        protected void AddComponent(ComponentInfo component)
         {
             if (OnComponentAdded != null)
-                OnComponentAdded(type, component);
+                OnComponentAdded(component);
         }
 
         protected void RemoveComponent()

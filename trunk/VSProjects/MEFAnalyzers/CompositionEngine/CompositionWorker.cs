@@ -220,6 +220,10 @@ namespace MEFAnalyzers.CompositionEngine
                     return false;
             }
 
+            if (!import.IsPrerequisity)
+                // else it will be set via importing constructor
+                setImport(importPoint);
+
             return true;
         }
 
@@ -248,11 +252,7 @@ namespace MEFAnalyzers.CompositionEngine
                     _storage.Add(importPoint, exportPoint);
                 }
             }
-
-            if (!import.IsPrerequisity)
-                // else it will be set via importing constructor
-                enqSetter(importPoint);
-
+                     
             return true;
         }
 
@@ -516,15 +516,13 @@ namespace MEFAnalyzers.CompositionEngine
 
             return result.ToArray();
         }
-
-
-
+        
 
         /// <summary>
         /// enqueue setter call which satisfy import from exports
         /// </summary>
         /// <param name="import"></param>    
-        private void enqSetter(JoinPoint import)
+        private void setImport(JoinPoint import)
         {
             var exps = _storage.Get(import);
             if (exps == null) return; //allow default doesnt require setter
@@ -695,8 +693,8 @@ namespace MEFAnalyzers.CompositionEngine
                     iCollectionToSet.Call(addMethod, exportedValue);
                 }
 
-                //because it will be set via setter
-                return iCollectionToSet;
+                //because it's set via add
+                return null;
             }
             else
             {

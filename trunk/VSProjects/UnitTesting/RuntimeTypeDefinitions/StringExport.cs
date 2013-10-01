@@ -21,12 +21,18 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
             builder.AddExport(InstanceInfo.Create<string>(), "Export");
+            builder.SetImportingCtor(InstanceInfo.Create<string>());
             ComponentInfo = builder.BuildInfo();
         }
 
         public void _method_ctor(string toExport)
         {
-            Export.Set(toExport);
+            Export.Set("Data:"+toExport);
+        }
+
+        public void _method_ctor()
+        {
+            Export.Set("DefaultExport");
         }
 
         public string _get_Export()
