@@ -22,11 +22,10 @@ namespace TypeExperiments
         /// </summary>
         static void Main()
         {
-            //force JIT to precompile before measuring
+            ////force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
             var assembly = ResearchSources.CompositionTester_LoadAssembly();
-            
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 

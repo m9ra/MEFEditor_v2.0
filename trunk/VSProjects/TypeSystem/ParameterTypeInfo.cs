@@ -30,12 +30,13 @@ namespace TypeSystem
             return new ParameterTypeInfo(name, type, null, false);
         }
 
-        public static ParameterTypeInfo CreateWithDefault(string name, InstanceInfo type, object defaultValue) {
+        public static ParameterTypeInfo CreateWithDefault(string name, InstanceInfo type, object defaultValue)
+        {
             return new ParameterTypeInfo(name, type, defaultValue, true);
         }
 
 
-        public static ParameterTypeInfo From(ParameterInfo param)
+        public static ParameterTypeInfo From(ParameterInfo param, InstanceInfo paramType = null)
         {
             var name = param.Name;
             if (name == null)
@@ -44,7 +45,12 @@ namespace TypeSystem
                 name = "p" + param.Position;
             }
 
-            return new ParameterTypeInfo(name, new InstanceInfo(param.ParameterType), param.DefaultValue, param.HasDefaultValue);
+            if (paramType == null)
+            {
+                paramType = new InstanceInfo(param.ParameterType);
+            }
+
+            return new ParameterTypeInfo(name, paramType, param.DefaultValue, param.HasDefaultValue);
         }
     }
 }

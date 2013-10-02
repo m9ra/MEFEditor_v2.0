@@ -216,9 +216,9 @@ namespace TypeSystem.Runtime
         /// <param name="method">Method info defining method</param>
         /// <param name="methodName">Name of defined method</param>
         /// <returns>Builder where method is builded</returns>
-        private MethodBuilder buildMethod(RuntimeTypeDefinition definition, MethodInfo method, string methodName)
+        private RuntimeMethodGenerator buildMethod(RuntimeTypeDefinition definition, MethodInfo method, string methodName)
         {
-            var wrapping = new MethodBuilder(definition, method, methodName);
+      /*      var wrapping = new MethodBuilder_obsolete(definition, method, methodName);
             foreach (var param in method.GetParameters())
             {
                 if (needWrapping(param))
@@ -229,9 +229,12 @@ namespace TypeSystem.Runtime
                 {
                     wrapping.AddRawParam(param, "TypeName.NotImplemented");
                 }
-            }
+            }*/
 
-            return wrapping;
+            var builder = new MethodBuilder(definition, methodName);
+            builder.ThisObjectExpression = builder.DeclaringDefinitionConstant;
+            builder.AdapterFor(method);
+            return builder.Build();
         }
 
         /// <summary>
@@ -261,16 +264,16 @@ namespace TypeSystem.Runtime
             {
                 name = "#ctor";
             }
-            var builder = buildMethod(definition, method, name);
+            var generator = buildMethod(definition, method, name);
 
-            return builder.CreateGenerator();
+            return generator;
         }
 
         private RuntimeMethodGenerator _createProperty(RuntimeTypeDefinition definition, System.Reflection.MethodInfo method, string name)
         {
-            var builder = buildMethod(definition, method, method.Name.Substring(1));
+            var generator = buildMethod(definition, method, method.Name.Substring(1));
 
-            return builder.CreateGenerator();
+            return generator;
         }
 
         #endregion

@@ -38,6 +38,12 @@ namespace TypeSystem.Runtime
 
         public InstanceInfo ForcedInfo;
 
+
+        public DirectTypeDefinition()
+        {
+            IsInterface = _directType.IsInterface;
+        }
+
         /// <summary>
         /// Type info of current DirectType (or generic definition if TypeDefinition is marked with IsGeneric)
         /// </summary>
@@ -132,8 +138,40 @@ namespace TypeSystem.Runtime
         /// <returns>Generated methods</returns>
         private IEnumerable<RuntimeMethodGenerator> generatePublicMethods(Type type)
         {
+            var implementedTypesMap = createImplementedTypesMap(type);
+
+            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            {
+                if (!isInDirectCover(method))
+                    continue;
+
+                var implementedTypes = implementedTypesMap.Get(method);
+
+                var builder = new MethodBuilder(this, method.Name);
+                if (method.IsStatic)
+                {
+                    builder.ThisObjectExpression = null;
+                }
+                else
+                {
+                    builder.ThisObjectExpression = builder.ArgumentInstanceExpression(0);
+                }
+
+                builder.ImplementedTypes.UnionWith(implementedTypes);
+                builder.AdapterFor(method);
+                yield return builder.Build();
+            }
+        }
+
+        /// <summary>
+        /// Create mapping of method info to types that are implemented by info
+        /// </summary>
+        /// <param name="type">Type which mapping is created</param>
+        /// <returns>Created mapping</returns>
+        private static MultiDictionary<MethodInfo, Type> createImplementedTypesMap(Type type)
+        {
             //Get method mapping
-            var methodMapping = new MultiDictionary<MethodInfo, Type>();
+            var implementedTypesMap = new MultiDictionary<MethodInfo, Type>();
             if (!type.IsInterface)
             {
                 foreach (var implementedInterface in type.GetInterfaces())
@@ -142,33 +180,11 @@ namespace TypeSystem.Runtime
                     var map = type.GetInterfaceMap(implementedInterface);
                     foreach (var method in map.TargetMethods)
                     {
-                        methodMapping.Add(method, map.InterfaceType);
+                        implementedTypesMap.Add(method, map.InterfaceType);
                     }
                 }
             }
-
-            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
-            {
-                if (!isInDirectCover(method))
-                    continue;
-
-                var methodDefinition = method;
-                if (IsGeneric && method.IsGenericMethod)
-                    methodDefinition = method.GetGenericMethodDefinition();
-
-                var directMethod = generateDirectMethod(methodDefinition);
-                var paramsInfo = getParametersInfo(methodDefinition);
-
-                var returnInfo = getInstanceInfo(methodDefinition.ReturnType);
-                var isAbstract = type.IsInterface || method.IsAbstract;
-                var info = new TypeMethodInfo(
-                    TypeInfo, methodDefinition.Name,
-                    returnInfo, paramsInfo.ToArray(),
-                    methodDefinition.IsStatic, IsGeneric, isAbstract);
-
-
-                yield return new RuntimeMethodGenerator(directMethod, info, methodMapping.Get(method));
-            }
+            return implementedTypesMap;
         }
 
         /// <summary>
@@ -205,66 +221,7 @@ namespace TypeSystem.Runtime
             var ctorMethod = Expression.Call(contextParameter, contextType.GetMethod("Initialize"), thisInstance, constructed);
             return Expression.Lambda<DirectMethod>(ctorMethod, inputParameters).Compile();
         }
-
-        /// <summary>
-        /// Generate direct method for given method info
-        /// </summary>
-        /// <param name="method">Method info which direct method is generated</param>
-        /// <returns>Generated method</returns>
-        private DirectMethod generateDirectMethod(MethodInfo method)
-        {
-            if (method.IsStatic)
-                return (c) => { throw new NotImplementedException(); };
-
-            var returnType = method.ReturnType;
-            var hasReturnValue = method.ReturnType != typeof(void);
-            var needReturnUnWrapping = hasReturnValue && returnType == typeof(InstanceWrap);
-
-            var contextType = typeof(AnalyzingContext);
-            var contextParameter = Expression.Parameter(contextType, "context");
-            var inputParameters = new ParameterExpression[] { contextParameter };
-
-            var argumentExpressions = getArgumentExpressions(method, contextParameter);
-            var thisExpression = getArgument(0, _directType, contextParameter);
-            var methodCall = Expression.Call(thisExpression, method, argumentExpressions);
-
-            if (hasReturnValue)
-            {
-                //if there is return value, resolve wrapping of result
-
-                Expression returnValue = methodCall;
-                if (needReturnUnWrapping)
-                {
-                    //Wrapped instance has been returned - unwrap it
-                    returnValue = Expression.PropertyOrField(returnValue, "Wrapped");
-                }
-                else
-                {
-                    //Direct object has been returned - create its direct instance
-                    var machine = Expression.PropertyOrField(contextParameter, "Machine");
-                    var instanceInfo = Expression.Constant(new InstanceInfo(returnType));
-                    if (returnType.IsArray)
-                    {
-                        var arrayWrapType = typeof(Array<InstanceWrap>);
-                        var arrayWrapCtor = arrayWrapType.GetConstructor(new Type[] { typeof(IEnumerable), contextType });
-                        returnValue = Expression.New(arrayWrapCtor, returnValue, contextParameter);
-                    }
-
-                    returnValue = Expression.Convert(returnValue, typeof(object));
-                    returnValue = Expression.Call(machine, typeof(Machine).GetMethod("CreateDirectInstance"), returnValue, instanceInfo);
-                }
-
-                //return value is reported via Context.Return call
-                var returnCall = Expression.Call(contextParameter, contextType.GetMethod("Return"), returnValue);
-                return Expression.Lambda<DirectMethod>(returnCall, inputParameters).Compile();
-            }
-            else
-            {
-                //there is no return value
-                return Expression.Lambda<DirectMethod>(methodCall, inputParameters).Compile();
-            }
-        }
-
+           
         /// <summary>
         /// Get argument expressions for given method. Argument expression get value from context.CurrentArguments
         /// </summary>
@@ -326,11 +283,6 @@ namespace TypeSystem.Runtime
         #endregion
 
         #region Direct type services
-
-        private InstanceInfo getInstanceInfo(Type type)
-        {
-            return new InstanceInfo(type);
-        }
 
         /// <summary>
         /// Determine that method is in direct cover

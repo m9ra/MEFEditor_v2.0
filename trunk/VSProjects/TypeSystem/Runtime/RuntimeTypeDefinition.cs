@@ -24,9 +24,14 @@ namespace TypeSystem.Runtime
     public abstract class RuntimeTypeDefinition
     {
         /// <summary>
-        /// Determine that runtime type definition is generic type
+        /// Determine that defined type is generic
         /// </summary>
         public bool IsGeneric;
+
+        /// <summary>
+        /// Determine that defined type is interface
+        /// </summary>
+        public bool IsInterface;
 
         /// <summary>
         /// Available type services
@@ -41,7 +46,7 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// Assembly where type builded from this definition is present
         /// </summary>
-        protected RuntimeAssembly ContainingAssembly { get; private set; }
+        internal protected RuntimeAssembly ContainingAssembly { get; private set; }
          
         /// <summary>
         /// Context available for currently invoked call (Null, when no call is invoked)
@@ -52,16 +57,15 @@ namespace TypeSystem.Runtime
         /// Arguments available for currently invoked call
         /// </summary>
         internal protected Instance[] CurrentArguments { get { return Context.CurrentArguments; } }
-
-
+        
         abstract internal InstanceInfo TypeInfo{get;}
+
+        abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
 
         protected InstanceInfo GetTypeInfo()
         {
             return TypeInfo;
         }
-
-        abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
         
         internal void Initialize(RuntimeAssembly containingAssembly, TypeServices typeServices)
         {
@@ -74,7 +78,48 @@ namespace TypeSystem.Runtime
             Services = typeServices;
             ContainingAssembly = containingAssembly;
         }
-        
+
+        /// <summary>
+        /// Unwrap given instance into type T
+        /// <remarks>Is called from code emitted by expression tree</remarks>
+        /// </summary>
+        /// <typeparam name="T">Type to which instance will be unwrapped</typeparam>
+        /// <param name="instance">Unwrapped instance</param>
+        /// <returns>Unwrapped data</returns>
+        internal protected virtual T Unwrap<T>(Instance instance)
+        {
+            if (typeof(T).IsArray)
+            {
+                var arrayDef = instance.DirectValue as Array<InstanceWrap>;
+                return arrayDef.Unwrap<T>();
+            }
+            else
+            {
+                return (T)instance.DirectValue;
+            }
+        }
+
+        /// <summary>
+        /// Wrap given data of type T into instance
+        /// <remarks>Is called from code emitted by expression tree</remarks>
+        /// </summary>
+        /// <typeparam name="T">Type from which instance will be wrapped</typeparam>
+        /// <param name="context">Data to be wrapped</param>
+        /// <returns>Instance wrapping given data</returns>
+        internal protected virtual Instance Wrap<T>(AnalyzingContext context, T data)
+        {
+            var machine = context.Machine;
+            if (typeof(T).IsArray)
+            {
+                var array = new Array<InstanceWrap>((System.Collections.IEnumerable)data, context);
+                return machine.CreateDirectInstance(array, InstanceInfo.Create<T>());
+            }
+            else
+            {
+                return machine.CreateDirectInstance(data);
+            }
+        }
+
         internal void Invoke(AnalyzingContext context,DirectMethod methodToInvoke)
         {
             Context = context;
@@ -87,6 +132,12 @@ namespace TypeSystem.Runtime
             {
                 Context = null;
             }
+        }
+
+        internal virtual InstanceInfo GetInstanceInfo(Type type)
+        {
+            //TODO consider generic params
+            return new InstanceInfo(type);
         }
         
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)

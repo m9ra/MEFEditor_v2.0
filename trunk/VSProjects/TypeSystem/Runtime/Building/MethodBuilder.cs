@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Collections;
 using System.Reflection;
 using System.Linq.Expressions;
 
@@ -14,173 +14,220 @@ using Analyzing.Execution;
 namespace TypeSystem.Runtime.Building
 {
     /// <summary>
-    /// Builder of runtime method generators
+    /// Builder for runtime methods
     /// </summary>
     class MethodBuilder
     {
-        readonly List<Expression> _parameterValues = new List<Expression>();
-        readonly List<ParameterInfo> _parameters = new List<ParameterInfo>();
-        readonly Expression _argumentsArray;
-        readonly Expression _runtimeTypeDefinition;
+        /// <summary>
+        /// Type of analyzing context
+        /// TODO: Refactor method infos out of classes
+        /// </summary>
+        private static readonly Type _contextType = typeof(AnalyzingContext);
 
-        readonly RuntimeTypeDefinition _declaringType;
-        readonly string _methodName;
-        readonly MethodInfo _methodInfo;
+        /// <summary>
+        /// Definition that is declaring builded method
+        /// </summary>
+        private readonly RuntimeTypeDefinition _declaringDefinition;
+     
+        /// <summary>
+        /// Array where arguments are stored
+        /// </summary>
+        private readonly Expression _argumentsArray;
 
-        internal MethodBuilder(RuntimeTypeDefinition declaringType, MethodInfo methodInfo, string methodName)
+        /// <summary>
+        /// Input parameter for direct method (contains Analyzing context)
+        /// </summary>
+        private readonly ParameterExpression _contextParam;
+
+        /// <summary>
+        /// Name of builded method
+        /// </summary>
+        private readonly string _methodName;
+
+        /// <summary>
+        /// Expression which can get declaring definition object
+        /// </summary>
+        internal readonly Expression DeclaringDefinitionConstant;
+
+        /// <summary>
+        /// Method info of builded method
+        /// (Can be overriden before build)
+        /// </summary>
+        internal TypeMethodInfo BuildedMethodInfo;
+
+        /// <summary>
+        /// Method that is invoked in context of declaring definition
+        /// (Can be overriden before build)
+        /// </summary>
+        internal DirectMethod Adapter;
+
+        /// <summary>
+        /// Object on which adapter is called
+        /// (Can be overriden before build)
+        /// </summary>
+        internal Expression ThisObjectExpression;
+
+        /// <summary>
+        /// Types that are implemented byt builded method
+        /// </summary>
+        internal HashSet<Type> ImplementedTypes = new HashSet<Type>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="declaringDefinition"></param>
+        /// <param name="methodName"></param>
+        internal MethodBuilder(RuntimeTypeDefinition declaringDefinition, string methodName)
         {
-            _declaringType = declaringType;
+            _declaringDefinition = declaringDefinition;
+            DeclaringDefinitionConstant = Expression.Constant(_declaringDefinition);
+            _argumentsArray = Expression.Property(DeclaringDefinitionConstant, "CurrentArguments");
+            _contextParam = Expression.Parameter(typeof(AnalyzingContext), "context");
             _methodName = methodName;
-            _methodInfo = methodInfo;
-
-            _runtimeTypeDefinition = Expression.Constant(declaringType);
-            _argumentsArray = Expression.Property(_runtimeTypeDefinition, "CurrentArguments");
         }
 
-        #region Internal API of builder
-
-        internal void AddRawParam(ParameterInfo param, string typeName)
+        internal Expression ArgumentInstanceExpression(int argumentIndex)
         {
-            //TODO: throw new NotImplementedException("Find conversion type in attribute");
-
-            var rawArg = getRawArg();
-            addParam(rawArg, param);
+            return Expression.ArrayIndex(_argumentsArray, Expression.Constant(argumentIndex));
         }
 
-        internal void AddUnwrappedParam(ParameterInfo param)
+        internal void AdapterFor(MethodInfo method)
         {
-            var rawArg = getRawArg();
-            var unwrapped = Expression.Call(this.GetType(), "Unwrap", new Type[] { param.ParameterType }, rawArg);
+            Adapter = generateAdapter(method);
+            var paramsInfo = getParametersInfo(method);
 
-            addParam(unwrapped, param);
+            var returnInfo = getInstanceInfo(method.ReturnType);
+
+            var isAbstract = method.IsAbstract || _declaringDefinition.IsInterface;
+            BuildedMethodInfo= new TypeMethodInfo(
+                _declaringDefinition.TypeInfo, _methodName,
+                returnInfo, paramsInfo.ToArray(),
+                method.IsStatic, _declaringDefinition.IsGeneric, isAbstract);
         }
 
-        internal RuntimeMethodGenerator CreateGenerator()
+        internal RuntimeMethodGenerator Build()
         {
-            var directMethod = buildDirectMethod();
-            return new RuntimeMethodGenerator(directMethod, createMethodInfo(), new Type[0]);
+            var implementedTypes = ImplementedTypes.ToArray();
+            var methodInfo = BuildedMethodInfo;
+            var adapter = Adapter;
+
+            return new RuntimeMethodGenerator(
+                (c) => invoke(c,methodInfo, Adapter, _declaringDefinition),
+                methodInfo,
+                implementedTypes);
         }
 
-        #endregion
-
-        #region Methods for wrap handling
-
-        /// <summary>
-        /// Unwrap given instance into type T
-        /// <remarks>Is called from code emitted by expression tree</remarks>
-        /// </summary>
-        /// <typeparam name="T">Type to which instance will be unwrapped</typeparam>
-        /// <param name="instance">Unwrapped instance</param>
-        /// <returns>Unwrapped data</returns>
-        internal static T Unwrap<T>(Instance instance)
+        private static void invoke(AnalyzingContext context,TypeMethodInfo method, DirectMethod adapter, RuntimeTypeDefinition definition)
         {
-            if (typeof(T).IsArray)
-            {
-                var arrayDef = instance.DirectValue as Array<InstanceWrap>;
-                return arrayDef.Unwrap<T>();
-            }
-            else
-            {
-                return (T)instance.DirectValue;
-            }
+            definition.Invoke(context, adapter);
         }
 
         /// <summary>
-        /// Wrap given data of type T into instance
-        /// <remarks>Is called from code emitted by expression tree</remarks>
+        /// Get parameters info for given method base
         /// </summary>
-        /// <typeparam name="T">Type from which instance will be wrapped</typeparam>
-        /// <param name="context">Data to be wrapped</param>
-        /// <returns>Instance wrapping given data</returns>
-        internal static Instance Wrap<T>(AnalyzingContext context, T data)
+        /// <param name="method">Base method which parameters will be created</param>
+        /// <returns>Created parameters info</returns>
+        private IEnumerable<ParameterTypeInfo> getParametersInfo(MethodBase method)
         {
-            var machine = context.Machine;
-            if (typeof(T).IsArray)
+            var paramsInfo = new List<ParameterTypeInfo>();
+            foreach (var param in method.GetParameters())
             {
-                var array = new Array<InstanceWrap>((IEnumerable)data, context);
-                return machine.CreateDirectInstance(array, InstanceInfo.Create<T>());
+                var paramType = getInstanceInfo(param.ParameterType);
+                var paramInfo = ParameterTypeInfo.From(param, paramType);
+                paramsInfo.Add(paramInfo);
             }
-            else
-            {
-                return machine.CreateDirectInstance(data);
-            }
+            return paramsInfo;
         }
 
-        #endregion
-
-        private TypeMethodInfo createMethodInfo()
+        private InstanceInfo getInstanceInfo(Type type)
         {
-            var returnType = new InstanceInfo(_methodInfo.ReturnType);
-            var parameters = createParameters(_parameters);
-
-            var result = new TypeMethodInfo(
-                _declaringType.TypeInfo, _methodName,
-                returnType, parameters,
-                _methodInfo.IsStatic);
-            return result;
+            return _declaringDefinition.GetInstanceInfo(type);
         }
 
-        private ParameterTypeInfo[] createParameters(IEnumerable<ParameterInfo> parameters)
+        private DirectMethod generateAdapter(MethodInfo method)
         {
-            var result = new List<ParameterTypeInfo>();
-            foreach (var param in parameters)
+            var parameters = method.GetParameters();
+            var arguments = new Expression[parameters.Length];
+            for (var i = 0; i < parameters.Length; ++i)
             {
-                result.Add(ParameterTypeInfo.From(param));
+                var argInstance = ArgumentInstanceExpression(i + 1);
+                arguments[i] = convert(argInstance,parameters[i].ParameterType);
             }
 
+            var thisExpression = convert(ThisObjectExpression, method.DeclaringType);
+            var adapterCall = Expression.Call(thisExpression, method, arguments);
+            var handledAdapter = handleReturn(adapterCall);
 
-            return result.ToArray();
+            return Expression.Lambda<DirectMethod>(handledAdapter, _contextParam).Compile();
         }
 
-        private Expression getRawArg()
+        private Expression handleReturn(MethodCallExpression adapterCall)
         {
-            var argIndex = _parameters.Count + 1;
-            var argIndexExpr = Expression.Constant(argIndex);
-            return Expression.ArrayIndex(_argumentsArray, argIndexExpr);
-        }
-
-        private void addParam(Expression expression, ParameterInfo info)
-        {
-            _parameters.Add(info);
-            _parameterValues.Add(expression);
-        }
-
-        private DirectMethod buildDirectMethod()
-        {
-            var wrappedMethod = getWrappedMethod();
-
-            return (c) =>
-            {
-                _declaringType.Invoke(c, wrappedMethod);
-            };
-        }
-
-        private DirectMethod getWrappedMethod()
-        {
-            //input values
-            var contextParam = Expression.Parameter(typeof(AnalyzingContext));
-            var declaringTypeExpr = Expression.Constant(_declaringType);
-
-            //call to method obtained from runtime type definition
-            var callResult = Expression.Call(declaringTypeExpr, _methodInfo, _parameterValues);
-
-            var returnType = _methodInfo.ReturnType;
-
+            var returnType = adapterCall.Method.ReturnType;
             if (returnType == typeof(void))
+                //there is no need for unwrapping logic
+                return adapterCall;
+
+
+            //TODO refactor conversion logic
+
+            var needReturnUnWrapping = returnType == typeof(InstanceWrap);
+            Expression returnValue = adapterCall;
+            if (needReturnUnWrapping)
             {
-                //there is no return value                
-                return Expression.Lambda<DirectMethod>(callResult, contextParam).Compile();
+                //Wrapped instance has been returned - unwrap it
+                returnValue = Expression.PropertyOrField(returnValue, "Wrapped");
+            }
+            else
+            {
+                //Direct object has been returned - create its direct instance
+                var machine = Expression.PropertyOrField(_contextParam, "Machine");
+                
+                if (returnType.IsArray)
+                {
+                    var arrayWrapType = typeof(Array<InstanceWrap>);
+                    var arrayWrapCtor = arrayWrapType.GetConstructor(new Type[] { typeof(IEnumerable), _contextType });
+                    returnValue = Expression.New(arrayWrapCtor, returnValue, _contextParam);
+                }
+
+                var instanceInfo = Expression.Constant(new InstanceInfo(returnType));
+                returnValue = Expression.Convert(returnValue, typeof(object));
+                returnValue = Expression.Call(machine, typeof(Machine).GetMethod("CreateDirectInstance"), returnValue, instanceInfo);
             }
 
+            //return value is reported via Context.Return call
+            return Expression.Call(_contextParam, _contextType.GetMethod("Return"), returnValue);
+        }
 
-            if (!returnType.IsSubclassOf(typeof(Instance)))
+        /// <summary>
+        /// Get argument expression according to index
+        /// </summary>
+        /// <param name="index">Zero based index of arguments - zero arguments belongs to this instance</param>
+        /// <param name="resultType">Expected type of result - wrapping, direct value obtaining is processed</param>
+        /// <param name="contextParameter">Parameter with context object</param>
+        /// <returns>Argument expression</returns>
+        private Expression convert(Expression instanceExpression, Type resultType)
+        {
+            if (instanceExpression == null)
+                return null;
+
+            if (instanceExpression.Type == resultType)
+                //there is no conversion needed
+                return instanceExpression;
+
+            var instanceWrapType = typeof(InstanceWrap);
+
+            if (resultType == instanceWrapType)
             {
-                //wrapping is needed
-                callResult = Expression.Call(this.GetType(), "Wrap", new Type[] { returnType }, contextParam, callResult);
+                //wrapp as InstanceWrap
+                var ctor = instanceWrapType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
+                return Expression.New(ctor, new Expression[] { instanceExpression });
             }
-
-            var returnCall = Expression.Call(contextParam, "Return", new Type[0], callResult);
-            return Expression.Lambda<DirectMethod>(returnCall, contextParam).Compile();
+            else
+            {
+                //unwrap to direct value
+                return Expression.Call(DeclaringDefinitionConstant, "Unwrap", new Type[] { resultType }, instanceExpression);
+            }
         }
     }
 }
