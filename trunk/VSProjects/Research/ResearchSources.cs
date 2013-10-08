@@ -238,10 +238,9 @@ namespace TypeExperiments
              c.Return(arg);
          }, Method.String_StringParam)
 
-         .AddRemoveAction("toDelete")
+         .RunRemoveAction("toDelete")
 
-          ;
-
+         ;
         }
 
         static internal TestingAssembly StaticCall()
@@ -266,10 +265,10 @@ namespace TypeExperiments
                 c.SetField(self, "StaticField", "InitValue");
             }, Method.StaticInitializer)
 
-             ;
+            ;
         }
 
-        static internal TestingAssembly EditProvider()
+        static internal TestingAssembly FieldUsage()
         {
             return AssemblyUtils.Run(@"
                 var obj=new TestObj(""input"");
@@ -277,7 +276,7 @@ namespace TypeExperiments
                 var result = obj.GetInput();          
             ")
 
-            .AddMethod("TestObj.TestObj", (c) =>
+            .AddMethod("TestObj.#ctor", (c) =>
             {
                 var thisObj = c.CurrentArguments[0];
                 var arg = c.CurrentArguments[1];

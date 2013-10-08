@@ -26,7 +26,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         internal readonly TestAssemblyCollection Assemblies;
 
-        internal readonly AssemblyLoader Loader;
+        public readonly AssemblyLoader Loader;
 
         /// <summary>
         /// because of accessing runtime adding services for testing purposes
@@ -96,7 +96,6 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// <returns></returns>
         public TestingAssembly AddWrappedGenericToRuntime(Type genericType)
         {
-
             SettingsProvider.AddDirectType(Runtime, typeof(DirectTypeDefinition<>), genericType);
             return this;
         }
@@ -108,14 +107,14 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
-        public TestingAssembly AddEditAction(string variable, string editName)
+        public TestingAssembly RunEditAction(string variable, string editName)
         {
             var editAction = EditAction.Edit(new VariableName(variable), editName);
             _editActions.Add(editAction);
             return this;
         }
 
-        public TestingAssembly AddRemoveAction(string variable)
+        public TestingAssembly RunRemoveAction(string variable)
         {
             var editAction = EditAction.Remove(new VariableName(variable));
             _editActions.Add(editAction);

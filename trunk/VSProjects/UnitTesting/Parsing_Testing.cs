@@ -351,7 +351,7 @@ namespace UnitTesting
                 c.Edits.RemoveArgument(arg, 1, ".reject");
             }, Method.Void_StringParam)
 
-            .AddEditAction("arg", ".reject")
+            .RunEditAction("arg", ".reject")
             .AssertSourceEquivalence(@"
                 var arg=""input"";
                 DirectMethod();
@@ -372,7 +372,7 @@ namespace UnitTesting
                 c.Edits.RemoveArgument(arg, 1, ".reject");
             }, Method.Void_StringParam)
 
-            .AddEditAction("arg", ".reject")
+            .RunEditAction("arg", ".reject")
             .AssertSourceEquivalence(@"
                 var arg=""input"";
                 arg=""input2"";
@@ -395,7 +395,7 @@ namespace UnitTesting
                 c.Edits.ChangeArgument(arg, 1, "Change", (s) => "input3");
             }, Method.Void_StringParam)
 
-            .AddEditAction("arg", "Change")
+            .RunEditAction("arg", "Change")
             .AssertSourceEquivalence(@"
                 var arg=""input"";
                 arg=""input2"";
@@ -423,7 +423,7 @@ namespace UnitTesting
                 AssemblyUtils.EXTERNAL_INPUT = c.EntryContext.GetValue(new VariableName("arg"));
             })
 
-            .AddEditAction("this", "Append")
+            .RunEditAction("this", "Append")
 
             .AssertSourceEquivalence(@"
                 var arg=""input"";
@@ -460,7 +460,7 @@ namespace UnitTesting
                 AssemblyUtils.EXTERNAL_INPUT = AssemblyUtils.REPORTED_INSTANCE;
             })
 
-            .AddEditAction("this", "Append")
+            .RunEditAction("this", "Append")
 
             .AssertSourceEquivalence(@"
                 var arg=""input"";
@@ -502,7 +502,7 @@ namespace UnitTesting
                 AssemblyUtils.EXTERNAL_INPUT = AssemblyUtils.REPORTED_INSTANCE;
             })
 
-            .AddEditAction("this", "Append")
+            .RunEditAction("this", "Append")
 
             .AssertSourceEquivalence(@"
                 var arg2=""spliting line"";
@@ -532,7 +532,7 @@ namespace UnitTesting
              c.Return(arg);
          }, Method.String_StringParam)
 
-         .AddRemoveAction("toDelete")
+         .RunRemoveAction("toDelete")
 
          .AssertSourceEquivalence(@"
             var anotherDeleted=""force redeclaration"";         
@@ -554,7 +554,7 @@ namespace UnitTesting
              c.Return(arg);
          }, Method.String_StringParam)
 
-         .AddRemoveAction("toDelete")
+         .RunRemoveAction("toDelete")
 
          .AssertSourceEquivalence(@"
             CallWithOptional();         
@@ -582,7 +582,7 @@ namespace UnitTesting
                 c.Return(arg);
             }, Method.String_StringParam)
 
-            .AddRemoveAction("toDelete")
+            .RunRemoveAction("toDelete")
 
             .AssertSourceEquivalence(@"
             CallWithOptional();         
@@ -598,7 +598,7 @@ namespace UnitTesting
                 var b=a;
             ")
 
-         .AddRemoveAction("toDelete")
+         .RunRemoveAction("toDelete")
 
          .AssertSourceEquivalence(@"
                 
@@ -618,7 +618,7 @@ namespace UnitTesting
                 a=b=c;              
             ")
 
-         .AddRemoveAction("toDelete")
+         .RunRemoveAction("toDelete")
 
          .AssertSourceEquivalence(@"
                 var a=""valA"";                

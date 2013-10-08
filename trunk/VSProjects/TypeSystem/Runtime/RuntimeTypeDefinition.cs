@@ -9,6 +9,8 @@ using Analyzing.Execution;
 
 using TypeSystem.Runtime.Building;
 
+using Drawing;
+
 namespace TypeSystem.Runtime
 {
     /// <summary>
@@ -47,7 +49,7 @@ namespace TypeSystem.Runtime
         /// Assembly where type builded from this definition is present
         /// </summary>
         internal protected RuntimeAssembly ContainingAssembly { get; private set; }
-         
+
         /// <summary>
         /// Context available for currently invoked call (Null, when no call is invoked)
         /// </summary>
@@ -57,8 +59,10 @@ namespace TypeSystem.Runtime
         /// Arguments available for currently invoked call
         /// </summary>
         internal protected Instance[] CurrentArguments { get { return Context.CurrentArguments; } }
-        
-        abstract internal InstanceInfo TypeInfo{get;}
+
+        internal protected Instance This { get; private set; }
+
+        abstract internal InstanceInfo TypeInfo { get; }
 
         abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
 
@@ -66,7 +70,12 @@ namespace TypeSystem.Runtime
         {
             return TypeInfo;
         }
-        
+
+        protected virtual bool tryDraw(DrawingServices services)
+        {
+            return false;
+        }
+
         internal void Initialize(RuntimeAssembly containingAssembly, TypeServices typeServices)
         {
             if (containingAssembly == null)
@@ -120,17 +129,42 @@ namespace TypeSystem.Runtime
             }
         }
 
-        internal void Invoke(AnalyzingContext context,DirectMethod methodToInvoke)
+        internal void Invoke(AnalyzingContext context, DirectMethod methodToInvoke)
         {
             Context = context;
 
             try
             {
+                This = CurrentArguments[0];
                 methodToInvoke(context);
             }
             finally
             {
+                This = null;
                 Context = null;
+            }
+        }
+
+        internal DrawingDefinition Draw(Instance thisInstance,DrawingServices services)
+        {
+            This = thisInstance;
+
+            try
+            {
+                //TODO inheritance drawing
+                var drawing = new DrawingDefinition();
+                services.CurrentDrawing = drawing;
+
+                if (!tryDraw(services))
+                {
+                    drawing = null;
+                }
+                return drawing;
+            }
+            finally
+            {
+                services.CurrentDrawing = null;
+                This = null;
             }
         }
 
@@ -139,7 +173,7 @@ namespace TypeSystem.Runtime
             //TODO consider generic params
             return new InstanceInfo(type);
         }
-        
+
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)
         {
             throw new NotImplementedException();

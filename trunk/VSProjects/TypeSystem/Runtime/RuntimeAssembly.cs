@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq.Expressions;
 
+using Drawing;
 using Analyzing;
 
 using TypeSystem.Runtime.Building;
@@ -37,7 +38,7 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// Registered data types
         /// </summary>
-        private readonly List<DataTypeDefinition> _dataTypes = new List<DataTypeDefinition>();
+        private readonly Dictionary<string, DataTypeDefinition> _dataTypes = new Dictionary<string, DataTypeDefinition>();
 
         private readonly Dictionary<string, GeneratorProvider> _methodGeneratorProviders;
 
@@ -62,7 +63,7 @@ namespace TypeSystem.Runtime
         /// <param name="definition">Added type definition</param>
         public void AddDefinition(DataTypeDefinition definition)
         {
-            _dataTypes.Add(definition);
+            _dataTypes.Add(definition.FullName, definition);
         }
 
         public void AddDirectDefinition<T>(DirectTypeDefinition<T> definition)
@@ -89,7 +90,7 @@ namespace TypeSystem.Runtime
                 buildDefinition(directType);
             }
 
-            foreach (var dataType in _dataTypes)
+            foreach (var dataType in _dataTypes.Values)
             {
                 buildDefinition(dataType);
                 if (dataType.ComponentInfo != null)
@@ -139,7 +140,7 @@ namespace TypeSystem.Runtime
 
         public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
-            return _runtimeMethods.GetGenericImplementation(methodID, methodSearchPath,implementingTypePath);
+            return _runtimeMethods.GetGenericImplementation(methodID, methodSearchPath, implementingTypePath);
         }
 
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
@@ -218,18 +219,18 @@ namespace TypeSystem.Runtime
         /// <returns>Builder where method is builded</returns>
         private RuntimeMethodGenerator buildMethod(RuntimeTypeDefinition definition, MethodInfo method, string methodName)
         {
-      /*      var wrapping = new MethodBuilder_obsolete(definition, method, methodName);
-            foreach (var param in method.GetParameters())
-            {
-                if (needWrapping(param))
-                {
-                    wrapping.AddUnwrappedParam(param);
-                }
-                else
-                {
-                    wrapping.AddRawParam(param, "TypeName.NotImplemented");
-                }
-            }*/
+            /*      var wrapping = new MethodBuilder_obsolete(definition, method, methodName);
+                  foreach (var param in method.GetParameters())
+                  {
+                      if (needWrapping(param))
+                      {
+                          wrapping.AddUnwrappedParam(param);
+                      }
+                      else
+                      {
+                          wrapping.AddRawParam(param, "TypeName.NotImplemented");
+                      }
+                  }*/
 
             var builder = new MethodBuilder(definition, methodName);
             builder.ThisObjectExpression = builder.DeclaringDefinitionConstant;
@@ -277,5 +278,18 @@ namespace TypeSystem.Runtime
         }
 
         #endregion
+
+        public DrawingDefinition GetDrawing(Instance instance)
+        {
+            DataTypeDefinition typeDefinition;
+            if (!_dataTypes.TryGetValue(instance.Info.TypeName, out typeDefinition))
+                //TODO resolve generic types and inheritance
+                return null;
+
+            //TODO sharing of drawing services
+            var services = new DrawingServices();
+
+            return typeDefinition.Draw(instance, services);
+        }
     }
 }

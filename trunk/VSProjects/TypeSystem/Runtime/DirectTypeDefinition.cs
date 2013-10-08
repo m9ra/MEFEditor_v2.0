@@ -33,9 +33,7 @@ namespace TypeSystem.Runtime
         /// Type representation of direct type
         /// </summary>
         private readonly Type _directType = typeof(DirectType);
-
-        protected DirectType This { get; private set; }
-
+        
         public InstanceInfo ForcedInfo;
 
 

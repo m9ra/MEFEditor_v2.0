@@ -13,11 +13,14 @@ namespace Analyzing
     {
         public readonly CallContext EntryContext;
         private readonly RemoveHandler _removeHandler;
-        
-        internal AnalyzingResult(CallContext entryContext,RemoveHandler removeHandler)
+
+        public readonly IEnumerable<Instance> CreatedInstances;
+
+        internal AnalyzingResult(CallContext entryContext,RemoveHandler removeHandler, IEnumerable<Instance> createdInstances)
         {
             EntryContext = entryContext;
             _removeHandler = removeHandler;
+            CreatedInstances = createdInstances;
         }
 
         public TransformationServices CreateTransformationServices()

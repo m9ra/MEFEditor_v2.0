@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Drawing;
 using Analyzing;
 
 using TypeSystem.Core;
@@ -13,7 +14,6 @@ namespace TypeSystem
     public class AssemblyLoader : LoaderBase
     {
         readonly AssembliesManager _assemblies;
-        
 
         public AssemblyLoader(AssemblyCollection assemblies)
         {
@@ -33,6 +33,11 @@ namespace TypeSystem
         public override MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             return _assemblies.DynamicResolve(method, dynamicArgumentInfo);
+        }
+        
+        public ComponentInfo GetComponentInfo(Instance instance)
+        {
+            return _assemblies.GetComponentInfo(instance);
         }
     }
 }

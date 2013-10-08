@@ -16,6 +16,8 @@ namespace Analyzing
     {
         internal readonly IMachineSettings Settings;
 
+        internal List<Instance> _createdInstances = new List<Instance>();
+
         public Machine(IMachineSettings settings)
         {
             Settings = settings;
@@ -33,6 +35,7 @@ namespace Analyzing
 
             var instance = new DirectInstance(directObject, info, this);
             Settings.InstanceCreated(instance);
+            _createdInstances.Add(instance);
 
             return instance;
         }
@@ -47,6 +50,7 @@ namespace Analyzing
             var instance = new DataInstance(info);
             Settings.InstanceCreated(instance);
 
+            _createdInstances.Add(instance);
             return instance;
         }
 
@@ -66,6 +70,7 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         private AnalyzingResult run(LoaderBase loader, params Instance[] arguments)
         {
+            _createdInstances.Clear();
             var context = new Execution.AnalyzingContext(this, loader);
             context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);
 
@@ -81,7 +86,7 @@ namespace Analyzing
                 instruction.Execute(context);
             }
 
-            return context.GetResult();
+            return context.GetResult(_createdInstances.ToArray());
         }
     }
 }

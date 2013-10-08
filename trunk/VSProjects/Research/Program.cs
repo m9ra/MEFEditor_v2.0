@@ -19,7 +19,7 @@ namespace TypeExperiments
     {
         /// <summary>
         /// Main for running research sources
-        /// </summary>
+        /// </summary>        
         static void Main()
         {
             ////force JIT to precompile before measuring
@@ -28,6 +28,8 @@ namespace TypeExperiments
             var assembly = ResearchSources.CompositionTester_LoadAssembly();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
+
+            executor.TryShowDrawings();
 
             Console.ReadKey();
         }

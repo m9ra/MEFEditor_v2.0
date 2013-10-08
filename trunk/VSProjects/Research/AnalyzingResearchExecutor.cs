@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Threading;
+using System.Windows.Threading;
 using System.Diagnostics;
 
+using Drawing;
 using Analyzing;
 using Analyzing.Execution;
 
@@ -23,6 +26,11 @@ namespace TypeExperiments
         /// Testing assembly defining test execution
         /// </summary>
         private readonly TestingAssembly _assembly;
+
+        /// <summary>
+        /// All discovered drawings (is filled in post processing)
+        /// </summary>
+        private readonly List<DrawingDefinition> _drawings = new List<DrawingDefinition>();
 
         /// <summary>
         /// Result of analyzing execution is stored here
@@ -50,12 +58,26 @@ namespace TypeExperiments
         internal void Execute()
         {
             runExecution();
-            
+
             printEntryContext();
             printOtherContexts();
             printAdditionalInfo();
         }
 
+        /// <summary>
+        /// If there are available drawings, display window is opened
+        /// </summary>
+        internal void TryShowDrawings()
+        {
+            if (_drawings.Count == 0)
+                return;
+
+            var thread = new Thread(showDrawings);
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+        
         #region Printing services
 
         /// <summary>
@@ -94,6 +116,16 @@ namespace TypeExperiments
 
         #region Output building
 
+        private void showDrawings()
+        {
+            var form = new TestForm();
+            var provider = new DrawingProvider(form.Output);
+            
+            form.Show();
+            provider.Draw(_drawings);
+            Dispatcher.Run();
+        }
+
         /// <summary>
         /// Run execution defined by assembly
         /// </summary>
@@ -103,6 +135,21 @@ namespace TypeExperiments
             _watch.Start();
             _result = _assembly.GetResult();
             _watch.Stop();
+
+            
+            foreach (var instance in _result.CreatedInstances)
+            {
+                var info = _assembly.Loader.GetComponentInfo(instance);
+
+                if (info != null)
+                {
+                    var drawing = _assembly.Runtime.GetDrawing(instance);
+                    if (drawing == null)
+                        continue;
+
+                    _drawings.Add(drawing);
+                }
+            }
 
             _entryContext = _result.EntryContext;
         }

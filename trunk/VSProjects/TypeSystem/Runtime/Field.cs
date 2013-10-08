@@ -5,17 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Analyzing;
+using Analyzing.Execution;
 
 namespace TypeSystem.Runtime
 {
     /// <summary>
     /// Handler for field storage in type definition
     /// </summary>
-    public class Field
+    public abstract class Field
     {
         protected readonly string Storage;
 
         protected readonly DataTypeDefinition DefiningType;
+
+        internal abstract object RawObject { get; }
 
         public Field(DataTypeDefinition definingType)
         {
@@ -29,12 +32,14 @@ namespace TypeSystem.Runtime
     /// Handler for field storage in type definition
     /// <typeparam name="FieldType">Type of field</typeparam>
     /// </summary>
-    public class Field<FieldType>:Field
+    public class Field<FieldType> : Field
     {
+        internal override object RawObject { get { return Get(); } }
+
         public Field(DataTypeDefinition definingType)
-            :base(definingType)
+            : base(definingType)
         {
-            
+
         }
 
         /// <summary>
@@ -43,7 +48,7 @@ namespace TypeSystem.Runtime
         /// <returns>Value of property</returns>
         public FieldType Get()
         {
-            return (FieldType)DefiningType.Context.GetField(thisObj, Storage);
+            return (FieldType)thisObj.GetField(Storage);
         }
 
         /// <summary>
@@ -52,16 +57,15 @@ namespace TypeSystem.Runtime
         /// <param name="value">Value that will be set to property</param>
         public void Set(FieldType value)
         {
-            
-            DefiningType.Context.SetField(thisObj, Storage, value);
+            thisObj.SetField(Storage, value);
         }
 
         /// <summary>
         /// Representation of this object
         /// </summary>
-        private Instance thisObj
+        private DataInstance thisObj
         {
-            get { return DefiningType.CurrentArguments[0]; }
+            get { return DefiningType.This as DataInstance; }
         }
     }
 }

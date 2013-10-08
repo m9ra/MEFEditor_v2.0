@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Execution
 {
-    class DataInstance : Instance
+    public class DataInstance : Instance
     {
         readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
 
@@ -23,12 +23,12 @@ namespace Analyzing.Execution
             _info = info;
         }
 
-        internal void SetField(string fieldName, object value)
+        public void SetField(string fieldName, object value)
         {
             _fields[fieldName] = value;
         }
 
-        internal object GetField(string fieldName)
+        public object GetField(string fieldName)
         {
             return _fields[fieldName];
         }

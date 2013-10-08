@@ -39,5 +39,19 @@ namespace UnitTesting.RuntimeTypeDefinitions
         {
             return Import.Get();
         }
+
+        protected override bool tryDraw(DrawingServices services)
+        {
+            var importedValues = Import.Get();
+
+            var i=0;
+            foreach (var value in importedValues)
+            {
+                services.CurrentDrawing.SetProperty("Import[" + i + "]", value);
+                ++i;
+            }
+
+            return true;
+        }
     }
 }
