@@ -279,17 +279,14 @@ namespace TypeSystem.Runtime
 
         #endregion
 
-        public DrawingDefinition GetDrawing(Instance instance)
+        public void Draw(Instance instance, DrawingContext context)
         {
             DataTypeDefinition typeDefinition;
             if (!_dataTypes.TryGetValue(instance.Info.TypeName, out typeDefinition))
                 //TODO resolve generic types and inheritance
-                return null;
-
-            //TODO sharing of drawing services
-            var services = new DrawingServices();
-
-            return typeDefinition.Draw(instance, services);
+                return;
+            
+            typeDefinition.Draw(instance, context);
         }
     }
 }

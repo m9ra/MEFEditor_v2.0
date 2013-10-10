@@ -18,10 +18,10 @@ namespace Drawing
             _output = output;
         }
 
-        public void Draw(IEnumerable<DrawingDefinition> definitions)
+        public void Display(DrawingContext context)
         {
             var i=0;
-            foreach (var definition in definitions)
+            foreach (var definition in context.Definitions)
             {
                 var drawing=new TestControl(definition);
 

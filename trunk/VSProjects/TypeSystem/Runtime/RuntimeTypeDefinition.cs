@@ -71,9 +71,8 @@ namespace TypeSystem.Runtime
             return TypeInfo;
         }
 
-        protected virtual bool tryDraw(DrawingServices services)
+        protected virtual void draw(DrawingServices services)
         {
-            return false;
         }
 
         internal void Initialize(RuntimeAssembly containingAssembly, TypeServices typeServices)
@@ -145,25 +144,18 @@ namespace TypeSystem.Runtime
             }
         }
 
-        internal DrawingDefinition Draw(Instance thisInstance,DrawingServices services)
+        internal void Draw(Instance thisInstance, DrawingContext context)
         {
             This = thisInstance;
 
             try
             {
                 //TODO inheritance drawing
-                var drawing = new DrawingDefinition();
-                services.CurrentDrawing = drawing;
-
-                if (!tryDraw(services))
-                {
-                    drawing = null;
-                }
-                return drawing;
+                var services = new DrawingServices(This,context);
+                draw(services);
             }
             finally
             {
-                services.CurrentDrawing = null;
                 This = null;
             }
         }

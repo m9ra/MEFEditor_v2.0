@@ -24,7 +24,11 @@ namespace TypeExperiments
         {
             InitializeComponent();
 
-            Closed += (sender,arg) => Environment.Exit(0);
+            Closed += (sender, arg) => Environment.Exit(0);
+            KeyDown += (sender, arg) =>
+            {
+                if (arg.Key == Key.Escape) Environment.Exit(0);
+            };
         }
     }
 }

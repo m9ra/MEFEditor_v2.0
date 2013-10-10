@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using System.Diagnostics;
 
 using Drawing;
+using TypeSystem;
 using Analyzing;
 using Analyzing.Execution;
 
@@ -30,7 +31,7 @@ namespace TypeExperiments
         /// <summary>
         /// All discovered drawings (is filled in post processing)
         /// </summary>
-        private readonly List<DrawingDefinition> _drawings = new List<DrawingDefinition>();
+        private DrawingContext _drawings;
 
         /// <summary>
         /// Result of analyzing execution is stored here
@@ -59,6 +60,7 @@ namespace TypeExperiments
         {
             runExecution();
 
+            findDrawings();
             printEntryContext();
             printOtherContexts();
             printAdditionalInfo();
@@ -77,7 +79,7 @@ namespace TypeExperiments
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
         }
-        
+
         #region Printing services
 
         /// <summary>
@@ -120,9 +122,10 @@ namespace TypeExperiments
         {
             var form = new TestForm();
             var provider = new DrawingProvider(form.Output);
-            
+
             form.Show();
-            provider.Draw(_drawings);
+
+            provider.Display(_drawings);
             Dispatcher.Run();
         }
 
@@ -136,22 +139,25 @@ namespace TypeExperiments
             _result = _assembly.GetResult();
             _watch.Stop();
 
-            
+            _entryContext = _result.EntryContext;
+        }
+
+        /// <summary>
+        /// Find drawings between instances created during execution
+        /// </summary>
+        private void findDrawings()
+        {
+            _drawings = new DrawingContext();
+
             foreach (var instance in _result.CreatedInstances)
             {
                 var info = _assembly.Loader.GetComponentInfo(instance);
 
                 if (info != null)
                 {
-                    var drawing = _assembly.Runtime.GetDrawing(instance);
-                    if (drawing == null)
-                        continue;
-
-                    _drawings.Add(drawing);
+                    _assembly.Runtime.Draw(instance, _drawings);
                 }
             }
-
-            _entryContext = _result.EntryContext;
         }
 
         /// <summary>

@@ -41,11 +41,10 @@ namespace UnitTesting.RuntimeTypeDefinitions
             return Export.Get();
         }
 
-        protected override bool tryDraw(DrawingServices services)
+        protected override void draw(DrawingServices services)
         {
             services.PublishField("Export", Export);
-
-            return true;
+            services.CommitDrawing();
         }
     }
 }

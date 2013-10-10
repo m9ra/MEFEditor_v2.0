@@ -45,6 +45,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DrawingContext.cs" />
     <Compile Include="DrawingDefinition.cs" />
     <Compile Include="DrawingProperty.cs" />
     <Compile Include="DrawingProvider.cs" />
