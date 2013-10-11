@@ -144,7 +144,13 @@ namespace TypeSystem.Runtime
             }
         }
 
-        internal void Draw(Instance thisInstance, DrawingContext context)
+        /// <summary>
+        /// Provides drawing of instance into context. Drawing dependencies are returned.
+        /// </summary>
+        /// <param name="thisInstance"></param>
+        /// <param name="context"></param>
+        /// <returns>Dependency instances, that has to be drawed for satisfying thisInstance</returns>
+        internal IEnumerable<Instance> Draw(Instance thisInstance, DrawingContext context)
         {
             This = thisInstance;
 
@@ -153,6 +159,7 @@ namespace TypeSystem.Runtime
                 //TODO inheritance drawing
                 var services = new DrawingServices(This,context);
                 draw(services);
+                return services.DependencyInstances;
             }
             finally
             {

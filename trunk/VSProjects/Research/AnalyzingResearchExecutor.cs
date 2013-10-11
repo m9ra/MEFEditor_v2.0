@@ -118,6 +118,9 @@ namespace TypeExperiments
 
         #region Output building
 
+        /// <summary>
+        /// Proces showing form with discovered drawings
+        /// </summary>
         private void showDrawings()
         {
             var form = new TestForm();
@@ -151,9 +154,10 @@ namespace TypeExperiments
 
             foreach (var instance in _result.CreatedInstances)
             {
+                //TODO display components or types with defined drawers
                 var info = _assembly.Loader.GetComponentInfo(instance);
 
-                if (info != null)
+                if (info != null || instance.Info.TypeName == "CompositionTester")
                 {
                     _assembly.Runtime.Draw(instance, _drawings);
                 }

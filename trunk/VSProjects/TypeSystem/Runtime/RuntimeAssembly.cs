@@ -281,12 +281,26 @@ namespace TypeSystem.Runtime
 
         public void Draw(Instance instance, DrawingContext context)
         {
-            DataTypeDefinition typeDefinition;
-            if (!_dataTypes.TryGetValue(instance.Info.TypeName, out typeDefinition))
-                //TODO resolve generic types and inheritance
-                return;
-            
-            typeDefinition.Draw(instance, context);
+            var toDraw = new Queue<Instance>();
+            toDraw.Enqueue(instance);
+
+            while (toDraw.Count > 0)
+            {
+                var drawedInstance = toDraw.Dequeue();
+                if (context.ContainsDrawing(drawedInstance.ID))
+                    //instance is already drawed
+                    continue;
+
+                DataTypeDefinition typeDefinition;
+                if (!_dataTypes.TryGetValue(instance.Info.TypeName, out typeDefinition))
+                    //TODO resolve generic types and inheritance
+                    return;
+
+                var dependencies = typeDefinition.Draw(instance, context);
+
+                foreach (var dependency in dependencies)
+                    toDraw.Enqueue(dependency);
+            }
         }
     }
 }

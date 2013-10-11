@@ -25,7 +25,7 @@ namespace Drawing
             {
                 var drawing=new TestControl(definition);
 
-                Canvas.SetTop(drawing, i * 200);
+                Canvas.SetTop(drawing, i * 100);
                 _output.Children.Add(drawing);
 
                 ++i;

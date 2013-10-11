@@ -8,15 +8,23 @@ namespace Drawing
 {
     public class DrawingContext
     {
-        private readonly List<DrawingDefinition> _definitions = new List<DrawingDefinition>();
+        private readonly Dictionary<string,DrawingDefinition> _definitions = new Dictionary<string,DrawingDefinition>();
 
-        public IEnumerable<DrawingDefinition> Definitions { get { return _definitions; } }
+        public IEnumerable<DrawingDefinition> Definitions { get { return _definitions.Values; } }
 
         public int Count { get { return _definitions.Count; } }
 
         public void Add(DrawingDefinition drawing)
         {
-            _definitions.Add(drawing);
+            if (ContainsDrawing(drawing.ID))
+                throw new NotSupportedException("Drawing definition with same ID has already been added");
+
+            _definitions.Add(drawing.ID,drawing);
+        }
+
+        public bool ContainsDrawing(string id)
+        {
+            return _definitions.ContainsKey(id);
         }
     }
 }

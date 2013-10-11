@@ -68,8 +68,6 @@ namespace MEFAnalyzers.CompositionEngine
 
             _instanceStorages[componentRef] = compStorage;
             _componentRefs.Add(componentRef);
-
-
         }
 
         /// <summary>

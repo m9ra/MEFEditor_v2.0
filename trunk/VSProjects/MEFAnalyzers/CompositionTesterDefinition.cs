@@ -17,12 +17,18 @@ namespace MEFAnalyzers
     {
         Field<string> AssemblyPath;
         Field<List<Instance>> Parts;
+        Field<bool> Composed;
+        Field<CompositionResult> CompositionResult;
+        Field<CompositionContext> CompositionContext;
 
         public CompositionTesterDefinition()
-        {            
+        {
             FullName = "CompositionTester";
             AssemblyPath = new Field<string>(this);
             Parts = new Field<List<Instance>>(this);
+            Composed = new Field<bool>(this);
+            CompositionContext = new Field<CompositionContext>(this);
+            CompositionResult = new Field<CompositionResult>(this);
         }
 
         public void _method_ctor(Instance part1, Instance part2)
@@ -36,13 +42,13 @@ namespace MEFAnalyzers
         public void _method_ctor(string assemblyPath)
         {
             Parts.Set(new List<Instance>());
-            AssemblyPath.Set(assemblyPath);            
+            AssemblyPath.Set(assemblyPath);
         }
 
         public void _method_Compose()
         {
             var path = AssemblyPath.Get();
-            var assembly=Services.LoadAssembly(path);
+            var assembly = Services.LoadAssembly(path);
 
             var compositionContext = new CompositionContext(Services);
             foreach (var part in Parts.Get())
@@ -66,12 +72,29 @@ namespace MEFAnalyzers
         private void compose(CompositionContext compositionContext)
         {
             var composition = CompositionProvider.Compose(compositionContext);
-
+            CompositionResult.Set(composition);
+            CompositionContext.Set(compositionContext);
             if (!composition.Failed)
             {
                 Context.DynamicCall("$dynamic_composition", composition.Generator, compositionContext.InputInstances);
+                Composed.Set(true);
             }
         }
 
+        protected override void draw(DrawingServices services)
+        {
+            services.PublishField("AssemblyPath", AssemblyPath);
+            services.PublishField("Composed", Composed);
+
+            var slot = services.AddSlot();
+
+            foreach (var component in CompositionContext.Get().InputInstances)
+            {
+                var reference = services.Draw(component);
+                slot.Add(reference);
+            }
+
+            services.CommitDrawing();
+        }
     }
 }
