@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing;
+
 namespace MEFAnalyzers.CompositionEngine
 {
     /// <summary>
@@ -42,7 +44,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <param name="joins">Collected joins.</param>
         /// <param name="points">Collected points</param>
         /// <param name="error">Error which appeared during composition.</param>
-        internal CompositionResult(Join[] joins, JoinPoint[] points,CompositionGenerator generator, string error)
+        internal CompositionResult(Join[] joins, JoinPoint[] points, CompositionGenerator generator, string error)
         {
             Joins = joins;
             Points = points;
@@ -50,6 +52,6 @@ namespace MEFAnalyzers.CompositionEngine
             Error = error;
 
             Generator = generator;
-        }        
+        }
     }
 }

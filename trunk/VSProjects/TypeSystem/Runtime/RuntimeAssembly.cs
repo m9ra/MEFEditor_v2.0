@@ -292,11 +292,11 @@ namespace TypeSystem.Runtime
                     continue;
 
                 DataTypeDefinition typeDefinition;
-                if (!_dataTypes.TryGetValue(instance.Info.TypeName, out typeDefinition))
+                if (!_dataTypes.TryGetValue(drawedInstance.Info.TypeName, out typeDefinition))
                     //TODO resolve generic types and inheritance
                     return;
 
-                var dependencies = typeDefinition.Draw(instance, context);
+                var dependencies = typeDefinition.Draw(drawedInstance, context);
 
                 foreach (var dependency in dependencies)
                     toDraw.Enqueue(dependency);

@@ -67,7 +67,7 @@ namespace Analyzing
         /// </summary>
         /// <param name="info">Info determining type of created instance</param>
         /// <returns>Created instance</returns>
-        internal Instance CreateInstance(InstanceInfo info)
+        public Instance CreateInstance(InstanceInfo info)
         {
             if (Settings.IsDirect(info))
             {

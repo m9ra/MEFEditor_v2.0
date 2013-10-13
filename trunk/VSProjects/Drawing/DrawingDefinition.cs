@@ -8,7 +8,7 @@ namespace Drawing
 {
     public class DrawingDefinition
     {
-        private Dictionary<string, DrawingProperty> _properties = new Dictionary<string, DrawingProperty>();
+        private DrawingProperties _properties = new DrawingProperties();
 
         private HashSet<DrawingSlot> _slots = new HashSet<DrawingSlot>();
 

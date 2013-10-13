@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Drawing;
 using Analyzing;
 
 using TypeSystem;
@@ -33,10 +34,11 @@ namespace MEFAnalyzers
 
         public void _method_ctor(Instance part1, Instance part2)
         {
-            var compositionContext = new CompositionContext(Services);
+            var compositionContext = new CompositionContext(Services, Context);
             compositionContext.AddConstructedComponents(part1, part2);
 
             compose(compositionContext);
+            AssemblyPath.Set("Undefined");
         }
 
         public void _method_ctor(string assemblyPath)
@@ -50,7 +52,7 @@ namespace MEFAnalyzers
             var path = AssemblyPath.Get();
             var assembly = Services.LoadAssembly(path);
 
-            var compositionContext = new CompositionContext(Services);
+            var compositionContext = new CompositionContext(Services, Context);
             foreach (var part in Parts.Get())
             {
                 compositionContext.AddConstructedComponents(part);
@@ -94,7 +96,31 @@ namespace MEFAnalyzers
                 slot.Add(reference);
             }
 
+            var compositionResult = CompositionResult.Get();
+
+            foreach (var point in compositionResult.Points)
+            {
+                var joinPoint = getJoinPoint(point, services);
+                //TODO set join point properties
+            }
+
+            foreach (var join in compositionResult.Joins)
+            {
+                var fromPoint = getJoinPoint(join.Export, services);
+                var toPoint = getJoinPoint(join.Import, services);
+
+                var joinDefinition = services.DrawJoin(fromPoint, toPoint);
+                //TODO set properties of joinDefinition
+            }
+
             services.CommitDrawing();
+        }
+
+        private JoinPointDefinition getJoinPoint(JoinPoint point, DrawingServices services)
+        {
+            var compositionResult = CompositionResult.Get();
+            var instance = point.Instance.Component;
+            return services.GetJoinPoint(instance, point.Point);
         }
     }
 }

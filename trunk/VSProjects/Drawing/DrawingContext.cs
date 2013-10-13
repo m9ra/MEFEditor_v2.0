@@ -10,6 +10,10 @@ namespace Drawing
     {
         private readonly Dictionary<string,DrawingDefinition> _definitions = new Dictionary<string,DrawingDefinition>();
 
+        private readonly Dictionary<string, JoinPointDefinitions> _joinPointDefintions = new Dictionary<string, JoinPointDefinitions>();
+
+        private readonly HashSet<JoinDefinition> _joinDefinitions = new HashSet<JoinDefinition>();
+
         public IEnumerable<DrawingDefinition> Definitions { get { return _definitions.Values; } }
 
         public int Count { get { return _definitions.Count; } }
@@ -25,6 +29,29 @@ namespace Drawing
         public bool ContainsDrawing(string id)
         {
             return _definitions.ContainsKey(id);
+        }
+
+        public JoinPointDefinition DrawJoinPoint(DrawingReference owningDrawing,object pointKey)
+        {
+            JoinPointDefinitions joins;
+
+            if(!_joinPointDefintions.TryGetValue(owningDrawing.DefinitionID,out joins)){
+                joins=new JoinPointDefinitions();
+                _joinPointDefintions[owningDrawing.DefinitionID]=joins;
+            }
+
+            JoinPointDefinition result;
+            if(!joins.TryGetValue(pointKey,out result)){
+                result=new JoinPointDefinition(owningDrawing);
+                joins[pointKey]=result;
+            }
+
+            return result;
+        }
+
+        public void DrawJoin(JoinDefinition join)
+        {
+            _joinDefinitions.Add(join);
         }
     }
 }

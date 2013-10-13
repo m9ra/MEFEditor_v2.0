@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Analyzing;
+using Analyzing.Execution;
 using TypeSystem;
 using Utilities;
 
@@ -19,6 +20,8 @@ namespace MEFAnalyzers.CompositionEngine
     {
         private readonly TypeServices _services;
 
+        private readonly AnalyzingContext _context;
+
         private readonly HashSet<ComponentRef> _componentRefs = new HashSet<ComponentRef>();
 
         private readonly List<Instance> _inputInstances = new List<Instance>();
@@ -29,45 +32,31 @@ namespace MEFAnalyzers.CompositionEngine
 
         internal IEnumerable<ComponentRef> Components { get { return _componentRefs; } }
 
-        public Instance[] InputInstances
-        {
-            get
-            {
-                return _inputInstances.ToArray();
-            }
-        }
+        public Instance[] InputInstances { get { return _inputInstances.ToArray(); } }
 
-        internal CompositionContext(TypeServices services)
+        internal CompositionContext(TypeServices services, AnalyzingContext context)
         {
             _services = services;
+            _context = context;
         }
 
         internal void AddConstructedComponents(params Instance[] components)
         {
-            for (int i = 0; i < components.Length; ++i)
+            foreach (var component in components)
             {
-                var component = components[i];
                 var info = _services.GetComponentInfo(component);
-                var componentRef = new ComponentRef(this, true, info);
+                var componentRef = new ComponentRef(this, true, info, component);
 
-                _componentRefs.Add(componentRef);
                 addInputComponent(component, componentRef);
             }
         }
 
         internal void AddComponentType(ComponentInfo componentInfo)
         {
-            var componentRef = new ComponentRef(this, false, componentInfo);
+            var component = _context.Machine.CreateInstance(componentInfo.ComponentType);
+            var componentRef = new ComponentRef(this, false, componentInfo, component);
 
-            var compStorage = getFreeStorage("comp");
-
-            emit((e) =>
-            {
-                e.AssignNewObject(compStorage, componentInfo.ComponentType);
-            });
-
-            _instanceStorages[componentRef] = compStorage;
-            _componentRefs.Add(componentRef);
+            addInputComponent(component, componentRef);
         }
 
         /// <summary>
@@ -83,7 +72,9 @@ namespace MEFAnalyzers.CompositionEngine
             _inputInstances.Add(component);
             var storage = string.Format("arg_{0}", argumentIndex);
             emit((e) => e.AssignArgument(storage, component.Info, (uint)argumentIndex));
+
             _instanceStorages.Add(componentRef, storage);
+            _componentRefs.Add(componentRef);
         }
 
         /// <summary>
@@ -233,7 +224,5 @@ namespace MEFAnalyzers.CompositionEngine
         {
             return _services.TryGetImplementation(type, abstractMethod);
         }
-
     }
-
 }

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 using Drawing;
 
-using Analyzing;    
+using Analyzing;
 
 namespace TypeSystem.Runtime
 {
     public class DrawingServices
     {
-        private readonly HashSet<Instance> _needDrawingInstances=new HashSet<Instance>();
+        private readonly HashSet<Instance> _needDrawingInstances = new HashSet<Instance>();
 
         internal IEnumerable<Instance> DependencyInstances { get { return _needDrawingInstances; } }
 
@@ -24,7 +24,7 @@ namespace TypeSystem.Runtime
 
         internal DrawingServices(Instance instance, DrawingContext context)
         {
-            Drawing = new DrawingDefinition(instance.ID,instance.Info.TypeName);
+            Drawing = new DrawingDefinition(instance.ID, instance.Info.TypeName);
             DrawedInstance = instance;
             Context = context;
         }
@@ -47,6 +47,28 @@ namespace TypeSystem.Runtime
             Context.Add(Drawing);
         }
 
+        public JoinPointDefinition GetJoinPoint(Instance instance, object pointKey)
+        {
+            var instanceReference = getReference(instance);
+            return Context.DrawJoinPoint(instanceReference, pointKey);
+        }
+
+        /// <summary>
+        /// TODO better join point resolvings
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        public JoinDefinition DrawJoin(JoinPointDefinition from, JoinPointDefinition to)
+        {
+            var join = new JoinDefinition(from, to);
+
+            Context.DrawJoin(join);
+            
+
+            return join;
+        }
+
         /// <summary>
         /// Force drawing of given instance. Its reference can be used
         /// in drawing slot.
@@ -55,7 +77,12 @@ namespace TypeSystem.Runtime
         /// <returns>Drawing reference for displaying in drawing slot</returns>
         public DrawingReference Draw(Instance instance)
         {
-            //TODO enqueue instance to need definition queue
+            _needDrawingInstances.Add(instance);
+            return getReference(instance);
+        }
+
+        private DrawingReference getReference(Instance instance)
+        {
             return new DrawingReference(instance.ID);
         }
     }
