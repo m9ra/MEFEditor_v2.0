@@ -4,32 +4,42 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Drawing
 {
     public class DrawingProvider
     {
-        private readonly Canvas _output;
-
-        public DrawingProvider(Canvas output)
+        private readonly DisplayEngine _engine;
+        
+        public DrawingProvider(DiagramCanvas output)
         {
             //TODO require DefinitionDrawers
-            _output = output;
+            _engine = new DisplayEngine(output);
         }
 
         public void Display(DrawingContext context)
         {
-            var i=0;
             foreach (var definition in context.Definitions)
             {
-                var drawing=new TestControl(definition);
+                var drawing=new DiagramItem(definition);
 
-                Canvas.SetTop(drawing, i * 100);
-                _output.Children.Add(drawing);
+                foreach (var joinPoint in context.GetJoinPointDefinitions(definition))
+                {
+                    var connector = new Connector(joinPoint);
+                    drawing.Attach(connector);
+                }
 
-                ++i;
+                _engine.AddItem(drawing);
             }
+
+            foreach (var join in context.JoinDefinitions)
+            {
+                _engine.AddJoin(join);
+            }
+
+            _engine.Display();
         }
     }
 }

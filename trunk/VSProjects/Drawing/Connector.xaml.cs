@@ -16,21 +16,20 @@ using System.Windows.Shapes;
 namespace Drawing
 {
     /// <summary>
-    /// Interaction logic for TestControl.xaml
+    /// Interaction logic for Connector.xaml
     /// </summary>
-    public partial class TestControl : UserControl
+    public partial class Connector : UserControl
     {
-        public TestControl(DrawingDefinition definition)
+        public readonly JoinPointDefinition Definition;
+        /// <summary>
+        /// Point where line will be connected to (relative to connector's position)
+        /// </summary>
+        public Point ConnectPoint { get; private set; }
+
+        public Connector(JoinPointDefinition definition)
         {
+            Definition = definition;    
             InitializeComponent();
-
-            foreach (var property in definition.Properties)
-            {
-                var propertyBlock = new TextBlock();
-                propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);
-
-                Properties.Children.Add(propertyBlock);
-            }
         }
     }
 }
