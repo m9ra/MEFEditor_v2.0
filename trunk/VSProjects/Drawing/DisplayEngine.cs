@@ -119,9 +119,11 @@ namespace Drawing
             var item = _items[id];
             
             PositionChange.AddValueChanged(item,(e,args)=>{
-            /*    var position = _output.TranslatePoint(connector.ConnectPoint, connector);
-                update(new Point(-position.X,-position.Y));*/
-                update(GetPosition(item));
+                var relativePos = item.TranslatePoint(connector.ConnectPoint, connector);
+            /*    update(new Point(-position.X,-position.Y));*/
+                var itemPos=GetPosition(item);
+                var finalPosition = new Point(itemPos.X - relativePos.X, itemPos.Y - relativePos.Y);
+                update(finalPosition);
             });
         }
 
