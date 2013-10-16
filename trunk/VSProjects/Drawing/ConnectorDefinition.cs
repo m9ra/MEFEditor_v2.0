@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Drawing
 {
-    public class JoinPointDefinition
+    public class ConnectorDefinition
     {
         public readonly DrawingReference Reference;
 
-        public JoinPointDefinition(DrawingReference reference)
+        public ConnectorDefinition(DrawingReference reference)
         {
             Reference = reference;
         }

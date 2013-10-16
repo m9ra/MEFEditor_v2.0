@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Drawing
 {
-    class JoinPointDefinitions:Dictionary<object,JoinPointDefinition>
+    class JoinPointDefinitions:Dictionary<object,ConnectorDefinition>
     {
     }
 }

@@ -12,11 +12,14 @@ using Drawing;
 using TypeSystem;
 using Analyzing;
 using Analyzing.Execution;
+using MEFAnalyzers.Drawings;
+
+using Research.Drawings;
 
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 
-namespace TypeExperiments
+namespace Research
 {
     /// <summary>
     /// Executor for running tasks on testing assembly
@@ -124,7 +127,11 @@ namespace TypeExperiments
         private void showDrawings()
         {
             var form = new TestForm();
-            var provider = new DrawingProvider(form.Output);
+            var factory = new DiagramFactory(
+                new ContentDrawer(null, (d) => new ComponentDrawing(d)),
+                new ContentDrawer("CompositionTester", (d) => new CompositionTesterDrawing(d))
+                );
+            var provider = new DrawingProvider(form.Output, factory);
 
             form.Show();
 

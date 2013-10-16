@@ -10,12 +10,12 @@ namespace Drawing
     {
         private readonly DrawingProperties _joinProperties = new DrawingProperties();
 
-        public readonly JoinPointDefinition From;
-        public readonly JoinPointDefinition To;
+        public readonly ConnectorDefinition From;
+        public readonly ConnectorDefinition To;
 
         public IEnumerable<DrawingProperty> Properties { get { return _joinProperties.Values ; } }
 
-        public JoinDefinition(JoinPointDefinition from, JoinPointDefinition to)
+        public JoinDefinition(ConnectorDefinition from, ConnectorDefinition to)
         {
             From = from;
             To = to;

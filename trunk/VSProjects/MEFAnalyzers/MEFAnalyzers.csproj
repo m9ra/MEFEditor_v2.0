@@ -30,14 +30,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompositionEngine\CompositionContext.cs" />
@@ -51,6 +55,16 @@
     <Compile Include="CompositionEngine\CompositionWorker.cs" />
     <Compile Include="CompositionTesterDefinition.cs" />
     <Compile Include="DirectoryCatalogDefinition.cs" />
+    <Compile Include="Drawings\ComponentDrawing.xaml.cs">
+      <DependentUpon>ComponentDrawing.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Drawings\CompositionTesterDrawing.xaml.cs">
+      <DependentUpon>CompositionTesterDrawing.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Drawings\CompositionConnector.xaml.cs">
+      <DependentUpon>CompositionConnector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Drawings\ExportJoin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +84,20 @@
       <Project>{7c9e6dff-b855-47bb-be22-b4c0c45b73eb}</Project>
       <Name>Utilities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Drawings\ComponentDrawing.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Drawings\CompositionTesterDrawing.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Drawings\CompositionConnector.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

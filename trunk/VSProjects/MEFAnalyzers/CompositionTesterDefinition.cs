@@ -116,7 +116,7 @@ namespace MEFAnalyzers
             services.CommitDrawing();
         }
 
-        private JoinPointDefinition getJoinPoint(JoinPoint point, DrawingServices services)
+        private ConnectorDefinition getJoinPoint(JoinPoint point, DrawingServices services)
         {
             var compositionResult = CompositionResult.Get();
             var instance = point.Instance.Component;

@@ -14,180 +14,110 @@ using System.Windows.Controls;
 using System.ComponentModel;
 
 
+using Drawing.Behaviours;
+
 namespace Drawing
 {
     delegate void PositionUpdate(Point position);
 
     class DisplayEngine
     {
-
-        private readonly DependencyPropertyDescriptor PositionChange = DependencyPropertyDescriptor.FromProperty(DiagramCanvas.PositionProperty,typeof(UserControl));
         private readonly Dictionary<string, HashSet<JoinDefinition>> _affectedJoins = new Dictionary<string, HashSet<JoinDefinition>>();
 
         private readonly Dictionary<string, DiagramItem> _items = new Dictionary<string, DiagramItem>();
 
         private readonly Dictionary<JoinDefinition, Line> _joins = new Dictionary<JoinDefinition, Line>();
 
-        private readonly LinkedList<DiagramItem> _itemsZOrdering = new LinkedList<DiagramItem>();
-
         private readonly DiagramCanvas _output;
+
+        ElementGroup _orderingGroup = new ElementGroup();
 
         internal DisplayEngine(DiagramCanvas output)
         {
             _output = output;
         }
 
-        internal void AddItem(DiagramItem item)
+        #region Public API
+
+        public void Display()
         {
-            hookHandlers(item);
-            _items.Add(item.Definition.ID, item);
-            _itemsZOrdering.AddFirst(item);
-        }
-
-        internal void AddJoin(JoinDefinition joinDefinition)
-        {
-            var from = getConnector(joinDefinition.From);
-            var to = getConnector(joinDefinition.To);
-
-            var join = new Line();
-            join.StrokeThickness = 2;
-            join.Stroke = Brushes.Orange;
-            _joins[joinDefinition] = join;
-
-            registerAffectedConnector(from, joinDefinition);
-            registerAffectedConnector(to, joinDefinition);
-
-
-            registerPositionChange(from, (p) =>
-            {
-                join.X1 = p.X;
-                join.Y1 = p.Y;
-            });
-
-            registerPositionChange(to, (p) =>
-            {
-                join.X2 = p.X;
-                join.Y2 = p.Y;
-            });
-
-            _output.AddJoin(join);
-        }
-
-        internal void Display()
-        {
-            applyZOrdering();
             foreach (var item in _items.Values)
             {
                 _output.Children.Add(item);
             }
         }
 
-        internal void Clear()
+        public void Clear()
         {
+            _orderingGroup = new ElementGroup();
             _items.Clear();
             _output.Children.Clear();
         }
 
-        internal void SetPosition(DiagramItem item, Point position)
+        #endregion
+
+        #region Display building methods
+
+        internal void AddItem(DiagramItem item)
+        {
+            DragAndDrop.Attach(item, GetPosition, SetPosition);
+            ZOrdering.Attach(item, _orderingGroup);
+            _items.Add(item.Definition.ID, item);
+        }
+
+        internal void AddJoin(JoinDrawing join)
+        {
+            var from = getConnector(join.Definition.From);
+            var to = getConnector(join.Definition.To);
+
+            join.PointPath=new []{new Point(),new Point()};
+
+            FollowRelativePosition.Attach(from, this, (p) =>
+            {
+                //this is only workaround, until there will be path finding algorithm
+                var path = new []{p}.Union(join.PointPath.Skip(1)).ToArray();
+
+                join.PointPath=path;
+            });
+
+            FollowRelativePosition.Attach(to,this, (p) =>
+            {
+                //this is only workaround, until there will be path finding algorithm
+                var path = new[] { join.PointPath.First(), p };
+
+                join.PointPath = path;
+            });
+
+            _output.AddJoin(join);
+        }
+
+        #endregion
+
+        #region Services for item states discovering
+
+        internal void SetPosition(FrameworkElement item, Point position)
         {
             DiagramCanvas.SetPosition(item, position);
         }
 
-        internal Point GetPosition(DiagramItem item)
+        internal Point GetPosition(FrameworkElement item)
         {
             return DiagramCanvas.GetPosition(item);
         }
-
-        private void registerAffectedConnector(Connector connector, JoinDefinition definition)
+        
+        internal DiagramItem GetItem(DrawingReference drawingReference)
         {
-            var id = connector.Definition.Reference.DefinitionID;
-
-            HashSet<JoinDefinition> joins;
-            if (!_affectedJoins.TryGetValue(id, out joins))
-            {
-                joins = new HashSet<JoinDefinition>();
-                _affectedJoins[id] = joins;
-            }
-
-            joins.Add(definition);
+            return _items[drawingReference.DefinitionID];
         }
 
-        private void registerPositionChange(Connector connector, PositionUpdate update)
-        {
-            var id = connector.Definition.Reference.DefinitionID;
+        #endregion
 
-            var item = _items[id];
-            
-            PositionChange.AddValueChanged(item,(e,args)=>{
-                var relativePos = item.TranslatePoint(connector.ConnectPoint, connector);
-            /*    update(new Point(-position.X,-position.Y));*/
-                var itemPos=GetPosition(item);
-                var finalPosition = new Point(itemPos.X - relativePos.X, itemPos.Y - relativePos.Y);
-                update(finalPosition);
-            });
-        }
+        #region Private utilites
 
-        private Connector getConnector(JoinPointDefinition joinPointDefinition)
+        private ConnectorDrawing getConnector(ConnectorDefinition joinPointDefinition)
         {
             var item = _items[joinPointDefinition.Reference.DefinitionID];
             return item.GetConnector(joinPointDefinition);
-        }
-
-        private void hookHandlers(DiagramItem item)
-        {
-            item.MouseMove += (source, e) => onMouseMove(item, e);
-            item.MouseDown += (source, e) => onMouseDown(item, e);
-            item.MouseUp += (source, e) => onMouseUp(item, e);
-        }
-
-        private void sendFront(DiagramItem item)
-        {
-            _itemsZOrdering.Remove(item);
-            _itemsZOrdering.AddFirst(item);
-
-            applyZOrdering();
-        }
-
-        private void applyZOrdering()
-        {
-            var currentIndex = 0;
-            foreach (var item in _itemsZOrdering)
-            {
-                --currentIndex;
-
-                DiagramCanvas.SetZIndex(item, currentIndex);
-            }
-        }
-
-        #region Drag drop moving operation
-
-        void onMouseMove(DiagramItem item, MouseEventArgs e)
-        {
-            if (!item.IsDragStarted)
-                return;
-
-            var currentMousePos = e.GetPosition(null);
-            var shift = currentMousePos - item.LastDragPosition;
-            item.LastDragPosition = currentMousePos;
-
-            var currentItemPos = GetPosition(item);
-
-            currentItemPos += shift;
-            SetPosition(item, currentItemPos);
-        }
-
-        private void onMouseDown(DiagramItem item, MouseButtonEventArgs e)
-        {
-            item.CaptureMouse();
-            sendFront(item);
-            item.LastDragPosition = e.GetPosition(null);
-            item.IsDragStarted = true;
-        }
-
-        private void onMouseUp(DiagramItem item, MouseButtonEventArgs e)
-        {
-            item.IsDragStarted = false;
-            item.ReleaseMouseCapture();
         }
 
         #endregion

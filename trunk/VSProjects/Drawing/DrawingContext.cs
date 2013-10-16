@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Drawing
 {
+    /// <summary>
+    /// Provides API for defining drawing
+    /// </summary>
     public class DrawingContext
     {
         private readonly Dictionary<string, DrawingDefinition> _definitions = new Dictionary<string, DrawingDefinition>();
@@ -18,9 +21,17 @@ namespace Drawing
 
         public IEnumerable<JoinDefinition> JoinDefinitions { get { return _joinDefinitions; } }
 
+        /// <summary>
+        /// Number of defined DrawingDefinitions
+        /// </summary>
         public int Count { get { return _definitions.Count; } }
 
-        public void Add(DrawingDefinition drawing)
+        /// <summary>
+        /// Add drawing definition into context. Given drawing
+        /// definition will be displayed in output
+        /// </summary>
+        /// <param name="drawing">Defined drawing</param>
+        public void Draw(DrawingDefinition drawing)
         {
             if (ContainsDrawing(drawing.ID))
                 throw new NotSupportedException("Drawing definition with same ID has already been added");
@@ -28,12 +39,25 @@ namespace Drawing
             _definitions.Add(drawing.ID, drawing);
         }
 
+        /// <summary>
+        /// Determine that context already contains drawing definition for given ID
+        /// </summary>
+        /// <param name="id">ID which drawing is tested</param>
+        /// <returns>True if context contains given drawing, false otherwise</returns>
         public bool ContainsDrawing(string id)
         {
             return _definitions.ContainsKey(id);
         }
 
-        public JoinPointDefinition DrawJoinPoint(DrawingReference owningDrawing, object pointKey)
+        /// <summary>
+        /// Add join point into context. If join point with given pointKey
+        /// is already defined for owningDrawing, existing join point definition
+        /// is returned.
+        /// </summary>
+        /// <param name="owningDrawing">Reference to drawing definition containing drawed join point</param>
+        /// <param name="pointKey">Key, providing access to join point</param>
+        /// <returns>Created or existing join point for given pointKey</returns>
+        public ConnectorDefinition DrawJoinPoint(DrawingReference owningDrawing, object pointKey)
         {
             JoinPointDefinitions joins;
 
@@ -43,28 +67,37 @@ namespace Drawing
                 _joinPointDefintions[owningDrawing.DefinitionID] = joins;
             }
 
-            JoinPointDefinition result;
+            ConnectorDefinition result;
             if (!joins.TryGetValue(pointKey, out result))
             {
-                result = new JoinPointDefinition(owningDrawing);
+                result = new ConnectorDefinition(owningDrawing);
                 joins[pointKey] = result;
             }
 
             return result;
         }
 
+        /// <summary>
+        /// Add join into context.
+        /// </summary>
+        /// <param name="join">Join that will be drawed</param>
         public void DrawJoin(JoinDefinition join)
         {
             _joinDefinitions.Add(join);
         }
 
-        internal IEnumerable<JoinPointDefinition> GetJoinPointDefinitions(DrawingDefinition definition)
+        /// <summary>
+        /// Get all defined join points for given drawing definition
+        /// </summary>
+        /// <param name="definition">Drawing definition which join points will be returned</param>
+        /// <returns>Defined join points</returns>
+        internal IEnumerable<ConnectorDefinition> GetConnectorDefinitions(DrawingDefinition definition)
         {
             JoinPointDefinitions definitions;
             if (_joinPointDefintions.TryGetValue(definition.ID, out  definitions))
                 return definitions.Values;
 
-            return new JoinPointDefinition[0];
+            return new ConnectorDefinition[0];
         }
     }
 }

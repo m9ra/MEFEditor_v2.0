@@ -12,11 +12,13 @@ namespace Drawing
     public class DrawingProvider
     {
         private readonly DisplayEngine _engine;
-        
-        public DrawingProvider(DiagramCanvas output)
-        {
-            //TODO require DefinitionDrawers
+
+        private readonly AbstractDiagramFactory _diagramFactory;
+
+        public DrawingProvider(DiagramCanvas output,AbstractDiagramFactory diagramFactory)
+        {            
             _engine = new DisplayEngine(output);
+            _diagramFactory = diagramFactory;
         }
 
         public void Display(DrawingContext context)
@@ -25,17 +27,20 @@ namespace Drawing
             {
                 var drawing=new DiagramItem(definition);
 
-                foreach (var joinPoint in context.GetJoinPointDefinitions(definition))
+                foreach (var connectorDefinition in context.GetConnectorDefinitions(definition))
                 {
-                    var connector = new Connector(joinPoint);
+                    var connector = _diagramFactory.CreateConnector(connectorDefinition);
                     drawing.Attach(connector);
                 }
 
+                var content = _diagramFactory.CreateContent(definition);
+                drawing.SetContent(content);
                 _engine.AddItem(drawing);
             }
 
-            foreach (var join in context.JoinDefinitions)
+            foreach (var joinDefinition in context.JoinDefinitions)
             {
+                var join=_diagramFactory.CreateJoin(joinDefinition);
                 _engine.AddJoin(join);
             }
 

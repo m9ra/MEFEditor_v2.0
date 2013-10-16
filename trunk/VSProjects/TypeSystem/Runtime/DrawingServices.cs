@@ -44,10 +44,10 @@ namespace TypeSystem.Runtime
 
         public void CommitDrawing()
         {
-            Context.Add(Drawing);
+            Context.Draw(Drawing);
         }
 
-        public JoinPointDefinition GetJoinPoint(Instance instance, object pointKey)
+        public ConnectorDefinition GetJoinPoint(Instance instance, object pointKey)
         {
             var instanceReference = getReference(instance);
             return Context.DrawJoinPoint(instanceReference, pointKey);
@@ -59,7 +59,7 @@ namespace TypeSystem.Runtime
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        public JoinDefinition DrawJoin(JoinPointDefinition from, JoinPointDefinition to)
+        public JoinDefinition DrawJoin(ConnectorDefinition from, ConnectorDefinition to)
         {
             var join = new JoinDefinition(from, to);
 

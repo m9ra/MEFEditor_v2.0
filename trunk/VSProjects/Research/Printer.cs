@@ -9,7 +9,7 @@ using Analyzing.Execution;
 
 using TypeSystem;
 
-namespace TypeExperiments
+namespace Research
 {
     /// <summary>
     /// Prints Instruction Analyzing Language program in readable format

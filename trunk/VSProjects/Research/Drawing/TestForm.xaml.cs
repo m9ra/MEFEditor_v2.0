@@ -13,23 +13,22 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Drawing
+namespace Research.Drawings
 {
     /// <summary>
-    /// Interaction logic for Connector.xaml
+    /// Interaction logic for TestForm.xaml
     /// </summary>
-    public partial class Connector : UserControl
+    public partial class TestForm : Window
     {
-        public readonly JoinPointDefinition Definition;
-        /// <summary>
-        /// Point where line will be connected to (relative to connector's position)
-        /// </summary>
-        public Point ConnectPoint { get; private set; }
-
-        public Connector(JoinPointDefinition definition)
+        public TestForm()
         {
-            Definition = definition;    
             InitializeComponent();
+
+            Closed += (sender, arg) => Environment.Exit(0);
+            KeyDown += (sender, arg) =>
+            {
+                if (arg.Key == Key.Escape) Environment.Exit(0);
+            };
         }
     }
 }

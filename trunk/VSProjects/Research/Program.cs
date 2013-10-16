@@ -13,7 +13,7 @@ using UnitTesting.TypeSystem_TestUtils;
 using AssemblyProviders.CSharp.Compiling;
 
 
-namespace TypeExperiments
+namespace Research
 {
     class Program
     {

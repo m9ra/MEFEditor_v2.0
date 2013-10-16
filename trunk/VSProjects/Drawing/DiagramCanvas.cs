@@ -10,7 +10,6 @@ using System.Windows.Controls;
 
 namespace Drawing
 {
-
     public class DiagramCanvas : Panel
     {
         #region Position property
@@ -54,7 +53,7 @@ namespace Drawing
             return new Size(0, 0);
         }
 
-        internal void AddJoin(Line join)
+        internal void AddJoin(JoinDrawing join)
         {
             Children.Add(join);
         }

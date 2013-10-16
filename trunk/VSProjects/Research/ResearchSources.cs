@@ -19,7 +19,7 @@ using Analyzing.Editing;
 using MEFAnalyzers;
 
 
-namespace TypeExperiments
+namespace Research
 {
     static class ResearchSources
     {

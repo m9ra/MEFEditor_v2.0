@@ -20,36 +20,29 @@ namespace Drawing
     /// </summary>
     public partial class DiagramItem : UserControl
     {
-        private readonly Dictionary<JoinPointDefinition, Connector> _connectors = new Dictionary<JoinPointDefinition, Connector>();
+        private readonly Dictionary<ConnectorDefinition, ConnectorDrawing> _connectors = new Dictionary<ConnectorDefinition, ConnectorDrawing>();
 
         public readonly DrawingDefinition Definition;
 
-        internal Point LastDragPosition;
-        internal bool IsDragStarted;
-
-        public DiagramItem(DrawingDefinition definition)
+        internal DiagramItem(DrawingDefinition definition)
         {
             Definition = definition;
 
-            InitializeComponent();
-            TypeName.Text = definition.DrawedType;
-
-            foreach (var property in definition.Properties)
-            {
-                var propertyBlock = new TextBlock();
-                propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);
-
-                Properties.Children.Add(propertyBlock);
-            }
+            InitializeComponent();      
         }
 
-        internal void Attach(Connector connector)
+        internal void Attach(ConnectorDrawing connector)
         {
             _connectors.Add(connector.Definition, connector);
             Connectors.Children.Add(connector);
         }
 
-        internal Connector GetConnector(JoinPointDefinition point)
+        internal void SetContent(FrameworkElement content)
+        {
+            ContentDrawing.Content = content;
+        }
+
+        internal ConnectorDrawing GetConnector(ConnectorDefinition point)
         {
             return _connectors[point];
         }
