@@ -58,6 +58,8 @@ namespace Drawing.Behaviours
 
             currentItemPos += shift;
             _set(_element, currentItemPos);
+
+            e.Handled = true;
         }
 
         private void onMouseDown(object sender, MouseButtonEventArgs e)
@@ -66,12 +68,14 @@ namespace Drawing.Behaviours
 
             _lastDragPosition = e.GetPosition(null);
             _isDragStarted = true;
+            e.Handled = true;
         }
 
         private void onMouseUp(object sender, MouseButtonEventArgs e)
         {
             _isDragStarted = false;
             _element.ReleaseMouseCapture();
+            e.Handled = true;
         }
 
     }

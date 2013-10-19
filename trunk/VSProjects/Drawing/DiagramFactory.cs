@@ -10,10 +10,10 @@ namespace Drawing
 {
     public abstract class AbstractDiagramFactory
     {
-        public abstract ContentDrawing CreateContent(DrawingDefinition definition);
+        public abstract ContentDrawing CreateContent(DiagramItem owningItem);
 
-        public abstract JoinDrawing CreateJoin(JoinDefinition definition);
+        public abstract JoinDrawing CreateJoin(JoinDefinition definition, DiagramContext context);
 
-        public abstract ConnectorDrawing CreateConnector(ConnectorDefinition definition);
+        public abstract ConnectorDrawing CreateConnector(ConnectorDefinition definition, DiagramItem owningItem);
     }
 }

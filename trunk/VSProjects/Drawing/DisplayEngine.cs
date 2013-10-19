@@ -22,19 +22,17 @@ namespace Drawing
 
     class DisplayEngine
     {
-        private readonly Dictionary<string, HashSet<JoinDefinition>> _affectedJoins = new Dictionary<string, HashSet<JoinDefinition>>();
-
-        private readonly Dictionary<string, DiagramItem> _items = new Dictionary<string, DiagramItem>();
+        private readonly MultiDictionary<string, DiagramItem> _items = new MultiDictionary<string, DiagramItem>();
 
         private readonly Dictionary<JoinDefinition, Line> _joins = new Dictionary<JoinDefinition, Line>();
 
-        private readonly DiagramCanvas _output;
+        internal readonly DiagramCanvas Output;
 
         ElementGroup _orderingGroup = new ElementGroup();
 
         internal DisplayEngine(DiagramCanvas output)
         {
-            _output = output;
+            Output = output;
         }
 
         #region Public API
@@ -43,7 +41,8 @@ namespace Drawing
         {
             foreach (var item in _items.Values)
             {
-                _output.Children.Add(item);
+                if (item.IsRootItem)
+                    Output.Children.Add(item);
             }
         }
 
@@ -51,36 +50,37 @@ namespace Drawing
         {
             _orderingGroup = new ElementGroup();
             _items.Clear();
-            _output.Children.Clear();
+            Output.Children.Clear();
         }
 
         #endregion
 
         #region Display building methods
 
-        internal void AddItem(DiagramItem item)
+        internal void RegisterItem(DiagramItem item)
         {
-            DragAndDrop.Attach(item, GetPosition, SetPosition);
             ZOrdering.Attach(item, _orderingGroup);
+            DragAndDrop.Attach(item, GetPosition, SetPosition);            
+            UpdateGlobalPosition.Attach(item);
             _items.Add(item.Definition.ID, item);
         }
 
-        internal void AddJoin(JoinDrawing join)
+        internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
         {
-            var from = getConnector(join.Definition.From);
-            var to = getConnector(join.Definition.To);
+            var from = fromItem.GetConnector(join.Definition.From);
+            var to = toItem.GetConnector(join.Definition.To);
 
-            join.PointPath=new []{new Point(),new Point()};
+            join.PointPath = new[] { new Point(), new Point() };
 
-            FollowRelativePosition.Attach(from, this, (p) =>
+            FollowGlobalPosition.Attach(from, this, (p) =>
             {
                 //this is only workaround, until there will be path finding algorithm
-                var path = new []{p}.Union(join.PointPath.Skip(1)).ToArray();
+                var path = new[] { p }.Union(join.PointPath.Skip(1)).ToArray();
 
-                join.PointPath=path;
+                join.PointPath = path;
             });
 
-            FollowRelativePosition.Attach(to,this, (p) =>
+            FollowGlobalPosition.Attach(to, this, (p) =>
             {
                 //this is only workaround, until there will be path finding algorithm
                 var path = new[] { join.PointPath.First(), p };
@@ -88,7 +88,7 @@ namespace Drawing
                 join.PointPath = path;
             });
 
-            _output.AddJoin(join);
+            Output.AddJoin(join);
         }
 
         #endregion
@@ -97,29 +97,29 @@ namespace Drawing
 
         internal void SetPosition(FrameworkElement item, Point position)
         {
-            DiagramCanvas.SetPosition(item, position);
+            DiagramCanvasBase.SetPosition(item, position);
         }
 
         internal Point GetPosition(FrameworkElement item)
         {
-            return DiagramCanvas.GetPosition(item);
+            return DiagramCanvasBase.GetPosition(item);
         }
+
+        internal Point GetGlobalPosition(DiagramItem item)
+        {
+            return DiagramCanvas.GetGlobalPosition(item);
+        }
+
+        /// <summary>
+        /// DiagramItem contexts containing drawing for given connector definition
+        /// </summary>
+        /// <param name="connectorDefinition"></param>
+        /// <returns></returns>
+        internal IEnumerable<DiagramItem> DefiningItems(ConnectorDefinition connectorDefinition)
+        {
+            return _items.Get(connectorDefinition.Reference.DefinitionID);
+        }
+        #endregion
         
-        internal DiagramItem GetItem(DrawingReference drawingReference)
-        {
-            return _items[drawingReference.DefinitionID];
-        }
-
-        #endregion
-
-        #region Private utilites
-
-        private ConnectorDrawing getConnector(ConnectorDefinition joinPointDefinition)
-        {
-            var item = _items[joinPointDefinition.Reference.DefinitionID];
-            return item.GetConnector(joinPointDefinition);
-        }
-
-        #endregion
     }
 }

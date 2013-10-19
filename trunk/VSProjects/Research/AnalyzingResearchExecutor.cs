@@ -34,7 +34,7 @@ namespace Research
         /// <summary>
         /// All discovered drawings (is filled in post processing)
         /// </summary>
-        private DrawingContext _drawings;
+        private DiagramDefinition _drawings;
 
         /// <summary>
         /// Result of analyzing execution is stored here
@@ -128,8 +128,8 @@ namespace Research
         {
             var form = new TestForm();
             var factory = new DiagramFactory(
-                new ContentDrawer(null, (d) => new ComponentDrawing(d)),
-                new ContentDrawer("CompositionTester", (d) => new CompositionTesterDrawing(d))
+                new ContentDrawer(null, (item) => new ComponentDrawing(item)),
+                new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item))
                 );
             var provider = new DrawingProvider(form.Output, factory);
 
@@ -157,7 +157,7 @@ namespace Research
         /// </summary>
         private void findDrawings()
         {
-            _drawings = new DrawingContext();
+            _drawings = new DiagramDefinition();
 
             foreach (var instance in _result.CreatedInstances)
             {

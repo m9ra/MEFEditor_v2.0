@@ -279,7 +279,7 @@ namespace TypeSystem.Runtime
 
         #endregion
 
-        public void Draw(Instance instance, DrawingContext context)
+        public void Draw(Instance instance, DiagramDefinition context)
         {
             var toDraw = new Queue<Instance>();
             toDraw.Enqueue(instance);

@@ -4,58 +4,37 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 using System.Windows;
-using System.Windows.Shapes;
-using System.Windows.Controls;
+using System.ComponentModel;
+
 
 namespace Drawing
 {
-    public class DiagramCanvas : Panel
+    public class DiagramCanvas:DiagramCanvasBase
     {
-        #region Position property
+        #region GlobalPosition property
 
-        public static readonly DependencyProperty PositionProperty =
-            DependencyProperty.RegisterAttached("Position", typeof(Point),
+        public static readonly DependencyProperty GlobalPositionProperty =
+            DependencyProperty.RegisterAttached("GlobalPosition", typeof(Point),
             typeof(DiagramCanvas), new FrameworkPropertyMetadata(new Point(0, 0),
             FrameworkPropertyMetadataOptions.AffectsParentArrange));
 
-        public static void SetPosition(UIElement element, Point position)
+        public static void SetGlobalPosition(UIElement element, Point position)
         {
-            element.SetValue(PositionProperty, position);
+            var pos = GetGlobalPosition(element);
+            if (pos == position)
+                return;
+
+            element.SetValue(GlobalPositionProperty, position);
         }
 
-        public static Point GetPosition(UIElement element)
+        public static Point GetGlobalPosition(UIElement element)
         {
-            return (Point)element.GetValue(PositionProperty);
+            return (Point)element.GetValue(GlobalPositionProperty);
         }
 
         #endregion
 
-        protected override Size ArrangeOverride(Size arrangeSize)
-        {
-            foreach (UIElement child in Children)
-            {                   
-                var position = GetPosition(child);
-                child.Arrange(new Rect(position, child.DesiredSize));
-            }
-            return arrangeSize;
-        }
-
-        protected override Size MeasureOverride(Size constraint)
-        {
-            foreach (UIElement child in Children)
-            {
-                //no borders on child size
-                child.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
-            }
-
-            //canvas doesn't need no size itself
-            return new Size(0, 0);
-        }
-
-        internal void AddJoin(JoinDrawing join)
-        {
-            Children.Add(join);
-        }
     }
 }

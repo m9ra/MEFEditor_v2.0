@@ -22,14 +22,14 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class ComponentDrawing : ContentDrawing
     {
-        public ComponentDrawing(DrawingDefinition definition)
-            :base(definition)
+        public ComponentDrawing(DiagramItem item)
+            :base(item)
         {
             InitializeComponent();
 
-            TypeName.Text = definition.DrawedType;
+            TypeName.Text = Definition.DrawedType;
 
-            foreach (var property in definition.Properties)
+            foreach (var property in Definition.Properties)
             {
                 var propertyBlock = new TextBlock();
                 propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);

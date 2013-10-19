@@ -15,11 +15,13 @@ namespace Drawing
     /// </summary>
     public abstract class ContentDrawing:Border
     {
-        public readonly DrawingDefinition Definition;
+        public readonly DiagramItem Item;
 
-        public ContentDrawing(DrawingDefinition definition)
+        public DiagramItemDefinition Definition { get { return Item.Definition; } }
+
+        public ContentDrawing(DiagramItem item)
         {
-            Definition = definition;
+            Item = item;
         }
     }
 }

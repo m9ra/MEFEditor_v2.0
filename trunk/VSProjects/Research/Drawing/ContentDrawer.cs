@@ -10,7 +10,7 @@ using Drawing;
 
 namespace Research.Drawings
 {
-    public delegate ContentDrawing ContentProvider(DrawingDefinition definition);
+    public delegate ContentDrawing ContentProvider(DiagramItem item);
 
     public class ContentDrawer
     {

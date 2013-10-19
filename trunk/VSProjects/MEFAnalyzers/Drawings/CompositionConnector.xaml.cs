@@ -22,8 +22,8 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class CompositionConnector : ConnectorDrawing
     {
-        public CompositionConnector(ConnectorDefinition definition)
-            :base(definition)
+        public CompositionConnector(ConnectorDefinition definition,DiagramItem owningItem)
+            :base(definition,owningItem)
         {
             InitializeComponent();
         }

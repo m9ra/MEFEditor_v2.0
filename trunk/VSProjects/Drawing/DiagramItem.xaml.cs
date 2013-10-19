@@ -22,13 +22,34 @@ namespace Drawing
     {
         private readonly Dictionary<ConnectorDefinition, ConnectorDrawing> _connectors = new Dictionary<ConnectorDefinition, ConnectorDrawing>();
 
-        public readonly DrawingDefinition Definition;
+        private readonly List<DiagramItem> _children = new List<DiagramItem>();
 
-        internal DiagramItem(DrawingDefinition definition)
+        internal IEnumerable<DiagramItem> Children { get { return _children; } }
+
+        internal bool IsRootItem { get { return ParentItem == null; } }
+
+        internal readonly DiagramItem ParentItem;
+
+        public readonly DiagramContext DiagramContext;
+
+        public readonly DiagramItemDefinition Definition;
+
+        internal DiagramItem(DiagramItemDefinition definition, DiagramContext diagramContext)
         {
             Definition = definition;
+            DiagramContext = diagramContext;
 
-            InitializeComponent();      
+            InitializeComponent();
+        }
+
+        internal DiagramItem(DiagramItemDefinition definition, DiagramItem parentItem)
+        {
+            Definition = definition;
+            ParentItem = parentItem;
+            ParentItem._children.Add(this);
+            DiagramContext = parentItem.DiagramContext;
+
+            InitializeComponent();
         }
 
         internal void Attach(ConnectorDrawing connector)
@@ -46,5 +67,26 @@ namespace Drawing
         {
             return _connectors[point];
         }
+
+        public void FillSlot(SlotCanvas canvas, SlotDefinition slot)
+        {
+            foreach (var itemReference in slot.References)
+            {
+                var itemDefinition = DiagramContext.Diagram.GetItemDefinition(itemReference.DefinitionID);
+                var item = new DiagramItem(itemDefinition, this);
+                var itemContext = DiagramContext.Provider.DrawItem(item);
+                canvas.Children.Add(item);
+            }
+        }
+
+        public IEnumerable<ConnectorDefinition> ConnectorDefinitions
+        {
+            get
+            {
+                return DiagramContext.Diagram.GetConnectorDefinitions(Definition);
+            }
+        }
+
+
     }
 }

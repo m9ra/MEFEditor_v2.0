@@ -46,20 +46,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Behaviours\DragAndDrop.cs" />
-    <Compile Include="Behaviours\FollowRelativePosition.cs" />
+    <Compile Include="Behaviours\FollowGlobalPosition.cs" />
+    <Compile Include="Behaviours\UpdateGlobalPosition.cs" />
     <Compile Include="Behaviours\ZOrdering.cs" />
     <Compile Include="ConnectorDrawing.cs" />
     <Compile Include="ContentDrawing.cs" />
     <Compile Include="DiagramCanvas.cs" />
+    <Compile Include="DiagramCanvasBase.cs" />
     <Compile Include="DiagramFactory.cs" />
     <Compile Include="DisplayEngine.cs" />
-    <Compile Include="DrawingContext.cs" />
-    <Compile Include="DrawingDefinition.cs" />
+    <Compile Include="DiagramDefinition.cs" />
+    <Compile Include="DiagramContext.cs" />
+    <Compile Include="DiagramItemDefinition.cs" />
     <Compile Include="DrawingProperties.cs" />
     <Compile Include="DrawingProperty.cs" />
     <Compile Include="DrawingProvider.cs" />
     <Compile Include="DrawingReference.cs" />
-    <Compile Include="DrawingSlot.cs" />
+    <Compile Include="SlotDefinition.cs" />
     <Compile Include="JoinDefinition.cs" />
     <Compile Include="JoinDrawing.cs" />
     <Compile Include="ConnectorDefinition.cs" />
@@ -68,6 +71,8 @@
     <Compile Include="DiagramItem.xaml.cs">
       <DependentUpon>DiagramItem.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SlotCanvas.cs" />
+    <Compile Include="SlotDrawing.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="DiagramItem.xaml">

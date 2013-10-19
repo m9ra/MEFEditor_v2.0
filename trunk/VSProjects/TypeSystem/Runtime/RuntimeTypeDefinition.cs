@@ -150,7 +150,7 @@ namespace TypeSystem.Runtime
         /// <param name="thisInstance"></param>
         /// <param name="context"></param>
         /// <returns>Dependency instances, that has to be drawed for satisfying thisInstance</returns>
-        internal IEnumerable<Instance> Draw(Instance thisInstance, DrawingContext context)
+        internal IEnumerable<Instance> Draw(Instance thisInstance, DiagramDefinition context)
         {
             This = thisInstance;
 

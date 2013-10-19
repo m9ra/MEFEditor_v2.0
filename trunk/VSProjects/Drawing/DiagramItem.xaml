@@ -23,7 +23,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Name="Connectors"/>
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Name="Connectors"/>
         <ContentPresenter Name="ContentDrawing" Grid.Column="1" Grid.Row="1"/>
     </Grid>
 </UserControl>

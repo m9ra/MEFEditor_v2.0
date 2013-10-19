@@ -33,5 +33,24 @@ namespace Utilities
 
               return storage;
         }
+
+        public void Clear()
+        {
+            _data.Clear();
+        }
+
+        public IEnumerable<TValue> Values
+        {
+            get
+            {
+                foreach (var values in _data.Values)
+                {
+                    foreach (var value in values)
+                    {
+                        yield return value;
+                    }
+                }
+            }
+        }
     }
 }

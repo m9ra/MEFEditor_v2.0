@@ -18,13 +18,13 @@ namespace TypeSystem.Runtime
 
         internal readonly Instance DrawedInstance;
 
-        public readonly DrawingDefinition Drawing;
+        public readonly DiagramItemDefinition Drawing;
 
-        public readonly DrawingContext Context;
+        public readonly DiagramDefinition Context;
 
-        internal DrawingServices(Instance instance, DrawingContext context)
+        internal DrawingServices(Instance instance, DiagramDefinition context)
         {
-            Drawing = new DrawingDefinition(instance.ID, instance.Info.TypeName);
+            Drawing = new DiagramItemDefinition(instance.ID, instance.Info.TypeName);
             DrawedInstance = instance;
             Context = context;
         }
@@ -34,9 +34,9 @@ namespace TypeSystem.Runtime
             Drawing.SetProperty(name, field.RawObject.ToString());
         }
 
-        public DrawingSlot AddSlot()
+        public SlotDefinition AddSlot()
         {
-            var slot = new DrawingSlot();
+            var slot = new SlotDefinition();
             Drawing.AddSlot(slot);
 
             return slot;

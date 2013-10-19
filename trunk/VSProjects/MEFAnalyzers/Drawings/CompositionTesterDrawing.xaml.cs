@@ -22,20 +22,22 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class CompositionTesterDrawing : ContentDrawing
     {
-        public CompositionTesterDrawing(DrawingDefinition definition)
-            :base(definition)
+        public CompositionTesterDrawing(DiagramItem item)
+            :base(item)
         {
             InitializeComponent();
 
-            TypeName.Text = definition.DrawedType;
+            TypeName.Text = Definition.DrawedType;
 
-            foreach (var property in definition.Properties)
+            foreach (var property in Definition.Properties)
             {
                 var propertyBlock = new TextBlock();
                 propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);
 
                 Properties.Children.Add(propertyBlock);
             }
+
+            Item.FillSlot(Composition, Definition.Slots.First());
         }
     }
 }

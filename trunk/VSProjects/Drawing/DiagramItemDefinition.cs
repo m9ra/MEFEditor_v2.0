@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Drawing
 {
-    public class DrawingDefinition
+    public class DiagramItemDefinition
     {
         private DrawingProperties _properties = new DrawingProperties();
 
-        private HashSet<DrawingSlot> _slots = new HashSet<DrawingSlot>();
+        private HashSet<SlotDefinition> _slots = new HashSet<SlotDefinition>();
 
         /// <summary>
         /// Type of drawed object. May differ from type that provides draing
@@ -27,12 +27,14 @@ namespace Drawing
         /// </summary>
         public IEnumerable<DrawingProperty> Properties { get { return _properties.Values; } }
 
+        public IEnumerable<SlotDefinition> Slots { get { return _slots; } }
+
         /// <summary>
         /// Initialize drawing definition
         /// </summary>
         /// <param name="id">ID of current drawing definition. Has to be uniqueue in drawing context scope</param>
         /// <param name="drawedType">Type of drawed object. May differ from type that provides drawing</param>
-        public DrawingDefinition(string id, string drawedType)
+        public DiagramItemDefinition(string id, string drawedType)
         {
             ID = id;
             DrawedType = drawedType;
@@ -52,7 +54,7 @@ namespace Drawing
         /// Add drawing slot to current definition
         /// </summary>
         /// <param name="slot">Added slot</param>
-        public void AddSlot(DrawingSlot slot)
+        public void AddSlot(SlotDefinition slot)
         {
             _slots.Add(slot);
         }

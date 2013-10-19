@@ -9,15 +9,15 @@ namespace Drawing
     /// <summary>
     /// Provides API for defining drawing
     /// </summary>
-    public class DrawingContext
+    public class DiagramDefinition
     {
-        private readonly Dictionary<string, DrawingDefinition> _definitions = new Dictionary<string, DrawingDefinition>();
+        private readonly Dictionary<string, DiagramItemDefinition> _definitions = new Dictionary<string, DiagramItemDefinition>();
 
         private readonly Dictionary<string, JoinPointDefinitions> _joinPointDefintions = new Dictionary<string, JoinPointDefinitions>();
 
         private readonly HashSet<JoinDefinition> _joinDefinitions = new HashSet<JoinDefinition>();
 
-        public IEnumerable<DrawingDefinition> Definitions { get { return _definitions.Values; } }
+        public IEnumerable<DiagramItemDefinition> ItemDefinitions { get { return _definitions.Values; } }
 
         public IEnumerable<JoinDefinition> JoinDefinitions { get { return _joinDefinitions; } }
 
@@ -31,7 +31,7 @@ namespace Drawing
         /// definition will be displayed in output
         /// </summary>
         /// <param name="drawing">Defined drawing</param>
-        public void Draw(DrawingDefinition drawing)
+        public void Draw(DiagramItemDefinition drawing)
         {
             if (ContainsDrawing(drawing.ID))
                 throw new NotSupportedException("Drawing definition with same ID has already been added");
@@ -47,6 +47,11 @@ namespace Drawing
         public bool ContainsDrawing(string id)
         {
             return _definitions.ContainsKey(id);
+        }
+
+        public DiagramItemDefinition GetItemDefinition(string id)
+        {
+            return _definitions[id];
         }
 
         /// <summary>
@@ -91,7 +96,7 @@ namespace Drawing
         /// </summary>
         /// <param name="definition">Drawing definition which join points will be returned</param>
         /// <returns>Defined join points</returns>
-        internal IEnumerable<ConnectorDefinition> GetConnectorDefinitions(DrawingDefinition definition)
+        internal IEnumerable<ConnectorDefinition> GetConnectorDefinitions(DiagramItemDefinition definition)
         {
             JoinPointDefinitions definitions;
             if (_joinPointDefintions.TryGetValue(definition.ID, out  definitions))

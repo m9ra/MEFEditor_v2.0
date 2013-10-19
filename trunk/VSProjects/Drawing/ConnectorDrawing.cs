@@ -12,12 +12,14 @@ namespace Drawing
 {
     public abstract class ConnectorDrawing:Border
     {
+        public readonly DiagramItem OwningItem;
         public readonly ConnectorDefinition Definition;
         public abstract Point ConnectPoint { get; }
 
-        public ConnectorDrawing(ConnectorDefinition definition)
+        public ConnectorDrawing(ConnectorDefinition definition,DiagramItem owningItem)
         {
             Definition = definition;
+            OwningItem = owningItem;
         }
     }
 }

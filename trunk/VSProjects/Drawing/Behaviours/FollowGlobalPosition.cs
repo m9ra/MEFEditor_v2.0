@@ -11,28 +11,23 @@ using System.Windows.Controls;
 
 namespace Drawing.Behaviours
 {
-    class FollowRelativePosition
+    class FollowGlobalPosition
     {
-        private static readonly DependencyPropertyDescriptor PositionChange = DependencyPropertyDescriptor.FromProperty(DiagramCanvas.PositionProperty, typeof(UserControl));
-
-        private static readonly DependencyPropertyDescriptor WidthChange = DependencyPropertyDescriptor.FromProperty(FrameworkElement.ActualWidthProperty, typeof(UserControl));
-
-        private static readonly DependencyPropertyDescriptor HeightChange = DependencyPropertyDescriptor.FromProperty(FrameworkElement.ActualHeightProperty, typeof(UserControl));
-
+      
         internal static void Attach(ConnectorDrawing connector, DisplayEngine engine, PositionUpdate update)
         {
-            var item = engine.GetItem(connector.Definition.Reference);
-            PositionChange.AddValueChanged(item, (e, args) =>
+            var item = connector.OwningItem;
+            UpdateGlobalPosition.GlobalPositionChange.AddValueChanged(item, (e, args) =>
             {
                 positionUpdate(connector, item,engine, update);
             });
 
-            WidthChange.AddValueChanged(item, (e, args) =>
+            UpdateGlobalPosition.WidthChange.AddValueChanged(item, (e, args) =>
             {
                 positionUpdate(connector, item,engine, update);
             });
 
-            HeightChange.AddValueChanged(item, (e, args) =>
+            UpdateGlobalPosition.HeightChange.AddValueChanged(item, (e, args) =>
             {
                 positionUpdate(connector, item, engine, update);
             });
@@ -44,7 +39,7 @@ namespace Drawing.Behaviours
         {
             var connectPoint = new Point(-connector.ConnectPoint.X, -connector.ConnectPoint.Y);
             var relativePos = item.TranslatePoint(connectPoint, connector);
-            var itemPos = engine.GetPosition(item);
+            var itemPos = engine.GetGlobalPosition(item);
             var finalPosition = new Point(itemPos.X - relativePos.X, itemPos.Y - relativePos.Y);
             update(finalPosition);
         }

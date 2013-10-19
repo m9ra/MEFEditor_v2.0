@@ -10,9 +10,11 @@ namespace Drawing
     /// Encapsulates drawings belonging to drawing definition. Is used for
     /// drawing children of containers for e.g.
     /// </summary>
-    public class DrawingSlot
+    public class SlotDefinition
     {
         private readonly List<DrawingReference> _references = new List<DrawingReference>();
+
+        public IEnumerable<DrawingReference> References { get { return _references; } }
 
         public void Add(DrawingReference reference)
         {

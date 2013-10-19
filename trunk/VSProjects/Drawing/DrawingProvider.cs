@@ -15,36 +15,52 @@ namespace Drawing
 
         private readonly AbstractDiagramFactory _diagramFactory;
 
-        public DrawingProvider(DiagramCanvas output,AbstractDiagramFactory diagramFactory)
-        {            
+        internal DiagramCanvas Output { get { return _engine.Output; } }
+
+        public DrawingProvider(DiagramCanvas output, AbstractDiagramFactory diagramFactory)
+        {
             _engine = new DisplayEngine(output);
             _diagramFactory = diagramFactory;
         }
 
-        public void Display(DrawingContext context)
+        public void Display(DiagramDefinition diagramDefinition)
         {
-            foreach (var definition in context.Definitions)
+            var context = new DiagramContext(this, diagramDefinition);
+
+            foreach (var definition in context.RootItemDefinitions)
             {
-                var drawing=new DiagramItem(definition);
-
-                foreach (var connectorDefinition in context.GetConnectorDefinitions(definition))
-                {
-                    var connector = _diagramFactory.CreateConnector(connectorDefinition);
-                    drawing.Attach(connector);
-                }
-
-                var content = _diagramFactory.CreateContent(definition);
-                drawing.SetContent(content);
-                _engine.AddItem(drawing);
+                var item = new DiagramItem(definition, context);
+                DrawItem(item);
             }
 
-            foreach (var joinDefinition in context.JoinDefinitions)
+            foreach (var joinDefinition in diagramDefinition.JoinDefinitions)
             {
-                var join=_diagramFactory.CreateJoin(joinDefinition);
-                _engine.AddJoin(join);
+                foreach (var from in _engine.DefiningItems(joinDefinition.From))
+                {
+                    foreach (var to in _engine.DefiningItems(joinDefinition.To))
+                    {
+                        var join = _diagramFactory.CreateJoin(joinDefinition, context);
+                        _engine.AddJoin(join,from,to);
+                    }
+                }
             }
 
             _engine.Display();
+        }
+
+        internal DiagramItem DrawItem(DiagramItem item)
+        {
+
+            foreach (var connectorDefinition in item.ConnectorDefinitions)
+            {
+                var connector = _diagramFactory.CreateConnector(connectorDefinition, item);
+                item.Attach(connector);
+            }
+
+            var content = _diagramFactory.CreateContent(item);
+            item.SetContent(content);
+            _engine.RegisterItem(item);
+            return item;
         }
     }
 }

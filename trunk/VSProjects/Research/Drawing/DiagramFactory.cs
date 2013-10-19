@@ -29,23 +29,25 @@ namespace Research.Drawings
             }
         }
 
-        public override ContentDrawing CreateContent(DrawingDefinition definition)
+        public override ContentDrawing CreateContent(DiagramItem owningItem)
         {
+            var definition = owningItem.Definition;
+
             ContentDrawer drawer;
             if (_contentDrawers.TryGetValue(definition.DrawedType, out drawer))
-                return drawer.Provider(definition);
+                return drawer.Provider(owningItem);
 
-            return _defaultContentDrawer.Provider(definition);
+            return _defaultContentDrawer.Provider(owningItem);
         }
 
-        public override JoinDrawing CreateJoin(JoinDefinition definition)
+        public override JoinDrawing CreateJoin(JoinDefinition definition, DiagramContext context)
         {
             return new MEFAnalyzers.Drawings.ExportJoin(definition);
         }
 
-        public override ConnectorDrawing CreateConnector(ConnectorDefinition definition)
+        public override ConnectorDrawing CreateConnector(ConnectorDefinition definition, DiagramItem owningItem)
         {
-            return new MEFAnalyzers.Drawings.CompositionConnector(definition);
+            return new MEFAnalyzers.Drawings.CompositionConnector(definition,owningItem);
         }
     }
 }
