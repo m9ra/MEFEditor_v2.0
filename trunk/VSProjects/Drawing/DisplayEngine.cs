@@ -15,6 +15,7 @@ using System.ComponentModel;
 
 
 using Drawing.Behaviours;
+using Drawing.ArrangeEngine;
 
 namespace Drawing
 {
@@ -23,6 +24,8 @@ namespace Drawing
     class DisplayEngine
     {
         private readonly MultiDictionary<string, DiagramItem> _items = new MultiDictionary<string, DiagramItem>();
+
+        private readonly List<DiagramItem> _rootItems = new List<DiagramItem>();
 
         private readonly Dictionary<JoinDefinition, Line> _joins = new Dictionary<JoinDefinition, Line>();
 
@@ -39,10 +42,9 @@ namespace Drawing
 
         public void Display()
         {
-            foreach (var item in _items.Values)
+            foreach (var item in _rootItems)
             {
-                if (item.IsRootItem)
-                    Output.Children.Add(item);
+                Output.Children.Add(item);
             }
         }
 
@@ -50,6 +52,7 @@ namespace Drawing
         {
             _orderingGroup = new ElementGroup();
             _items.Clear();
+            _rootItems.Clear();
             Output.Children.Clear();
         }
 
@@ -60,9 +63,11 @@ namespace Drawing
         internal void RegisterItem(DiagramItem item)
         {
             ZOrdering.Attach(item, _orderingGroup);
-            DragAndDrop.Attach(item, GetPosition, SetPosition);            
+            DragAndDrop.Attach(item, GetPosition, SetPosition);
             UpdateGlobalPosition.Attach(item);
             _items.Add(item.Definition.ID, item);
+            if (item.IsRootItem)
+                _rootItems.Add(item);
         }
 
         internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
@@ -120,6 +125,61 @@ namespace Drawing
             return _items.Get(connectorDefinition.Reference.DefinitionID);
         }
         #endregion
-        
+
+
+        internal void ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
+        {
+            var collisionDetector = new ItemCollisionRepairer();
+
+            var isRoot = owner == null;
+            var children = isRoot ? _rootItems : owner.Children;
+            foreach (var child in children)
+            {
+                if (!isRoot)
+                {
+                    //only slots are limited to borders
+                    CheckBorders(child, container);
+                }
+                collisionDetector.AddItem(child);
+            }
+
+            collisionDetector.Arrange(container);
+        }
+
+        private void CheckBorders(FrameworkElement element, DiagramCanvasBase container)
+        {
+            var position = GetPosition(element);
+            var update = false;
+
+            var actualHeight = container.ActualHeight;
+            var actualWidth = container.ActualWidth;
+
+            if (position.X + element.ActualWidth > actualWidth)
+            {
+                update = true;
+                position.X = actualWidth - element.ActualWidth;
+            }
+
+            if (position.Y + element.ActualHeight > actualHeight)
+            {
+                update = true;
+                position.Y = actualHeight - element.ActualHeight;
+            }
+
+            if (position.X < 0)
+            {
+                update = true;
+                position.X = 0;
+            }
+
+            if (position.Y < 0)
+            {
+                update = true;
+                position.Y = 0;
+            }
+
+            if (update)
+                SetPosition(element, position);
+        }
     }
 }

@@ -34,6 +34,14 @@ namespace Drawing
 
         public readonly DiagramItemDefinition Definition;
 
+        public IEnumerable<ConnectorDefinition> ConnectorDefinitions
+        {
+            get
+            {
+                return DiagramContext.Diagram.GetConnectorDefinitions(Definition);
+            }
+        }
+
         internal DiagramItem(DiagramItemDefinition definition, DiagramContext diagramContext)
         {
             Definition = definition;
@@ -70,6 +78,7 @@ namespace Drawing
 
         public void FillSlot(SlotCanvas canvas, SlotDefinition slot)
         {
+            canvas.SetOwner(this);
             foreach (var itemReference in slot.References)
             {
                 var itemDefinition = DiagramContext.Diagram.GetItemDefinition(itemReference.DefinitionID);
@@ -79,14 +88,16 @@ namespace Drawing
             }
         }
 
-        public IEnumerable<ConnectorDefinition> ConnectorDefinitions
+        internal void RefreshGlobal()
         {
-            get
-            {
-                return DiagramContext.Diagram.GetConnectorDefinitions(Definition);
-            }
+            var position = computeGlobalPosition();
+            DiagramCanvas.SetGlobalPosition(this, position);
         }
 
-
+        private Point computeGlobalPosition()
+        {
+            var output = DiagramContext.Provider.Output;
+            return this.TranslatePoint(new Point(0, 0), output);
+        }
     }
 }

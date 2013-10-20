@@ -45,6 +45,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrangeEngine\ItemCollisionRepairer.cs" />
+    <Compile Include="ArrangeEngine\ItemMoveability.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
     <Compile Include="Behaviours\FollowGlobalPosition.cs" />
     <Compile Include="Behaviours\UpdateGlobalPosition.cs" />

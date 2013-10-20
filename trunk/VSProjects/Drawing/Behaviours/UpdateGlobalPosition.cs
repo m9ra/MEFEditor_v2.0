@@ -22,46 +22,14 @@ namespace Drawing.Behaviours
 
         public static void Attach(DiagramItem item)
         {
-            PositionChange.AddValueChanged(item, (s, e) =>
-            {
-                //relative position has changed - may affect global position
-                refreshPosition(item);
-            });
-
-            WidthChange.AddValueChanged(item, (s, e) =>
-            {
-                //relative position has changed - may affect global position
-                refreshPosition(item);
-            });
-
-            HeightChange.AddValueChanged(item, (s, e) =>
-            {
-                //relative position has changed - may affect global position
-                refreshPosition(item);
-            });
-
             GlobalPositionChange.AddValueChanged(item, (s, e) =>
             {
                 //global position of parent has changed - may affect children's global position
                 foreach (var child in item.Children)
                 {
-                    refreshPosition(child);
+                    child.RefreshGlobal();
                 }
             });
-        }
-
-        private static Point refreshPosition(DiagramItem item)
-        {
-            var position = getGlobalPosition(item);
-            DiagramCanvas.SetGlobalPosition(item, position);
-
-            return position;
-        }
-
-        private static Point getGlobalPosition(DiagramItem item)
-        {
-            var output = item.DiagramContext.Provider.Output;
-            return item.TranslatePoint(new Point(0, 0), output);
         }
 
     }

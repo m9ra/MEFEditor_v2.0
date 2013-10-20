@@ -11,15 +11,15 @@ namespace Drawing
 {
     public class DrawingProvider
     {
-        private readonly DisplayEngine _engine;
+        internal readonly DisplayEngine Engine;
 
         private readonly AbstractDiagramFactory _diagramFactory;
 
-        internal DiagramCanvas Output { get { return _engine.Output; } }
+        internal DiagramCanvas Output { get { return Engine.Output; } }
 
         public DrawingProvider(DiagramCanvas output, AbstractDiagramFactory diagramFactory)
         {
-            _engine = new DisplayEngine(output);
+            Engine = new DisplayEngine(output);
             _diagramFactory = diagramFactory;
         }
 
@@ -35,17 +35,18 @@ namespace Drawing
 
             foreach (var joinDefinition in diagramDefinition.JoinDefinitions)
             {
-                foreach (var from in _engine.DefiningItems(joinDefinition.From))
+                foreach (var from in Engine.DefiningItems(joinDefinition.From))
                 {
-                    foreach (var to in _engine.DefiningItems(joinDefinition.To))
+                    foreach (var to in Engine.DefiningItems(joinDefinition.To))
                     {
                         var join = _diagramFactory.CreateJoin(joinDefinition, context);
-                        _engine.AddJoin(join,from,to);
+                        Engine.AddJoin(join,from,to);
                     }
                 }
             }
 
-            _engine.Display();
+            Engine.Output.SetContext(context);
+            Engine.Display();
         }
 
         internal DiagramItem DrawItem(DiagramItem item)
@@ -59,7 +60,7 @@ namespace Drawing
 
             var content = _diagramFactory.CreateContent(item);
             item.SetContent(content);
-            _engine.RegisterItem(item);
+            Engine.RegisterItem(item);
             return item;
         }
     }
