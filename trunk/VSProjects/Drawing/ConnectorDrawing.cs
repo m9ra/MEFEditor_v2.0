@@ -21,5 +21,18 @@ namespace Drawing
             Definition = definition;
             OwningItem = owningItem;
         }
+
+        public Point GlobalConnectPoint
+        {
+            //TODO try cache this value
+            get
+            {
+                var connectPoint = new Point(-ConnectPoint.X, -ConnectPoint.Y);
+                var relativePos = OwningItem.TranslatePoint(connectPoint, this);
+                var itemPos = OwningItem.GlobalPosition;
+                var finalPosition = new Point(itemPos.X - relativePos.X, itemPos.Y - relativePos.Y);
+                return finalPosition;
+            }
+        }
     }
 }

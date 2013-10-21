@@ -19,7 +19,7 @@ using Drawing.ArrangeEngine;
 
 namespace Drawing
 {
-    delegate void PositionUpdate(Point position);
+    delegate void OnConnectorMove(ConnectorDrawing connector);
 
     class DisplayEngine
     {
@@ -74,23 +74,17 @@ namespace Drawing
         {
             var from = fromItem.GetConnector(join.Definition.From);
             var to = toItem.GetConnector(join.Definition.To);
-
-            join.PointPath = new[] { new Point(), new Point() };
-
-            FollowGlobalPosition.Attach(from, this, (p) =>
+            join.From = from;
+            join.To = to;
+            
+            FollowConnectorPosition.Attach(from, this, (p) =>
             {
-                //this is only workaround, until there will be path finding algorithm
-                var path = new[] { p }.Union(join.PointPath.Skip(1)).ToArray();
-
-                join.PointPath = path;
+                RefreshPointPath(join);
             });
 
-            FollowGlobalPosition.Attach(to, this, (p) =>
+            FollowConnectorPosition.Attach(to, this, (p) =>
             {
-                //this is only workaround, until there will be path finding algorithm
-                var path = new[] { join.PointPath.First(), p };
-
-                join.PointPath = path;
+                RefreshPointPath(join);
             });
 
             Output.AddJoin(join);
@@ -144,6 +138,12 @@ namespace Drawing
             }
 
             collisionDetector.Arrange(container);
+        }
+
+        internal void RefreshPointPath(JoinDrawing join)
+        {
+            var tracer = new JoinTracer();
+            join.PointPath=tracer.GetPath(join.From, join.To);            
         }
 
         private void CheckBorders(FrameworkElement element, DiagramCanvasBase container)

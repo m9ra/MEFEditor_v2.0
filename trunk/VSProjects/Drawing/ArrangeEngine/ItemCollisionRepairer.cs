@@ -63,13 +63,14 @@ namespace Drawing.ArrangeEngine
                         applyNeed(currNeeds, movedItem, container);
                 }
             }
-
         }
 
         private Rect GetSpan(DiagramItem item)
         {
             var position = getPosition(item);
-            return new Rect(position.X, position.Y, item.ActualWidth, item.ActualHeight);
+            var rect= new Rect(position.X, position.Y, item.ActualWidth, item.ActualHeight);
+            
+            return rect;
         }
 
         private ItemMoveability computeNeeds(DiagramItem movedItem, DiagramItem currItem)

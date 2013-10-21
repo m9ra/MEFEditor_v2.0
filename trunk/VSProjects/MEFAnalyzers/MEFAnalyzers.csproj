@@ -55,6 +55,7 @@
     <Compile Include="CompositionEngine\CompositionWorker.cs" />
     <Compile Include="CompositionTesterDefinition.cs" />
     <Compile Include="DirectoryCatalogDefinition.cs" />
+    <Compile Include="Drawings\BezierSpline.cs" />
     <Compile Include="Drawings\ComponentDrawing.xaml.cs">
       <DependentUpon>ComponentDrawing.xaml</DependentUpon>
     </Compile>

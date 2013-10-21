@@ -47,8 +47,9 @@
   <ItemGroup>
     <Compile Include="ArrangeEngine\ItemCollisionRepairer.cs" />
     <Compile Include="ArrangeEngine\ItemMoveability.cs" />
+    <Compile Include="ArrangeEngine\JoinTracer.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
-    <Compile Include="Behaviours\FollowGlobalPosition.cs" />
+    <Compile Include="Behaviours\FollowConnectorPosition.cs" />
     <Compile Include="Behaviours\UpdateGlobalPosition.cs" />
     <Compile Include="Behaviours\ZOrdering.cs" />
     <Compile Include="ConnectorDrawing.cs" />

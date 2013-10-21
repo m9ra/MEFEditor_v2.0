@@ -30,6 +30,8 @@ namespace Drawing
 
         internal readonly DiagramItem ParentItem;
 
+        #region Public API for drawing extension implementors
+
         public readonly DiagramContext DiagramContext;
 
         public readonly DiagramItemDefinition Definition;
@@ -41,6 +43,29 @@ namespace Drawing
                 return DiagramContext.Diagram.GetConnectorDefinitions(Definition);
             }
         }
+
+        public Point GlobalPosition
+        {
+            get
+            {
+                return DiagramCanvas.GetGlobalPosition(this);
+            }
+        }
+
+        public void FillSlot(SlotCanvas canvas, SlotDefinition slot)
+        {
+            canvas.SetOwner(this);
+            foreach (var itemReference in slot.References)
+            {
+                var itemDefinition = DiagramContext.Diagram.GetItemDefinition(itemReference.DefinitionID);
+                var item = new DiagramItem(itemDefinition, this);
+                var itemContext = DiagramContext.Provider.DrawItem(item);
+                canvas.Children.Add(item);
+            }
+        }
+
+        #endregion
+
 
         internal DiagramItem(DiagramItemDefinition definition, DiagramContext diagramContext)
         {
@@ -60,6 +85,12 @@ namespace Drawing
             InitializeComponent();
         }
 
+        internal void RefreshGlobal()
+        {
+            var position = computeGlobalPosition();
+            DiagramCanvas.SetGlobalPosition(this, position);
+        }
+
         internal void Attach(ConnectorDrawing connector)
         {
             _connectors.Add(connector.Definition, connector);
@@ -75,25 +106,7 @@ namespace Drawing
         {
             return _connectors[point];
         }
-
-        public void FillSlot(SlotCanvas canvas, SlotDefinition slot)
-        {
-            canvas.SetOwner(this);
-            foreach (var itemReference in slot.References)
-            {
-                var itemDefinition = DiagramContext.Diagram.GetItemDefinition(itemReference.DefinitionID);
-                var item = new DiagramItem(itemDefinition, this);
-                var itemContext = DiagramContext.Provider.DrawItem(item);
-                canvas.Children.Add(item);
-            }
-        }
-
-        internal void RefreshGlobal()
-        {
-            var position = computeGlobalPosition();
-            DiagramCanvas.SetGlobalPosition(this, position);
-        }
-
+        
         private Point computeGlobalPosition()
         {
             var output = DiagramContext.Provider.Output;

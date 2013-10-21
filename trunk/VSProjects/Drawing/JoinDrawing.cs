@@ -19,6 +19,10 @@ namespace Drawing
 
         public readonly JoinDefinition Definition;
 
+        internal ConnectorDrawing From;
+
+        internal ConnectorDrawing To;
+
         public IEnumerable<Point> PointPath
         {
             get { return (IEnumerable<Point>)this.GetValue(PointPathProperty); }
@@ -30,5 +34,6 @@ namespace Drawing
         {
             Definition = definition;
         }
+
     }
 }
