@@ -47,20 +47,28 @@ namespace MEFAnalyzers
             AssemblyPath.Set(assemblyPath);
         }
 
+        public void _method_ctor()
+        {
+            Parts.Set(new List<Instance>());
+        }
+
+
         public void _method_Compose()
         {
             var path = AssemblyPath.Get();
-            var assembly = Services.LoadAssembly(path);
-
             var compositionContext = new CompositionContext(Services, Context);
+            if (path != null)
+            {
+                var assembly = Services.LoadAssembly(path);
+                foreach (var componentInfo in assembly.GetComponents())
+                {
+                    compositionContext.AddComponentType(componentInfo);
+                }
+            }
+
             foreach (var part in Parts.Get())
             {
                 compositionContext.AddConstructedComponents(part);
-            }
-
-            foreach (var componentInfo in assembly.GetComponents())
-            {
-                compositionContext.AddComponentType(componentInfo);
             }
 
             compose(compositionContext);

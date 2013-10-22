@@ -33,6 +33,8 @@ namespace Drawing
 
         ElementGroup _orderingGroup = new ElementGroup();
 
+        internal IEnumerable<DiagramItem> Items { get { return _items.Values; } }
+
         internal DisplayEngine(DiagramCanvas output)
         {
             Output = output;
@@ -142,7 +144,7 @@ namespace Drawing
 
         internal void RefreshPointPath(JoinDrawing join)
         {
-            var tracer = new JoinTracer();
+            var tracer = new JoinTracer(this);
             join.PointPath=tracer.GetPath(join.From, join.To);            
         }
 
@@ -181,5 +183,7 @@ namespace Drawing
             if (update)
                 SetPosition(element, position);
         }
+
+        
     }
 }

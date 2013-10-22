@@ -102,7 +102,7 @@ namespace MEFAnalyzers.Drawings
             double[] x = new double[n]; // Solution vector.
             double[] tmp = new double[n]; // Temp workspace.
 
-            double b = 2.0;
+            double b = 4.0;
             x[0] = rhs[0] / b;
             for (int i = 1; i < n; i++) // Decomposition and forward substitution.
             {

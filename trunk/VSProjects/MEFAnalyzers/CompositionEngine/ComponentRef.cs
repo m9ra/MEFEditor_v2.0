@@ -34,7 +34,7 @@ namespace MEFAnalyzers.CompositionEngine
         internal bool ComposingFailed { get; private set; }
 
         internal bool HasImports { get { return ComponentInfo.Imports.Length > 0; } }
-        
+
         internal bool HasImportingConstructor { get { return ComponentInfo.ImportingConstructor != null; } }
 
         public IEnumerable<Import> Imports { get { return ComponentInfo.Imports; } }
@@ -59,19 +59,22 @@ namespace MEFAnalyzers.CompositionEngine
 
 
         public ComponentRef(CompositionContext context, bool isConstructed, ComponentInfo componentInfo, Instance component)
-            : base(context, componentInfo.ComponentType, isConstructed)
+            : base(context, component.Info, isConstructed)
         {
             Component = component;
             ComponentInfo = componentInfo;
 
             HasSatisfiedPreImports = isConstructed;
 
-            foreach (var exp in ComponentInfo.Exports)
-                addExport(exp);
-            foreach (var exp in ComponentInfo.SelfExports)
-                addExport(exp);
-            foreach (var imp in ComponentInfo.Imports)
-                addImport(imp);
+            if (ComponentInfo != null)
+            {
+                foreach (var exp in ComponentInfo.Exports)
+                    addExport(exp);
+                foreach (var exp in ComponentInfo.SelfExports)
+                    addExport(exp);
+                foreach (var imp in ComponentInfo.Imports)
+                    addImport(imp);
+            }
         }
 
         internal void CompositionError(string p)
@@ -83,7 +86,7 @@ namespace MEFAnalyzers.CompositionEngine
         {
             return _importPoints[import];
         }
-        
+
         private void addExport(Export export)
         {
             var point = new JoinPoint(this, export);

@@ -56,7 +56,7 @@ namespace MEFAnalyzers.CompositionEngine
 
             foreach (var inst in _componentsStorage.GetComponents())
             {
-                if (!inst.HasImports)
+                if (inst.ComponentInfo == null || !inst.HasImports)
                     //there is nothing to import
                     continue;
 
@@ -252,7 +252,7 @@ namespace MEFAnalyzers.CompositionEngine
                     _storage.Add(importPoint, exportPoint);
                 }
             }
-                     
+
             return true;
         }
 
@@ -516,7 +516,7 @@ namespace MEFAnalyzers.CompositionEngine
 
             return result.ToArray();
         }
-        
+
 
         /// <summary>
         /// enqueue setter call which satisfy import from exports

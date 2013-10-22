@@ -30,7 +30,9 @@ namespace Analyzing.Execution
 
         public object GetField(string fieldName)
         {
-            return _fields[fieldName];
+            object result;
+            _fields.TryGetValue(fieldName, out result);
+            return result;  
         }
 
         public override string ToString()

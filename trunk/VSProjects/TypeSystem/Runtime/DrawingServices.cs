@@ -31,6 +31,8 @@ namespace TypeSystem.Runtime
 
         public void PublishField(string name, Field field)
         {
+            if (field.RawObject == null)
+                return;
             Drawing.SetProperty(name, field.RawObject.ToString());
         }
 

@@ -27,5 +27,12 @@ namespace UnitTesting.RuntimeTypeDefinitions
         {
             return TestProperty.Get()+"_"+concated;
         }
+
+        protected override void draw(DrawingServices services)
+        {
+            services.PublishField("TestProperty", TestProperty);
+            services.CommitDrawing();
+
+        }
     }
 }

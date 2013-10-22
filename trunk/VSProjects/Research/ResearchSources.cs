@@ -23,6 +23,30 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly DrawingTester_SinlgeJoin()
+        {
+            return AssemblyUtils.Run(@"        
+                var partImport=new StringImport();       
+                var partExport=new StringExport(""Export1"");
+                
+                var test=new CompositionTester();   
+                test.Add(partImport);
+                test.Add(partExport);
+                var empty=new SimpleType(""nothing"");
+                test.Add(empty);
+                test.Compose();
+                
+            ")
+
+           .AddToRuntime<CompositionTesterDefinition>()
+           .AddToRuntime<StringImport>()
+           .AddToRuntime<StringExport>()
+           .AddToRuntime<SimpleType>()
+           .AddDirectToRuntime<List<string>>()
+           .AddDirectToRuntime<ICollection<string>>()
+           ;
+        }
+
         static internal TestingAssembly CompositionTester_LoadAssembly()
         {
             var testAssembly = new RuntimeAssembly();
