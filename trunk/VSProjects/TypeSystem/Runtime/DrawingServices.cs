@@ -46,7 +46,7 @@ namespace TypeSystem.Runtime
 
         public void CommitDrawing()
         {
-            Context.Draw(Drawing);
+            Context.DrawItem(Drawing);
         }
 
         public ConnectorDefinition GetJoinPoint(Instance instance, object pointKey)

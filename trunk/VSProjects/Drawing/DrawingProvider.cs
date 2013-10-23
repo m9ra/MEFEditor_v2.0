@@ -23,7 +23,7 @@ namespace Drawing
             _diagramFactory = diagramFactory;
         }
 
-        public void Display(DiagramDefinition diagramDefinition)
+        public DiagramContext Display(DiagramDefinition diagramDefinition)
         {
             var context = new DiagramContext(this, diagramDefinition);
 
@@ -47,6 +47,8 @@ namespace Drawing
 
             Engine.Output.SetContext(context);
             Engine.Display();
+
+            return context;
         }
 
         internal DiagramItem DrawItem(DiagramItem item)

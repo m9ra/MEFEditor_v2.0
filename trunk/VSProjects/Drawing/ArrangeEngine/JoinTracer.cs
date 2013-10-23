@@ -14,7 +14,8 @@ namespace Drawing.ArrangeEngine
 
         internal JoinTracer(DisplayEngine engine)
         {
-            _navigator = new SceneNavigator(engine);
+            //TODO scene navigator will be shared by engine
+            _navigator = new SceneNavigator(engine.Items);
         }
 
         internal IEnumerable<Point> GetPath(ConnectorDrawing from, ConnectorDrawing to)
@@ -22,18 +23,18 @@ namespace Drawing.ArrangeEngine
             var fromP = from.GlobalConnectPoint;
             var toP = to.GlobalConnectPoint;
 
-            var path = getPath(fromP, toP, 0);
+            var path = getPath(fromP, toP, to.OwningItem, 0);
             return path;
         }
 
-        private IEnumerable<Point> getPath(Point from, Point to, int depth)
+        private IEnumerable<Point> getPath(Point from, Point to, DiagramItem target, int depth)
         {
             if (depth > 2)
                 return new[] { from, to };
 
             var obstacle = _navigator.GetFirstObstacle(from, to);
 
-            if (obstacle == null)
+            if (obstacle == null || obstacle == target)
                 //path is clear
                 return new[] { from, to };
 
@@ -41,8 +42,8 @@ namespace Drawing.ArrangeEngine
             if (avoidPoint == to)
                 return new[] { from, to };
 
-            var avoidingPath = getPath(from, avoidPoint, depth + 1);
-            var completingPath = getPath(avoidPoint, to, depth + 1);
+            var avoidingPath = getPath(from, avoidPoint, obstacle, depth + 1);
+            var completingPath = getPath(avoidPoint, to, target, depth + 1);
 
             return avoidingPath.Concat(completingPath.Skip(1));
         }

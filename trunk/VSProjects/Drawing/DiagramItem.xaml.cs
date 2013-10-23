@@ -50,6 +50,11 @@ namespace Drawing
             {
                 return DiagramCanvas.GetGlobalPosition(this);
             }
+
+            private set
+            {
+                DiagramCanvas.SetGlobalPosition(this, value);
+            }
         }
 
         public void FillSlot(SlotCanvas canvas, SlotDefinition slot)
@@ -72,7 +77,7 @@ namespace Drawing
             Definition = definition;
             DiagramContext = diagramContext;
 
-            InitializeComponent();
+            initialize();
         }
 
         internal DiagramItem(DiagramItemDefinition definition, DiagramItem parentItem)
@@ -82,7 +87,7 @@ namespace Drawing
             ParentItem._children.Add(this);
             DiagramContext = parentItem.DiagramContext;
 
-            InitializeComponent();
+            initialize();
         }
 
         internal void RefreshGlobal()
@@ -106,11 +111,29 @@ namespace Drawing
         {
             return _connectors[point];
         }
-        
+
+        private void initialize()
+        {
+            GlobalPosition = Definition.GlobalPosition;
+
+            if (IsRootItem)
+            {
+                DiagramCanvasBase.SetPosition(this, GlobalPosition);
+            }
+
+
+            InitializeComponent();
+        }
+
         private Point computeGlobalPosition()
         {
             var output = DiagramContext.Provider.Output;
             return this.TranslatePoint(new Point(0, 0), output);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Item: {0}", Definition.ID);
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Windows;
+
 namespace Drawing
 {
     public class DiagramItemDefinition
@@ -28,6 +30,8 @@ namespace Drawing
         public IEnumerable<DrawingProperty> Properties { get { return _properties.Values; } }
 
         public IEnumerable<SlotDefinition> Slots { get { return _slots; } }
+
+        public Point GlobalPosition { get; set; }
 
         /// <summary>
         /// Initialize drawing definition
@@ -58,5 +62,15 @@ namespace Drawing
         {
             _slots.Add(slot);
         }
+
+        public DrawingProperty GetProperty(string name)
+        {
+            DrawingProperty result;
+            _properties.TryGetValue(name, out result);
+
+            return result;
+        }
+
+        
     }
 }

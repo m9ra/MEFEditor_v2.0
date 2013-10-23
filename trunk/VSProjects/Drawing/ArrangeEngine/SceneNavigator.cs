@@ -9,13 +9,23 @@ using System.Windows;
 namespace Drawing.ArrangeEngine
 {
 
-    class SceneNavigator
+    public class SceneNavigator
     {
-        private readonly DisplayEngine _engine;
+        private readonly Planes _topBottom = new Planes(false, true);
+        private readonly Planes _bottomUp = new Planes(false, false);
+        private readonly Planes _leftRight = new Planes(true, true);
+        private readonly Planes _rightLeft = new Planes(true, false);
 
-        internal SceneNavigator(DisplayEngine engine)
+        public SceneNavigator(IEnumerable<DiagramItem> items)
         {
-            _engine = engine;
+            foreach (var item in items)
+            {
+                var span = getSpan(item);
+                _topBottom.AddSegment(item, span.TopLeft, span.TopRight);
+                _bottomUp.AddSegment(item, span.BottomLeft, span.BottomRight);
+                _leftRight.AddSegment(item, span.TopLeft, span.BottomLeft);
+                _rightLeft.AddSegment(item, span.TopRight, span.BottomRight);
+            }
         }
 
 
@@ -33,32 +43,55 @@ namespace Drawing.ArrangeEngine
             return Math.Abs(dX) + Math.Abs(dY);
         }
 
-        internal DiagramItem GetFirstObstacle(Point from, Point to)
+        public DiagramItem GetFirstObstacle(Point from, Point to)
         {
-            //TODO change algorithm to use sorted planes !!
+            var verticalPlane = selectPlanes(from.X, to.X, _leftRight, _rightLeft);
+            var horizontalPlane = selectPlanes(from.Y, to.Y, _topBottom, _bottomUp);
 
+            Point pHorizontal;
+            var horizontalItem = intersectedItem(from, to, verticalPlane, out pHorizontal);
+            Point pVertical;
+            var verticalItem = intersectedItem(from, to, horizontalPlane, out pVertical);
 
-            var intersectionDist = Double.PositiveInfinity;
-            DiagramItem intersected = null;
-            foreach (var item in _engine.Items)
+            if (horizontalItem == null)
             {
-                var span = getSpan(item);
-                if (span.Contains(from) || span.Contains(to))
-                    continue;
-
-                var intersection = intersectSpan(from, to, span);
-                if (!intersection.HasValue)
-                    continue;
-
-                var distance = Distance(from, intersection.Value);
-                if (distance < intersectionDist)
-                {
-                    intersectionDist = distance;
-                    intersected = item;
-                }
+                return verticalItem;
             }
 
-            return intersected;
+            if (verticalItem == null)
+            {
+                return horizontalItem;
+            }
+
+            if (Distance(from, pHorizontal) > Distance(from, pVertical))
+                return verticalItem;
+
+            return horizontalItem;
+        }
+
+        private DiagramItem intersectedItem(Point from, Point to, Planes planes, out Point intersectionPoint)
+        {
+            if (planes == null)
+            {
+                intersectionPoint = default(Point);
+                return null;
+            }
+
+            var item = planes.GetIntersectedItem(from, to, out intersectionPoint);
+            return item;
+        }
+
+        private Planes selectPlanes(double p1, double p2, Planes incrementalPlanes, Planes decrementalPlanes)
+        {
+            switch (Math.Sign(p2 - p1))
+            {
+                case 1:
+                    return incrementalPlanes;
+                case -1:
+                    return decrementalPlanes;
+                default:
+                    return null;
+            }
         }
 
 
@@ -75,17 +108,15 @@ namespace Drawing.ArrangeEngine
                 span.TopLeft,span.TopRight,span.BottomLeft,span.BottomRight
             };
 
+            //TODO: this is inefficient implementation
+            Array.Sort(categorized,
+                (p1, p2) =>
+                {
+                    return Math.Sign(Distance(from, p1.Value) - Distance(from, p2.Value));
+                }
+                );
 
-
-            /*
-              //THIS IS INCORRECT - Reimplement  
-                insert(from, span.TopLeft, categorized);
-                insert(from, span.TopRight, categorized);
-                insert(from, span.BottomLeft, categorized);
-                insert(from, span.BottomRight, categorized);
-             */
-
-            for (int i = 0; i < categorized.Length; ++i)
+            for (int i = 0; i < categorized.Length - 2; ++i)
             {
                 var visibleCorner = categorized[i];
                 if (visibleCorner.HasValue)

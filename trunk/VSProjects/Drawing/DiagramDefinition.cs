@@ -31,7 +31,7 @@ namespace Drawing
         /// definition will be displayed in output
         /// </summary>
         /// <param name="drawing">Defined drawing</param>
-        public void Draw(DiagramItemDefinition drawing)
+        public void DrawItem(DiagramItemDefinition drawing)
         {
             if (ContainsDrawing(drawing.ID))
                 throw new NotSupportedException("Drawing definition with same ID has already been added");

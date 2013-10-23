@@ -48,6 +48,7 @@
     <Compile Include="ArrangeEngine\ItemCollisionRepairer.cs" />
     <Compile Include="ArrangeEngine\ItemMoveability.cs" />
     <Compile Include="ArrangeEngine\JoinTracer.cs" />
+    <Compile Include="ArrangeEngine\Planes.cs" />
     <Compile Include="ArrangeEngine\SceneNavigator.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
     <Compile Include="Behaviours\FollowConnectorPosition.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="DrawingProperty.cs" />
     <Compile Include="DrawingProvider.cs" />
     <Compile Include="DrawingReference.cs" />
+    <Compile Include="ArrangeEngine\Plane.cs" />
     <Compile Include="SlotDefinition.cs" />
     <Compile Include="JoinDefinition.cs" />
     <Compile Include="JoinDrawing.cs" />

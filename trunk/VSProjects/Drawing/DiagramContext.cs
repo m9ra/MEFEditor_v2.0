@@ -8,9 +8,11 @@ namespace Drawing
 {
     public class DiagramContext
     {
-        internal readonly DrawingProvider Provider;
+        public readonly DrawingProvider Provider;
 
         internal readonly DiagramDefinition Diagram;
+
+        public IEnumerable<DiagramItem> Items { get { return Provider.Engine.Items; } }
 
         internal DiagramContext(DrawingProvider provider, DiagramDefinition diagram)
         {
