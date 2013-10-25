@@ -58,7 +58,7 @@ namespace UnitTesting
                 .AssertIntersection(
                     new Point(50, 0), //Point inside A
                     new Point(1050, 100), //Point inside C
-                    "B" //no obstacle is hitted
+                    "B" //B obstacle is hitted
                 )
                 ;
         }

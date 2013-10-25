@@ -9,6 +9,20 @@ using System.Windows;
 namespace Drawing.ArrangeEngine
 {
 
+    [Flags]
+    enum SpanRelativePosition
+    {
+        Inside=0,
+
+        Above = 1, Bellow = 2, LeftTo = 4, RightTo = 8,
+
+        LeftAbove = Above | LeftTo,
+        RightAbove = Above | RightTo,
+
+        LeftBellow = Bellow | LeftTo,
+        RightBellow = Bellow | RightTo
+    }
+
     public class SceneNavigator
     {
         private readonly Planes _topBottom = new Planes(false, true);
@@ -98,32 +112,114 @@ namespace Drawing.ArrangeEngine
         /// <summary>
         /// Get obstacle corners that are visible from given point
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="obstacle"></param>
-        /// <returns></returns>
-        internal IEnumerable<Point> GetVisibleCorners(Point from, DiagramItem obstacle)
+        /// <param name="point">Point which can see visible corners</param>
+        /// <param name="obstacle">Obstacle which corners are resolved to visibility</param>
+        /// <returns>Enumertion of visible points</returns>
+        internal IEnumerable<Point> GetVisibleCorners(Point point, DiagramItem obstacle)
         {
             var span = getSpan(obstacle);
-            var categorized = new Point?[]{
-                span.TopLeft,span.TopRight,span.BottomLeft,span.BottomRight
-            };
+            var position = GetRelativePosition(point, span);
 
-            //TODO: this is inefficient implementation
-            Array.Sort(categorized,
-                (p1, p2) =>
-                {
-                    return Math.Sign(Distance(from, p1.Value) - Distance(from, p2.Value));
-                }
-                );
+            #region Corners definitions for obstacle positions
 
-            for (int i = 0; i < categorized.Length - 2; ++i)
+            switch (position)
             {
-                var visibleCorner = categorized[i];
-                if (visibleCorner.HasValue)
-                    yield return visibleCorner.Value;
+                case SpanRelativePosition.Inside:
+                    //point is inside span
+                    yield return span.TopLeft;
+                    yield return span.TopRight;
+                    yield return span.BottomLeft;
+                    yield return span.BottomRight;
+                    break;
+
+                case SpanRelativePosition.Above:
+                    //point is above obstacle
+                    yield return span.TopLeft;
+                    yield return span.TopRight;
+                    break;
+
+                case SpanRelativePosition.Bellow:
+                    //point is bellow obstacle
+                    yield return span.BottomLeft;
+                    yield return span.BottomRight;
+                    break;
+
+                case SpanRelativePosition.LeftTo:
+                    //point is left to obstacle
+                    yield return span.TopLeft;
+                    yield return span.BottomLeft;
+                    break;
+
+                case SpanRelativePosition.RightTo:
+                    //point is right to obstacle                    
+                    yield return span.TopRight;
+                    yield return span.BottomRight;
+                    break;
+
+                case SpanRelativePosition.LeftAbove:
+                    //point is left top to obstacle
+                    yield return span.TopLeft;
+                    yield return span.TopRight;
+                    yield return span.BottomLeft;
+                    break;
+
+                case SpanRelativePosition.LeftBellow:
+                    //point is left bottom to obstacle
+                    yield return span.TopLeft;
+                    yield return span.BottomLeft;
+                    yield return span.BottomRight;
+                    break;
+                    
+                case SpanRelativePosition.RightAbove:
+                    //point is top right to obstacle
+                    yield return span.TopLeft;
+                    yield return span.TopRight;
+                    yield return span.BottomRight;
+                    break;
+
+                case SpanRelativePosition.RightBellow:
+                    //point is right bellow to obstacle                    
+                    yield return span.TopRight;
+                    yield return span.BottomLeft;
+                    yield return span.BottomRight;
+                    break;
+                
+                default:
+                    throw new NotSupportedException("This relative position is not reachable");
             }
+
+            #endregion
         }
 
+        /// <summary>
+        /// Get span position relative to given point
+        /// </summary>
+        /// <param name="point">Relative point</param>
+        /// <param name="span">Span to be tested</param>
+        /// <returns>Relative position to given point</returns>
+        internal SpanRelativePosition GetRelativePosition(Point point, Rect span)
+        {
+            var position = SpanRelativePosition.Inside;
+            if (point.Y < span.Top)
+            {
+                position |= SpanRelativePosition.Above;
+            }
+            else if (point.Y > span.Bottom)
+            {
+                position |= SpanRelativePosition.Bellow;
+            }
+
+            if (point.X < span.Left)
+            {
+                position |= SpanRelativePosition.LeftTo;
+            }
+            else if (point.X > span.Right)
+            {
+                position |= SpanRelativePosition.RightTo;
+            }
+
+            return position;
+        }
 
         internal Point GetNearest(Point to, IEnumerable<Point> points)
         {

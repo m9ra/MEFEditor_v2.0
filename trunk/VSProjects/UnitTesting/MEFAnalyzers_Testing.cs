@@ -106,10 +106,10 @@ namespace UnitTesting
 
             
             //export from pasted export
-            .AssertVariable("result1").HasValue("Data:PastedExport")
+            .AssertVariable("result2").HasValue("Data:PastedExport")
             
             //export from referenced assembly, filled with pasted export via prerequisity import
-            .AssertVariable("result2").HasValue("Data:Data:PastedExport") 
+            .AssertVariable("result1").HasValue("Data:Data:PastedExport") 
 
             ;
 
