@@ -24,6 +24,8 @@ namespace Drawing
 
         private readonly List<DiagramItem> _children = new List<DiagramItem>();
 
+        internal bool HasGlobalPositionChange;
+
         internal IEnumerable<DiagramItem> Children { get { return _children; } }
 
         internal bool IsRootItem { get { return ParentItem == null; } }

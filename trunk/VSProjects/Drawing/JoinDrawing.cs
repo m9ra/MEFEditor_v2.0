@@ -23,6 +23,11 @@ namespace Drawing
 
         internal ConnectorDrawing To;
 
+        internal Point[] PointPathArray
+        {
+            get { return (Point[])this.GetValue(PointPathProperty); }
+        }
+
         public IEnumerable<Point> PointPath
         {
             get { return (IEnumerable<Point>)this.GetValue(PointPathProperty); }

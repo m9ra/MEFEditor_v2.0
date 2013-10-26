@@ -27,7 +27,7 @@ namespace Drawing
 
         private readonly List<DiagramItem> _rootItems = new List<DiagramItem>();
 
-        private readonly Dictionary<JoinDefinition, Line> _joins = new Dictionary<JoinDefinition, Line>();
+        private readonly List<JoinDrawing> _joins = new List<JoinDrawing>();
 
         internal readonly DiagramCanvas Output;
 
@@ -81,14 +81,15 @@ namespace Drawing
             
             FollowConnectorPosition.Attach(from, this, (p) =>
             {
-                RefreshPointPath(join);
+                RefreshJoinPath(join);
             });
 
             FollowConnectorPosition.Attach(to, this, (p) =>
             {
-                RefreshPointPath(join);
+                RefreshJoinPath(join);
             });
 
+            _joins.Add(join);
             Output.AddJoin(join);
         }
 
@@ -104,11 +105,6 @@ namespace Drawing
         internal Point GetPosition(FrameworkElement item)
         {
             return DiagramCanvasBase.GetPosition(item);
-        }
-
-        internal Point GetGlobalPosition(DiagramItem item)
-        {
-            return DiagramCanvas.GetGlobalPosition(item);
         }
 
         /// <summary>
@@ -140,9 +136,42 @@ namespace Drawing
             }
 
             collisionDetector.Arrange(container);
+
+         /*   foreach (var child in children)
+            {
+                if (child.HasGlobalPositionChange)
+                {
+                    UpdateCrossedLines(child);
+                }
+            }*/
+
+            foreach (var join in _joins)
+            {
+                //TODO: detect if refresh is necessary
+
+                RefreshJoinPath(join);
+            }
         }
 
-        internal void RefreshPointPath(JoinDrawing join)
+        private void UpdateCrossedLines(DiagramItem item)
+        {
+            foreach (var join in _joins)
+            {
+                if (join.PointPathArray.Length == 0)
+                    continue;
+                
+                var from = join.PointPathArray[0];
+                for (int i = 1; i < join.PointPathArray.Length; ++i)
+                {
+                    var to = join.PointPathArray[1];
+
+                    //TODO: check crossing between from-to line
+                    from = to;
+                }
+            }
+        }
+
+        internal void RefreshJoinPath(JoinDrawing join)
         {
             var tracer = new JoinTracer(this);
             join.PointPath=tracer.GetPath(join.From, join.To);            

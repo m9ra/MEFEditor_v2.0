@@ -64,11 +64,11 @@ namespace MEFAnalyzers.Drawings
                 from = spline.Knots[i];
                 to = spline.Knots[i + 1];
 
-/*                var controlPoint1 = spline.FirstControlPoints[i];
+/*/                var controlPoint1 = spline.FirstControlPoints[i];
                 var controlPoint2 = spline.SecondControlPoints[i];
                 
-                context.BezierTo(controlPoint1, controlPoint2, to, true, true);*/
-                context.LineTo(to,true,true);
+                context.BezierTo(controlPoint1, controlPoint2, to, true, true);/*/
+                context.LineTo(to,true,true);/**/
             }
 
             Point arm1;

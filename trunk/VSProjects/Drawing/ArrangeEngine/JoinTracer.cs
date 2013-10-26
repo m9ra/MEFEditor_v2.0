@@ -32,12 +32,12 @@ namespace Drawing.ArrangeEngine
 
         private IEnumerable<Point> getPath(Point from, Point to, DiagramItem target, int depth)
         {
-            if (depth > 20)
+            if (depth > 10)
                 return new[] { from, to };
 
             var obstacle = _navigator.GetFirstObstacle(from, to);
 
-            if (obstacle == null || obstacle == target)
+            if (obstacle == null)
                 //path is clear
                 return new[] { from, to };
 
@@ -63,7 +63,7 @@ namespace Drawing.ArrangeEngine
 
             Point toCorner;
             Point fromCorner;
-            if (bothVisible.Any())
+            if (bothVisible.Any() && _navigator.GetFirstObstacle(from,to)==null)
             {
                 fromCorner = toCorner = bothVisible.First();
             }

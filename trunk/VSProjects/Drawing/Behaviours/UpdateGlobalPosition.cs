@@ -24,6 +24,7 @@ namespace Drawing.Behaviours
         {
             GlobalPositionChange.AddValueChanged(item, (s, e) =>
             {
+                item.HasGlobalPositionChange = true;
                 //global position of parent has changed - may affect children's global position
                 foreach (var child in item.Children)
                 {
