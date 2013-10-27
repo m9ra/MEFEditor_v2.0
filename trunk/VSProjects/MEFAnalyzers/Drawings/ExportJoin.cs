@@ -61,6 +61,9 @@ namespace MEFAnalyzers.Drawings
 
             for (int i = 0; i < spline.FirstControlPoints.Length; ++i)
             {
+                if (spline.Knots[i] == spline.Knots[i + 1])
+                    continue;
+
                 from = spline.Knots[i];
                 to = spline.Knots[i + 1];
 
@@ -68,7 +71,9 @@ namespace MEFAnalyzers.Drawings
                 var controlPoint2 = spline.SecondControlPoints[i];
                 
                 context.BezierTo(controlPoint1, controlPoint2, to, true, true);/*/
-                context.LineTo(to,true,true);/**/
+                context.LineTo(to,true,true);
+                
+                /**/
             }
 
             Point arm1;

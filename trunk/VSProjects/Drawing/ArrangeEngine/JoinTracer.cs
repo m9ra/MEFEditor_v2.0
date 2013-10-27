@@ -26,31 +26,49 @@ namespace Drawing.ArrangeEngine
             fromP.Y -= 40;
             toP.Y -= 40;
 
-            var path = getPath(fromP, toP, to.OwningItem, 0);
+            var path = getPath(fromP, toP, null, 0).ToArray();
+
+            /*   path[0].Y += 40;
+               path[path.Length - 1].Y += 40;*/
+
             return path;
         }
 
-        private IEnumerable<Point> getPath(Point from, Point to, DiagramItem target, int depth)
+        private IEnumerable<Point> getPath(Point from, Point to, DiagramItem fromObstacle, int depth)
         {
-            if (depth > 10)
+            if (depth > 5)
                 return new[] { from, to };
+
 
             var obstacle = _navigator.GetFirstObstacle(from, to);
+            var corners = _navigator.GetVisibleCorners(from, obstacle);
 
-            if (obstacle == null)
-                //path is clear
-                return new[] { from, to };
+            var avoidPoint = obstacle == null ? to : _navigator.GetNearest(to, corners);
 
-            var avoidPath = getBestAvoidCorner(from, to, obstacle);
+            var path = new List<Point>();
+            path.Add(from);
 
+            if (fromObstacle != null && avoidPoint != from)
+            {
+                var fromObstacleCorners = _navigator.GetVisibleCorners(avoidPoint, fromObstacle);
+                var fromObstacleFlowPoint = _navigator.GetNearest(from, fromObstacleCorners);
 
-            var incomingPath = getPath(from, avoidPath[0], obstacle, depth + 1);
-            var outcomingPath = getPath(avoidPath[1], to, target, depth + 1);
+                //this is safe (because it leads along item edge)
+                path.Add(fromObstacleFlowPoint);
+                from = fromObstacleFlowPoint;
+            }
 
-            if (avoidPath[0] == avoidPath[1])
-                outcomingPath = outcomingPath.Skip(1);
+            if (obstacle == null && fromObstacle==null)
+            {
+                path.Add(to);
+                return path;
+            }
+            
+            var incommingPath = getPath(from, avoidPoint, fromObstacle, depth + 1);
+            var outcommingPath = getPath(avoidPoint, to, obstacle, depth + 1);
 
-            return incomingPath.Concat(outcomingPath);
+            return path.Concat(incommingPath).Concat(outcommingPath);
+
         }
 
         private Point[] getBestAvoidCorner(Point from, Point to, DiagramItem obstacle)
@@ -63,14 +81,14 @@ namespace Drawing.ArrangeEngine
 
             Point toCorner;
             Point fromCorner;
-            if (bothVisible.Any() && _navigator.GetFirstObstacle(from,to)==null)
+            if (bothVisible.Any() /*&& _navigator.GetFirstObstacle(from,to)==null*/)
             {
                 fromCorner = toCorner = bothVisible.First();
             }
             else
             {
                 toCorner = _navigator.GetNearest(to, toVisible);
-                fromCorner = _navigator.GetNearest(to, fromVisible);
+                fromCorner = _navigator.GetNearest(from, toVisible);
             }
 
             return new[] { fromCorner, toCorner };

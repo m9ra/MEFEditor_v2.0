@@ -12,7 +12,7 @@ namespace Drawing.ArrangeEngine
     [Flags]
     enum SpanRelativePosition
     {
-        Inside=0,
+        Inside = 0,
 
         Above = 1, Bellow = 2, LeftTo = 4, RightTo = 8,
 
@@ -117,78 +117,81 @@ namespace Drawing.ArrangeEngine
         /// <returns>Enumertion of visible points</returns>
         internal IEnumerable<Point> GetVisibleCorners(Point point, DiagramItem obstacle)
         {
-            var span = getSpan(obstacle);
-            var position = GetRelativePosition(point, span);
-
-            #region Corners definitions for obstacle positions
-
-            switch (position)
+            if (obstacle != null)
             {
-                case SpanRelativePosition.Inside:
-                    //point is inside span
-                    yield return span.TopLeft;
-                    yield return span.TopRight;
-                    yield return span.BottomLeft;
-                    yield return span.BottomRight;
-                    break;
+                var span = getSpan(obstacle);
+                var position = GetRelativePosition(point, span);
 
-                case SpanRelativePosition.Above:
-                    //point is above obstacle
-                    yield return span.TopLeft;
-                    yield return span.TopRight;
-                    break;
+                #region Corners definitions for obstacle positions
 
-                case SpanRelativePosition.Bellow:
-                    //point is bellow obstacle
-                    yield return span.BottomLeft;
-                    yield return span.BottomRight;
-                    break;
+                switch (position)
+                {
+                    case SpanRelativePosition.Inside:
+                        //point is inside span
+                        yield return span.TopLeft;
+                        yield return span.TopRight;
+                        yield return span.BottomLeft;
+                        yield return span.BottomRight;
+                        break;
 
-                case SpanRelativePosition.LeftTo:
-                    //point is left to obstacle
-                    yield return span.TopLeft;
-                    yield return span.BottomLeft;
-                    break;
+                    case SpanRelativePosition.Above:
+                        //point is above obstacle
+                        yield return span.TopLeft;
+                        yield return span.TopRight;
+                        break;
 
-                case SpanRelativePosition.RightTo:
-                    //point is right to obstacle                    
-                    yield return span.TopRight;
-                    yield return span.BottomRight;
-                    break;
+                    case SpanRelativePosition.Bellow:
+                        //point is bellow obstacle
+                        yield return span.BottomLeft;
+                        yield return span.BottomRight;
+                        break;
 
-                case SpanRelativePosition.LeftAbove:
-                    //point is left top to obstacle
-                    yield return span.TopLeft;
-                    yield return span.TopRight;
-                    yield return span.BottomLeft;
-                    break;
+                    case SpanRelativePosition.LeftTo:
+                        //point is left to obstacle
+                        yield return span.TopLeft;
+                        yield return span.BottomLeft;
+                        break;
 
-                case SpanRelativePosition.LeftBellow:
-                    //point is left bottom to obstacle
-                    yield return span.TopLeft;
-                    yield return span.BottomLeft;
-                    yield return span.BottomRight;
-                    break;
-                    
-                case SpanRelativePosition.RightAbove:
-                    //point is top right to obstacle
-                    yield return span.TopLeft;
-                    yield return span.TopRight;
-                    yield return span.BottomRight;
-                    break;
+                    case SpanRelativePosition.RightTo:
+                        //point is right to obstacle                    
+                        yield return span.TopRight;
+                        yield return span.BottomRight;
+                        break;
 
-                case SpanRelativePosition.RightBellow:
-                    //point is right bellow to obstacle                    
-                    yield return span.TopRight;
-                    yield return span.BottomLeft;
-                    yield return span.BottomRight;
-                    break;
-                
-                default:
-                    throw new NotSupportedException("This relative position is not reachable");
+                    case SpanRelativePosition.LeftAbove:
+                        //point is left top to obstacle
+                        yield return span.TopLeft;
+                        yield return span.TopRight;
+                        yield return span.BottomLeft;
+                        break;
+
+                    case SpanRelativePosition.LeftBellow:
+                        //point is left bottom to obstacle
+                        yield return span.TopLeft;
+                        yield return span.BottomLeft;
+                        yield return span.BottomRight;
+                        break;
+
+                    case SpanRelativePosition.RightAbove:
+                        //point is top right to obstacle
+                        yield return span.TopLeft;
+                        yield return span.TopRight;
+                        yield return span.BottomRight;
+                        break;
+
+                    case SpanRelativePosition.RightBellow:
+                        //point is right bellow to obstacle                    
+                        yield return span.TopRight;
+                        yield return span.BottomLeft;
+                        yield return span.BottomRight;
+                        break;
+
+                    default:
+                        throw new NotSupportedException("This relative position is not reachable");
+                }
+
+                #endregion
             }
-
-            #endregion
         }
 
         /// <summary>

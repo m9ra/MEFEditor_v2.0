@@ -34,6 +34,8 @@ namespace Research
                 test.Add(partExport);
                 var empty=new SimpleType(""nothing"");
                 test.Add(empty);
+                var empty2=new SimpleType(""nothing"");
+                test.Add(empty2);
                 test.Compose();
                 
             ")
