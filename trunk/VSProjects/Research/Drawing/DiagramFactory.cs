@@ -47,7 +47,7 @@ namespace Research.Drawings
 
         public override ConnectorDrawing CreateConnector(ConnectorDefinition definition, DiagramItem owningItem)
         {
-            return new MEFAnalyzers.Drawings.CompositionConnector(definition,owningItem);
+            return new MEFAnalyzers.Drawings.ImportConnector(definition,owningItem);
         }
     }
 }

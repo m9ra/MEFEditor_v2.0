@@ -20,9 +20,9 @@ namespace MEFAnalyzers.Drawings
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class CompositionConnector : ConnectorDrawing
+    public partial class ExportConnector : ConnectorDrawing
     {
-        public CompositionConnector(ConnectorDefinition definition,DiagramItem owningItem)
+        public ExportConnector(ConnectorDefinition definition,DiagramItem owningItem)
             :base(definition,owningItem)
         {
             InitializeComponent();

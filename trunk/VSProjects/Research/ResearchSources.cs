@@ -36,6 +36,8 @@ namespace Research
                 test.Add(empty);
                 var empty2=new SimpleType(""nothing"");
                 test.Add(empty2);
+                var empty3=new SimpleType(""nothing"");
+                test.Add(empty3);
                 test.Compose();
                 
             ")
