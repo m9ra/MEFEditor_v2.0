@@ -101,7 +101,27 @@ namespace Drawing
         internal void Attach(ConnectorDrawing connector)
         {
             _connectors.Add(connector.Definition, connector);
-            Connectors.Children.Add(connector);
+
+
+            StackPanel connectors;
+            switch (connector.Align)
+            {
+                case ConnectorAlign.Top:
+                    connectors = TopConnectors;
+                    break;
+                case ConnectorAlign.Bottom:
+                    connectors = BottomConnectors;
+                    break;
+                case ConnectorAlign.Left:
+                    connectors = LeftConnectors;
+                    break;
+                case ConnectorAlign.Right:
+                    connectors = RightConnectors;
+                    break;
+                default:
+                    throw new NotSupportedException("Given align is not supported");
+            }
+            connectors.Children.Add(connector);
         }
 
         internal void SetContent(FrameworkElement content)

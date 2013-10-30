@@ -35,6 +35,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -62,13 +63,17 @@
     <Compile Include="Drawings\CompositionTesterDrawing.xaml.cs">
       <DependentUpon>CompositionTesterDrawing.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Drawings\ImportConnector.xaml.cs">
-      <DependentUpon>ImportConnector.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Drawings\ExportConnector.xaml.cs">
       <DependentUpon>ExportConnector.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Drawings\ExportJoin.cs" />
+    <Compile Include="Drawings\DrawingTools.cs" />
+    <Compile Include="Drawings\ImportConnector.xaml.cs">
+      <DependentUpon>ImportConnector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Drawings\SelfExportConnector.xaml.cs">
+      <DependentUpon>SelfExportConnector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Drawings\CompositionJoin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -98,11 +103,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Drawings\ExportConnector.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Drawings\ImportConnector.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Drawings\ExportConnector.xaml">
+    <Page Include="Drawings\SelfExportConnector.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

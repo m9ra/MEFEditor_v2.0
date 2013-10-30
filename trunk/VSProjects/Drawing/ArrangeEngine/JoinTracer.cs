@@ -20,12 +20,9 @@ namespace Drawing.ArrangeEngine
 
         internal IEnumerable<Point> GetPath(ConnectorDrawing from, ConnectorDrawing to)
         {
-            var fromP = from.GlobalConnectPoint;
-            var toP = to.GlobalConnectPoint;
-
-            fromP.Y -= 40;
-            toP.Y -= 40;
-
+            var fromP = from.OutOfItemPoint;
+            var toP = to.OutOfItemPoint;
+            
             var path = getPath(fromP, toP, null, 0).ToArray();
 
             /*   path[0].Y += 40;

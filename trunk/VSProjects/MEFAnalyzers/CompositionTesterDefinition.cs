@@ -108,14 +108,13 @@ namespace MEFAnalyzers
 
             foreach (var point in compositionResult.Points)
             {
-                var joinPoint = getJoinPoint(point, services);
-                //TODO set join point properties
+                var joinPoint = getConnector(point, services);
             }
 
             foreach (var join in compositionResult.Joins)
             {
-                var fromPoint = getJoinPoint(join.Export, services);
-                var toPoint = getJoinPoint(join.Import, services);
+                var fromPoint = getConnector(join.Export, services);
+                var toPoint = getConnector(join.Import, services);
 
                 var joinDefinition = services.DrawJoin(fromPoint, toPoint);
                 //TODO set properties of joinDefinition
@@ -124,11 +123,45 @@ namespace MEFAnalyzers
             services.CommitDrawing();
         }
 
-        private ConnectorDefinition getJoinPoint(JoinPoint point, DrawingServices services)
+        private ConnectorDefinition getConnector(JoinPoint point, DrawingServices services)
         {
             var compositionResult = CompositionResult.Get();
             var instance = point.Instance.Component;
-            return services.GetJoinPoint(instance, point.Point);
+            var connector = services.GetJoinPoint(instance, point.Point);
+
+            var kind = getConnectorKind(point);
+
+            setProperty(connector, "Kind", kind);
+            setProperty(connector, "Contract", point.Contract);
+            setProperty(connector, "ContractType", point.ContractType.TypeName);
+            setProperty(connector, "AllowMany", point.AllowMany);
+            setProperty(connector, "AllowDefault", point.AllowDefault);
+            setProperty(connector, "IsPrerequisity", point.IsPrerequesity);
+
+            return connector;
+        }
+
+        private void setProperty(ConnectorDefinition connector, string propertyName, object propertyValue)
+        {
+            connector.SetProperty(new DrawingProperty(propertyName, propertyValue.ToString()));
+        }
+
+        private string getConnectorKind(JoinPoint point)
+        {
+            var pointType = point.Point.GetType();
+
+            if (pointType == typeof(Import))
+            {
+                return "Import";
+            }
+            else if (pointType == typeof(Export))
+            {
+                return "Export";
+            }
+            else
+            {
+                throw new NotSupportedException("Unsupported point kind");
+            }
         }
     }
 }

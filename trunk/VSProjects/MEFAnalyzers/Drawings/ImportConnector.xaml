@@ -11,23 +11,30 @@
             
              BorderThickness="0"
              >
-    <DockPanel>
-        <TextBlock DockPanel.Dock="Top" Padding="10 0">System.ICollection[string]</TextBlock>
-        <Path x:Name="Glyph" Stroke="Black" Width="10" Height="20">
+    <StackPanel >
+        <Path x:Name="Glyph" Stroke="Black" Width="20" Height="10" HorizontalAlignment="Right">
+            <Path.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Path.RenderTransform>
             <Path.Data>
                 <GeometryGroup>
                     <GeometryGroup.Children>
-                        <LineGeometry StartPoint="5,20" EndPoint="5,10"/>
+                        <LineGeometry StartPoint="20,5" EndPoint="10,5"/>
 
                         <CombinedGeometry GeometryCombineMode="Exclude">
                             <CombinedGeometry.Geometry1>
                                 <EllipseGeometry Center="5,5" RadiusX="5" RadiusY="5"/>
                             </CombinedGeometry.Geometry1>
                             <CombinedGeometry.Geometry2>
-                                <RectangleGeometry Rect="0,0,10,5"/>
-                            </CombinedGeometry.Geometry2>                            
+                                <EllipseGeometry Center="1,5" RadiusX="6" RadiusY="6"/>
+                            </CombinedGeometry.Geometry2>
                         </CombinedGeometry>
-                        
+
                     </GeometryGroup.Children>
                 </GeometryGroup>
             </Path.Data>
@@ -39,5 +46,6 @@
                 </LinearGradientBrush>
             </Path.Fill>
         </Path>
-    </DockPanel>
+        <TextBlock Name="Contract" Padding="10 0">System.ICollection[string]</TextBlock>
+    </StackPanel>
 </dr:ConnectorDrawing>

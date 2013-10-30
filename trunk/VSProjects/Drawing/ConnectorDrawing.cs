@@ -10,17 +10,49 @@ using System.Windows.Controls;
 
 namespace Drawing
 {
-    public abstract class ConnectorDrawing:Border
+    public enum ConnectorAlign { Top, Bottom, Left, Right }
+
+    public abstract class ConnectorDrawing : Border
     {
+        public readonly ConnectorAlign Align;
         public readonly DiagramItem OwningItem;
         public readonly ConnectorDefinition Definition;
         public abstract Point ConnectPoint { get; }
 
-        public ConnectorDrawing(ConnectorDefinition definition,DiagramItem owningItem)
+        public ConnectorDrawing(ConnectorDefinition definition, ConnectorAlign align, DiagramItem owningItem)
         {
+            Align = align;
             Definition = definition;
             OwningItem = owningItem;
         }
+
+        internal Point OutOfItemPoint
+        {
+            //TODO connect with item margin settings
+            get
+            {
+                var point = GlobalConnectPoint;
+                var shift=40;
+                switch (Align)
+                {
+                    case ConnectorAlign.Top:
+                        point.Y -= shift;
+                        break;
+                    case ConnectorAlign.Bottom:
+                        point.Y+=shift;
+                        break;
+                    case ConnectorAlign.Left:
+                        point.X -= shift;
+                        break;
+                    case ConnectorAlign.Right:
+                        point.X += shift;
+                        break;
+                }
+
+                return GlobalConnectPoint;
+            }
+        }
+
 
         public Point GlobalConnectPoint
         {

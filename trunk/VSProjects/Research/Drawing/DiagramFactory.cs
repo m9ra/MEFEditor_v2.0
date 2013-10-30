@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Drawing;
+
+using MEFAnalyzers.Drawings;
+
 namespace Research.Drawings
 {
     class DiagramFactory:AbstractDiagramFactory
@@ -42,12 +45,23 @@ namespace Research.Drawings
 
         public override JoinDrawing CreateJoin(JoinDefinition definition, DiagramContext context)
         {
-            return new MEFAnalyzers.Drawings.ExportJoin(definition);
+            return new CompositionJoin(definition);
         }
 
         public override ConnectorDrawing CreateConnector(ConnectorDefinition definition, DiagramItem owningItem)
         {
-            return new MEFAnalyzers.Drawings.ImportConnector(definition,owningItem);
+            var kind=definition.GetProperty("Kind");
+            switch (kind.Value)
+            {
+                case "Import":
+                    return new ImportConnector(definition, owningItem);
+                case "SelfExport":
+                    return new SelfExportConnector(definition, owningItem);
+                case "Export":
+                    return new ExportConnector(definition, owningItem);
+                default:
+                    throw new NotSupportedException(kind.Value);
+            }
         }
     }
 }

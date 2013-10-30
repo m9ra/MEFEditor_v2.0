@@ -11,9 +11,9 @@ using Drawing;
 
 namespace MEFAnalyzers.Drawings
 {
-    public class ExportJoin : JoinDrawing
+    public class CompositionJoin : JoinDrawing
     {
-        public ExportJoin(JoinDefinition definition) :
+        public CompositionJoin(JoinDefinition definition) :
             base(definition)
         {
             this.Stroke = Brushes.Orange;

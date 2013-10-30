@@ -20,7 +20,7 @@ namespace MEFAnalyzers.Drawings
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class ExportConnector : ConnectorDrawing
+    public partial class SelfExportConnector : ConnectorDrawing
     {
         private static readonly Dictionary<string, string> ExportProperties = new Dictionary<string, string>()
         {
@@ -28,8 +28,8 @@ namespace MEFAnalyzers.Drawings
              {"ItemType","Item type"}
         };
 
-        public ExportConnector(ConnectorDefinition definition, DiagramItem owningItem)
-            : base(definition, ConnectorAlign.Right, owningItem)
+        public SelfExportConnector(ConnectorDefinition definition, DiagramItem owningItem)
+            : base(definition, ConnectorAlign.Top, owningItem)
         {
             InitializeComponent();
 
@@ -42,7 +42,7 @@ namespace MEFAnalyzers.Drawings
         {
             get
             {
-                var res = new Point(-15, -5);
+                var res = new Point(-5, -5);
                 res = this.TranslatePoint(res, Glyph);
 
                 res = new Point(-res.X, -res.Y);
