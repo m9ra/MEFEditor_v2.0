@@ -76,6 +76,7 @@ namespace MEFAnalyzers
 
         public void _method_Add(Instance part)
         {
+            ReportChildAdd(1, "Composition part");
             Parts.Get().Add(part);
         }
 

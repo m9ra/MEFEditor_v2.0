@@ -68,6 +68,7 @@
     <Compile Include="DrawingProvider.cs" />
     <Compile Include="DrawingReference.cs" />
     <Compile Include="ArrangeEngine\Plane.cs" />
+    <Compile Include="EditDefinition.cs" />
     <Compile Include="SlotDefinition.cs" />
     <Compile Include="JoinDefinition.cs" />
     <Compile Include="JoinDrawing.cs" />

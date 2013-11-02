@@ -19,10 +19,13 @@ namespace Analyzing.Editing
 
         private readonly RemoveHandler _removeHandler;
 
+        private readonly AnalyzingResult _result;
+
         private List<Transformation> _appliedTransformations = new List<Transformation>();
 
-        internal TransformationServices(RemoveHandler removeHandler)
+        internal TransformationServices(AnalyzingResult result, RemoveHandler removeHandler)
         {
+            _result = result;
             _removeHandler = removeHandler;
         }
 
@@ -62,6 +65,8 @@ namespace Analyzing.Editing
             }
 
             _appliedTransformations = null;
+
+            _result.ReportTransformationCommit();
         }
 
         public bool Remove(Instance instance)

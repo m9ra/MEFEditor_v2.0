@@ -67,11 +67,11 @@ namespace Analyzing.Editing
                 {
                     //scope end was shifted
                     return _firstScopeEnd.ScopeEnds(instance).First();
-                }                
+                }
             }
 
             //find scope start
-            var scopeStartBlock= _block.NextBlock;
+            var scopeStartBlock = _block.NextBlock;
             while (scopeStartBlock != null)
             {
                 var starts = scopeStartBlock.ScopeStarts(instance);
@@ -98,8 +98,14 @@ namespace Analyzing.Editing
 
         public void RemoveArgument(Instance editProvider, int argumentIndex, string editName)
         {
-            var transformation = TransformProvider.RemoveArgument(argumentIndex,true).Remove();
+            var transformation = TransformProvider.RemoveArgument(argumentIndex, true).Remove();
             addEdit(editProvider, editName, transformation);
+        }
+
+        public void RemoveCall(Instance editProvider, string editName)
+        {
+            var transform = TransformProvider.Remove().Remove();
+            addEdit(editProvider, editName, transform);
         }
 
         public void ChangeArgument(Instance editProvider, int argumentIndex, string editName, ValueProvider valueProvider)
@@ -107,6 +113,13 @@ namespace Analyzing.Editing
             var transformation = TransformProvider.RewriteArgument(argumentIndex, valueProvider);
             addEdit(editProvider, editName, transformation);
         }
+
+        public void SetOptional(int index)
+        {
+            TransformProvider.SetOptionalArgument(index);
+        }
+
+
 
         private void addEdit(Instance editProvider, string editName, Transformation transformation)
         {
@@ -126,7 +139,7 @@ namespace Analyzing.Editing
             //It has reverse ordering of transformations that will be generated            
             var shiftedBlocks = new List<ExecutedBlock>();
             shiftedBlocks.Add(shiftedBlock);
-          
+
             var borderInstances = new HashSet<Instance>();
             borderInstances.UnionWith(shiftedBlock.AffectedInstances);
 
@@ -149,7 +162,7 @@ namespace Analyzing.Editing
             {
                 return false;
             }
-            
+
             shiftedBlocks.Reverse();
             foreach (var block in shiftedBlocks)
             {
@@ -175,9 +188,6 @@ namespace Analyzing.Editing
             return true;
         }
 
-        public void SetOptional(int index)
-        {
-            TransformProvider.SetOptionalArgument(index);
-        }
+
     }
 }

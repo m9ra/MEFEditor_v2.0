@@ -25,6 +25,8 @@ namespace Drawing
 
         public DiagramContext Display(DiagramDefinition diagramDefinition)
         {
+            Engine.Clear();
+
             var context = new DiagramContext(this, diagramDefinition);
 
             foreach (var definition in context.RootItemDefinitions)

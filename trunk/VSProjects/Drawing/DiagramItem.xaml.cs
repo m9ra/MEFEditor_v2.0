@@ -73,7 +73,6 @@ namespace Drawing
 
         #endregion
 
-
         internal DiagramItem(DiagramItemDefinition definition, DiagramContext diagramContext)
         {
             Definition = definition;
@@ -143,8 +142,26 @@ namespace Drawing
                 DiagramCanvasBase.SetPosition(this, GlobalPosition);
             }
 
-
             InitializeComponent();
+
+            setEdits();
+        }
+
+        private void setEdits()
+        {
+            var menu = new ContextMenu();
+            foreach (var edit in Definition.Edits)
+            {
+                var item = new MenuItem();
+                item.Header = edit.Name;
+                menu.Items.Add(item);
+
+                item.Click += (e, s) => edit.Action();
+            }
+
+            ContentDrawing.ContextMenu = menu;
+            if (menu.Items.Count == 0)
+                menu.Visibility = System.Windows.Visibility.Hidden;
         }
 
         private Point computeGlobalPosition()

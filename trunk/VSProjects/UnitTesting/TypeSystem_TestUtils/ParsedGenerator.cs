@@ -21,7 +21,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly TypeMethodInfo Info;
 
-        public readonly Source Source;
+        public Source Source { get; internal set; }
 
         private readonly TypeServices _services;
 

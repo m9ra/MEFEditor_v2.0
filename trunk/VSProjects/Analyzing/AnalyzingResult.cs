@@ -16,16 +16,24 @@ namespace Analyzing
 
         public readonly IEnumerable<Instance> CreatedInstances;
 
-        internal AnalyzingResult(CallContext entryContext,RemoveHandler removeHandler, IEnumerable<Instance> createdInstances)
+        public event Action OnTransformationCommit;
+
+        internal AnalyzingResult(CallContext entryContext, RemoveHandler removeHandler, IEnumerable<Instance> createdInstances)
         {
             EntryContext = entryContext;
             _removeHandler = removeHandler;
             CreatedInstances = createdInstances;
         }
 
+        internal void ReportTransformationCommit()
+        {
+            if (OnTransformationCommit != null)
+                OnTransformationCommit();
+        }
+
         public TransformationServices CreateTransformationServices()
         {
-            return new TransformationServices(_removeHandler);
+            return new TransformationServices(this, _removeHandler);
         }
     }
 }

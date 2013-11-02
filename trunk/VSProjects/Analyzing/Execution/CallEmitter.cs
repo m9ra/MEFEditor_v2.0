@@ -33,18 +33,16 @@ namespace Analyzing.Execution
         /// </summary>
         private InstructionInfo _currentBlockInfo = new InstructionInfo();
 
-        private readonly AnalyzingContext _context;
-
         internal CallEmitter(AnalyzingContext context)
+            : base(context)
         {
-            _context = context;
         }
 
         #region Emittor API implementation
 
         public override AssignBuilder AssignLiteral(string targetVar, object literal, InstanceInfo literalInfo)
         {
-            var literalInstance = _context.Machine.CreateDirectInstance(literal, literalInfo);
+            var literalInstance = Context.Machine.CreateDirectInstance(literal, literalInfo);
             var target = getVariable(targetVar, literalInstance.Info);
 
             var result = new AssignLiteral(target, literalInstance);
@@ -98,7 +96,7 @@ namespace Analyzing.Execution
         {
             var sharedThisVar = getSharedVar(sharedInstanceInfo);
 
-            var initializerID = _context.Settings.GetSharedInitializer(sharedInstanceInfo);
+            var initializerID = Context.Settings.GetSharedInitializer(sharedInstanceInfo);
 
             if (initializerID.NeedsDynamicResolving)
             {
@@ -112,7 +110,7 @@ namespace Analyzing.Execution
 
             emitInstruction(ensureInitialization);
 
-            return emitCall(methodID,arguments);
+            return emitCall(methodID, arguments);
         }
 
         public override CallBuilder Call(MethodID methodID, string thisObjVariable, Arguments arguments)
@@ -122,7 +120,7 @@ namespace Analyzing.Execution
 
             arguments.Initialize(thisVar);
 
-            return emitCall(methodID,arguments);
+            return emitCall(methodID, arguments);
         }
 
         public override void DirectInvoke(DirectMethod method)
@@ -252,9 +250,9 @@ namespace Analyzing.Execution
             _instructions.Add(instruction);
         }
 
-        private CallBuilder emitCall(MethodID methodID,Arguments arguments)
+        private CallBuilder emitCall(MethodID methodID, Arguments arguments)
         {
-            var call = new Call(methodID,arguments);
+            var call = new Call(methodID, arguments);
             emitInstruction(call);
 
             var builder = new CallBuilder(call);
@@ -276,7 +274,7 @@ namespace Analyzing.Execution
 
             if (type != null)
             {
-                info = _context.Settings.GetNativeInfo(type);
+                info = Context.Settings.GetNativeInfo(type);
             }
 
             return getVariable(variable, info);

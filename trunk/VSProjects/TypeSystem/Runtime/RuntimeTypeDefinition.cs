@@ -7,18 +7,14 @@ using System.Threading.Tasks;
 using Analyzing;
 using Analyzing.Execution;
 
+using Analyzing.Editing;
+
 using TypeSystem.Runtime.Building;
 
 using Drawing;
 
 namespace TypeSystem.Runtime
 {
-    /// <summary>
-    /// Value provider for getting objects for edits
-    /// </summary>
-    /// <returns></returns>
-    public delegate object ValueProvider();
-
     /// <summary>
     /// Base class for runtime type definitions
     /// <remarks>Its used for defining analyzing types</remarks>
@@ -39,6 +35,8 @@ namespace TypeSystem.Runtime
         /// Available type services
         /// </summary>
         protected TypeServices Services { get; private set; }
+
+        protected EditsProvider Edits { get { return Context.Edits; } }
 
         /// <summary>
         /// Component info of type (null if type is not a component)
@@ -150,14 +148,14 @@ namespace TypeSystem.Runtime
         /// <param name="thisInstance"></param>
         /// <param name="context"></param>
         /// <returns>Dependency instances, that has to be drawed for satisfying thisInstance</returns>
-        internal IEnumerable<Instance> Draw(Instance thisInstance, DiagramDefinition context)
+        internal IEnumerable<Instance> Draw(AnalyzingResult result, Instance thisInstance, DiagramDefinition context)
         {
             This = thisInstance;
 
             try
             {
                 //TODO inheritance drawing
-                var services = new DrawingServices(This,context);
+                var services = new DrawingServices(result, This, context);
                 draw(services);
                 return services.DependencyInstances;
             }
@@ -173,9 +171,24 @@ namespace TypeSystem.Runtime
             return new InstanceInfo(type);
         }
 
+        protected void ReportChildAdd(int childArgIndex, string childDescription, bool removeOnyArg = false)
+        {
+            var child = CurrentArguments[childArgIndex];
+            var editName = "Exclude child: " + child.ID;
+
+            if (removeOnyArg)
+            {
+                Edits.RemoveArgument(This, childArgIndex, editName);
+            }
+            else
+            {
+                Edits.RemoveCall(This, editName);
+            }
+        }
+
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)
         {
-            throw new NotImplementedException();
+            Edits.ChangeArgument(This, argIndex, editName, valueProvider);
         }
 
         protected void AddArg(int argIndex, string editName, ValueProvider valueProvider)

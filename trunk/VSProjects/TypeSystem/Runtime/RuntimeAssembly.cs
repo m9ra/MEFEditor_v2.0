@@ -279,7 +279,7 @@ namespace TypeSystem.Runtime
 
         #endregion
 
-        public void Draw(Instance instance, DiagramDefinition context)
+        public void Draw(AnalyzingResult result, Instance instance, DiagramDefinition context)
         {
             var toDraw = new Queue<Instance>();
             toDraw.Enqueue(instance);
@@ -296,7 +296,7 @@ namespace TypeSystem.Runtime
                     //TODO resolve generic types and inheritance
                     return;
 
-                var dependencies = typeDefinition.Draw(drawedInstance, context);
+                var dependencies = typeDefinition.Draw(result, drawedInstance, context);
 
                 foreach (var dependency in dependencies)
                     toDraw.Enqueue(dependency);

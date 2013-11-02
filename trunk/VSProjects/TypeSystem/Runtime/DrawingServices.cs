@@ -7,12 +7,15 @@ using System.Threading.Tasks;
 using Drawing;
 
 using Analyzing;
+using Analyzing.Editing;
 
 namespace TypeSystem.Runtime
 {
     public class DrawingServices
     {
         private readonly HashSet<Instance> _needDrawingInstances = new HashSet<Instance>();
+
+        private readonly AnalyzingResult _result;
 
         internal IEnumerable<Instance> DependencyInstances { get { return _needDrawingInstances; } }
 
@@ -22,11 +25,33 @@ namespace TypeSystem.Runtime
 
         public readonly DiagramDefinition Context;
 
-        internal DrawingServices(Instance instance, DiagramDefinition context)
+
+
+        internal DrawingServices(AnalyzingResult result, Instance instance, DiagramDefinition context)
         {
+            _result = result;
+
             Drawing = new DiagramItemDefinition(instance.ID, instance.Info.TypeName);
             DrawedInstance = instance;
             Context = context;
+
+            foreach (var edit in DrawedInstance.Edits)
+            {
+                var editDefinition = CreateEditDefinition(edit);
+                Drawing.AddEdit(editDefinition);
+            }
+        }
+        
+        public EditDefinition CreateEditDefinition(Edit edit)
+        {
+            return new EditDefinition(edit.Name, () => runEdit(edit), () => false);
+        }
+
+        private void runEdit(Edit edit)
+        {
+            var services = _result.CreateTransformationServices();
+            services.Apply(edit.Transformation);
+            services.Commit();
         }
 
         public void PublishField(string name, Field field)
@@ -66,7 +91,7 @@ namespace TypeSystem.Runtime
             var join = new JoinDefinition(from, to);
 
             Context.DrawJoin(join);
-            
+
 
             return join;
         }

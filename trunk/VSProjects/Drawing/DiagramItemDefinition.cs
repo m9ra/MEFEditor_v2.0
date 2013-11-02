@@ -12,6 +12,8 @@ namespace Drawing
     {
         private DrawingProperties _properties = new DrawingProperties();
 
+        private readonly List<EditDefinition> _edits = new List<EditDefinition>();
+
         private HashSet<SlotDefinition> _slots = new HashSet<SlotDefinition>();
 
         /// <summary>
@@ -30,6 +32,8 @@ namespace Drawing
         public IEnumerable<DrawingProperty> Properties { get { return _properties.Values; } }
 
         public IEnumerable<SlotDefinition> Slots { get { return _slots; } }
+
+        public IEnumerable<EditDefinition> Edits { get { return _edits; } }
 
         public Point GlobalPosition { get; set; }
 
@@ -62,6 +66,12 @@ namespace Drawing
         {
             _slots.Add(slot);
         }
+
+        public void AddEdit(EditDefinition editDefinition)
+        {
+            _edits.Add(editDefinition);
+        }
+
 
         public DrawingProperty GetProperty(string name)
         {

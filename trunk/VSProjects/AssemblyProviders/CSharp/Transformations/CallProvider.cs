@@ -22,13 +22,13 @@ namespace AssemblyProviders.CSharp.Transformations
             _call.Source.EditContext.RegisterCallProvider(callNode, this);
         }
 
-        public override RemoveTransformProvider RemoveArgument(int argumentIndex,bool keepSideEffect)
+        public override RemoveTransformProvider RemoveArgument(int argumentIndex, bool keepSideEffect)
         {
             var argNode = _call.Arguments[argumentIndex - 1];
 
             return new SourceRemoveProvider((s, source) =>
             {
-                var sideEffect=keepSideEffect && !hasSideEffect(argNode);
+                var sideEffect = keepSideEffect && !hasSideEffect(argNode);
                 source.Remove(argNode, sideEffect);
             }, argNode.Source);
         }
@@ -121,6 +121,11 @@ namespace AssemblyProviders.CSharp.Transformations
                         keepParent(parent);
                     }
                     break;
+                case NodeTypes.hierarchy:
+                    parent.Source.Remove(parent, false);
+                    keepParent(parent);
+                    break;
+
                 default:
 
                     throw new NotImplementedException();
@@ -142,7 +147,7 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             var provider = call.Source.EditContext.GetProvider(call);
             var index = getArgumentIndex(call, argument);
-            return provider.IsOptionalArgument(index+1);
+            return provider.IsOptionalArgument(index + 1);
         }
         #endregion
     }

@@ -64,6 +64,9 @@ namespace Drawing.Behaviours
 
         private void onMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             _element.CaptureMouse();
 
             _lastDragPosition = e.GetPosition(null);
@@ -73,6 +76,9 @@ namespace Drawing.Behaviours
 
         private void onMouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             _isDragStarted = false;
             _element.ReleaseMouseCapture();
             e.Handled = true;

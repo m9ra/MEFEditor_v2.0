@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.Composition.Hosting;
 
 using Analyzing;
+using Analyzing.Editing;
 using TypeSystem.Runtime;
 
 namespace MEFAnalyzers
@@ -50,20 +51,20 @@ namespace MEFAnalyzers
         #region Edits handling
 
         private void setCtorEdits()
-        {
+        {            
             RewriteArg(0, "Change path", _pathInput);
             AddArg(1, "Add search pattern", _patternInput);
             RewriteArg(1, "Change search pattern", _patternInput);
         }
 
-        private object _patternInput()
+        private object _patternInput(TransformationServices services)
         {
             var oldPattern = Pattern.Get();
 
             return "*.newPattern" + oldPattern;
         }
 
-        private object _pathInput()
+        private object _pathInput(TransformationServices services)
         {
             var oldPath = Path.Get();
 

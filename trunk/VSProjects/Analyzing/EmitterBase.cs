@@ -10,6 +10,13 @@ namespace Analyzing
 {
     public abstract class EmitterBase
     {
+        internal readonly AnalyzingContext Context;
+
+        internal EmitterBase(AnalyzingContext context)
+        {
+            Context = context;
+        }
+
         /// <summary>
         /// Create new instruction info for block starting with next emitted instruction
         /// </summary>

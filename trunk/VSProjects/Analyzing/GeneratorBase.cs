@@ -5,10 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing.Execution;
+
 namespace Analyzing
 {
     public abstract class GeneratorBase
     {
+        private AnalyzingContext _lastCachedContext;
+
         public InstructionBatch EmittedInstructions { get; private set; }
 
         /// <summary>
@@ -19,7 +23,7 @@ namespace Analyzing
         protected abstract void generate(EmitterBase emitter);
 
         internal void Generate(EmitterBase emitter){
-            if (EmittedInstructions != null)
+            if (EmittedInstructions != null && _lastCachedContext==emitter.Context)
             {
                 //we cache previous instructions generation
                 emitter.InsertInstructions(EmittedInstructions);
@@ -27,6 +31,7 @@ namespace Analyzing
             }
           
             generate(emitter);
+            _lastCachedContext = emitter.Context;
             EmittedInstructions = emitter.GetEmittedInstructions();
         }
     }

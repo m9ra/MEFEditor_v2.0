@@ -48,7 +48,11 @@ namespace TypeSystem.Runtime
         /// <returns>Value of property</returns>
         public FieldType Get()
         {
-            return (FieldType)thisObj.GetField(Storage);
+            var field = thisObj.GetField(Storage);
+            if (field == null)
+                return default(FieldType);
+
+            return (FieldType)field;
         }
 
         /// <summary>

@@ -127,6 +127,12 @@ namespace UnitTesting.TypeSystem_TestUtils
             return parsedGenerator.Source.Code;
         }
 
+        public void SetSource(MethodID method, string source)
+        {
+            var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
+            parsedGenerator.Source=new Source(source,parsedGenerator.Info);
+        }
+
         #region Assembly provider implementatation
 
         public override SearchIterator CreateRootIterator()
@@ -190,6 +196,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             TypeServices.RegisterAssembly(assemblyPath, testAssembly);
             testAssembly.BuildAssembly();
             return this;
+        }
+
+        public void Rebuild()
+        {
+            throw new NotImplementedException();
         }
     }
 }

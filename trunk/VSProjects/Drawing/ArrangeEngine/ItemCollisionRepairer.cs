@@ -122,6 +122,9 @@ namespace Drawing.ArrangeEngine
                 }
             }
 
+            if (!minNeed.HasValue)
+                return;
+
             var currPos = getPosition(movedItem);
             var newPos = minNeed.Value.Apply(currPos);
             setPosition(movedItem, newPos);

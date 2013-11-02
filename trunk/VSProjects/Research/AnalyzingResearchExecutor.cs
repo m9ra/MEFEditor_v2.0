@@ -51,6 +51,8 @@ namespace Research
         /// </summary>
         private Stopwatch _watch = new Stopwatch();
 
+        private DrawingProvider _drawingProvider;
+
         internal AnalyzingResearchExecutor(TestingAssembly assembly)
         {
             _assembly = assembly;
@@ -62,6 +64,13 @@ namespace Research
         internal void Execute()
         {
             runExecution();
+
+            analyzeResult();
+        }
+
+        private void analyzeResult()
+        {
+            _entryContext = _result.EntryContext;
 
             findDrawings();
             printEntryContext();
@@ -77,10 +86,27 @@ namespace Research
             if (_drawings.Count == 0)
                 return;
 
-            var thread = new Thread(showDrawings);
+            _result.OnTransformationCommit += () =>
+            {
+                var entryID = Method.EntryInfo.MethodID;
+                var source = _assembly.GetSource(entryID);
+                _assembly.SetSource(entryID, source);
+                _result = _assembly.GetResult();
+                analyzeResult();
+                TryShowDrawings();
+            };
 
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
+            if (_drawingProvider == null)
+            {
+                var thread = new Thread(showDrawings);
+
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+            }
+            else
+            {
+                _drawingProvider.Display(_drawings);
+            }
         }
 
         #region Printing services
@@ -131,11 +157,11 @@ namespace Research
                 new ContentDrawer(null, (item) => new ComponentDrawing(item)),
                 new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item))
                 );
-            var provider = new DrawingProvider(form.Output, factory);
+
+            _drawingProvider = new DrawingProvider(form.Output, factory);
+            _drawingProvider.Display(_drawings);
 
             form.Show();
-
-            provider.Display(_drawings);
             Dispatcher.Run();
         }
 
@@ -148,8 +174,6 @@ namespace Research
             _watch.Start();
             _result = _assembly.GetResult();
             _watch.Stop();
-
-            _entryContext = _result.EntryContext;
         }
 
         /// <summary>
@@ -166,7 +190,7 @@ namespace Research
 
                 if (info != null || instance.Info.TypeName == "CompositionTester")
                 {
-                    _assembly.Runtime.Draw(instance, _drawings);
+                    _assembly.Runtime.Draw(_result, instance, _drawings);
                 }
             }
         }
