@@ -111,6 +111,7 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         private AnalyzingResult run(LoaderBase loader, params Instance[] arguments)
         {
+            _usedIDs.Clear();
             _createdInstances.Clear();
             var context = new Execution.AnalyzingContext(this, loader);
             context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);

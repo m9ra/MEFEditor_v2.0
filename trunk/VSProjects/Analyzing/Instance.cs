@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using Utilities;
 using Analyzing.Editing;
+using Analyzing.Execution;
+
 
 namespace Analyzing
 {
@@ -86,6 +88,19 @@ namespace Analyzing
         internal void SetDefaultID(string defaultID)
         {
             ID = defaultID;
+        }
+
+        internal void HintID(string hint, AnalyzingContext context)
+        {
+            if (
+                 hint =="this" ||
+                 hint.StartsWith("$") ||
+                 !ID.StartsWith("$")
+                )
+                return;
+
+            var idHint = context.Machine.CreateID(hint);
+            ID = idHint;
         }
     }
 }

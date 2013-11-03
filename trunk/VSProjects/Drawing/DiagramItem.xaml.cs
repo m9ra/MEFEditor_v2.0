@@ -30,6 +30,10 @@ namespace Drawing
 
         internal bool IsRootItem { get { return ParentItem == null; } }
 
+        internal string ParentID { get { return IsRootItem ? "" : ParentItem.ID; } }
+
+        internal string ID { get { return Definition.ID; } }
+
         internal readonly DiagramItem ParentItem;
 
         #region Public API for drawing extension implementors

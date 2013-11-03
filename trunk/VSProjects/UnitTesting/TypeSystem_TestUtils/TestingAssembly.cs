@@ -65,7 +65,6 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public TestingAssembly AddMethod(string methodPath, DirectMethod source, MethodDescription description)
         {
-
             var methodInfo = buildDescription(description, methodPath);
 
             var method = new DirectGenerator(source);

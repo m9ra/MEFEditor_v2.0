@@ -25,6 +25,9 @@ namespace Drawing
     {
         private readonly MultiDictionary<string, DiagramItem> _items = new MultiDictionary<string, DiagramItem>();
 
+        private readonly Dictionary<string, Dictionary<string, Point>> _oldPositions = new Dictionary<string, Dictionary<string, Point>>();
+
+        
         private readonly List<DiagramItem> _rootItems = new List<DiagramItem>();
 
         private readonly List<JoinDrawing> _joins = new List<JoinDrawing>();
@@ -52,6 +55,23 @@ namespace Drawing
 
         public void Clear()
         {
+            _oldPositions.Clear();
+
+            //keep old positions
+            foreach (var item in _items.Values)
+            {
+                var parentID = item.ParentID;
+
+                Dictionary<string, Point> positions;
+                if (!_oldPositions.TryGetValue(parentID, out positions))
+                {
+                    positions = new Dictionary<string, Point>();
+                    _oldPositions[parentID] = positions;
+                }
+
+                positions.Add(item.ID, GetPosition(item));
+            }
+
             _orderingGroup = new ElementGroup();
             _items.Clear();
             _rootItems.Clear();
@@ -68,8 +88,18 @@ namespace Drawing
             DragAndDrop.Attach(item, GetPosition, SetPosition);
             UpdateGlobalPosition.Attach(item);
             _items.Add(item.Definition.ID, item);
+
             if (item.IsRootItem)
                 _rootItems.Add(item);
+
+            if (!_oldPositions.ContainsKey(item.ParentID))
+                return;
+
+            var parentPositions = _oldPositions[item.ParentID];
+            if (!parentPositions.ContainsKey(item.ID))
+                return;
+
+            SetPosition(item, parentPositions[item.ID]);
         }
 
         internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
@@ -130,7 +160,11 @@ namespace Drawing
                 if (!isRoot)
                 {
                     //only slots are limited to borders
-                    CheckBorders(child, container);
+                    if (container.ActualHeight > 0 || container.ActualWidth > 0)
+                    {
+                        // check only if container is arranged
+                        CheckBorders(child, container);
+                    }
                 }
                 collisionDetector.AddItem(child);
             }

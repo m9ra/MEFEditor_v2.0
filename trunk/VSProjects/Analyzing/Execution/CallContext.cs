@@ -47,6 +47,10 @@ namespace Analyzing.Execution
             Program = emitter.GetEmittedInstructions();
             _instructionPointer = 0;
 
+            if (Program.Instructions.Length <= _instructionPointer)
+                //cannot run empty program
+                return;
+
             EntryBlock = new ExecutedBlock(Program.Instructions[0].Info, this);
             CurrentBlock = EntryBlock;
         }

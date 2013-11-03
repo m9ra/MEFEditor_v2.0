@@ -20,6 +20,7 @@ namespace Analyzing.Execution.Instructions
         public override void Execute(AnalyzingContext context)
         {
             var sourceValue = context.GetValue(_sourceVariable);
+
             context.SetValue(_targetVariable, sourceValue);
         }
 
