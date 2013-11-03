@@ -171,18 +171,18 @@ namespace TypeSystem.Runtime
             return new InstanceInfo(type);
         }
 
-        protected void ReportChildAdd(int childArgIndex, string childDescription, bool removeOnyArg = false)
+        protected void ReportChildAdd(int childArgIndex, string childDescription, bool removeOnlyArg = false)
         {
             var child = CurrentArguments[childArgIndex];
             var editName = "Exclude child: " + child.ID;
 
-            if (removeOnyArg)
+            if (removeOnlyArg)
             {
-                Edits.RemoveArgument(This, childArgIndex, editName);
+                Edits.AttachRemoveArgument(This, child, childArgIndex, editName);
             }
             else
             {
-                Edits.RemoveCall(This, editName);
+                Edits.AttachRemoveCall(This, child, editName);
             }
         }
 

@@ -9,6 +9,8 @@ namespace Utilities
     public class MultiDictionary<TKey,TValue>
     {
         private readonly Dictionary<TKey, HashSet<TValue>> _data = new Dictionary<TKey, HashSet<TValue>>();
+        
+        public IEnumerable<TKey> Keys { get { return _data.Keys; } }
 
 
         public bool Add(TKey key, TValue value)
@@ -52,5 +54,6 @@ namespace Utilities
                 }
             }
         }
+
     }
 }

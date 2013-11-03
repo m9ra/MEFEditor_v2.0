@@ -150,18 +150,35 @@ namespace Drawing
         private void setEdits()
         {
             var menu = new ContextMenu();
+
+            //add instance edits
             foreach (var edit in Definition.Edits)
             {
-                var item = new MenuItem();
-                item.Header = edit.Name;
-                menu.Items.Add(item);
-
-                item.Click += (e, s) => edit.Action();
+                addMenuEdit(menu, edit);
             }
+
+            if (ParentItem != null)
+            {
+                //add attached edits
+                foreach (var edit in Definition.GetAttachedEdits(ParentItem.Definition.ID))
+                {
+                    addMenuEdit(menu, edit);
+                }
+            }
+
 
             ContentDrawing.ContextMenu = menu;
             if (menu.Items.Count == 0)
                 menu.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private static void addMenuEdit(ContextMenu menu, EditDefinition edit)
+        {
+            var item = new MenuItem();
+            item.Header = edit.Name;
+            menu.Items.Add(item);
+
+            item.Click += (e, s) => edit.Action();
         }
 
         private Point computeGlobalPosition()

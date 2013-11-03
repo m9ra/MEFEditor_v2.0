@@ -40,6 +40,15 @@ namespace TypeSystem.Runtime
                 var editDefinition = CreateEditDefinition(edit);
                 Drawing.AddEdit(editDefinition);
             }
+
+            foreach (var attachingInstance in DrawedInstance.AttachingInstances)
+            {
+                foreach (var attachedEdit in DrawedInstance.GetAttachedEdits(attachingInstance))
+                {
+                    var editDefinition = CreateEditDefinition(attachedEdit);
+                    Drawing.AttachEdit(attachingInstance.ID, editDefinition);
+                }
+            }
         }
         
         public EditDefinition CreateEditDefinition(Edit edit)

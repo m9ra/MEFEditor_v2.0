@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using System.Windows;
 
+using Utilities;
+
 namespace Drawing
 {
     public class DiagramItemDefinition
@@ -13,6 +15,8 @@ namespace Drawing
         private DrawingProperties _properties = new DrawingProperties();
 
         private readonly List<EditDefinition> _edits = new List<EditDefinition>();
+
+        private readonly MultiDictionary<string, EditDefinition> _attachedEdits = new MultiDictionary<string, EditDefinition>();
 
         private HashSet<SlotDefinition> _slots = new HashSet<SlotDefinition>();
 
@@ -72,6 +76,15 @@ namespace Drawing
             _edits.Add(editDefinition);
         }
 
+        public void AttachEdit(string attachingID, EditDefinition editDefinition)
+        {
+            _attachedEdits.Add(attachingID, editDefinition);
+        }
+
+        internal IEnumerable<EditDefinition> GetAttachedEdits(string attachingID)
+        {
+            return _attachedEdits.Get(attachingID);
+        }
 
         public DrawingProperty GetProperty(string name)
         {
@@ -81,6 +94,6 @@ namespace Drawing
             return result;
         }
 
-        
+
     }
 }

@@ -4,14 +4,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Editing;    
+using Utilities;
+using Analyzing.Editing;
 
 namespace Analyzing
 {
     public abstract class Instance
     {
-        readonly List<Edit> _edits = new List<Edit>();
+        /// <summary>
+        /// Storage for instance edits
+        /// </summary>
+        private readonly List<Edit> _edits = new List<Edit>();
 
+        /// <summary>
+        /// Edits provided only in context of attaching instance
+        /// <remarks>It is usefull for container->child based edits</remarks>
+        /// </summary>
+        private readonly MultiDictionary<Instance, Edit> _attachedEdits = new MultiDictionary<Instance, Edit>();
+
+        /// <summary>
+        /// Info describing instance type
+        /// </summary>
         public readonly InstanceInfo Info;
 
         /// <summary>
@@ -30,6 +43,9 @@ namespace Analyzing
         /// </summary>
         public IEnumerable<Edit> Edits { get { return _edits; } }
 
+        public IEnumerable<Instance> AttachingInstances { get { return _attachedEdits.Keys; } }
+
+
         public abstract object DirectValue { get; }
 
         internal Instance(InstanceInfo info)
@@ -47,6 +63,20 @@ namespace Analyzing
             {
                 _edits.Add(edit);
             }
+        }
+
+        internal void AttachEdit(Instance attachingInstance, Edit attachedEdit)
+        {
+            if (!attachedEdit.IsEmpty)
+            {
+                //only non-empty edits will be attached
+                _attachedEdits.Add(attachingInstance, attachedEdit);
+            }
+        }
+
+        public IEnumerable<Edit> GetAttachedEdits(Instance attachingInstance)
+        {
+            return _attachedEdits.Get(attachingInstance);
         }
 
         /// <summary>
