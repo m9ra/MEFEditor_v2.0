@@ -56,7 +56,7 @@ namespace Drawing.Behaviours
             var adorner = new DragAdorner(_item,e.GetPosition(_item.Output));
             adorner.DragStart();
 
-            var data = new DataObject("DiagramItem", _item);
+            var data = new DataObject("DragAdorner", adorner);
             var effect = DragDrop.DoDragDrop(_item, data, DragDropEffects.Move);
 
             adorner.DragEnd();

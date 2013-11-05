@@ -8,6 +8,9 @@ using System.Windows;
 using System.Windows.Shapes;
 using System.Windows.Controls;
 
+using Drawing.Behaviours;
+
+
 namespace Drawing
 {
     public abstract class DiagramCanvasBase : Panel
@@ -115,6 +118,29 @@ namespace Drawing
 
             //canvas doesn't need no size itself
             return new Size(MinHeight, MinWidth);
+        }
+
+        protected override void OnDragOver(DragEventArgs e)
+        {
+            var dragAdorner = e.Data.GetData("DragAdorner") as DragAdorner;
+            if (dragAdorner == null)
+                return;
+
+            if (dragAdorner.Item.ContainingDiagramCanvas == this)
+            {
+                dragAdorner.Hint = "Change item position";
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
+            // throw new NotImplementedException("Check if item can be excluded from parent and included here");
+            dragAdorner.Hint = string.Format("Exclude from '{0}'",dragAdorner.Item.ParentItem);
+            if (_ownerItem != null)
+            {
+                dragAdorner.Hint += string.Format("\nAccept to '{0}'", _ownerItem);
+            }
+
         }
     }
 }
