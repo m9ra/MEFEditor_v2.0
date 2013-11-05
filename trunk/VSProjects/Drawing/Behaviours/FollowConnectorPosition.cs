@@ -16,10 +16,10 @@ namespace Drawing.Behaviours
         internal static void Attach(ConnectorDrawing connector, DisplayEngine engine, OnConnectorMove move)
         {
             var item = connector.OwningItem;
-            UpdateGlobalPosition.GlobalPositionChange.AddValueChanged(item, (e, args) =>
+        /*    UpdateGlobalPosition.GlobalPositionChange.AddValueChanged(item, (e, args) =>
             {
                 move(connector);
-            });
+            });*/
 
             UpdateGlobalPosition.WidthChange.AddValueChanged(item, (e, args) =>
             {

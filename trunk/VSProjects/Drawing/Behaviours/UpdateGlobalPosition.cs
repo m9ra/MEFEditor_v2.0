@@ -12,7 +12,7 @@ namespace Drawing.Behaviours
 {
     class UpdateGlobalPosition
     {
-        internal static readonly DependencyPropertyDescriptor GlobalPositionChange = DependencyPropertyDescriptor.FromProperty(DiagramCanvas.GlobalPositionProperty, typeof(UserControl));
+  //      internal static readonly DependencyPropertyDescriptor GlobalPositionChange = DependencyPropertyDescriptor.FromProperty(DiagramCanvas.GlobalPositionProperty, typeof(UserControl));
 
         internal static readonly DependencyPropertyDescriptor WidthChange = DependencyPropertyDescriptor.FromProperty(FrameworkElement.ActualWidthProperty, typeof(UserControl));
 
@@ -22,7 +22,7 @@ namespace Drawing.Behaviours
 
         public static void Attach(DiagramItem item)
         {
-            GlobalPositionChange.AddValueChanged(item, (s, e) =>
+        /*    GlobalPositionChange.AddValueChanged(item, (s, e) =>
             {
                 item.HasGlobalPositionChange = true;
                 //global position of parent has changed - may affect children's global position
@@ -30,7 +30,7 @@ namespace Drawing.Behaviours
                 {
                     child.RefreshGlobal();
                 }
-            });
+            });*/
         }
 
     }

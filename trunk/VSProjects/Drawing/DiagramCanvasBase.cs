@@ -16,6 +16,12 @@ namespace Drawing
 
         private DiagramContext _context;
 
+
+        protected DiagramCanvasBase()
+        {
+            AllowDrop = true;
+        }
+
         #region Position property
 
         public static readonly DependencyProperty PositionProperty =
@@ -33,7 +39,32 @@ namespace Drawing
             return (Point)element.GetValue(PositionProperty);
         }
 
+
         #endregion
+
+        internal Point GlobalPosition
+        {
+            get
+            {
+                var isRootCanvas = _ownerItem == null;
+
+                if (isRootCanvas)
+                {
+                    return new Point();
+                }
+                else
+                {
+                    var parentGlobal = _ownerItem.GlobalPosition;
+                    var parentOffset = _ownerItem.TranslatePoint(new Point(0, 0), this);
+
+                    parentGlobal.X -= parentOffset.X;
+                    parentGlobal.Y -= parentOffset.Y;
+
+                    return parentGlobal;
+                }
+            }
+        }
+
 
         internal void SetOwner(DiagramItem owner)
         {
@@ -62,13 +93,14 @@ namespace Drawing
             foreach (FrameworkElement child in Children)
             {
                 var position = GetPosition(child);
+
                 child.Arrange(new Rect(position, child.DesiredSize));
 
                 var item = child as DiagramItem;
                 if (item == null)
                     continue;
 
-                item.RefreshGlobal();
+                //item.RefreshGlobal();
             }
             return arrangeSize;
         }
@@ -84,8 +116,5 @@ namespace Drawing
             //canvas doesn't need no size itself
             return new Size(MinHeight, MinWidth);
         }
-
-       
-
     }
 }

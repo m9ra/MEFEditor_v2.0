@@ -15,7 +15,7 @@ namespace Drawing
     {
         #region GlobalPosition property
 
-        public static readonly DependencyProperty GlobalPositionProperty =
+ /*       public static readonly DependencyProperty GlobalPositionProperty =
             DependencyProperty.RegisterAttached("GlobalPosition", typeof(Point),
             typeof(DiagramCanvas), new FrameworkPropertyMetadata(new Point(0, 0),
             FrameworkPropertyMetadataOptions.AffectsParentArrange));
@@ -33,7 +33,7 @@ namespace Drawing
         {
             return (Point)element.GetValue(GlobalPositionProperty);
         }
-
+        */
         #endregion
 
     }

@@ -10,7 +10,7 @@
     xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
     >
 
-    <dr:DiagramCanvas Name="Output" Background="Green"/>
+    <dr:DiagramCanvas Name="Output" Background="White" />
 
 </Window>
 

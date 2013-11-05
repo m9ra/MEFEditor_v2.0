@@ -63,6 +63,7 @@
     <Compile Include="DiagramDefinition.cs" />
     <Compile Include="DiagramContext.cs" />
     <Compile Include="DiagramItemDefinition.cs" />
+    <Compile Include="Behaviours\DragAdorner.cs" />
     <Compile Include="DrawingProperties.cs" />
     <Compile Include="DrawingProperty.cs" />
     <Compile Include="DrawingProvider.cs" />

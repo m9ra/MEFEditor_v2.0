@@ -36,6 +36,10 @@ namespace Drawing
 
         internal readonly DiagramItem ParentItem;
 
+        internal DiagramCanvas Output { get { return DiagramContext.Provider.Engine.Output; } }
+
+        internal readonly DiagramCanvasBase ContainingDiagramCanvas;
+
         #region Public API for drawing extension implementors
 
         public readonly DiagramContext DiagramContext;
@@ -54,51 +58,65 @@ namespace Drawing
         {
             get
             {
-                return DiagramCanvas.GetGlobalPosition(this);
+                var localPos = DiagramCanvas.GetPosition(this);
+
+                var parentGlobal = ContainingDiagramCanvas.GlobalPosition;
+                localPos.X += parentGlobal.X;
+                localPos.Y += parentGlobal.Y;
+
+                return localPos;
             }
 
             private set
             {
-                DiagramCanvas.SetGlobalPosition(this, value);
+                var localPos = AsLocalPosition(value);
+                DiagramCanvas.SetPosition(this, localPos);
             }
         }
 
-        public void FillSlot(SlotCanvas canvas, SlotDefinition slot)
+        internal Point AsLocalPosition(Point globalPosition)
         {
-            canvas.SetOwner(this);
+            var diff = GlobalPosition - globalPosition;
+
+            var localPos = DiagramCanvas.GetPosition(this);
+            localPos.X -= diff.X;
+            localPos.Y -= diff.Y;
+
+            return localPos;
+        }
+
+        public void FillSlot(SlotCanvas slotCanvas, SlotDefinition slot)
+        {
+            slotCanvas.SetOwner(this);
             foreach (var itemReference in slot.References)
             {
                 var itemDefinition = DiagramContext.Diagram.GetItemDefinition(itemReference.DefinitionID);
-                var item = new DiagramItem(itemDefinition, this);
+                var item = new DiagramItem(itemDefinition, this, slotCanvas);
                 var itemContext = DiagramContext.Provider.DrawItem(item);
-                canvas.Children.Add(item);
+                slotCanvas.Children.Add(item);
             }
         }
 
         #endregion
 
         internal DiagramItem(DiagramItemDefinition definition, DiagramContext diagramContext)
-        {
+        {            
             Definition = definition;
             DiagramContext = diagramContext;
+            ContainingDiagramCanvas = Output;
 
             initialize();
         }
 
-        internal DiagramItem(DiagramItemDefinition definition, DiagramItem parentItem)
+        internal DiagramItem(DiagramItemDefinition definition, DiagramItem parentItem, SlotCanvas slot)
         {
+            ContainingDiagramCanvas = slot;
             Definition = definition;
             ParentItem = parentItem;
             ParentItem._children.Add(this);
             DiagramContext = parentItem.DiagramContext;
 
             initialize();
-        }
-
-        internal void RefreshGlobal()
-        {
-            var position = computeGlobalPosition();
-            DiagramCanvas.SetGlobalPosition(this, position);
         }
 
         internal void Attach(ConnectorDrawing connector)
@@ -185,15 +203,50 @@ namespace Drawing
             item.Click += (e, s) => edit.Action();
         }
 
-        private Point computeGlobalPosition()
-        {
-            var output = DiagramContext.Provider.Output;
-            return this.TranslatePoint(new Point(0, 0), output);
-        }
-
         public override string ToString()
         {
             return string.Format("Item: {0}", Definition.ID);
         }
+
+        internal bool OutOfBounds(ref Point globalPosition)
+        {
+            if(IsRootItem)
+                return false;   
+
+            //compute boundaries on containing slot
+            var minPos=ContainingDiagramCanvas.GlobalPosition;
+            var maxX=minPos.X+ContainingDiagramCanvas.ActualWidth-ActualWidth;
+            var maxY=minPos.Y+ContainingDiagramCanvas.ActualHeight-ActualHeight;
+                  
+            //compute bounded position
+            var outOfBounds=false;
+
+            if (globalPosition.X > maxX)
+            {
+                globalPosition.X = maxX;
+                outOfBounds = true;
+            }
+
+            if (globalPosition.Y > maxY)
+            {
+                globalPosition.Y = maxY;
+                outOfBounds = true;
+            }
+
+            if (globalPosition.X < minPos.X)
+            {
+                globalPosition.X = 0;
+                outOfBounds = true;
+            }
+
+            if (globalPosition.Y < minPos.Y)
+            {
+                globalPosition.Y = 0;
+                outOfBounds = true;
+            }
+
+            return outOfBounds;
+        }
+
     }
 }

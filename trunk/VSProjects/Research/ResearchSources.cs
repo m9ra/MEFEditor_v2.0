@@ -23,6 +23,17 @@ namespace Research
 {
     static class ResearchSources
     {
+
+        static internal TestingAssembly DrawingTester_SingleComponent()
+        {
+            return AssemblyUtils.Run(@"        
+                var partImport=new StringImport();                    
+            ")
+
+            .AddToRuntime<StringImport>()
+         ;
+        }
+
         static internal TestingAssembly DrawingTester_SinlgeJoin()
         {
             return AssemblyUtils.Run(@"        

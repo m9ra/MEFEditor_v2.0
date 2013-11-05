@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Documents;
 
 
 namespace Drawing.Behaviours
@@ -17,21 +18,18 @@ namespace Drawing.Behaviours
 
     internal class DragAndDrop
     {
-        private readonly FrameworkElement _element;
+        private readonly DiagramItem _item;
         private readonly GetPosition _get;
         private readonly SetPosition _set;
 
-        private Point _lastDragPosition;
-        private bool _isDragStarted;
-
-        internal static void Attach(FrameworkElement attachedElement, GetPosition get, SetPosition set)
+        internal static void Attach(DiagramItem attachedElement, GetPosition get, SetPosition set)
         {
-            new DragAndDrop(attachedElement,get,set);
+            new DragAndDrop(attachedElement, get, set);
         }
 
-        private DragAndDrop(FrameworkElement attachedElement,GetPosition get, SetPosition set)
+        private DragAndDrop(DiagramItem attachedElement, GetPosition get, SetPosition set)
         {
-            _element = attachedElement;
+            _item = attachedElement;
             _get = get;
             _set = set;
 
@@ -40,25 +38,12 @@ namespace Drawing.Behaviours
 
         private void hookEvents()
         {
-            _element.MouseMove += onMouseMove;
-            _element.MouseDown += onMouseDown;
-            _element.MouseUp += onMouseUp;
+            _item.MouseDown += onMouseDown;
+            _item.DragLeave += _item_DragOver;
         }
 
-        private void onMouseMove(object sender, MouseEventArgs e)
+        void _item_DragOver(object sender, DragEventArgs e)
         {
-            if (!_isDragStarted)
-                return;
-
-            var currentMousePos = e.GetPosition(null);
-            var shift = currentMousePos - _lastDragPosition;
-            _lastDragPosition = currentMousePos;
-
-            var currentItemPos = _get(_element);
-
-            currentItemPos += shift;
-            _set(_element, currentItemPos);
-
             e.Handled = true;
         }
 
@@ -67,22 +52,23 @@ namespace Drawing.Behaviours
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
-            _element.CaptureMouse();
+            _item.CaptureMouse();
+            var adorner = new DragAdorner(_item,e.GetPosition(_item.Output));
+            adorner.DragStart();
 
-            _lastDragPosition = e.GetPosition(null);
-            _isDragStarted = true;
-            e.Handled = true;
+            var data = new DataObject("DiagramItem", _item);
+            var effect = DragDrop.DoDragDrop(_item, data, DragDropEffects.Move);
+
+            adorner.DragEnd();
+            _item.ReleaseMouseCapture();
+
+            var diff = adorner.GlobalPosition - _item.GlobalPosition;
+
+            var currPos = _get(_item);
+            currPos.X += diff.X;
+            currPos.Y += diff.Y;
+
+            _set(_item, currPos);            
         }
-
-        private void onMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton != MouseButton.Left)
-                return;
-
-            _isDragStarted = false;
-            _element.ReleaseMouseCapture();
-            e.Handled = true;
-        }
-
     }
 }
