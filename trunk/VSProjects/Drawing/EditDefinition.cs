@@ -24,7 +24,7 @@ namespace Drawing
 
         public EditDefinition(string name, EditAction action, IsEditActive isActive)
         {
-            Name=name;
+            Name = name;
             Action = action;
             IsActive = isActive;
         }

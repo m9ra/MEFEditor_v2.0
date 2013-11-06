@@ -126,21 +126,89 @@ namespace Drawing
             if (dragAdorner == null)
                 return;
 
-            if (dragAdorner.Item.ContainingDiagramCanvas == this)
+            e.Handled = true;
+
+            var dragItem = dragAdorner.Item;
+
+            if (dragItem.ContainingDiagramCanvas == this || dragItem.IsRootItem)
             {
                 dragAdorner.Hint = "Change item position";
-                e.Effects = DragDropEffects.None;
-                e.Handled = true;
+                e.Effects = DragDropEffects.Move;
                 return;
             }
 
-            // throw new NotImplementedException("Check if item can be excluded from parent and included here");
-            dragAdorner.Hint = string.Format("Exclude from '{0}'",dragAdorner.Item.ParentItem);
-            if (_ownerItem != null)
+            string hint;
+            if (dragItem.CanExcludeFromParent)
             {
-                dragAdorner.Hint += string.Format("\nAccept to '{0}'", _ownerItem);
+                hint = string.Format("Exclude from: '{0}'", dragItem.ParentItem.ID);
+
+                if (_ownerItem != null)
+                {
+                    throw new NotImplementedException("Determine that parent can accept");
+                    //hint += string.Format("\nAccept to '{0}'", _ownerItem.ID);
+                }
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+                hint = string.Format("Can't exclude from: '{0}'", dragItem.ParentItem.ID);
+            }
+            dragAdorner.Hint = hint;
+        }
+
+        protected override void OnDrop(DragEventArgs e)
+        {
+            var dragAdorner = e.Data.GetData("DragAdorner") as DragAdorner;
+            if (dragAdorner == null)
+                return;
+
+            e.Handled = true;
+
+            var dragItem = dragAdorner.Item;
+            dragItem.GlobalPosition = dragAdorner.GlobalPosition;
+
+            if (_ownerItem == dragItem)
+                //cant move self to sub slot
+                return;
+
+            if (dragItem.ContainingDiagramCanvas == this)
+                //move within this canvas
+                return;
+
+            excludeFromParent(dragItem);
+            acceptItem(dragAdorner);
+        }
+
+        private void excludeFromParent(DiagramItem dragItem)
+        {
+            if (dragItem.IsRootItem)
+                //no drop action
+                return;
+
+            if (dragItem.CanExcludeFromParent)
+            {
+                var diff = dragItem.GlobalPosition - GlobalPosition;
+                _context.HintPosition(_ownerItem, dragItem, new Point(diff.X, diff.Y));
+                dragItem.ParentExcludeEdit.Action();
+            }
+        }
+
+        private void acceptItem(DragAdorner dragAdorner)
+        {
+            var dragItem = dragAdorner.Item;
+
+            if (dragItem.ContainingDiagramCanvas == this)
+            {
+                //item moving doesn't cause accept edit
+                return;
             }
 
+            var isRootCanvas = _ownerItem == null;
+            if (isRootCanvas)
+                //no accept routines for root canvas
+                return;
+
+            throw new NotImplementedException("Accept item");
         }
     }
 }

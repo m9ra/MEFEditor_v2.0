@@ -27,7 +27,7 @@ namespace Drawing
 
         private readonly Dictionary<string, Dictionary<string, Point>> _oldPositions = new Dictionary<string, Dictionary<string, Point>>();
 
-        
+
         private readonly List<DiagramItem> _rootItems = new List<DiagramItem>();
 
         private readonly List<JoinDrawing> _joins = new List<JoinDrawing>();
@@ -51,25 +51,17 @@ namespace Drawing
             {
                 Output.Children.Add(item);
             }
+            _oldPositions.Clear();
         }
 
         public void Clear()
         {
-            _oldPositions.Clear();
-
             //keep old positions
             foreach (var item in _items.Values)
             {
-                var parentID = item.ParentID;
-
-                Dictionary<string, Point> positions;
-                if (!_oldPositions.TryGetValue(parentID, out positions))
-                {
-                    positions = new Dictionary<string, Point>();
-                    _oldPositions[parentID] = positions;
-                }
-
-                positions.Add(item.ID, GetPosition(item));
+                var position = GetPosition(item);
+                //keep old parent positions
+                setOldPosition(item.ParentItem, item, position);
             }
 
             _orderingGroup = new ElementGroup();
@@ -77,6 +69,7 @@ namespace Drawing
             _rootItems.Clear();
             Output.Children.Clear();
         }
+
 
         #endregion
 
@@ -108,7 +101,7 @@ namespace Drawing
             var to = toItem.GetConnector(join.Definition.To);
             join.From = from;
             join.To = to;
-            
+
             FollowConnectorPosition.Attach(from, this, (p) =>
             {
                 RefreshJoinPath(join);
@@ -146,6 +139,12 @@ namespace Drawing
         {
             return _items.Get(connectorDefinition.Reference.DefinitionID);
         }
+
+        internal void HintPosition(DiagramItem hintContext, DiagramItem hintedItem, Point point)
+        {
+            setOldPosition(hintContext, hintedItem, point);
+        }
+
         #endregion
 
 
@@ -171,13 +170,13 @@ namespace Drawing
 
             collisionDetector.Arrange(container);
 
-         /*   foreach (var child in children)
-            {
-                if (child.HasGlobalPositionChange)
-                {
-                    UpdateCrossedLines(child);
-                }
-            }*/
+            /*   foreach (var child in children)
+               {
+                   if (child.HasGlobalPositionChange)
+                   {
+                       UpdateCrossedLines(child);
+                   }
+               }*/
 
             foreach (var join in _joins)
             {
@@ -193,7 +192,7 @@ namespace Drawing
             {
                 if (join.PointPathArray.Length == 0)
                     continue;
-                
+
                 var from = join.PointPathArray[0];
                 for (int i = 1; i < join.PointPathArray.Length; ++i)
                 {
@@ -208,7 +207,7 @@ namespace Drawing
         internal void RefreshJoinPath(JoinDrawing join)
         {
             var tracer = new JoinTracer(this);
-            join.PointPath=tracer.GetPath(join.From, join.To);            
+            join.PointPath = tracer.GetPath(join.From, join.To);
         }
 
         private void CheckBorders(FrameworkElement element, DiagramCanvasBase container)
@@ -247,6 +246,19 @@ namespace Drawing
                 SetPosition(element, position);
         }
 
-        
+        private void setOldPosition(DiagramItem context, DiagramItem item, Point position)
+        {
+            var contextID = context == null ? "" : context.ID;
+
+            Dictionary<string, Point> positions;
+            if (!_oldPositions.TryGetValue(contextID, out positions))
+            {
+                positions = new Dictionary<string, Point>();
+                _oldPositions[contextID] = positions;
+            }
+
+            positions.Add(item.ID, position);
+        }
+
     }
 }

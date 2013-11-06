@@ -91,16 +91,17 @@ namespace Drawing.Behaviours
             var globalPos = e.GetPosition(_dragScope);
             globalPos.X -= _center.X;
             globalPos.Y -= _center.Y;
-
+            var oldPos = globalPos;
 
             if (Item.OutOfBounds(ref globalPos))
             {
-                //  throw new NotImplementedException("Check if item can be excluded from parent");
+                if (Item.CanExcludeFromParent)
+                {
+                    globalPos = oldPos;
+                }                
             }
 
-
             GlobalPosition = globalPos;
-
             _dragLayer.Update(this.AdornedElement);
         }
 
@@ -134,8 +135,8 @@ namespace Drawing.Behaviours
             var typeFace = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
             var formattedHint = new FormattedText(Hint, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeFace, 12, Brushes.Blue);
 
-            var padding = 10;
-            var textPos = new Point(pos.X + _center.X+2*padding, pos.Y + _center.Y+2*padding);
+            var padding = 5;
+            var textPos = new Point(pos.X + _center.X + 3 * padding, pos.Y + _center.Y + 3 * padding);
 
             var fontRectPos = new Point(textPos.X - padding, textPos.Y - padding);
             var fontRect = new Rect(fontRectPos, new Size(formattedHint.Width + padding * 2, formattedHint.Height + padding * 2));

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Windows;
+
 namespace Drawing
 {
     public class DiagramContext
@@ -18,6 +20,11 @@ namespace Drawing
         {
             Provider = provider;
             Diagram = diagram;
+        }
+
+        internal void HintPosition(DiagramItem hintContext, DiagramItem hintedItem, Point point)
+        {
+            Provider.Engine.HintPosition(hintContext, hintedItem, point);
         }
 
         internal IEnumerable<DiagramItemDefinition> RootItemDefinitions

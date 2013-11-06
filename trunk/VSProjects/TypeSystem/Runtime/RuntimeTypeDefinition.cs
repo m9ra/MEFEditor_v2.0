@@ -174,7 +174,7 @@ namespace TypeSystem.Runtime
         protected void ReportChildAdd(int childArgIndex, string childDescription, bool removeOnlyArg = false)
         {
             var child = CurrentArguments[childArgIndex];
-            var editName = "Exclude child: " + child.ID;
+            var editName = ".exclude";
 
             if (removeOnlyArg)
             {

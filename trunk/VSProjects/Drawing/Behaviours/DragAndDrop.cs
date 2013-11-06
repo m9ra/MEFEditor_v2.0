@@ -62,13 +62,13 @@ namespace Drawing.Behaviours
             adorner.DragEnd();
             _item.ReleaseMouseCapture();
 
-            var diff = adorner.GlobalPosition - _item.GlobalPosition;
+          /*  var diff = adorner.GlobalPosition - _item.GlobalPosition;
 
             var currPos = _get(_item);
             currPos.X += diff.X;
             currPos.Y += diff.Y;
 
-            _set(_item, currPos);            
+            _set(_item, currPos);  */          
         }
     }
 }

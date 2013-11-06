@@ -24,8 +24,6 @@ namespace Drawing
 
         private readonly List<DiagramItem> _children = new List<DiagramItem>();
 
-        internal bool HasGlobalPositionChange;
-
         internal IEnumerable<DiagramItem> Children { get { return _children; } }
 
         internal bool IsRootItem { get { return ParentItem == null; } }
@@ -39,6 +37,10 @@ namespace Drawing
         internal DiagramCanvas Output { get { return DiagramContext.Provider.Engine.Output; } }
 
         internal readonly DiagramCanvasBase ContainingDiagramCanvas;
+
+        internal EditDefinition ParentExcludeEdit { get; private set; }
+
+        internal bool CanExcludeFromParent { get { return ParentExcludeEdit != null; } }
 
         #region Public API for drawing extension implementors
 
@@ -67,7 +69,7 @@ namespace Drawing
                 return localPos;
             }
 
-            private set
+            internal set
             {
                 var localPos = AsLocalPosition(value);
                 DiagramCanvas.SetPosition(this, localPos);
@@ -84,7 +86,7 @@ namespace Drawing
 
             return localPos;
         }
-
+        
         public void FillSlot(SlotCanvas slotCanvas, SlotDefinition slot)
         {
             slotCanvas.SetOwner(this);
@@ -100,7 +102,7 @@ namespace Drawing
         #endregion
 
         internal DiagramItem(DiagramItemDefinition definition, DiagramContext diagramContext)
-        {            
+        {
             Definition = definition;
             DiagramContext = diagramContext;
             ContainingDiagramCanvas = Output;
@@ -194,13 +196,25 @@ namespace Drawing
                 menu.Visibility = System.Windows.Visibility.Hidden;
         }
 
-        private static void addMenuEdit(ContextMenu menu, EditDefinition edit)
+        private void addMenuEdit(ContextMenu menu, EditDefinition edit)
         {
-            var item = new MenuItem();
-            item.Header = edit.Name;
-            menu.Items.Add(item);
+            switch (edit.Name)
+            {
+                case ".exclude":
+                    if (ParentExcludeEdit != null)
+                        throw new NotSupportedException("Cannot specify multiple exclude edits");
+                    ParentExcludeEdit = edit;
+                    break;
+                default:
+                    var item = new MenuItem();
+                    item.Header = edit.Name;
+                    menu.Items.Add(item);
 
-            item.Click += (e, s) => edit.Action();
+                    item.Click += (e, s) => edit.Action();
+                    break;
+            }
+
+
         }
 
         public override string ToString()
@@ -210,16 +224,16 @@ namespace Drawing
 
         internal bool OutOfBounds(ref Point globalPosition)
         {
-            if(IsRootItem)
-                return false;   
+            if (IsRootItem)
+                return false;
 
             //compute boundaries on containing slot
-            var minPos=ContainingDiagramCanvas.GlobalPosition;
-            var maxX=minPos.X+ContainingDiagramCanvas.ActualWidth-ActualWidth;
-            var maxY=minPos.Y+ContainingDiagramCanvas.ActualHeight-ActualHeight;
-                  
+            var minPos = ContainingDiagramCanvas.GlobalPosition;
+            var maxX = minPos.X + ContainingDiagramCanvas.ActualWidth - ActualWidth;
+            var maxY = minPos.Y + ContainingDiagramCanvas.ActualHeight - ActualHeight;
+
             //compute bounded position
-            var outOfBounds=false;
+            var outOfBounds = false;
 
             if (globalPosition.X > maxX)
             {
@@ -235,18 +249,17 @@ namespace Drawing
 
             if (globalPosition.X < minPos.X)
             {
-                globalPosition.X = 0;
+                globalPosition.X = minPos.X;
                 outOfBounds = true;
             }
 
             if (globalPosition.Y < minPos.Y)
             {
-                globalPosition.Y = 0;
+                globalPosition.Y = minPos.Y;
                 outOfBounds = true;
             }
 
             return outOfBounds;
         }
-
     }
 }
