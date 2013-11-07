@@ -10,6 +10,8 @@ using Analyzing;
 using TypeSystem;
 using TypeSystem.Runtime;
 
+using Analyzing.Editing;
+
 using MEFAnalyzers.CompositionEngine;
 
 namespace MEFAnalyzers
@@ -43,15 +45,16 @@ namespace MEFAnalyzers
 
         public void _method_ctor(string assemblyPath)
         {
-            Parts.Set(new List<Instance>());
+            _method_ctor();
             AssemblyPath.Set(assemblyPath);
         }
 
         public void _method_ctor()
         {
             Parts.Set(new List<Instance>());
+            var thisObj = This;
+            AddCallEdit((s) => acceptComponent(thisObj, s));
         }
-
 
         public void _method_Compose()
         {
@@ -126,6 +129,7 @@ namespace MEFAnalyzers
 
         private ConnectorDefinition getConnector(JoinPoint point, DrawingServices services)
         {
+            //TODO this should set component itself
             var compositionResult = CompositionResult.Get();
             var instance = point.Instance.Component;
             var connector = services.GetJoinPoint(instance, point.Point);
@@ -163,6 +167,20 @@ namespace MEFAnalyzers
             {
                 throw new NotSupportedException("Unsupported point kind");
             }
+        }
+
+        private CallEditInfo acceptComponent(Instance thisObj, TransformationServices services)
+        {
+            var instance = UserInteraction.DraggedInstance;
+            var componentInfo = Services.GetComponentInfo(instance.Info);
+            if (componentInfo == null)
+            {
+                //allow accepting only components
+                services.Abort("CompositionTester can only accept components");
+                return null;
+            }
+
+            return new CallEditInfo(thisObj, "Add", instance);
         }
     }
 }

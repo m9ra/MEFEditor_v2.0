@@ -43,13 +43,15 @@
     <Compile Include="AssignBuilder.cs" />
     <Compile Include="Arguments.cs" />
     <Compile Include="CallBuilder.cs" />
+    <Compile Include="Editing\AddCallTransformation.cs" />
+    <Compile Include="Editing\CallEditInfo.cs" />
     <Compile Include="Editing\CallTransformProvider.cs" />
     <Compile Include="Editing\Edit.cs" />
     <Compile Include="Editing\EmptyRemoveProvider.cs" />
     <Compile Include="Editing\EmptyShiftingProvider.cs" />
     <Compile Include="Editing\InstanceRemoveProvider.cs" />
     <Compile Include="Editing\RemoveTransformProvider.cs" />
-    <Compile Include="Editing\ShiftingTransformationProvider.cs" />
+    <Compile Include="Editing\BlockTransformationProvider.cs" />
     <Compile Include="Editing\TransformationServices.cs" />
     <Compile Include="Editing\EmptyCallTransformProvider.cs" />
     <Compile Include="Editing\EmptyTransformation.cs" />

@@ -105,6 +105,7 @@ namespace UnitTesting
             .RegisterAssembly("test.exe", testAssembly)
 
             
+            
             //export from pasted export
             .AssertVariable("result2").HasValue("Data:PastedExport")
             

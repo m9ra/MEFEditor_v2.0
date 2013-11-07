@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Drawing
 {
+
+    public delegate void OnDragStart(DiagramItemDefinition item);
+
+    public delegate void OnDragEnd();
+
     /// <summary>
     /// Provides API for defining drawing
     /// </summary>
@@ -20,6 +25,11 @@ namespace Drawing
         public IEnumerable<DiagramItemDefinition> ItemDefinitions { get { return _definitions.Values; } }
 
         public IEnumerable<JoinDefinition> JoinDefinitions { get { return _joinDefinitions; } }
+
+        public event OnDragEnd OnDragEnd;
+
+        public event OnDragStart OnDragStart;
+
 
         /// <summary>
         /// Number of defined DrawingDefinitions
@@ -105,5 +115,16 @@ namespace Drawing
             return new ConnectorDefinition[0];
         }
 
+        internal void DragStart(DiagramItem item)
+        {
+            if (OnDragStart != null)
+                OnDragStart(item.Definition);
+        }
+
+        internal void DragEnd()
+        {
+            if (OnDragEnd != null)
+                OnDragEnd();
+        }
     }
 }

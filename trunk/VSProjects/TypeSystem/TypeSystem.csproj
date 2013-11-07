@@ -45,6 +45,7 @@
     <Compile Include="ComponentInfoBuilder.cs" />
     <Compile Include="DirectGenerator.cs" />
     <Compile Include="Core\AssembliesManager.cs" />
+    <Compile Include="UserInteraction.cs" />
     <Compile Include="HashedMethodContainer.cs" />
     <Compile Include="InheritanceChain.cs" />
     <Compile Include="MethodDescription.cs" />

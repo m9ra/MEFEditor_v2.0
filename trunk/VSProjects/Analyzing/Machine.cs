@@ -17,12 +17,7 @@ namespace Analyzing
         /// <summary>
         /// All instances that were created during last execution
         /// </summary>
-        private readonly List<Instance> _createdInstances = new List<Instance>();
-
-        /// <summary>
-        /// All id's used during last execution
-        /// </summary>
-        private readonly HashSet<string> _usedIDs = new HashSet<string>();
+        private readonly Dictionary<string, Instance> _createdInstances = new Dictionary<string, Instance>();
 
         /// <summary>
         /// Settings available for virtual machine
@@ -94,15 +89,19 @@ namespace Analyzing
         {
             var currentID = hint;
             var number = 0;
-            while (_usedIDs.Contains(currentID))
+            while (_createdInstances.ContainsKey(currentID))
             {
                 currentID = string.Format("{0}_{1}", hint, number);
                 ++number;
             }
-            
-            _usedIDs.Add(currentID);
 
             return currentID;
+        }
+
+        internal void ReportIDChange(string oldID)
+        {
+            var instance = _createdInstances[oldID];
+            _createdInstances.Add(instance.ID, instance);
         }
 
         /// <summary>
@@ -111,7 +110,6 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         private AnalyzingResult run(LoaderBase loader, params Instance[] arguments)
         {
-            _usedIDs.Clear();
             _createdInstances.Clear();
             var context = new Execution.AnalyzingContext(this, loader);
             context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);
@@ -129,7 +127,7 @@ namespace Analyzing
                 instruction.Execute(context);
             }
 
-            return context.GetResult(_createdInstances.ToArray());
+            return context.GetResult(new Dictionary<string, Instance>(_createdInstances));
         }
 
         /// <summary>
@@ -140,8 +138,10 @@ namespace Analyzing
         {
             var defaultID = CreateID("$default");
             registeredInstance.SetDefaultID(defaultID);
-            _createdInstances.Add(registeredInstance);
+            _createdInstances.Add(registeredInstance.ID, registeredInstance);
             Settings.InstanceCreated(registeredInstance);
         }
+
+
     }
 }

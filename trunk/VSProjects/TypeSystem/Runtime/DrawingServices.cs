@@ -50,23 +50,30 @@ namespace TypeSystem.Runtime
                 }
             }
         }
-        
+
         public EditDefinition CreateEditDefinition(Edit edit)
         {
-            return new EditDefinition(edit.Name, () => runEdit(edit), () => false);
+            return new EditDefinition(edit.Name, (preview) => runEdit(edit, preview), () => false);
         }
 
-        private void runEdit(Edit edit)
+        private bool runEdit(Edit edit, bool preview)
         {
             var services = _result.CreateTransformationServices();
             services.Apply(edit.Transformation);
-            services.Commit();
+            if (services.IsAborted)
+                return false;
+
+            if (!preview)
+                services.Commit();
+
+            return true;
         }
 
         public void PublishField(string name, Field field)
         {
             if (field.RawObject == null)
                 return;
+
             Drawing.SetProperty(name, field.RawObject.ToString());
         }
 

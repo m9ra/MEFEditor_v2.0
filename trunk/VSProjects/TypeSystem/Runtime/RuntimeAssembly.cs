@@ -302,5 +302,19 @@ namespace TypeSystem.Runtime
                     toDraw.Enqueue(dependency);
             }
         }
+
+        /// <summary>
+        /// TODO: Type system will be more connected with drawing assembly
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="diagram"></param>
+        public void Register(AnalyzingResult result, DiagramDefinition diagram)
+        {
+            diagram.OnDragStart += (item) =>
+            {
+                UserInteraction.DraggedInstance = result.GetInstance(item.ID);
+            };
+        }
+
     }
 }

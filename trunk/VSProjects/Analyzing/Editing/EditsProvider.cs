@@ -96,6 +96,12 @@ namespace Analyzing.Editing
             addEdit(editProvider, editName, transformation);
         }
 
+        public void AddCall(Instance editProvider, string editName, CallProvider callProvider)
+        {
+            var transformation = new AddCallTransformation(callProvider);
+            addEdit(editProvider, editName, transformation);
+        }
+
         public void RemoveArgument(Instance editProvider, int argumentIndex, string editName)
         {
             var transformation = TransformProvider.RemoveArgument(argumentIndex, true).Remove();
@@ -203,7 +209,5 @@ namespace Analyzing.Editing
 
             return true;
         }
-
-
     }
 }

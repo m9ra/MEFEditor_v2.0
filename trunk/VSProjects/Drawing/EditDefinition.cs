@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Drawing
 {
 
-    public delegate void EditAction();
+    public delegate bool EditAction(bool preview);
 
     public delegate bool IsEditActive();
 

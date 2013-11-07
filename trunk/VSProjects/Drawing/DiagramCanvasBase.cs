@@ -15,10 +15,14 @@ namespace Drawing
 {
     public abstract class DiagramCanvasBase : Panel
     {
-        private DiagramItem _ownerItem;
+        private static readonly DropStrategyBase _previewDrop = new PreviewDropStrategy();
 
-        private DiagramContext _context;
+        private static readonly DropStrategyBase _drop = new DropStrategy();
 
+        internal DiagramItem OwnerItem { get; private set; }
+
+        internal DiagramContext DiagramContext { get; private set; }
+  
 
         protected DiagramCanvasBase()
         {
@@ -49,7 +53,7 @@ namespace Drawing
         {
             get
             {
-                var isRootCanvas = _ownerItem == null;
+                var isRootCanvas = OwnerItem == null;
 
                 if (isRootCanvas)
                 {
@@ -57,8 +61,8 @@ namespace Drawing
                 }
                 else
                 {
-                    var parentGlobal = _ownerItem.GlobalPosition;
-                    var parentOffset = _ownerItem.TranslatePoint(new Point(0, 0), this);
+                    var parentGlobal = OwnerItem.GlobalPosition;
+                    var parentOffset = OwnerItem.TranslatePoint(new Point(0, 0), this);
 
                     parentGlobal.X -= parentOffset.X;
                     parentGlobal.Y -= parentOffset.Y;
@@ -71,14 +75,14 @@ namespace Drawing
 
         internal void SetOwner(DiagramItem owner)
         {
-            _ownerItem = owner;
+            OwnerItem = owner;
             SetContext(owner.DiagramContext);
             Children.Clear();
         }
 
         internal void SetContext(DiagramContext context)
         {
-            _context = context;
+            DiagramContext = context;
         }
 
         internal void AddJoin(JoinDrawing join)
@@ -88,9 +92,9 @@ namespace Drawing
 
         protected override Size ArrangeOverride(Size arrangeSize)
         {
-            if (_context != null)
+            if (DiagramContext != null)
             {
-                _context.Provider.Engine.ArrangeChildren(_ownerItem, this);
+                DiagramContext.Provider.Engine.ArrangeChildren(OwnerItem, this);
             }
 
             foreach (FrameworkElement child in Children)
@@ -122,93 +126,14 @@ namespace Drawing
 
         protected override void OnDragOver(DragEventArgs e)
         {
-            var dragAdorner = e.Data.GetData("DragAdorner") as DragAdorner;
-            if (dragAdorner == null)
-                return;
-
-            e.Handled = true;
-
-            var dragItem = dragAdorner.Item;
-
-            if (dragItem.ContainingDiagramCanvas == this || dragItem.IsRootItem)
-            {
-                dragAdorner.Hint = "Change item position";
-                e.Effects = DragDropEffects.Move;
-                return;
-            }
-
-            string hint;
-            if (dragItem.CanExcludeFromParent)
-            {
-                hint = string.Format("Exclude from: '{0}'", dragItem.ParentItem.ID);
-
-                if (_ownerItem != null)
-                {
-                    throw new NotImplementedException("Determine that parent can accept");
-                    //hint += string.Format("\nAccept to '{0}'", _ownerItem.ID);
-                }
-            }
-            else
-            {
-                e.Effects = DragDropEffects.None;
-                hint = string.Format("Can't exclude from: '{0}'", dragItem.ParentItem.ID);
-            }
-            dragAdorner.Hint = hint;
+            _previewDrop.OnDrop(this, e);
         }
 
         protected override void OnDrop(DragEventArgs e)
         {
-            var dragAdorner = e.Data.GetData("DragAdorner") as DragAdorner;
-            if (dragAdorner == null)
-                return;
-
-            e.Handled = true;
-
-            var dragItem = dragAdorner.Item;
-            dragItem.GlobalPosition = dragAdorner.GlobalPosition;
-
-            if (_ownerItem == dragItem)
-                //cant move self to sub slot
-                return;
-
-            if (dragItem.ContainingDiagramCanvas == this)
-                //move within this canvas
-                return;
-
-            excludeFromParent(dragItem);
-            acceptItem(dragAdorner);
+            _drop.OnDrop(this, e);
         }
 
-        private void excludeFromParent(DiagramItem dragItem)
-        {
-            if (dragItem.IsRootItem)
-                //no drop action
-                return;
 
-            if (dragItem.CanExcludeFromParent)
-            {
-                var diff = dragItem.GlobalPosition - GlobalPosition;
-                _context.HintPosition(_ownerItem, dragItem, new Point(diff.X, diff.Y));
-                dragItem.ParentExcludeEdit.Action();
-            }
-        }
-
-        private void acceptItem(DragAdorner dragAdorner)
-        {
-            var dragItem = dragAdorner.Item;
-
-            if (dragItem.ContainingDiagramCanvas == this)
-            {
-                //item moving doesn't cause accept edit
-                return;
-            }
-
-            var isRootCanvas = _ownerItem == null;
-            if (isRootCanvas)
-                //no accept routines for root canvas
-                return;
-
-            throw new NotImplementedException("Accept item");
-        }
     }
 }

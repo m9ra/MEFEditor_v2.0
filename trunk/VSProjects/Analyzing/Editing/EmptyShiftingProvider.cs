@@ -6,14 +6,24 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Editing
 {
-    class EmptyShiftingProvider:ShiftingTransformationProvider
+    class EmptyShiftingProvider : BlockTransformationProvider
     {
-        public override Transformation ShiftBefore(ShiftingTransformationProvider provider)
+        public override Transformation ShiftBefore(BlockTransformationProvider provider)
         {
             return new EmptyTransformation();
         }
 
-        public override Transformation ShiftBehind(ShiftingTransformationProvider provider)
+        public override Transformation ShiftBehind(BlockTransformationProvider provider)
+        {
+            return new EmptyTransformation();
+        }
+
+        public override Transformation PrependCall(CallEditInfo call)
+        {
+            return new EmptyTransformation();
+        }
+
+        public override Transformation AppendCall(CallEditInfo call)
         {
             return new EmptyTransformation();
         }

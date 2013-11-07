@@ -182,11 +182,12 @@ namespace Research
         private void findDrawings()
         {
             _drawings = new DiagramDefinition();
+            _assembly.Runtime.Register(_result, _drawings);
 
             foreach (var instance in _result.CreatedInstances)
             {
                 //TODO display components or types with defined drawers
-                var info = _assembly.Loader.GetComponentInfo(instance);
+                var info = _assembly.Loader.GetComponentInfo(instance.Info);
 
                 if (info != null || instance.Info.TypeName == "CompositionTester")
                 {

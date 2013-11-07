@@ -75,7 +75,7 @@ namespace Analyzing.Execution
         /// <param name="value">Value that will be set to variable</param>
         internal void SetValue(VariableName targetVaraiable, Instance value)
         {
-            value.HintID(targetVaraiable.Name,this);
+            value.HintID(targetVaraiable.Name, this);
             CurrentCall.SetValue(targetVaraiable, value);
         }
 
@@ -181,7 +181,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="createdInstances">Enumeration of all instances created during execution</param>
         /// <returns>Result of analysis</returns>
-        internal AnalyzingResult GetResult(IEnumerable<Instance> createdInstances)
+        internal AnalyzingResult GetResult(Dictionary<string, Instance> createdInstances)
         {
             var removeProvider = new InstanceRemoveProvider(_entryContext);
             return new AnalyzingResult(_entryContext, removeProvider.Remove, createdInstances);

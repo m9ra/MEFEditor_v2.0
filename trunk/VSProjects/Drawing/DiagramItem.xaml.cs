@@ -40,6 +40,8 @@ namespace Drawing
 
         internal EditDefinition ParentExcludeEdit { get; private set; }
 
+        internal readonly List<EditDefinition> AcceptEdits = new List<EditDefinition>();
+
         internal bool CanExcludeFromParent { get { return ParentExcludeEdit != null; } }
 
         #region Public API for drawing extension implementors
@@ -86,7 +88,7 @@ namespace Drawing
 
             return localPos;
         }
-        
+
         public void FillSlot(SlotCanvas slotCanvas, SlotDefinition slot)
         {
             slotCanvas.SetOwner(this);
@@ -205,12 +207,15 @@ namespace Drawing
                         throw new NotSupportedException("Cannot specify multiple exclude edits");
                     ParentExcludeEdit = edit;
                     break;
+                case ".accept":
+                    AcceptEdits.Add(edit);
+                    break;
                 default:
                     var item = new MenuItem();
                     item.Header = edit.Name;
                     menu.Items.Add(item);
 
-                    item.Click += (e, s) => edit.Action();
+                    item.Click += (e, s) => edit.Action(false);
                     break;
             }
 

@@ -55,7 +55,6 @@ namespace Drawing
 
         internal DiagramItem DrawItem(DiagramItem item)
         {
-
             foreach (var connectorDefinition in item.ConnectorDefinitions)
             {
                 var connector = _diagramFactory.CreateConnector(connectorDefinition, item);

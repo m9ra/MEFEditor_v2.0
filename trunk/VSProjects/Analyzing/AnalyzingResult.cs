@@ -11,18 +11,21 @@ namespace Analyzing
 {
     public class AnalyzingResult
     {
-        public readonly CallContext EntryContext;
         private readonly RemoveHandler _removeHandler;
 
-        public readonly IEnumerable<Instance> CreatedInstances;
+        private readonly Dictionary<string, Instance> _createdInstances;
+
+        public readonly CallContext EntryContext;
+
+        public IEnumerable<Instance> CreatedInstances { get { return _createdInstances.Values; } }
 
         public event Action OnTransformationCommit;
 
-        internal AnalyzingResult(CallContext entryContext, RemoveHandler removeHandler, IEnumerable<Instance> createdInstances)
+        internal AnalyzingResult(CallContext entryContext, RemoveHandler removeHandler, Dictionary<string, Instance> createdInstances)
         {
             EntryContext = entryContext;
             _removeHandler = removeHandler;
-            CreatedInstances = createdInstances;
+            _createdInstances = createdInstances;
         }
 
         internal void ReportTransformationCommit()
@@ -34,6 +37,11 @@ namespace Analyzing
         public TransformationServices CreateTransformationServices()
         {
             return new TransformationServices(this, _removeHandler);
+        }
+
+        public Instance GetInstance(string instanceID)
+        {
+            return _createdInstances[instanceID];
         }
     }
 }

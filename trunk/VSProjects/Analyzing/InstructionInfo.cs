@@ -10,7 +10,7 @@ namespace Analyzing
 {
     public class InstructionInfo
     {
-        private ShiftingTransformationProvider _shiftingProvider;
+        private BlockTransformationProvider _shiftingProvider;
 
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace Analyzing
         /// </summary>
         public string Comment { get; set; }
 
-        public ShiftingTransformationProvider ShiftingProvider
+        public BlockTransformationProvider ShiftingProvider
         {
             get
             {

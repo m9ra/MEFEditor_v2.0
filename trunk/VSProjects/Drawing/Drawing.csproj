@@ -51,7 +51,9 @@
     <Compile Include="ArrangeEngine\Planes.cs" />
     <Compile Include="ArrangeEngine\SceneNavigator.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
+    <Compile Include="Behaviours\DropStrategy.cs" />
     <Compile Include="Behaviours\FollowConnectorPosition.cs" />
+    <Compile Include="Behaviours\PreviewDropStrategy.cs" />
     <Compile Include="Behaviours\UpdateGlobalPosition.cs" />
     <Compile Include="Behaviours\ZOrdering.cs" />
     <Compile Include="ConnectorDrawing.cs" />
@@ -64,6 +66,7 @@
     <Compile Include="DiagramContext.cs" />
     <Compile Include="DiagramItemDefinition.cs" />
     <Compile Include="Behaviours\DragAdorner.cs" />
+    <Compile Include="Behaviours\DropStrategyBase.cs" />
     <Compile Include="DrawingProperties.cs" />
     <Compile Include="DrawingProperty.cs" />
     <Compile Include="DrawingProvider.cs" />

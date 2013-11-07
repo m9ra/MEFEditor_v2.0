@@ -10,21 +10,21 @@ using Analyzing.Editing;
 
 namespace AssemblyProviders.CSharp.Transformations
 {
-    class ShiftingProvider:ShiftingTransformationProvider
+    class BlockProvider:BlockTransformationProvider
     {
         readonly INodeAST _line;
-        internal ShiftingProvider(INodeAST lineNode){
+        internal BlockProvider(INodeAST lineNode){
             _line = lineNode;
         }
 
-        public override Transformation ShiftBefore(ShiftingTransformationProvider provider)
+        public override Transformation ShiftBefore(BlockTransformationProvider provider)
         {
             throw new NotImplementedException();
         }
 
-        public override Transformation ShiftBehind(ShiftingTransformationProvider provider)
+        public override Transformation ShiftBehind(BlockTransformationProvider provider)
         {
-            var other = provider as ShiftingProvider;
+            var other = provider as BlockProvider;
             var lineSource = _line.Source;
 
             if (lineSource != other._line.Source)
@@ -36,6 +36,16 @@ namespace AssemblyProviders.CSharp.Transformations
             {
                 source.ShiftBehind(_line, other._line);
             },lineSource);
+        }
+
+        public override Transformation PrependCall(CallEditInfo call)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Transformation AppendCall(CallEditInfo call)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -43,9 +43,9 @@ namespace TypeSystem
             return _manager.IsAssignable(targetTypeName, assignedTypeName);
         }
 
-        public ComponentInfo GetComponentInfo(Instance instance)
+        public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
         {
-            return _manager.GetComponentInfo(instance);
+            return _manager.GetComponentInfo(instanceInfo);
         }
 
         public MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)

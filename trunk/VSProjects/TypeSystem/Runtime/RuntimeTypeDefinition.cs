@@ -186,6 +186,11 @@ namespace TypeSystem.Runtime
             }
         }
 
+        protected void AddCallEdit(CallProvider accepter)
+        {
+            Edits.AddCall(This, ".accept", accepter);
+        }
+
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)
         {
             Edits.ChangeArgument(This, argIndex, editName, valueProvider);

@@ -93,14 +93,17 @@ namespace Analyzing
         internal void HintID(string hint, AnalyzingContext context)
         {
             if (
-                 hint =="this" ||
+                 hint == "this" ||
                  hint.StartsWith("$") ||
                  !ID.StartsWith("$")
                 )
                 return;
 
             var idHint = context.Machine.CreateID(hint);
+            var oldID = ID;
             ID = idHint;
+
+            context.Machine.ReportIDChange(oldID);
         }
     }
 }

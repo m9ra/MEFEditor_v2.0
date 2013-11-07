@@ -34,10 +34,10 @@ namespace TypeSystem
         {
             return _assemblies.DynamicResolve(method, dynamicArgumentInfo);
         }
-        
-        public ComponentInfo GetComponentInfo(Instance instance)
+
+        public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
         {
-            return _assemblies.GetComponentInfo(instance);
+            return _assemblies.GetComponentInfo(instanceInfo);
         }
     }
 }

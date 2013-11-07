@@ -75,7 +75,7 @@
     <Compile Include="CSharp\Transformations\EditContext.cs" />
     <Compile Include="CSharp\Transformations\NodeExtensions.cs" />
     <Compile Include="CSharp\Transformations\SourceRemoveProvider.cs" />
-    <Compile Include="CSharp\Transformations\ShiftingProvider.cs" />
+    <Compile Include="CSharp\Transformations\BlockProvider.cs" />
     <Compile Include="CSharp\Transformations\SourceTransformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -111,10 +111,10 @@ namespace TypeSystem.Core
             throw new NotSupportedException("For type: " + targetTypeName + " there is no inheritance chain");
         }
 
-        internal ComponentInfo GetComponentInfo(Instance instance)
+        internal ComponentInfo GetComponentInfo(InstanceInfo info)
         {
             ComponentInfo result;
-            _components.TryGetValue(instance.Info, out result);
+            _components.TryGetValue(info, out result);
             return result;
         }
 

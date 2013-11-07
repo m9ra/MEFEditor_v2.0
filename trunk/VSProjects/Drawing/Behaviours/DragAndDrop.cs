@@ -53,22 +53,30 @@ namespace Drawing.Behaviours
                 return;
 
             _item.CaptureMouse();
-            var adorner = new DragAdorner(_item,e.GetPosition(_item.Output));
+            var adorner = new DragAdorner(_item, e.GetPosition(_item.Output));
             adorner.DragStart();
 
             var data = new DataObject("DragAdorner", adorner);
-            var effect = DragDrop.DoDragDrop(_item, data, DragDropEffects.Move);
+            _item.DiagramContext.Diagram.DragStart(_item);
+            try
+            {
+                var effect = DragDrop.DoDragDrop(_item, data, DragDropEffects.Move);
+            }
+            finally
+            {
+                _item.DiagramContext.Diagram.DragEnd();
+            }
 
             adorner.DragEnd();
             _item.ReleaseMouseCapture();
 
-          /*  var diff = adorner.GlobalPosition - _item.GlobalPosition;
+            /*  var diff = adorner.GlobalPosition - _item.GlobalPosition;
 
-            var currPos = _get(_item);
-            currPos.X += diff.X;
-            currPos.Y += diff.Y;
+              var currPos = _get(_item);
+              currPos.X += diff.X;
+              currPos.Y += diff.Y;
 
-            _set(_item, currPos);  */          
+              _set(_item, currPos);  */
         }
     }
 }

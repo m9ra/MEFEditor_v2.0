@@ -44,7 +44,7 @@ namespace MEFAnalyzers.CompositionEngine
         {
             foreach (var component in components)
             {
-                var info = _services.GetComponentInfo(component);
+                var info = _services.GetComponentInfo(component.Info);
                 var componentRef = new ComponentRef(this, true, info, component);
 
                 addInputComponent(component, componentRef);
