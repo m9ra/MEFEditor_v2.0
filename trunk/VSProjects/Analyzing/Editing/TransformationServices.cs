@@ -23,6 +23,8 @@ namespace Analyzing.Editing
 
         private List<Transformation> _appliedTransformations = new List<Transformation>();
 
+        public ExecutedBlock EntryBlock { get { return _result.EntryContext.EntryBlock; } }
+
         internal TransformationServices(AnalyzingResult result, RemoveHandler removeHandler)
         {
             _result = result;
@@ -36,6 +38,11 @@ namespace Analyzing.Editing
                 throw new NotSupportedException("Cannot abort twice");
             }
             AbortMessage = abortMessage;
+
+            foreach (var transformation in _appliedTransformations)
+            {
+                transformation.Abort();
+            }
 
             return null;
         }

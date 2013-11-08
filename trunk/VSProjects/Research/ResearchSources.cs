@@ -39,7 +39,7 @@ namespace Research
             return AssemblyUtils.Run(@"        
                 var partImport=new StringImport();       
                 var partExport=new StringExport(""Export1"");
-                
+                              
                 var test=new CompositionTester();   
                 test.Add(partImport);
                 test.Add(partExport);

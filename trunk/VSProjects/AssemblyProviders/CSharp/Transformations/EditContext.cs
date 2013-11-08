@@ -18,7 +18,7 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private readonly Source _source;
 
-        internal readonly StripManager Strips;
+        internal StripManager Strips { get; private set; }
 
         public bool IsCommited { get; private set; }
         public string Code { get; private set; }
@@ -27,7 +27,7 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             Code = code;
             _source = source;
-            Strips = new StripManager(code);
+            Initialize();
         }
 
         internal void RegisterCallProvider(INodeAST callNode, CallProvider callProvider)
@@ -53,6 +53,13 @@ namespace AssemblyProviders.CSharp.Transformations
             }
 
             _removedVariableUsings.Add(variableUse);
+        }
+
+
+        internal void Initialize()
+        {
+            _removedVariableUsings.Clear();
+            Strips = new StripManager(Code);
         }
 
         internal void Commit()
@@ -191,6 +198,7 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             return _source.CompilationInfo.GetNodeType(node);
         }
+
 
     }
 }

@@ -45,7 +45,10 @@ namespace AssemblyProviders.CSharp.Transformations
 
         public override Transformation AppendCall(CallEditInfo call)
         {
-            throw new NotImplementedException();
+            return new SourceTransformation((t, source) =>
+            {
+                source.AppendCall(_line, call);
+            }, _line.Source);
         }
     }
 }

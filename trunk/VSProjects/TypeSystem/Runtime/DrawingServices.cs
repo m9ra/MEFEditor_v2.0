@@ -63,8 +63,14 @@ namespace TypeSystem.Runtime
             if (services.IsAborted)
                 return false;
 
-            if (!preview)
+            if (preview)
+            {
+                services.Abort("Preview");
+            }
+            else
+            {
                 services.Commit();
+            }
 
             return true;
         }

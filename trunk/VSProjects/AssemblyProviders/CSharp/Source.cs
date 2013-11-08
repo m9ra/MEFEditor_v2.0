@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TypeSystem;
+using Analyzing.Editing;
 
 using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CSharp.Interfaces;
@@ -33,11 +34,11 @@ namespace AssemblyProviders.CSharp
             }
         }
 
-        public Source(string code,TypeMethodInfo methodInfo)
+        public Source(string code, TypeMethodInfo methodInfo)
         {
             OriginalCode = code;
             OriginalMethod = methodInfo;
-            EditContext = new EditContext(this,code);
+            EditContext = new EditContext(this, code);
         }
 
         internal void Remove(INodeAST node, bool keepSideEffect)
@@ -61,6 +62,19 @@ namespace AssemblyProviders.CSharp
 
 
             write(p1, p2, toCSharp(value));
+        }
+
+
+        internal void AppendCall(INodeAST lineNode, CallEditInfo call)
+        {
+            var thisObj = toCSharp(call.ThisObj);
+            var args = (from arg in call.CallArguments select toCSharp(arg)).ToArray();
+
+
+            var callRepresentation = string.Format("{0}.{1}({2});\n", thisObj, call.CallName, string.Join(",", args));
+            var behindLineOffset=getBehindOffset(lineNode);
+
+            write(behindLineOffset, callRepresentation);
         }
 
         internal void AppendArgument(INodeAST call, object value)
@@ -190,11 +204,17 @@ namespace AssemblyProviders.CSharp
 
 
         #endregion
-        
+
         internal bool Commit()
         {
             EditContext.Commit();
             return true;
+        }
+
+
+        internal void RollBack()
+        {
+            EditContext.Initialize();
         }
     }
 }

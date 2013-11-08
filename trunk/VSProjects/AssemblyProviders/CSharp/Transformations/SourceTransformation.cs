@@ -29,5 +29,10 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             return _source.Commit();
         }
+
+        public override void Abort()
+        {
+            _source.RollBack();
+        }
     }
 }

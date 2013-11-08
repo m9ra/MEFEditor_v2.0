@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Utilities
 {
-    public class MultiDictionary<TKey,TValue>
+    public class MultiDictionary<TKey, TValue>
     {
         private readonly Dictionary<TKey, HashSet<TValue>> _data = new Dictionary<TKey, HashSet<TValue>>();
-        
+
         public IEnumerable<TKey> Keys { get { return _data.Keys; } }
 
 
@@ -25,15 +25,23 @@ namespace Utilities
             return storage.Add(value);
         }
 
+        public void Add(TKey key, IEnumerable<TValue> values)
+        {
+            foreach (var value in values)
+            {
+                Add(key, value);
+            }
+        }
+
         public IEnumerable<TValue> Get(TKey key)
         {
-              HashSet<TValue> storage;
-              if (!_data.TryGetValue(key, out storage))
-              {
-                  return new TValue[0];
-              }
+            HashSet<TValue> storage;
+            if (!_data.TryGetValue(key, out storage))
+            {
+                return new TValue[0];
+            }
 
-              return storage;
+            return storage;
         }
 
         public void Clear()

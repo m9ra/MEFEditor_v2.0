@@ -21,5 +21,10 @@ namespace Analyzing.Editing
         {
             return commit();
         }
+
+        public virtual void Abort()
+        {
+            //by default there is nothing to do
+        }
     }
 }

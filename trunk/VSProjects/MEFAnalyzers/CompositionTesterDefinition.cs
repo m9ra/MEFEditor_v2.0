@@ -102,26 +102,31 @@ namespace MEFAnalyzers
 
             var slot = services.AddSlot();
 
-            foreach (var component in CompositionContext.Get().InputInstances)
+            var context = CompositionContext.Get();
+            if (context != null)
             {
-                var reference = services.Draw(component);
-                slot.Add(reference);
-            }
 
-            var compositionResult = CompositionResult.Get();
+                foreach (var component in CompositionContext.Get().InputInstances)
+                {
+                    var reference = services.Draw(component);
+                    slot.Add(reference);
+                }
 
-            foreach (var point in compositionResult.Points)
-            {
-                var joinPoint = getConnector(point, services);
-            }
+                var compositionResult = CompositionResult.Get();
 
-            foreach (var join in compositionResult.Joins)
-            {
-                var fromPoint = getConnector(join.Export, services);
-                var toPoint = getConnector(join.Import, services);
+                foreach (var point in compositionResult.Points)
+                {
+                    var joinPoint = getConnector(point, services);
+                }
 
-                var joinDefinition = services.DrawJoin(fromPoint, toPoint);
-                //TODO set properties of joinDefinition
+                foreach (var join in compositionResult.Joins)
+                {
+                    var fromPoint = getConnector(join.Export, services);
+                    var toPoint = getConnector(join.Import, services);
+
+                    var joinDefinition = services.DrawJoin(fromPoint, toPoint);
+                    //TODO set properties of joinDefinition
+                }
             }
 
             services.CommitDrawing();

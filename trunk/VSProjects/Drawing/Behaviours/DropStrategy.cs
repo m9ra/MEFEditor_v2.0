@@ -19,8 +19,7 @@ namespace Drawing.Behaviours
         {
             if (DragItem.CanExcludeFromParent)
             {
-                var diff = DragItem.GlobalPosition - DropTarget.GlobalPosition;
-                Context.HintPosition(OwnerItem, DragItem, new Point(diff.X, diff.Y));
+                hintParentPosition();
                 if (!DragItem.ParentExcludeEdit.Action(false))
                     throw new NotImplementedException();
             }
@@ -33,6 +32,7 @@ namespace Drawing.Behaviours
         protected override void rootExclude()
         {
             //nothing to do
+            hintParentPosition();
         }
 
         protected override void rootAccept()
@@ -42,7 +42,7 @@ namespace Drawing.Behaviours
 
         protected override void accept()
         {
-            foreach (var accept in DragAdorner.Item.AcceptEdits)
+            foreach (var accept in DropTarget.OwnerItem.AcceptEdits)
             {
                 if (accept.Action(false))
                     return;
@@ -52,6 +52,12 @@ namespace Drawing.Behaviours
         protected override void move()
         {
             //nothing to do
+        }
+
+        private void hintParentPosition()
+        {
+            var diff = DragItem.GlobalPosition - DropTarget.GlobalPosition;
+            Context.HintPosition(OwnerItem, DragItem, new Point(diff.X, diff.Y));
         }
     }
 }

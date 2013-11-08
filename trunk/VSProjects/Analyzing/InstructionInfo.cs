@@ -18,7 +18,7 @@ namespace Analyzing
         /// </summary>
         public string Comment { get; set; }
 
-        public BlockTransformationProvider ShiftingProvider
+        public BlockTransformationProvider BlockTransformProvider
         {
             get
             {

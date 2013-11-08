@@ -27,11 +27,11 @@ namespace Drawing.Behaviours
             {
                 Hint = string.Format("Exclude from: '{0}'", DragItem.ParentItem.ID);
 
-                if (OwnerItem != null)
+       /*         if (OwnerItem != null)
                 {
                     throw new NotImplementedException("Determine that parent can accept");
                     //hint += string.Format("\nAccept to '{0}'", _ownerItem.ID);
-                }
+                }*/
             }
             else
             {
