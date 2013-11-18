@@ -38,6 +38,16 @@ namespace AssemblyProviders.CSharp
             StartingOffset = int.MinValue;
         }
 
+        internal Strip(Strip toClone)
+        {
+            Data = toClone.Data;
+            StartingOffset = toClone.StartingOffset;
+            IsOriginal = toClone.IsOriginal;
+
+            if (toClone.Next != null)
+                Next = new Strip(toClone.Next);
+        }
+
         internal void Split(int offset)
         {
             if (!Contains(offset))
@@ -74,11 +84,16 @@ namespace AssemblyProviders.CSharp
 
     public class StripManager
     {
-        Strip _root;
+        readonly Strip _root;
 
         public StripManager(string data)
         {
             _root = new Strip(data, 0);
+        }
+
+        public StripManager(StripManager toClone)
+        {
+            _root = new Strip(toClone._root);
         }
 
         public void Write(int offset, string data)
@@ -102,7 +117,7 @@ namespace AssemblyProviders.CSharp
             var endOffset = offset + length;
             if (strip == null)
             {
-                var removedStrip= getStrip(endOffset);
+                var removedStrip = getStrip(endOffset);
                 if (removedStrip != null)
                 {
                     throw new NotSupportedException("Cannot remove partial strip");
@@ -113,7 +128,7 @@ namespace AssemblyProviders.CSharp
             }
 
             strip.Split(offset);
-            
+
             var endStrip = getStrip(endOffset, strip);
             endStrip.Split(endOffset);
 

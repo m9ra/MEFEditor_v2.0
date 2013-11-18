@@ -23,6 +23,27 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly DrawingTester_TwoContainers()
+        {
+            return AssemblyUtils.Run(@"        
+                var partImport=new StringImport();       
+                                             
+                var test=new CompositionTester();   
+                test.Add(partImport);
+                var test2=new CompositionTester();
+                
+                test.Compose();
+                test2.Compose();
+            ")
+
+           .AddToRuntime<CompositionTesterDefinition>()
+           .AddToRuntime<StringImport>()
+           .AddToRuntime<StringExport>()
+           .AddToRuntime<SimpleType>()
+           .AddDirectToRuntime<List<string>>()
+           .AddDirectToRuntime<ICollection<string>>()
+           ;
+        }
 
         static internal TestingAssembly DrawingTester_SingleComponent()
         {

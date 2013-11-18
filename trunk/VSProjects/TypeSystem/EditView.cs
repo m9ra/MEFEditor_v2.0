@@ -13,16 +13,19 @@ namespace TypeSystem
     {
         private readonly ExecutionView _data;
 
+        public override string Error { get { return _data.AbortMessage; } }
+
         public EditView(ExecutionView data)
         {
             _data = data.Clone();
         }
 
-        protected override string commit()
+        protected override void commit()
         {
-            _data.Commit();
+            if (_data.IsAborted)
+                return;
 
-            return _data.AbortMessage;
+            _data.Commit();
         }
 
         public EditView Clone()

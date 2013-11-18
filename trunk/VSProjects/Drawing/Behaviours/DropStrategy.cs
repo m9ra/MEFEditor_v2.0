@@ -15,27 +15,26 @@ namespace Drawing.Behaviours
             DragItem.GlobalPosition = DragAdorner.GlobalPosition;
         }
 
-        protected override void exclude()
+        protected override bool exclude()
         {
             if (DragItem.CanExcludeFromParent)
             {
                 hintParentPosition();
 
-                if (!DragItem.ParentExcludeEdit.Commit(Diagram.InitialView))
-                {
-                    throw new NotImplementedException();
-                }
+                CurrentView = DragItem.ParentExcludeEdit.Action(CurrentView);
             }
             else
             {
                 throw new NotSupportedException("Cannot exclude");
             }
+            return true;
         }
 
-        protected override void rootExclude()
+        protected override bool rootExclude()
         {
             //nothing to do
             hintParentPosition();
+            return true;
         }
 
         protected override void rootAccept()
@@ -47,10 +46,15 @@ namespace Drawing.Behaviours
         {
             foreach (var accept in DropTarget.OwnerItem.AcceptEdits)
             {
-                //TODO exclude view
-                if (accept.Commit(Diagram.InitialView))
+                var accepted = accept.Action(CurrentView);
+                if (!accepted.HasError)
+                {
+                    CurrentView = accepted;
                     return;
+                }
             }
+
+            throw new NotSupportedException("Cannot accept");
         }
 
         protected override void move()
@@ -62,6 +66,14 @@ namespace Drawing.Behaviours
         {
             var diff = DragItem.GlobalPosition - DropTarget.GlobalPosition;
             Context.HintPosition(OwnerItem, DragItem, new Point(diff.X, diff.Y));
+        }
+
+        protected override void onDropEnd()
+        {
+            if (CurrentView != Diagram.InitialView)
+                CurrentView.Commit();
+
+            //else there is nothing to commit
         }
     }
 }

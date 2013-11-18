@@ -257,7 +257,7 @@ namespace Drawing
                 _oldPositions[contextID] = positions;
             }
 
-            positions.Add(item.ID, position);
+            positions[item.ID]=position;
         }
 
     }

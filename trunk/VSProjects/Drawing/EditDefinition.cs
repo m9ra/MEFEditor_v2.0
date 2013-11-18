@@ -35,11 +35,5 @@ namespace Drawing
             var editedView = Action(view);
             return editedView.Commit();
         }
-
-        internal bool Preview(EditViewBase view)
-        {
-            var editedView = Action(view);
-            return editedView != null;
-        }
     }
 }

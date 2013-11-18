@@ -11,23 +11,32 @@ using AssemblyProviders.CSharp.Interfaces;
 
 namespace AssemblyProviders.CSharp.Transformations
 {
-    class EditContext:ICloneable
+    class EditContext : ICloneable
     {
-        private HashSet<INodeAST> _removedVariableUsings = new HashSet<INodeAST>();
-        
+        private readonly HashSet<INodeAST> _removedVariableUsings = new HashSet<INodeAST>();
 
         private readonly Source _source;
 
-        internal StripManager Strips { get; private set; }
+        internal readonly StripManager Strips;
 
         public bool IsCommited { get; private set; }
+
         public string Code { get; private set; }
 
         internal EditContext(Source source, string code)
         {
             Code = code;
+            Strips = new StripManager(Code);
             _source = source;
-            Initialize();
+        }
+
+        internal EditContext(EditContext toClone)
+        {
+            _removedVariableUsings = new HashSet<INodeAST>(toClone._removedVariableUsings);
+            _source = toClone._source;
+            Strips = new StripManager(toClone.Strips);
+            IsCommited = toClone.IsCommited;
+            Code = toClone.Code;
         }
 
         internal void VariableNodeRemoved(INodeAST variableUse)
@@ -43,13 +52,6 @@ namespace AssemblyProviders.CSharp.Transformations
             }
 
             _removedVariableUsings.Add(variableUse);
-        }
-
-
-        internal void Initialize()
-        {
-            _removedVariableUsings.Clear();
-            Strips = new StripManager(Code);
         }
 
         internal void Commit()
@@ -72,7 +74,7 @@ namespace AssemblyProviders.CSharp.Transformations
             {
                 if (!_removedVariableUsings.Contains(usage))
                     continue;
-                
+
                 if (variable.Declaration == usage)
                 {
                     //it needs to be redeclared
@@ -95,7 +97,7 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private INodeAST getRedeclarationNode(INodeAST varUse)
         {
-            var top=getTopNode(varUse);
+            var top = getTopNode(varUse);
             if (top.Arguments[0] != varUse)
             {
                 //redeclaration on previous line
@@ -114,26 +116,26 @@ namespace AssemblyProviders.CSharp.Transformations
                 //variable has been completly removed - it doesn't need to be redeclared
                 return;
             }
-                                    
+
             var variableAssign = leavedAssigns.First();
             var redeclarationPoint = getRedeclarationNode(variableAssign);
             var beforeStatementOffset = _source.BeforeStatementOffset(redeclarationPoint);
-            var isUninitializedDeclaration=variableAssign != redeclarationPoint;
+            var isUninitializedDeclaration = variableAssign != redeclarationPoint;
 
-            var redeclarationType = resolveRedeclarationType(variable, variableAssign,!isUninitializedDeclaration);
+            var redeclarationType = resolveRedeclarationType(variable, variableAssign, !isUninitializedDeclaration);
 
             var toWrite = redeclarationType + " ";
             if (isUninitializedDeclaration)
             {
                 //redeclare on previous line with full variable name
-                toWrite += variable.Name+";\n";
+                toWrite += variable.Name + ";\n";
             }
 
 
-            Strips.Write(beforeStatementOffset,toWrite);
+            Strips.Write(beforeStatementOffset, toWrite);
         }
 
-        private string resolveRedeclarationType(VariableInfo variable, INodeAST assignedVariable,bool canUseImpicit)
+        private string resolveRedeclarationType(VariableInfo variable, INodeAST assignedVariable, bool canUseImpicit)
         {
             var variableType = resolveVariableType(variable);
             if (variableType == null)
@@ -141,7 +143,7 @@ namespace AssemblyProviders.CSharp.Transformations
                 throw new NotSupportedException("Cannot redeclare variable, because of missing type info");
             }
 
-            
+
             if (!variable.IsImplicitlyTyped || !canUseImpicit)
             {
                 //keep convetion on explicit variable typing
@@ -149,8 +151,8 @@ namespace AssemblyProviders.CSharp.Transformations
                 return variableType.TypeName;
             }
 
-            var assignedType=resolveAssignType(assignedVariable);
-            if (assignedType == null || assignedType.TypeName!=variableType.TypeName)
+            var assignedType = resolveAssignType(assignedVariable);
+            if (assignedType == null || assignedType.TypeName != variableType.TypeName)
             {
                 //we don't know type of assignedType, or implicit type is different,
                 //so whole type name is needed
@@ -189,11 +191,9 @@ namespace AssemblyProviders.CSharp.Transformations
             return _source.CompilationInfo.GetNodeType(node);
         }
 
-
-
         public object Clone()
         {
-            throw new NotImplementedException();
+            return new EditContext(this);
         }
     }
 }

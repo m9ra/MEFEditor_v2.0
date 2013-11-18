@@ -15,18 +15,19 @@ namespace Drawing
         /// <summary>
         /// Error occured in the view during commit or view creation
         /// </summary>
-        public string Error { get; private set; }
+        public abstract string Error { get; }
 
         /// <summary>
         /// Determine that view has error
         /// </summary>
-        public bool HasError{get{return Error != null;}}
+        public bool HasError { get { return Error != null; } }
 
         /// <summary>
         /// Commit current view.
         /// </summary>
         /// <returns>Error raised during commit or null if there is no error</returns>
-        protected abstract string commit();
+        protected abstract void commit();
+
 
         /// <summary>
         /// Commit view 
@@ -37,7 +38,7 @@ namespace Drawing
             if (HasError)
                 throw new NotSupportedException("Cannot commit because of error: " + Error);
 
-            Error = commit();
+            commit();
 
             return !HasError;
         }

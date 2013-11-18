@@ -18,14 +18,16 @@ namespace Drawing.Behaviours
         protected DiagramDefinition Diagram { get { return Context.Diagram; } }
         protected DragEventArgs E { get; private set; }
         protected string Hint { get { return DragAdorner.Hint; } set { DragAdorner.Hint = value; } }
+        protected EditViewBase CurrentView;
+
 
         protected abstract void onDrop();
-
+        protected abstract void onDropEnd();
 
         protected abstract void move();
 
-        protected abstract void exclude();
-        protected abstract void rootExclude();
+        protected abstract bool exclude();
+        protected abstract bool rootExclude();
 
         protected abstract void rootAccept();
         protected abstract void accept();
@@ -40,12 +42,14 @@ namespace Drawing.Behaviours
 
             E.Handled = true;
 
+            CurrentView = Diagram.InitialView;
             onDrop();
 
             if (DropTarget.OwnerItem == DragItem)
             {
                 //cant drop self to sub slot
                 move();
+                onDropEnd();
                 return;
             }
 
@@ -53,22 +57,28 @@ namespace Drawing.Behaviours
             {
                 //move within dropTarget canvas
                 move();
+                onDropEnd();
                 return;
             }
 
-            excludeFromParent();
-            acceptItem();
+            if (excludeFromParent())
+            {
+                acceptItem();
+            }
+
+            onDropEnd();
         }
 
-        private void excludeFromParent()
+        private bool excludeFromParent()
         {
             if (DragItem.IsRootItem)
             {
-                //no drop action
-                rootExclude();
-                return;
+                return rootExclude();
             }
-            exclude();
+            else
+            {
+                return exclude();
+            }
         }
 
         private void acceptItem()
