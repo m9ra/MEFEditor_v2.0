@@ -9,6 +9,8 @@ using Analyzing.Execution;
 
 namespace Analyzing
 {
+    public delegate void OnViewCommit(ExecutionView commitedView);
+
     public class AnalyzingResult
     {
         private readonly RemoveHandler _removeHandler;
@@ -19,7 +21,7 @@ namespace Analyzing
 
         public IEnumerable<Instance> CreatedInstances { get { return _createdInstances.Values; } }
 
-        public event Action OnTransformationCommit;
+        public event OnViewCommit OnViewCommit;
 
         internal AnalyzingResult(CallContext entryContext, RemoveHandler removeHandler, Dictionary<string, Instance> createdInstances)
         {
@@ -28,15 +30,15 @@ namespace Analyzing
             _createdInstances = createdInstances;
         }
 
-        internal void ReportTransformationCommit()
+        internal void ReportViewCommit(ExecutionView view)
         {
-            if (OnTransformationCommit != null)
-                OnTransformationCommit();
+            if (OnViewCommit != null)
+                OnViewCommit(view);
         }
 
-        public TransformationServices CreateTransformationServices()
+        public ExecutionView CreateExecutionView()
         {
-            return new TransformationServices(this, _removeHandler);
+            return new ExecutionView(this, _removeHandler);
         }
 
         public Instance GetInstance(string instanceID)

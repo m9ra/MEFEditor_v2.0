@@ -10,10 +10,11 @@ using Analyzing.Editing;
 
 namespace AssemblyProviders.CSharp.Transformations
 {
-    class BlockProvider:BlockTransformationProvider
+    class BlockProvider : BlockTransformationProvider
     {
         readonly INodeAST _line;
-        internal BlockProvider(INodeAST lineNode){
+        internal BlockProvider(INodeAST lineNode)
+        {
             _line = lineNode;
         }
 
@@ -32,10 +33,10 @@ namespace AssemblyProviders.CSharp.Transformations
                 throw new NotSupportedException("Cannot shift between sources");
             }
 
-            return new SourceTransformation((t,source) =>
+            return new SourceTransformation((view, source) =>
             {
-                source.ShiftBehind(_line, other._line);
-            },lineSource);
+                source.ShiftBehind(view, _line, other._line);
+            }, lineSource);
         }
 
         public override Transformation PrependCall(CallEditInfo call)
@@ -45,9 +46,9 @@ namespace AssemblyProviders.CSharp.Transformations
 
         public override Transformation AppendCall(CallEditInfo call)
         {
-            return new SourceTransformation((t, source) =>
+            return new SourceTransformation((view, source) =>
             {
-                source.AppendCall(_line, call);
+                source.AppendCall(view, _line, call);
             }, _line.Source);
         }
     }

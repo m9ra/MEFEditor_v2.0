@@ -54,7 +54,7 @@
     <Compile Include="Editing\InstanceRemoveProvider.cs" />
     <Compile Include="Editing\RemoveTransformProvider.cs" />
     <Compile Include="Editing\BlockTransformationProvider.cs" />
-    <Compile Include="Editing\TransformationServices.cs" />
+    <Compile Include="Editing\ExecutionView.cs" />
     <Compile Include="Editing\EmptyCallTransformProvider.cs" />
     <Compile Include="Editing\Transformations\EmptyTransformation.cs" />
     <Compile Include="Editing\Transformation.cs" />

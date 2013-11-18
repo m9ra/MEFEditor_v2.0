@@ -53,26 +53,12 @@ namespace TypeSystem.Runtime
 
         public EditDefinition CreateEditDefinition(Edit edit)
         {
-            return new EditDefinition(edit.Name, (preview) => runEdit(edit, preview), () => false);
+            return new EditDefinition(edit.Name, (view) => runEdit(edit, view as EditView), () => false);
         }
 
-        private bool runEdit(Edit edit, bool preview)
+        private EditViewBase runEdit(Edit edit, EditView view)
         {
-            var services = _result.CreateTransformationServices();
-            services.Apply(edit.Transformation);
-            if (services.IsAborted)
-                return false;
-
-            if (preview)
-            {
-                services.Abort("Preview");
-            }
-            else
-            {
-                services.Commit();
-            }
-
-            return true;
+            return view.Apply(edit.Transformation);
         }
 
         public void PublishField(string name, Field field)

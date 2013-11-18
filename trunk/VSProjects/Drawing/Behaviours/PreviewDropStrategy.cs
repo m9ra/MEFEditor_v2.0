@@ -55,7 +55,8 @@ namespace Drawing.Behaviours
             var acceptTarget = DropTarget.OwnerItem.ID;
             foreach (var accept in DropTarget.OwnerItem.AcceptEdits)
             {
-                if (accept.Action(true))
+                //TODO use exclude view
+                if (accept.Preview(Diagram.InitialView))
                 {
                     Hint += string.Format("Accept by '{0}'", acceptTarget);
                     return;

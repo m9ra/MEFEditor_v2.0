@@ -13,7 +13,7 @@ namespace Analyzing.Editing
     /// Provides value for edit on editedInstance
     /// </summary>
     /// <returns>Value that will be pasted to transformation provider. The transformation provider decide, that it understand given value.</returns>
-    public delegate object ValueProvider(TransformationServices services);
+    public delegate object ValueProvider(ExecutionView services);
 
     public class EditsProvider
     {
@@ -39,7 +39,7 @@ namespace Analyzing.Editing
         /// <param name="instance">Instance which variable is searched.</param>
         /// <param name="services"></param>
         /// <returns></returns>
-        public VariableName GetVariableFor(Instance instance, TransformationServices services)
+        public VariableName GetVariableFor(Instance instance, ExecutionView services)
         {
             var transformation = new ScopeBlockTransformation(_block, instance);
             services.Apply(transformation);

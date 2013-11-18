@@ -17,36 +17,30 @@ namespace Analyzing.Editing.Transformations
             _provider = provider;
         }
 
-        protected override void apply(TransformationServices services)
+        protected override void apply(ExecutionView view)
         {
             _canCommit = false;
-            var call = _provider(services);
+            var call = _provider(view);
             if (call == null)
                 return;
 
-           
             var scopeTransform = new CommonScopeTransformation(call.Instances);
-            services.Apply(scopeTransform);
+            view.Apply(scopeTransform);
 
             var instanceScopes = scopeTransform.InstanceScopes;
             if (scopeTransform.InstanceScopes == null)
             {
-                services.Abort("Can't get instances to same scope");
+                view.Abort("Can't get instances to same scope");
                 return;
             }
 
-            var transformProvider = instanceScopes.ScopeBlock.Info.BlockTransformProvider;
-
             var subsitutedCall = call.Substitute(instanceScopes.InstanceVariables);
-            var appendTransform = transformProvider.AppendCall(subsitutedCall);
+            view.AppendCall(instanceScopes.ScopeBlock, subsitutedCall);
 
-            services.Apply(appendTransform);
-
-            _canCommit = !services.IsAborted;
+            _canCommit = !view.IsAborted;
         }
 
-
-        protected override bool commit()
+        protected override bool commit(ExecutionView view)
         {
             return _canCommit;
         }

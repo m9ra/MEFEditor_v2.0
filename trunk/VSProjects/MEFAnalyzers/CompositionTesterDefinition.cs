@@ -174,7 +174,7 @@ namespace MEFAnalyzers
             }
         }
 
-        private CallEditInfo acceptComponent(Instance thisObj, TransformationServices services)
+        private CallEditInfo acceptComponent(Instance thisObj, ExecutionView services)
         {
             var instance = UserInteraction.DraggedInstance;
             var componentInfo = Services.GetComponentInfo(instance.Info);

@@ -215,7 +215,7 @@ namespace Drawing
                     item.Header = edit.Name;
                     menu.Items.Add(item);
 
-                    item.Click += (e, s) => edit.Action(false);
+                    item.Click += (e, s) => edit.Commit(DiagramContext.Diagram.InitialView);
                     break;
             }
 

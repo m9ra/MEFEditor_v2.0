@@ -32,11 +32,11 @@ namespace AssemblyProviders.CSharp.Transformations
 
             var variableNode = assignOperator.Arguments[0];
 
-            //remove whole satement;
-            return new SourceTransformation((c,source) =>
+            //remove whole statement;
+            return new SourceTransformation((view,source) =>
             {
-                source.EditContext.VariableNodeRemoved(variableNode);
-                source.Remove(assignOperator, false);
+                source.EditContext(view).VariableNodeRemoved(variableNode);
+                source.Remove(view,assignOperator, false);
             },_assignedValue.Source);
         }
     }

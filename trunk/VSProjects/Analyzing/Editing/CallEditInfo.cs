@@ -10,7 +10,7 @@ namespace Analyzing.Editing
     /// Handle accepting instance according to given info
     /// </summary>
     /// <returns>Info used for instance accepting</returns>
-    public delegate CallEditInfo CallProvider(TransformationServices services);
+    public delegate CallEditInfo CallProvider(ExecutionView services);
 
     public class CallEditInfo
     {

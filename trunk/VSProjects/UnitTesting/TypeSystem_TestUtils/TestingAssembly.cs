@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Analyzing;
+using Analyzing.Editing;
 using TypeSystem;
 using TypeSystem.Runtime;
 
@@ -120,16 +121,16 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
-        public string GetSource(MethodID method)
+        public string GetSource(MethodID method, ExecutionView view)
         {
             var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
-            return parsedGenerator.Source.Code;
+            return parsedGenerator.Source.Code(view);
         }
 
         public void SetSource(MethodID method, string source)
         {
             var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
-            parsedGenerator.Source=new Source(source,parsedGenerator.Info);
+            parsedGenerator.Source = new Source(source, parsedGenerator.Info);
         }
 
         #region Assembly provider implementatation

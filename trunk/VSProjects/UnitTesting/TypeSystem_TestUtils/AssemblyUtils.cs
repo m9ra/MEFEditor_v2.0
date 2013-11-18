@@ -10,6 +10,7 @@ using TypeSystem;
 using TypeSystem.Runtime;
 
 using Analyzing;
+using Analyzing.Editing;
 using Analyzing.Execution;
 
 using UnitTesting.Analyzing_TestUtils;
@@ -22,7 +23,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static Instance EXTERNAL_INPUT { get; set; }
         public static Instance REPORTED_INSTANCE { get; internal set; }
 
-    
+
 
         public static TestingAssembly Run(string entryMethodSource)
         {
@@ -34,7 +35,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return assembly;
         }
 
-        public static AnalyzingResult GetResult(this TestingAssembly assembly)
+        public static TestResult GetResult(this TestingAssembly assembly)
         {
             var entryLoader = new EntryPointLoader(
                 Method.EntryInfo.MethodID
@@ -44,15 +45,15 @@ namespace UnitTesting.TypeSystem_TestUtils
             assembly.Runtime.BuildAssembly();
 
             var machine = SettingsProvider.CreateMachine(assembly.Settings);
-            var entryObj = machine.CreateDirectInstance("EntryObject",new InstanceInfo(typeof(string)));
+            var entryObj = machine.CreateDirectInstance("EntryObject", new InstanceInfo(typeof(string)));
             var result = machine.Run(entryLoader, entryObj);
 
             foreach (var action in assembly.UserActions)
                 action(result);
 
-            processEdits(result, assembly.EditActions);
+            var view = processEdits(result, assembly.EditActions);
 
-            return result;
+            return new TestResult(view, result);
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static void AssertSourceEquivalence(this TestingAssembly assembly, string source)
         {
             var result = assembly.GetResult();
-            var editedSource = assembly.GetEntrySource();
+            var editedSource = assembly.GetEntrySource(result.View);
 
             var nSource = normalizeCode("{" + source + "}");
             var nEditedSource = normalizeCode(editedSource);
@@ -70,9 +71,9 @@ namespace UnitTesting.TypeSystem_TestUtils
             Assert.AreEqual(nSource, nEditedSource);
         }
 
-        public static string GetEntrySource(this TestingAssembly assembly)
+        public static string GetEntrySource(this TestingAssembly assembly, ExecutionView view)
         {
-            return assembly.GetSource(Method.EntryInfo.MethodID);
+            return assembly.GetSource(Method.EntryInfo.MethodID, view);
         }
 
 
@@ -89,54 +90,51 @@ namespace UnitTesting.TypeSystem_TestUtils
             return new TestCase(result, variableName);
         }
 
-        private static void processEdits(AnalyzingResult result, IEnumerable<EditAction> editActions)
+        private static ExecutionView processEdits(AnalyzingResult result, IEnumerable<EditAction> editActions)
         {
+            var view = result.CreateExecutionView();
+
             foreach (var editAction in editActions)
             {
                 if (editAction.IsRemoveAction)
                 {
-                    processRemoveEdit(result, editAction);
+                    view = processRemoveEdit(result, view, editAction);
                 }
                 else
                 {
-                    processInstanceEdit(result, editAction);
+                    view = processInstanceEdit(result, view, editAction);
                 }
             }
+            view.Commit();
+            return view;
         }
 
-        private static void processRemoveEdit(AnalyzingResult result, EditAction editAction)
+        private static ExecutionView processRemoveEdit(AnalyzingResult result, ExecutionView view, EditAction editAction)
         {
             var inst = result.EntryContext.GetValue(editAction.Variable);
-            var services = result.CreateTransformationServices();
-
-            var success = services.Remove(inst);
+            var success = view.Remove(inst);
 
             if (!success)
             {
                 throw new NotSupportedException("Remove edit doesn't succeeded");
             }
 
-            services.Commit();
+            return view;
         }
 
-        private static void processInstanceEdit(AnalyzingResult result, EditAction editAction)
+        private static ExecutionView processInstanceEdit(AnalyzingResult result, ExecutionView view, EditAction editAction)
         {
             var inst = result.EntryContext.GetValue(editAction.Variable);
-            var edited = false;
             foreach (var edit in inst.Edits)
             {
                 if (edit.Name != editAction.Name)
                     continue;
 
-                var services = result.CreateTransformationServices();
-                services.Apply(edit.Transformation);
-                services.Commit();
-                edited = true;
-                break;
+                view.Apply(edit.Transformation);
+                return view;
             }
 
-            if (!edited)
-                throw new KeyNotFoundException("Specified edit hasn't been found");
+            throw new KeyNotFoundException("Specified edit hasn't been found");
         }
 
         private static void addStandardMethods(TestingAssembly assembly)

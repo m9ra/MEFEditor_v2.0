@@ -15,6 +15,7 @@ namespace Drawing.Behaviours
         protected DiagramItem DragItem { get { return DragAdorner.Item; } }
         protected DiagramItem OwnerItem { get { return DropTarget.OwnerItem; } }
         protected DiagramContext Context { get { return DropTarget.DiagramContext; } }
+        protected DiagramDefinition Diagram { get { return Context.Diagram; } }
         protected DragEventArgs E { get; private set; }
         protected string Hint { get { return DragAdorner.Hint; } set { DragAdorner.Hint = value; } }
 

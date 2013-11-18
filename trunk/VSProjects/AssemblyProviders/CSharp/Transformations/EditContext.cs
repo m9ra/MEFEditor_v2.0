@@ -11,10 +11,10 @@ using AssemblyProviders.CSharp.Interfaces;
 
 namespace AssemblyProviders.CSharp.Transformations
 {
-    class EditContext
+    class EditContext:ICloneable
     {
         private HashSet<INodeAST> _removedVariableUsings = new HashSet<INodeAST>();
-        private Dictionary<INodeAST, CallProvider> _callProviders = new Dictionary<INodeAST, CallProvider>();
+        
 
         private readonly Source _source;
 
@@ -28,16 +28,6 @@ namespace AssemblyProviders.CSharp.Transformations
             Code = code;
             _source = source;
             Initialize();
-        }
-
-        internal void RegisterCallProvider(INodeAST callNode, CallProvider callProvider)
-        {
-            _callProviders.Add(callNode, callProvider);
-        }
-
-        internal CallProvider GetProvider(INodeAST call)
-        {
-            return _callProviders[call];
         }
 
         internal void VariableNodeRemoved(INodeAST variableUse)
@@ -200,5 +190,10 @@ namespace AssemblyProviders.CSharp.Transformations
         }
 
 
+
+        public object Clone()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

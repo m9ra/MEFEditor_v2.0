@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Analyzing.Editing;
 namespace AssemblyProviders.CSharp.Transformations
 {
-    delegate void TransformAction(TransformationServices services,Source source);
+    delegate void TransformAction(ExecutionView view,Source source);
 
     class SourceTransformation:Transformation
     {
@@ -20,19 +20,14 @@ namespace AssemblyProviders.CSharp.Transformations
             _apply = apply;
             _source = source;
         }
-        protected override void apply(TransformationServices services)
+        protected override void apply(ExecutionView view)
         {
-            _apply(services,_source);
+            _apply(view,_source);
         }
 
-        protected override bool commit()
+        protected override bool commit(ExecutionView view)
         {
-            return _source.Commit();
-        }
-
-        public override void Abort()
-        {
-            _source.RollBack();
+            return _source.Commit(view);
         }
     }
 }

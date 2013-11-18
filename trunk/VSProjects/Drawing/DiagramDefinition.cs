@@ -30,11 +30,17 @@ namespace Drawing
 
         public event OnDragStart OnDragStart;
 
+        public readonly EditViewBase InitialView;
 
         /// <summary>
         /// Number of defined DrawingDefinitions
         /// </summary>
         public int Count { get { return _definitions.Count; } }
+
+        public DiagramDefinition(EditViewBase initialView)
+        {
+            InitialView = initialView;
+        }
 
         /// <summary>
         /// Add drawing definition into context. Given drawing
@@ -126,5 +132,7 @@ namespace Drawing
             if (OnDragEnd != null)
                 OnDragEnd();
         }
+
+
     }
 }

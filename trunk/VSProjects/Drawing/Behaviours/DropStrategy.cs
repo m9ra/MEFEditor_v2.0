@@ -20,8 +20,11 @@ namespace Drawing.Behaviours
             if (DragItem.CanExcludeFromParent)
             {
                 hintParentPosition();
-                if (!DragItem.ParentExcludeEdit.Action(false))
+
+                if (!DragItem.ParentExcludeEdit.Commit(Diagram.InitialView))
+                {
                     throw new NotImplementedException();
+                }
             }
             else
             {
@@ -44,7 +47,8 @@ namespace Drawing.Behaviours
         {
             foreach (var accept in DropTarget.OwnerItem.AcceptEdits)
             {
-                if (accept.Action(false))
+                //TODO exclude view
+                if (accept.Commit(Diagram.InitialView))
                     return;
             }
         }

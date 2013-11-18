@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 using Analyzing;
 using TypeSystem;
+
 using AssemblyProviders.CSharp.Interfaces;
+using AssemblyProviders.CSharp.Transformations;
 
 namespace AssemblyProviders.CSharp.Compiling
 {
@@ -14,8 +16,19 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         List<VariableInfo> _variables = new List<VariableInfo>();
         Dictionary<INodeAST, InstanceInfo> _nodeTypes = new Dictionary<INodeAST, InstanceInfo>();
+        Dictionary<INodeAST, CallProvider> _callProviders = new Dictionary<INodeAST, CallProvider>();
 
         internal IEnumerable<VariableInfo> Variables { get { return _variables; } }
+
+        internal void RegisterCallProvider(INodeAST callNode, CallProvider callProvider)
+        {
+            _callProviders.Add(callNode, callProvider);
+        }
+
+        internal CallProvider GetProvider(INodeAST call)
+        {
+            return _callProviders[call];
+        }
 
         internal void AddVariable(VariableInfo variable)
         {

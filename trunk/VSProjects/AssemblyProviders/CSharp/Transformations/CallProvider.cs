@@ -19,17 +19,17 @@ namespace AssemblyProviders.CSharp.Transformations
         internal CallProvider(INodeAST callNode)
         {
             _call = callNode;
-            _call.Source.EditContext.RegisterCallProvider(callNode, this);
+            _call.Source.CompilationInfo.RegisterCallProvider(callNode, this);
         }
 
         public override RemoveTransformProvider RemoveArgument(int argumentIndex, bool keepSideEffect)
         {
             var argNode = _call.Arguments[argumentIndex - 1];
 
-            return new SourceRemoveProvider((s, source) =>
+            return new SourceRemoveProvider((view, source) =>
             {
                 var sideEffect = keepSideEffect && !hasSideEffect(argNode);
-                source.Remove(argNode, sideEffect);
+                source.Remove(view, argNode, sideEffect);
             }, argNode.Source);
         }
 
@@ -37,22 +37,22 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             var argNode = _call.Arguments[argumentIndex - 1];
 
-            return new SourceTransformation((services, source) =>
+            return new SourceTransformation((view, source) =>
             {
                 var keepSideEffect = !hasSideEffect(argNode);
-                source.Rewrite(argNode, valuePovider(services), keepSideEffect);
+                source.Rewrite(view, argNode, valuePovider(view), keepSideEffect);
             }, _call.Source);
         }
 
         public override Transformation AppendArgument(ValueProvider valueProvider)
         {
-            return new SourceTransformation((services, source) =>
+            return new SourceTransformation((view, source) =>
             {
-                var value = valueProvider(services);
-                if (services.IsAborted)
+                var value = valueProvider(view);
+                if (view.IsAborted)
                     return;
 
-                source.AppendArgument(_call, value);
+                source.AppendArgument(view, _call, value);
             }, _call.Source);
         }
 
@@ -61,10 +61,10 @@ namespace AssemblyProviders.CSharp.Transformations
 
         public override RemoveTransformProvider Remove()
         {
-            return new SourceRemoveProvider((s, source) =>
+            return new SourceRemoveProvider((view, source) =>
             {
-                keepParent(_call);
-                source.Remove(_call, false);
+                keepParent(view, _call);
+                source.Remove(view, _call, false);
             }, _call.Source);
         }
 
@@ -93,7 +93,7 @@ namespace AssemblyProviders.CSharp.Transformations
             return new NodeTypes[] { NodeTypes.hierarchy, NodeTypes.prefixOperator }.Contains(node.NodeType);
         }
 
-        private void keepParent(INodeAST node)
+        private void keepParent(ExecutionView view, INodeAST node)
         {
             var parent = node.Parent;
 
@@ -109,21 +109,21 @@ namespace AssemblyProviders.CSharp.Transformations
                     if (parent.IsAssign())
                     {
                         //report assigned variable change
-                        parent.Source.EditContext.VariableNodeRemoved(parent.Arguments[0]);
+                        parent.Source.EditContext(view).VariableNodeRemoved(parent.Arguments[0]);
                     }
-                    parent.Source.Remove(parent, false);
-                    keepParent(parent);
+                    parent.Source.Remove(view, parent, false);
+                    keepParent(view, parent);
                     break;
                 case NodeTypes.call:
                     if (!isOptionalArgument(parent, node))
                     {
-                        parent.Source.Remove(parent, false);
-                        keepParent(parent);
+                        parent.Source.Remove(view, parent, false);
+                        keepParent(view, parent);
                     }
                     break;
                 case NodeTypes.hierarchy:
-                    parent.Source.Remove(parent, false);
-                    keepParent(parent);
+                    parent.Source.Remove(view, parent, false);
+                    keepParent(view, parent);
                     break;
 
                 default:
@@ -145,7 +145,7 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private bool isOptionalArgument(INodeAST call, INodeAST argument)
         {
-            var provider = call.Source.EditContext.GetProvider(call);
+            var provider = call.Source.CompilationInfo.GetProvider(call);
             var index = getArgumentIndex(call, argument);
             return provider.IsOptionalArgument(index + 1);
         }

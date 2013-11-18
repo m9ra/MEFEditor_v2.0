@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
 namespace Drawing
 {
-
-    public delegate bool EditAction(bool preview);
+    public delegate EditViewBase EditAction(EditViewBase initialView);
 
     public delegate bool IsEditActive();
 
@@ -27,6 +28,18 @@ namespace Drawing
             Name = name;
             Action = action;
             IsActive = isActive;
+        }
+
+        internal bool Commit(EditViewBase view)
+        {
+            var editedView = Action(view);
+            return editedView.Commit();
+        }
+
+        internal bool Preview(EditViewBase view)
+        {
+            var editedView = Action(view);
+            return editedView != null;
         }
     }
 }

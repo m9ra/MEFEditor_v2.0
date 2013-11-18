@@ -14,7 +14,7 @@ namespace Analyzing.Editing
 
         private readonly Instance _instance;
 
-        private TransformationServices _services;
+        private ExecutionView _view;
 
         internal VariableName ScopeVariable { get; private set; }
 
@@ -25,14 +25,14 @@ namespace Analyzing.Editing
             _scopeBlock = scopeBlock;
         }
 
-        protected override void apply(TransformationServices services)
+        protected override void apply(ExecutionView view)
         {
-            _services = services;
+            _view = view;
 
             ScopeVariable = instanceScopes(_scopeBlock, _instance);
         }
 
-        protected override bool commit()
+        protected override bool commit(ExecutionView view)
         {
             return ScopeVariable != null;
         }
@@ -40,7 +40,7 @@ namespace Analyzing.Editing
         private VariableName instanceScopes(ExecutedBlock scopeBlock, Instance instance)
         {
             //find variable with valid scope
-            var block = scopeBlock.PreviousBlock;
+            var block = _view.PreviousBlock(scopeBlock);
             var scopeEnds = new HashSet<VariableName>();
             ExecutedBlock _firstScopeEnd = null;
             while (block != null)
@@ -64,12 +64,12 @@ namespace Analyzing.Editing
                 }
 
                 //shift to next block
-                block = block.PreviousBlock;
+                block = _view.PreviousBlock(block);
             }
 
             if (_firstScopeEnd != null)
             {
-                if (shiftBehind(_firstScopeEnd, scopeBlock, _services))
+                if (shiftBehind(_firstScopeEnd, scopeBlock, _view))
                 {
                     //scope end was shifted
                     return _firstScopeEnd.ScopeEnds(instance).First();
@@ -77,19 +77,19 @@ namespace Analyzing.Editing
             }
 
             //find scope start
-            var scopeStartBlock = scopeBlock.NextBlock;
+            var scopeStartBlock = _view.NextBlock(scopeBlock);
             while (scopeStartBlock != null)
             {
                 var starts = scopeStartBlock.ScopeStarts(instance);
                 if (starts.Any())
                 {
-                    if (shiftBehind(scopeBlock, scopeStartBlock, _services))
+                    if (shiftBehind(scopeBlock, scopeStartBlock, _view))
                     {
                         return starts.First();
                     }
                     break;
                 }
-                scopeStartBlock = scopeStartBlock.NextBlock;
+                scopeStartBlock = _view.NextBlock(scopeStartBlock);
             }
 
             //cannot find valid scope
@@ -101,8 +101,8 @@ namespace Analyzing.Editing
         /// </summary>
         /// <param name="shiftedBlock"></param>
         /// <param name="target"></param>
-        /// <param name="services"></param>
-        private bool shiftBehind(ExecutedBlock shiftedBlock, ExecutedBlock target, TransformationServices services)
+        /// <param name="view"></param>
+        private bool shiftBehind(ExecutedBlock shiftedBlock, ExecutedBlock target, ExecutionView view)
         {
             //cumulative list of blocks that has to be shifted
             //It has reverse ordering of transformations that will be generated            
@@ -110,24 +110,24 @@ namespace Analyzing.Editing
             shiftedBlocks.Add(shiftedBlock);
 
             var borderInstances = new HashSet<Instance>();
-            borderInstances.UnionWith(shiftedBlock.AffectedInstances);
+            borderInstances.UnionWith(view.AffectedInstances(shiftedBlock));
 
             //find all colliding blocks, so we can move them with shifted block if possible
             var currentBlock = shiftedBlock;
             while (currentBlock != target)
             {
-                currentBlock = currentBlock.NextBlock;
+                currentBlock = view.NextBlock(currentBlock);
 
-                if (!canCross(currentBlock, borderInstances))
+                if (!canCross(currentBlock, borderInstances, view))
                 {
                     //this block cannot be crossed
-                    borderInstances.UnionWith(currentBlock.AffectedInstances);
+                    borderInstances.UnionWith(view.AffectedInstances(currentBlock));
                     shiftedBlocks.Add(currentBlock);
                 }
             }
 
             //shifting is not possible, due to collisions between blocks
-            if (!canCross(target, borderInstances))
+            if (!canCross(target, borderInstances, view))
             {
                 return false;
             }
@@ -135,17 +135,16 @@ namespace Analyzing.Editing
             shiftedBlocks.Reverse();
             foreach (var block in shiftedBlocks)
             {
-                var shiftTransform = block.Info.BlockTransformProvider.ShiftBehind(target.Info.BlockTransformProvider);
-                services.Apply(shiftTransform);
+                view.ShiftBehind(block,target);
             }
 
             return true;
         }
 
 
-        private bool canCross(ExecutedBlock shiftedBlock, HashSet<Instance> borderInstances)
+        private bool canCross(ExecutedBlock shiftedBlock, HashSet<Instance> borderInstances, ExecutionView view)
         {
-            foreach (var instance in shiftedBlock.AffectedInstances)
+            foreach (var instance in view.AffectedInstances(shiftedBlock))
             {
                 if (borderInstances.Contains(instance))
                 {

@@ -87,6 +87,7 @@
     <Compile Include="TypeSystem_TestUtils\TestingAssembly.cs" />
     <Compile Include="TypeSystem_TestUtils\ParsedGenerator.cs" />
     <Compile Include="TypeSystem_TestUtils\TestAssemblyCollection.cs" />
+    <Compile Include="TypeSystem_TestUtils\TestResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analyzing\Analyzing.csproj">

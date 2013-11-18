@@ -8,7 +8,7 @@ using Analyzing.Execution;
 
 namespace Analyzing.Editing
 {
-    delegate bool RemoveHandler(Instance instance, TransformationServices services);
+    delegate bool RemoveHandler(Instance instance, ExecutionView services);
 
     class InstanceRemoveProvider
     {
@@ -19,7 +19,7 @@ namespace Analyzing.Editing
             _context = context;
         }
 
-        internal bool Remove(Instance instance, TransformationServices services)
+        internal bool Remove(Instance instance, ExecutionView view)
         {
             var currBlock = _context.EntryBlock;
 
@@ -29,10 +29,10 @@ namespace Analyzing.Editing
                 if (scopeStarts.Any())
                 {
                     //here instance scope starts - begin removing from this block
-                    return remove(instance, currBlock,services);
+                    return remove(instance, currBlock,view);
                 }
 
-                currBlock = currBlock.NextBlock;
+                currBlock = view.NextBlock(currBlock);
             }
 
 
@@ -40,7 +40,7 @@ namespace Analyzing.Editing
             return false;
         }
 
-        private bool remove(Instance instance, ExecutedBlock creationBlock,TransformationServices services)
+        private bool remove(Instance instance, ExecutedBlock creationBlock,ExecutionView view)
         {
             
             var currBlock=creationBlock;
@@ -56,9 +56,9 @@ namespace Analyzing.Editing
                         continue;
                     }
                     var transform = removeProvider.Remove();
-                    services.Apply(transform);
+                    view.Apply(transform);
                 }
-                currBlock = currBlock.NextBlock;
+                currBlock = view.NextBlock(currBlock);
             }
 
          //   throw new NotImplementedException();

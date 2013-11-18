@@ -21,73 +21,74 @@ namespace AssemblyProviders.CSharp
         /// Contains method representing this source (e.g with generic parameters - it can be used for type translation)
         /// </summary>
         internal readonly TypeMethodInfo OriginalMethod;
-        internal readonly EditContext EditContext;
+
         public readonly CompilationInfo CompilationInfo = new CompilationInfo();
 
         public readonly string OriginalCode;
 
-        public string Code
+        public string Code(ExecutionView view)
         {
-            get
-            {
-                return EditContext.Code;
-            }
+            return EditContext(view).Code;
+        }
+
+        internal EditContext EditContext(ExecutionView view)
+        {
+            return view.Data(() => new EditContext(this, OriginalCode));
         }
 
         public Source(string code, TypeMethodInfo methodInfo)
         {
             OriginalCode = code;
             OriginalMethod = methodInfo;
-            EditContext = new EditContext(this, code);
         }
 
-        internal void Remove(INodeAST node, bool keepSideEffect)
+        internal void Remove(ExecutionView view, INodeAST node, bool keepSideEffect)
         {
             if (keepSideEffect)
-                handleSideEffect(node);
+                handleSideEffect(view, node);
 
             int p1, p2;
             getBorderPositions(node, out p1, out p2);
 
-            write(p1, p2, "");
+            write(view, p1, p2, "");
         }
 
-        internal void Rewrite(INodeAST node, object value, bool keepSideEffect)
+        internal void Rewrite(ExecutionView view, INodeAST node, object value, bool keepSideEffect)
         {
             if (keepSideEffect)
-                handleSideEffect(node);
+                handleSideEffect(view, node);
 
             int p1, p2;
             getBorderPositions(node, out p1, out p2);
 
 
-            write(p1, p2, toCSharp(value));
+            write(view, p1, p2, toCSharp(value));
         }
 
 
-        internal void AppendCall(INodeAST lineNode, CallEditInfo call)
+        internal void AppendCall(ExecutionView view, INodeAST lineNode, CallEditInfo call)
         {
             var thisObj = toCSharp(call.ThisObj);
             var args = (from arg in call.CallArguments select toCSharp(arg)).ToArray();
 
 
             var callRepresentation = string.Format("{0}.{1}({2});\n", thisObj, call.CallName, string.Join(",", args));
-            var behindLineOffset=getBehindOffset(lineNode);
+            var behindLineOffset = getBehindOffset(lineNode);
 
-            write(behindLineOffset, callRepresentation);
+            write(view, behindLineOffset, callRepresentation);
         }
 
-        internal void AppendArgument(INodeAST call, object value)
+        internal void AppendArgument(ExecutionView view, INodeAST call, object value)
         {
             var lastArg = call.Arguments.Last();
 
             var behindArg = getBehindOffset(lastArg);
             var stringRepresentation = toCSharp(value);
 
-            write(behindArg, "," + stringRepresentation);
+            write(view, behindArg, "," + stringRepresentation);
         }
 
-        internal void ShiftBehind(INodeAST shiftedLine, INodeAST behindLine)
+        internal void ShiftBehind(ExecutionView view, INodeAST shiftedLine, INodeAST behindLine)
         {
             var shiftTargetOffset = getBehindOffset(behindLine);
 
@@ -95,7 +96,7 @@ namespace AssemblyProviders.CSharp
             getBorderPositions(shiftedLine, out shiftStart, out shiftEnd);
             var shiftLen = shiftEnd - shiftStart;
 
-            move(shiftStart, shiftTargetOffset, shiftLen);
+            move(view, shiftStart, shiftTargetOffset, shiftLen);
         }
 
         /// <summary>
@@ -136,12 +137,12 @@ namespace AssemblyProviders.CSharp
             return current.StartingToken.Position.Offset;
         }
 
-        private void handleSideEffect(INodeAST node)
+        private void handleSideEffect(ExecutionView view, INodeAST node)
         {
             var keepExpression = getCode(node) + ";\n";
             var insertPos = BeforeStatementOffset(node);
 
-            write(insertPos, keepExpression);
+            write(view, insertPos, keepExpression);
         }
 
         private string getCode(INodeAST node)
@@ -178,12 +179,12 @@ namespace AssemblyProviders.CSharp
         /// <param name="start">Start offset of replaced region</param>
         /// <param name="end">End offset of replaced region</param>
         /// <param name="data">Written data</param>
-        private void write(int start, int end, string data)
+        private void write(ExecutionView view, int start, int end, string data)
         {
-            EditContext.Strips.Remove(start, end - start);
+            EditContext(view).Strips.Remove(start, end - start);
             if (data.Length > 0)
             {
-                EditContext.Strips.Write(start, data);
+                EditContext(view).Strips.Write(start, data);
             }
         }
 
@@ -192,29 +193,24 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="start">Start offset for written data</param>
         /// <param name="data">Written data</param>
-        private void write(int start, string data)
+        private void write(ExecutionView view, int start, string data)
         {
-            EditContext.Strips.Write(start, data);
+            EditContext(view).Strips.Write(start, data);
         }
 
-        private void move(int p1, int np1, int length)
+        private void move(ExecutionView view, int p1, int np1, int length)
         {
-            EditContext.Strips.Move(p1, length, np1);
+            EditContext(view).Strips.Move(p1, length, np1);
         }
 
 
         #endregion
 
-        internal bool Commit()
+        internal bool Commit(ExecutionView view)
         {
-            EditContext.Commit();
+            var context = view.Data<EditContext>();
+            context.Commit();
             return true;
-        }
-
-
-        internal void RollBack()
-        {
-            EditContext.Initialize();
         }
     }
 }

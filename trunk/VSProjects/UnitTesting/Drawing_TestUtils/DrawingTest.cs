@@ -10,6 +10,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Drawing;
 using Drawing.ArrangeEngine;
 
+using TypeSystem;
+
 namespace UnitTesting.Drawing_TestUtils
 {
     class DrawingTest
@@ -69,7 +71,7 @@ namespace UnitTesting.Drawing_TestUtils
             if (_context == null)
             {
                 var testCanvas = new DiagramCanvas();
-                var diagramDef = new DiagramDefinition();
+                var diagramDef = new DiagramDefinition(null);
                 foreach (var item in _items.Values)
                 {
                     diagramDef.DrawItem(item);
@@ -80,7 +82,7 @@ namespace UnitTesting.Drawing_TestUtils
 
                 testCanvas.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
                 testCanvas.Arrange(new Rect(new Point(), testCanvas.DesiredSize));
-                
+
             }
 
             return _context;

@@ -21,22 +21,22 @@ namespace UnitTesting.Analyzing_TestUtils
 
     public static class ExecutionUtils
     {
-        internal static AnalyzingResult Run(EmitDirector director)
+        internal static TestResult Run(EmitDirector director)
         {
             var assembly = SettingsProvider.CreateTestingAssembly();
 
             var machine = SettingsProvider.CreateMachine(assembly.Settings);
-            
+
             assembly.Runtime.BuildAssembly();
-            var loader = new EmitDirectorLoader(director,assembly.Loader);
-            return machine.Run(loader);
+            var loader = new EmitDirectorLoader(director, assembly.Loader);
+            return new TestResult(machine.Run(loader));
         }
 
-        internal static TestCase AssertVariable(this AnalyzingResult result, string variable)
+        internal static TestCase AssertVariable(this TestResult result, string variable)
         {
             return new TestCase(result, variable);
         }
-        
+
         public static IEnumerable<CallContext> ChildContexts(this CallContext callContext)
         {
             var block = callContext.EntryBlock;
@@ -53,11 +53,11 @@ namespace UnitTesting.Analyzing_TestUtils
 
     internal class TestCase
     {
-        private readonly AnalyzingResult _result;
+        private readonly TestResult _result;
         private readonly VariableName _variable;
 
-        internal TestCase(AnalyzingResult result, string variable)
-        {            
+        internal TestCase(TestResult result, string variable)
+        {
             _result = result;
             _variable = new VariableName(variable);
         }
@@ -68,7 +68,7 @@ namespace UnitTesting.Analyzing_TestUtils
 
         internal TestCase HasValue(object expectedValue)
         {
-            var instance = _result.EntryContext.GetValue(_variable);
+            var instance = _result.Execution.EntryContext.GetValue(_variable);
             var actualValue = instance.DirectValue;
 
             Assert.AreEqual(expectedValue, actualValue);

@@ -39,7 +39,7 @@ namespace Research
         /// <summary>
         /// Result of analyzing execution is stored here
         /// </summary>
-        private AnalyzingResult _result;
+        private TestResult _result;
 
         /// <summary>
         /// Entry context of analyzing execution is stored here
@@ -70,7 +70,7 @@ namespace Research
 
         private void analyzeResult()
         {
-            _entryContext = _result.EntryContext;
+            _entryContext = _result.Execution.EntryContext;
 
             findDrawings();
             printEntryContext();
@@ -86,10 +86,10 @@ namespace Research
             if (_drawings.Count == 0)
                 return;
 
-            _result.OnTransformationCommit += () =>
+            _result.Execution.OnViewCommit += (view) =>
             {
                 var entryID = Method.EntryInfo.MethodID;
-                var source = _assembly.GetSource(entryID);
+                var source = _assembly.GetSource(entryID, view);
                 _assembly.SetSource(entryID, source);
                 _result = _assembly.GetResult();
                 analyzeResult();
@@ -181,17 +181,17 @@ namespace Research
         /// </summary>
         private void findDrawings()
         {
-            _drawings = new DiagramDefinition();
-            _assembly.Runtime.Register(_result, _drawings);
+            _drawings = new DiagramDefinition(new EditView(_result.Execution.CreateExecutionView()));
+            _assembly.Runtime.Register(_result.Execution, _drawings);
 
-            foreach (var instance in _result.CreatedInstances)
+            foreach (var instance in _result.Execution.CreatedInstances)
             {
                 //TODO display components or types with defined drawers
                 var info = _assembly.Loader.GetComponentInfo(instance.Info);
 
                 if (info != null || instance.Info.TypeName == "CompositionTester")
                 {
-                    _assembly.Runtime.Draw(_result, instance, _drawings);
+                    _assembly.Runtime.Draw(_result.Execution, instance, _drawings);
                 }
             }
         }
@@ -238,7 +238,7 @@ namespace Research
 
             PrintLines(2);
             Println(ConsoleColor.Yellow, "Entry source result:");
-            Println(ConsoleColor.Gray, "{0}", formatSource(_assembly.GetEntrySource()));
+            Println(ConsoleColor.Gray, "{0}", formatSource(_assembly.GetEntrySource(_result.View)));
         }
 
 

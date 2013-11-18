@@ -8,23 +8,18 @@ namespace Analyzing.Editing
 {
     public abstract class Transformation
     {
-        protected abstract void apply(TransformationServices services);
+        protected abstract void apply(ExecutionView view);
 
-        protected abstract bool commit();
+        protected abstract bool commit(ExecutionView view);
 
-        public void Apply(TransformationServices services)
+        public void Apply(ExecutionView view)
         {
-            apply(services);
+            apply(view);
         }
 
-        internal bool Commit()
+        internal bool Commit(ExecutionView view)
         {
-            return commit();
-        }
-
-        public virtual void Abort()
-        {
-            //by default there is nothing to do
+            return commit(view);
         }
     }
 }

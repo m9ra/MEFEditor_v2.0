@@ -334,7 +334,7 @@ namespace Research
             ;
         }
 
-        static object acceptInstance(EditsProvider edits, TransformationServices services)
+        static object acceptInstance(EditsProvider edits, ExecutionView services)
         {
             var variable = edits.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, services);
             if (variable == null)

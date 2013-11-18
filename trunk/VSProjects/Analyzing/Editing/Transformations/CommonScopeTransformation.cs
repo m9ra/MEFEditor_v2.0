@@ -15,7 +15,7 @@ namespace Analyzing.Editing.Transformations
 
         private readonly Instance[] _instances;
 
-        private TransformationServices _services;
+        private ExecutionView _view;
 
         internal CommonScopeTransformation(IEnumerable<Instance> instances)
         {
@@ -23,14 +23,14 @@ namespace Analyzing.Editing.Transformations
         }
 
 
-        protected override void apply(TransformationServices services)
+        protected override void apply(ExecutionView services)
         {
-            _services = services;
+            _view = services;
 
             InstanceScopes = getScopes(_instances);
         }
 
-        protected override bool commit()
+        protected override bool commit(ExecutionView view)
         {
             return InstanceScopes != null;
         }
@@ -40,11 +40,11 @@ namespace Analyzing.Editing.Transformations
             var frame = new ScopeFrame(instances);
 
             //try find common scopes without transforming
-            var block = _services.EntryBlock;
+            var block = _view.EntryBlock;
             while (block != null)
             {
                 frame.InsertNext(block);
-                block = block.NextBlock;
+                block =_view.NextBlock(block);
 
                 if (frame.Scopes != null)
                     return frame.Scopes;

@@ -57,14 +57,14 @@ namespace MEFAnalyzers
             RewriteArg(1, "Change search pattern", _patternInput);
         }
 
-        private object _patternInput(TransformationServices services)
+        private object _patternInput(ExecutionView services)
         {
             var oldPattern = Pattern.Get();
 
             return "*.newPattern" + oldPattern;
         }
 
-        private object _pathInput(TransformationServices services)
+        private object _pathInput(ExecutionView services)
         {
             var oldPath = Path.Get();
 
