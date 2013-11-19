@@ -30,20 +30,26 @@ namespace Analyzing.Editing.Transformations
         }
     }
 
+    delegate bool ShiftBehind(IEnumerable<ExecutedBlock> shiftedBlocks, ExecutedBlock block);
+
     class ScopeFrame
     {
         private readonly HashSet<Instance> _trackedInstances;
 
+        private readonly ExecutionView _view;
+
+        private readonly ShiftBehind _shiftBehind;
+
         private MultiDictionary<Instance, VariableName> _activeScopes = new MultiDictionary<Instance, VariableName>();
 
-        private ExecutedBlock _firstScopeEnd;
-
-        private ExecutedBlock _lastScopeStart;
+        private Dictionary<Instance, ExecutedBlock> _lastScopeEnds = new Dictionary<Instance, ExecutedBlock>();
 
         internal InstanceScopes Scopes { get; private set; }
 
-        internal ScopeFrame(IEnumerable<Instance> trackedInstances)
+        internal ScopeFrame(ExecutionView view, ShiftBehind shiftBehind, IEnumerable<Instance> trackedInstances)
         {
+            _view = view;
+            _shiftBehind = shiftBehind;
             _trackedInstances = new HashSet<Instance>(trackedInstances);
         }
 
@@ -53,29 +59,49 @@ namespace Analyzing.Editing.Transformations
 
             foreach (var tracked in _trackedInstances)
             {
-                var scopeStarts = block.ScopeStarts(tracked);
+                var scopeStarts = _view.ScopeStarts(block, tracked);
                 if (scopeStarts.Any())
                 {
                     _activeScopes.Add(tracked, block.ScopeStarts(tracked));
                 }
 
-                var scopeEnds = block.ScopeEnds(tracked);
-                if (scopeEnds.Any())
+                var scopeEnds = _view.ScopeEnds(block, tracked);
+                foreach (var scopeEnd in scopeEnds)
                 {
-                    throw new NotImplementedException();
+                    _activeScopes.Remove(tracked, scopeEnd);
+                    _lastScopeEnds[tracked] = block;
                 }
             }
 
             var scopes = new Dictionary<Instance, VariableName>();
+            var endScopes = new List<ExecutedBlock>();
             foreach (var tracked in _trackedInstances)
             {
                 var instanceScopes = _activeScopes.Get(tracked);
                 if (!instanceScopes.Any())
                 {
-                    return;
+                    //doesnt have any active scopes - try to shift
+                    if (_lastScopeEnds.ContainsKey(tracked))
+                    {
+                        var scopeEnd = _lastScopeEnds[tracked];
+                        endScopes.Add(scopeEnd);
+                        scopes.Add(tracked, _view.ScopeEnds(scopeEnd, tracked).First());
+                        continue;
+                    }
+                    else
+                    {
+                        //definetly missing scope
+                        return;
+                    }
                 }
 
                 scopes.Add(tracked, instanceScopes.First());
+            }
+
+            if (endScopes.Count > 0)
+            {
+                if (!_shiftBehind(endScopes, block))
+                    return;
             }
 
             Scopes = new InstanceScopes(scopes, block);

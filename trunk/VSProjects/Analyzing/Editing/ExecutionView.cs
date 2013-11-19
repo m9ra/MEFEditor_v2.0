@@ -114,6 +114,16 @@ namespace Analyzing.Editing
             return block.AffectedInstances;
         }
 
+        internal IEnumerable<VariableName> ScopeStarts(ExecutedBlock block, Instance instance)
+        {
+            return block.ScopeStarts(instance);
+        }
+
+        internal IEnumerable<VariableName> ScopeEnds(ExecutedBlock block, Instance instance)
+        {
+            return block.ScopeEnds(instance);
+        }
+
         public void ShiftBehind(ExecutedBlock block, ExecutedBlock target)
         {
             var shiftTransform = block.Info.BlockTransformProvider.ShiftBehind(target.Info.BlockTransformProvider);
@@ -125,8 +135,6 @@ namespace Analyzing.Editing
             var appendTransform = block.Info.BlockTransformProvider.AppendCall(call);
             Apply(appendTransform);
         }
-
-
 
         #endregion
 

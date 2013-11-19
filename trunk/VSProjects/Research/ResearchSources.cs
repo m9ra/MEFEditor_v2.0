@@ -30,6 +30,7 @@ namespace Research
                                              
                 var test=new CompositionTester();   
                 test.Add(partImport);
+                
                 var test2=new CompositionTester();
                 
                 test.Compose();

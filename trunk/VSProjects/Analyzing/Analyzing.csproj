@@ -59,6 +59,7 @@
     <Compile Include="Editing\Transformations\EmptyTransformation.cs" />
     <Compile Include="Editing\Transformation.cs" />
     <Compile Include="Editing\Transformations\ScopeFrame.cs" />
+    <Compile Include="Editing\Transformations\ShiftBehindTransformation.cs" />
     <Compile Include="Editing\TransformProvider.cs" />
     <Compile Include="Editing\EditsProvider.cs" />
     <Compile Include="Execution\AnalyzingContext.cs" />

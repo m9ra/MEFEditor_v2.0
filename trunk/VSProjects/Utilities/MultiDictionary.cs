@@ -33,6 +33,17 @@ namespace Utilities
             }
         }
 
+        public bool Remove(TKey key, TValue value)
+        {
+            HashSet<TValue> values;
+            if (!_data.TryGetValue(key, out values))
+            {
+                return false;
+            }
+
+            return values.Remove(value);
+        }
+
         public IEnumerable<TValue> Get(TKey key)
         {
             HashSet<TValue> storage;

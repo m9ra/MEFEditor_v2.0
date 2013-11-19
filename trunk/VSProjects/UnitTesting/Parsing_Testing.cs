@@ -8,6 +8,8 @@ using UnitTesting.TypeSystem_TestUtils;
 
 using Analyzing;
 using Analyzing.Execution;
+using Analyzing.Editing;
+
 using TypeSystem;
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
@@ -317,7 +319,7 @@ namespace UnitTesting
 
         [TestMethod]
         public void Emit_VirtualGenericCall()
-        {            
+        {
             AssemblyUtils.Run(@"
                 var list=new System.Collections.Generic.List<string>();               
                 var interface=Convert(list);
@@ -512,6 +514,93 @@ namespace UnitTesting
                 
                 Report(arg);
                 arg=""scope end"";
+            ");
+        }
+
+        [TestMethod]
+        public void Edit_AcceptWithValidScope()
+        {
+            AssemblyUtils.Run(@"
+                var accepter=""accepter"";
+                AddAccept(accepter);             
+
+                var toAccept=""accepted"";
+                Report(toAccept);
+            ")
+
+            .AddMethod("Test.AddAccept", (c) =>
+            {
+                var thisObj = c.CurrentArguments[0];
+                var accepter = c.CurrentArguments[1];
+                var e = c.Edits;
+
+                e.AddCall(thisObj, "Accept", (view) =>
+                {
+                    return new CallEditInfo(accepter, "Accept", AssemblyUtils.EXTERNAL_INPUT);
+                });
+
+            }, Method.Void_StringParam)
+
+
+            .UserAction((c) =>
+            {
+                AssemblyUtils.EXTERNAL_INPUT = AssemblyUtils.REPORTED_INSTANCE;
+            })
+
+            .RunEditAction("this", "Accept")
+
+            .AssertSourceEquivalence(@"
+                var accepter=""accepter"";
+                AddAccept(accepter);             
+
+                var toAccept=""accepted"";
+                accepter.Accept(toAccept);
+                Report(toAccept);
+            ");
+        }
+
+        [TestMethod]
+        public void Edit_AcceptWithEndScopeShifting()
+        {
+            AssemblyUtils.Run(@"
+                var accepter=""accepter"";
+                AddAccept(accepter);             
+
+                accepter=""scope end"";
+                var toAccept=""accepted"";
+
+                Report(toAccept);
+            ")
+
+            .AddMethod("Test.AddAccept", (c) =>
+            {
+                var thisObj = c.CurrentArguments[0];
+                var accepter = c.CurrentArguments[1];
+                var e = c.Edits;
+
+                e.AddCall(thisObj, "Accept", (view) =>
+                {
+                    return new CallEditInfo(accepter, "Accept", AssemblyUtils.EXTERNAL_INPUT);
+                });
+
+            }, Method.Void_StringParam)
+
+
+            .UserAction((c) =>
+            {
+                AssemblyUtils.EXTERNAL_INPUT = AssemblyUtils.REPORTED_INSTANCE;
+            })
+
+            .RunEditAction("this", "Accept")
+
+            .AssertSourceEquivalence(@"
+                var accepter=""accepter"";
+                AddAccept(accepter);             
+                
+                var toAccept=""accepted"";
+                accepter.Accept(toAccept);
+                accepter=""scope end"";
+                Report(toAccept);
             ");
         }
 
