@@ -33,7 +33,7 @@ namespace AssemblyProviders.CSharp
 
         internal EditContext EditContext(ExecutionView view)
         {
-            return view.Data(() => new EditContext(this, OriginalCode));
+            return view.Data(this, () => new EditContext(this, OriginalCode));
         }
 
         public Source(string code, TypeMethodInfo methodInfo)
@@ -205,12 +205,5 @@ namespace AssemblyProviders.CSharp
 
 
         #endregion
-
-        internal bool Commit(ExecutionView view)
-        {
-            var context = view.Data<EditContext>();
-            context.Commit();
-            return true;
-        }
     }
 }

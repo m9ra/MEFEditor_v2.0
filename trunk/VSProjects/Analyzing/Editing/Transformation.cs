@@ -8,18 +8,28 @@ namespace Analyzing.Editing
 {
     public abstract class Transformation
     {
-        protected abstract void apply(ExecutionView view);
+        /// <summary>
+        /// View available in apply call
+        /// <remarks>Is set on every apply call</remarks>
+        /// </summary>
+        protected ExecutionView View { get; private set; }
 
-        protected abstract bool commit(ExecutionView view);
+        /// <summary>
+        /// Apply transformation on view stored in View property
+        /// </summary>
+        protected abstract void apply();
 
-        public void Apply(ExecutionView view)
+        internal void Apply(ExecutionView view)
         {
-            apply(view);
-        }
-
-        internal bool Commit(ExecutionView view)
-        {
-            return commit(view);
+            View = view;
+            try
+            {
+                apply();
+            }
+            finally
+            {
+                View = null;
+            }
         }
     }
 }

@@ -8,41 +8,34 @@ namespace Analyzing.Editing.Transformations
 {
     class AddCallTransformation : Transformation
     {
+        /// <summary>
+        /// Call provider that will be asked for call definition        
+        /// </summary>
         private readonly CallProvider _provider;
-
-        private bool _canCommit;
 
         internal AddCallTransformation(CallProvider provider)
         {
             _provider = provider;
         }
 
-        protected override void apply(ExecutionView view)
+        protected override void apply()
         {
-            _canCommit = false;
-            var call = _provider(view);
+            var call = _provider(View);
             if (call == null)
                 return;
 
             var scopeTransform = new CommonScopeTransformation(call.Instances);
-            view.Apply(scopeTransform);
+            View.Apply(scopeTransform);
 
             var instanceScopes = scopeTransform.InstanceScopes;
             if (scopeTransform.InstanceScopes == null)
             {
-                view.Abort("Can't get instances to same scope");
+                View.Abort("Can't get instances to same scope");
                 return;
             }
 
             var subsitutedCall = call.Substitute(instanceScopes.InstanceVariables);
-            view.AppendCall(instanceScopes.ScopeBlock, subsitutedCall);
-
-            _canCommit = !view.IsAborted;
-        }
-
-        protected override bool commit(ExecutionView view)
-        {
-            return _canCommit;
+            View.AppendCall(instanceScopes.ScopeBlock, subsitutedCall);
         }
 
         private void appendInstance(object testedObj, List<Instance> instances)

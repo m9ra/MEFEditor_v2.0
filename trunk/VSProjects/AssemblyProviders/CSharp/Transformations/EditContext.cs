@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Analyzing;
+using Analyzing.Editing;
 using TypeSystem;
 using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CSharp.Interfaces;
 
 namespace AssemblyProviders.CSharp.Transformations
 {
-    class EditContext : ICloneable
+    class EditContext : ExecutionViewData
     {
         private readonly HashSet<INodeAST> _removedVariableUsings = new HashSet<INodeAST>();
 
@@ -54,7 +55,7 @@ namespace AssemblyProviders.CSharp.Transformations
             _removedVariableUsings.Add(variableUse);
         }
 
-        internal void Commit()
+        protected override void commit()
         {
             if (IsCommited)
                 //commit has already been processed
@@ -64,8 +65,14 @@ namespace AssemblyProviders.CSharp.Transformations
             {
                 checkVariableRemoving(variable);
             }
+
             Code = Strips.Data;
             IsCommited = true;
+        }
+        
+        protected override ExecutionViewData clone()
+        {
+            return new EditContext(this);
         }
 
         private void checkVariableRemoving(VariableInfo variable)
@@ -191,9 +198,6 @@ namespace AssemblyProviders.CSharp.Transformations
             return _source.CompilationInfo.GetNodeType(node);
         }
 
-        public object Clone()
-        {
-            return new EditContext(this);
-        }
+
     }
 }

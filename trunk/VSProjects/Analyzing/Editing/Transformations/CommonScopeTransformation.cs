@@ -10,10 +10,15 @@ namespace Analyzing.Editing.Transformations
 {
     class CommonScopeTransformation : Transformation
     {
+        /// <summary>
+        /// Instances that common scope is needed
+        /// </summary>
         private readonly Instance[] _instances;
 
-        private ExecutionView _view;
-
+        /// <summary>
+        /// Result of apply if transformation is successfull, null otherwise
+        /// <remarks>Is set on every apply call</remarks>
+        /// </summary>
         internal InstanceScopes InstanceScopes;
 
         internal CommonScopeTransformation(IEnumerable<Instance> instances)
@@ -22,30 +27,23 @@ namespace Analyzing.Editing.Transformations
         }
 
 
-        protected override void apply(ExecutionView services)
+        protected override void apply()
         {
-            _view = services;
-
-            InstanceScopes = getScopes(noShift,_instances);
+            InstanceScopes = getScopes(noShift, _instances);
             if (InstanceScopes == null)
                 InstanceScopes = getScopes(tryShift, _instances);
         }
 
-        protected override bool commit(ExecutionView view)
-        {
-            return InstanceScopes != null;
-        }
-
         private InstanceScopes getScopes(ShiftBehind shiftBehind, IEnumerable<Instance> instances)
         {
-            var frame = new ScopeFrame(_view, shiftBehind, instances);
+            var frame = new ScopeFrame(View, shiftBehind, instances);
 
             //try find common scopes without transforming
-            var block = _view.EntryBlock;
+            var block = View.EntryBlock;
             while (block != null)
             {
                 frame.InsertNext(block);
-                block = _view.NextBlock(block);
+                block = View.NextBlock(block);
 
                 if (frame.Scopes != null)
                     return frame.Scopes;
@@ -61,7 +59,7 @@ namespace Analyzing.Editing.Transformations
 
         private bool tryShift(IEnumerable<ExecutedBlock> shiftedBlocks, ExecutedBlock block)
         {
-            var viewCopy = _view.Clone();
+            var viewCopy = View.Clone();
             var transforms = new List<ShiftBehindTransformation>();
 
             foreach (var shifted in shiftedBlocks)
@@ -70,14 +68,14 @@ namespace Analyzing.Editing.Transformations
                 viewCopy.Apply(shift);
 
                 if (viewCopy.IsAborted)
-                    return false;   
+                    return false;
 
                 transforms.Add(shift);
             }
 
             foreach (var transform in transforms)
             {
-                _view.Apply(transform);
+                View.Apply(transform);
             }
 
             return true;

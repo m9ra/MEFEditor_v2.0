@@ -10,12 +10,20 @@ namespace Analyzing.Editing
 {
     class ScopeBlockTransformation : Transformation
     {
+        /// <summary>
+        /// Block where instance scope has to be valid
+        /// </summary>
         private readonly ExecutedBlock _scopeBlock;
 
+        /// <summary>
+        /// Instance that scope is needed for block
+        /// </summary>
         private readonly Instance _instance;
 
-        private ExecutionView _view;
-
+        /// <summary>
+        /// Variable that is result of transformation application
+        /// <remarks>Is set on every apply call</remarks>
+        /// </summary>
         internal VariableName ScopeVariable { get; private set; }
 
 
@@ -25,22 +33,15 @@ namespace Analyzing.Editing
             _scopeBlock = scopeBlock;
         }
 
-        protected override void apply(ExecutionView view)
+        protected override void apply()
         {
-            _view = view;
-
             ScopeVariable = instanceScopes(_scopeBlock, _instance);
-        }
-
-        protected override bool commit(ExecutionView view)
-        {
-            return ScopeVariable != null;
         }
 
         private VariableName instanceScopes(ExecutedBlock scopeBlock, Instance instance)
         {
             //find variable with valid scope
-            var block = _view.PreviousBlock(scopeBlock);
+            var block = View.PreviousBlock(scopeBlock);
             var scopeEnds = new HashSet<VariableName>();
             ExecutedBlock _firstScopeEnd = null;
             while (block != null)
@@ -64,12 +65,12 @@ namespace Analyzing.Editing
                 }
 
                 //shift to next block
-                block = _view.PreviousBlock(block);
+                block = View.PreviousBlock(block);
             }
 
             if (_firstScopeEnd != null)
             {
-                if (shiftBehind(_firstScopeEnd, scopeBlock, _view))
+                if (shiftBehind(_firstScopeEnd, scopeBlock, View))
                 {
                     //scope end was shifted
                     return _firstScopeEnd.ScopeEnds(instance).First();
@@ -77,19 +78,19 @@ namespace Analyzing.Editing
             }
 
             //find scope start
-            var scopeStartBlock = _view.NextBlock(scopeBlock);
+            var scopeStartBlock = View.NextBlock(scopeBlock);
             while (scopeStartBlock != null)
             {
                 var starts = scopeStartBlock.ScopeStarts(instance);
                 if (starts.Any())
                 {
-                    if (shiftBehind(scopeBlock, scopeStartBlock, _view))
+                    if (shiftBehind(scopeBlock, scopeStartBlock, View))
                     {
                         return starts.First();
                     }
                     break;
                 }
-                scopeStartBlock = _view.NextBlock(scopeStartBlock);
+                scopeStartBlock = View.NextBlock(scopeStartBlock);
             }
 
             //cannot find valid scope
@@ -135,7 +136,7 @@ namespace Analyzing.Editing
             shiftedBlocks.Reverse();
             foreach (var block in shiftedBlocks)
             {
-                view.ShiftBehind(block,target);
+                view.ShiftBehind(block, target);
             }
 
             return true;

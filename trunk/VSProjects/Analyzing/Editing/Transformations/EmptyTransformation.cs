@@ -8,15 +8,9 @@ namespace Analyzing.Editing.Transformations
 {
     class EmptyTransformation : Transformation
     {
-        protected override void apply(ExecutionView services)
+        protected override void apply()
         {
-            services.Abort("There is missing transformation for requested operation");
-        }
-
-        protected override bool commit(ExecutionView view)
-        {
-            //cannot commit empty transaction
-            return false;   
+            View.Abort("There is missing transformation for requested operation");
         }
     }
 }

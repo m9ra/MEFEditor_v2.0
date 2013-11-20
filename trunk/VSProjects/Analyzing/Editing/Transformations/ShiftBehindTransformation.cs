@@ -8,9 +8,16 @@ using Analyzing.Execution;
 
 namespace Analyzing.Editing.Transformations
 {
-    class ShiftBehindTransformation:Transformation
+    class ShiftBehindTransformation : Transformation
     {
+        /// <summary>
+        /// Block that will be correctly shifted so it is behind given target
+        /// </summary>
         private readonly ExecutedBlock _shifted;
+
+        /// <summary>
+        /// Target that needs shifted block to be behind the target
+        /// </summary>
         private readonly ExecutedBlock _target;
 
         internal ShiftBehindTransformation(ExecutedBlock shifted, ExecutedBlock target)
@@ -19,16 +26,10 @@ namespace Analyzing.Editing.Transformations
             _target = target;
         }
 
-        protected override void apply(ExecutionView view)
+        protected override void apply()
         {
             //TODO correct block shifting
-            //TODO change transformation semantic
-            view.ShiftBehind(_shifted, _target);
-        }
-
-        protected override bool commit(ExecutionView view)
-        {
-            return true;
+            View.ShiftBehind(_shifted, _target);
         }
     }
 }

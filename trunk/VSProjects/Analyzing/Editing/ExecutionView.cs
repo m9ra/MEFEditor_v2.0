@@ -9,7 +9,7 @@ using Analyzing.Execution;
 namespace Analyzing.Editing
 {
     public delegate T ViewDataProvider<T>()
-        where T : ICloneable;
+        where T : ExecutionViewData;
 
     /// <summary>
     /// Is available when transformation is applied to provide transformation services
@@ -20,11 +20,13 @@ namespace Analyzing.Editing
 
         public bool IsAborted { get { return AbortMessage != null; } }
 
+        public bool IsCommited { get; private set; }
+
         private readonly RemoveHandler _removeHandler;
 
         private readonly AnalyzingResult _result;
 
-        private readonly Dictionary<Type, ICloneable> _viewData = new Dictionary<Type, ICloneable>();
+        private readonly ExecutionViewDataHandler _viewData = new ExecutionViewDataHandler();
 
         private List<Transformation> _appliedTransformations = new List<Transformation>();
 
@@ -36,6 +38,11 @@ namespace Analyzing.Editing
             _removeHandler = removeHandler;
         }
 
+        /// <summary>
+        /// Abort current view with given message
+        /// </summary>
+        /// <param name="abortMessage">Message with description why view is aborted</param>
+        /// <returns>Null - because of shorter notation possibility</returns>
         public object Abort(string abortMessage)
         {
             if (IsAborted)
@@ -47,6 +54,10 @@ namespace Analyzing.Editing
             return null;
         }
 
+        /// <summary>
+        /// Apply transformation on current view
+        /// </summary>
+        /// <param name="transformation">Transformation to be applied</param>
         public void Apply(Transformation transformation)
         {
             if (!IsAborted)
@@ -56,6 +67,9 @@ namespace Analyzing.Editing
             }
         }
 
+        /// <summary>
+        /// Commit all contained view data
+        /// </summary>
         public void Commit()
         {
             if (IsAborted)
@@ -63,41 +77,60 @@ namespace Analyzing.Editing
                 throw new NotSupportedException("Cannot commit when aborted");
             }
 
-            foreach (var transform in _appliedTransformations)
+            if (IsCommited)
             {
-                if (!transform.Commit(this))
-                {
-                    throw new NotSupportedException("Commiting transformation failed, sources can be in inconsistent state");
-                }
+                throw new NotSupportedException("Cannot commit view twice");
             }
+
+            _viewData.Commit();
 
             _appliedTransformations = null;
 
             _result.ReportViewCommit(this);
         }
 
-        public bool Remove(Instance instance)
-        {
-            return _removeHandler(instance, this);
-        }
 
+        /// <summary>
+        /// Clone current view into view that is independent on current view.
+        /// <remarks>Only one view in views clonning hirarchy can be commited</remarks>
+        /// </summary>
+        /// <returns>Cloned view</returns>
         public ExecutionView Clone()
         {
             if (IsAborted)
                 throw new NotSupportedException("Cannot clone aborted view");
 
+            if (IsCommited)
+                throw new NotSupportedException("Cannot clone commited view");
+
             var clone = new ExecutionView(_result, _removeHandler);
             clone._appliedTransformations.AddRange(_appliedTransformations);
-
-            foreach (var data in _viewData)
-            {
-                clone._viewData[data.Key] = data.Value.Clone() as ICloneable;
-            }
+            clone._viewData.FillFrom(_viewData);
 
             return clone;
         }
 
+
+        /// <summary>
+        /// Get data stored in current view for given key and type.
+        /// If no matching data are found, new data is created via provider.
+        /// </summary>
+        /// <typeparam name="T">Type of searched data</typeparam>
+        /// <param name="key">Key of data - because multiple sources can store data with same type</param>
+        /// <param name="provider">Provider used for data creation</param>
+        /// <returns>Stored data, created data, or null if the data is not found and provider is not present</returns>
+        public T Data<T>(object key, ViewDataProvider<T> provider = null)
+            where T : ExecutionViewData
+        {
+            return _viewData.Data<T>(key, provider);
+        }
+
         #region View Transformation API
+
+        public bool Remove(Instance instance)
+        {
+            return _removeHandler(instance, this);
+        }
 
         public ExecutedBlock NextBlock(ExecutedBlock block)
         {
@@ -137,27 +170,5 @@ namespace Analyzing.Editing
         }
 
         #endregion
-
-        public T Data<T>(ViewDataProvider<T> provider = null)
-            where T : ICloneable
-        {
-            var type = typeof(T);
-
-            ICloneable data;
-            if (!_viewData.TryGetValue(type, out data))
-            {
-                if (provider == null)
-                {
-                    return default(T);
-                }
-                else
-                {
-                    _viewData[type] = data = provider();
-                }
-            }
-            return (T)data;
-        }
-
-
     }
 }
