@@ -5,9 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Reflection;
-namespace TypeExperiments.Reflection.ILAnalyzer
+
+namespace AssemblyProviders.CIL.ILAnalyzer
 {
-    static class ILUtilities
+    public static class ILUtilities
     {
         public static void Print(MethodInfo method)
         {

@@ -23,6 +23,15 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly CIL_Compiling()
+        {
+            return AssemblyUtils.RunCIL(() =>
+            {
+                var x = "hello CIL world";
+                return x;
+            });
+        }
+
         static internal TestingAssembly DrawingTester_TwoContainers()
         {
             return AssemblyUtils.Run(@"        

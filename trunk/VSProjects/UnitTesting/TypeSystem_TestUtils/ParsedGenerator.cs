@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AssemblyProviders.CSharp.Compiling;
-using AssemblyProviders.CSharp;
-using TypeSystem;
+
 using Analyzing;
+using TypeSystem;
+using AssemblyProviders.CSharp;
+using AssemblyProviders.CSharp.Compiling;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {

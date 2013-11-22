@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Reflection;
+
 using Analyzing;
 using Analyzing.Editing;
 using TypeSystem;
@@ -11,6 +13,7 @@ using TypeSystem.Runtime;
 
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
+using AssemblyProviders.CIL;
 
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.Analyzing_TestUtils.Environment;
@@ -74,6 +77,17 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
+        public TestingAssembly AddMethod(string methodPath, MethodInfo sourceMethod, MethodDescription description)
+        {
+            var methodInfo = buildDescription(description, methodPath);
+
+            var source = new CILMethod(sourceMethod);
+            var method = new CILGenerator(methodInfo, source, TypeServices);
+            addMethod(method, methodInfo, description.Implemented);
+
+            return this;
+        }
+
         public TestingAssembly AddToRuntime<T>()
             where T : DataTypeDefinition
         {
@@ -124,6 +138,10 @@ namespace UnitTesting.TypeSystem_TestUtils
         public string GetSource(MethodID method, ExecutionView view)
         {
             var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
+
+            if (parsedGenerator == null)
+                return "Source not available for " + method;
+
             return parsedGenerator.Source.Code(view);
         }
 

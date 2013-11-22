@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using System.Reflection;
 
-namespace TypeExperiments.Reflection.ILAnalyzer
+namespace AssemblyProviders.CIL.ILAnalyzer
 {
     public interface IILReaderProvider
     {

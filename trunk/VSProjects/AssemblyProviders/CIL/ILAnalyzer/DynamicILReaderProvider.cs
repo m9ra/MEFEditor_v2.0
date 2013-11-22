@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace TypeExperiments.Reflection.ILAnalyzer
+namespace AssemblyProviders.CIL.ILAnalyzer
 {
     internal class DynamicILReaderProvider : IILReaderProvider
     {

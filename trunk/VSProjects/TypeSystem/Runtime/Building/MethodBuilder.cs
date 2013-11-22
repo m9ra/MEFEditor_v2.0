@@ -190,9 +190,13 @@ namespace TypeSystem.Runtime.Building
                     returnValue = Expression.New(arrayWrapCtor, returnValue, _contextParam);
                 }
 
-                var instanceInfo = Expression.Constant(new InstanceInfo(returnType));
-                returnValue = Expression.Convert(returnValue, typeof(object));
-                returnValue = Expression.Call(machine, typeof(Machine).GetMethod("CreateDirectInstance"), returnValue, instanceInfo);
+                if (!typeof(Instance).IsAssignableFrom(returnType))
+                {
+                    //Instance needs to be converted to direct instance
+                    var instanceInfo = Expression.Constant(new InstanceInfo(returnType));
+                    returnValue = Expression.Convert(returnValue, typeof(object));
+                    returnValue = Expression.Call(machine, typeof(Machine).GetMethod("CreateDirectInstance"), returnValue, instanceInfo);
+                }
             }
 
             //return value is reported via Context.Return call

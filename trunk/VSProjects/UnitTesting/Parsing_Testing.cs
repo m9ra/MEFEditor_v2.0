@@ -279,8 +279,6 @@ namespace UnitTesting
         [TestMethod]
         public void Emit_VirtualCall()
         {
-
-
             AssemblyUtils.Run(@"
                 var test=new Test();
                 
@@ -336,6 +334,19 @@ namespace UnitTesting
             .AddWrappedGenericToRuntime(typeof(ICollection<>))
 
             .AssertVariable("result").HasValue("AddedValue")
+            ;
+        }
+
+        [TestMethod]
+        public void Emit_SimpleCIL()
+        {
+            AssemblyUtils.RunCIL(() =>
+            {
+                var x = "hello";
+                return x;
+            })
+
+            .AssertReturn().HasValue("hello")
             ;
         }
 

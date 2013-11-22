@@ -10,8 +10,9 @@ using System.Diagnostics;
 using TypeSystem;
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
-using AssemblyProviders.CSharp.Compiling;
 
+using AssemblyProviders;
+using AssemblyProviders.CIL;
 
 namespace Research
 {
@@ -25,7 +26,7 @@ namespace Research
             ////force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
-            var assembly = ResearchSources.DrawingTester_TwoContainers();
+            var assembly = ResearchSources.CIL_Compiling();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 

@@ -14,6 +14,8 @@ namespace TypeSystem
     {
         public static readonly char PathSplit = ';';
 
+        public static readonly string CtorName = "#ctor";
+
         public static MethodID Method<CalledType>(string methodName, params Type[] paramTypes)
         {
             var path = typeof(CalledType).FullName + "." + methodName;

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Reflection;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using TypeSystem;
@@ -34,6 +36,18 @@ namespace UnitTesting.TypeSystem_TestUtils
 
             return assembly;
         }
+
+        public static TestingAssembly RunCIL(Func<object> sourceMethod)
+        {
+            var assembly = SettingsProvider.CreateTestingAssembly();
+
+            assembly.AddMethod(Method.EntryMethodPath, sourceMethod.Method, Method.Entry_NoParam);
+
+            addStandardMethods(assembly);
+
+            return assembly;
+        }
+
 
         public static TestResult GetResult(this TestingAssembly assembly)
         {
@@ -88,6 +102,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             var result = assembly.GetResult();
 
             return new TestCase(result, variableName);
+        }
+
+        internal static TestCase AssertReturn(this TestingAssembly assembly)
+        {
+            return AssertVariable(assembly, null);
         }
 
         private static ExecutionView processEdits(AnalyzingResult result, IEnumerable<EditAction> editActions)

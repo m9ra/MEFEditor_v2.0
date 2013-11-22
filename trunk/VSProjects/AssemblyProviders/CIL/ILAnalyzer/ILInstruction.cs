@@ -9,7 +9,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 
-namespace TypeExperiments.Reflection.ILAnalyzer
+namespace AssemblyProviders.CIL.ILAnalyzer
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct ILInstruction

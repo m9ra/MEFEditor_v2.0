@@ -64,7 +64,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="variable">Name of variable</param>
         /// <returns>Stored instance</returns>
-        internal Instance GetValue(VariableName variable)
+        public Instance GetValue(VariableName variable)
         {
             return CurrentCall.GetValue(variable);
         }
@@ -73,7 +73,7 @@ namespace Analyzing.Execution
         /// </summary>
         /// <param name="targetVaraiable">Name of variable</param>
         /// <param name="value">Value that will be set to variable</param>
-        internal void SetValue(VariableName targetVaraiable, Instance value)
+        public void SetValue(VariableName targetVaraiable, Instance value)
         {
             value.HintID(targetVaraiable.Name, this);
             CurrentCall.SetValue(targetVaraiable, value);
@@ -184,7 +184,7 @@ namespace Analyzing.Execution
         internal AnalyzingResult GetResult(Dictionary<string, Instance> createdInstances)
         {
             var removeProvider = new InstanceRemoveProvider(_entryContext);
-            return new AnalyzingResult(_entryContext, removeProvider.Remove, createdInstances);
+            return new AnalyzingResult(LastReturnValue, _entryContext, removeProvider.Remove, createdInstances);
         }
 
         /// <summary>

@@ -19,12 +19,17 @@ namespace Analyzing
 
         public readonly CallContext EntryContext;
 
+        public readonly Instance ReturnValue;
+
         public IEnumerable<Instance> CreatedInstances { get { return _createdInstances.Values; } }
 
         public event OnViewCommit OnViewCommit;
 
-        internal AnalyzingResult(CallContext entryContext, RemoveHandler removeHandler, Dictionary<string, Instance> createdInstances)
+
+
+        internal AnalyzingResult(Instance returnValue, CallContext entryContext, RemoveHandler removeHandler, Dictionary<string, Instance> createdInstances)
         {
+            ReturnValue = returnValue;
             EntryContext = entryContext;
             _removeHandler = removeHandler;
             _createdInstances = createdInstances;
@@ -45,5 +50,6 @@ namespace Analyzing
         {
             return _createdInstances[instanceID];
         }
+
     }
 }

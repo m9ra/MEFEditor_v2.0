@@ -68,7 +68,9 @@ namespace UnitTesting.Analyzing_TestUtils
 
         internal TestCase HasValue(object expectedValue)
         {
-            var instance = _result.Execution.EntryContext.GetValue(_variable);
+            var entryContext = _result.Execution.EntryContext;
+            var instance = _variable.Name == null ? _result.Execution.ReturnValue : entryContext.GetValue(_variable);
+
             var actualValue = instance.DirectValue;
 
             Assert.AreEqual(expectedValue, actualValue);

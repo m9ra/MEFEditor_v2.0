@@ -106,6 +106,7 @@ namespace TypeSystem.Runtime
             return
                 type == typeof(void) ||
                 type.IsArray ||
+                typeof(Instance).IsAssignableFrom(type)||
                 type == typeof(InstanceWrap) ||
                 _directTypes.ContainsKey(type);
         }

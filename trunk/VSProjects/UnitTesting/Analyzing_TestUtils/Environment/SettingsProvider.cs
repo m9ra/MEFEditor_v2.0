@@ -12,6 +12,8 @@ using Analyzing.Execution;
 using TypeSystem;
 using TypeSystem.Runtime;
 
+using AssemblyProviders.CIL;
+
 using UnitTesting.RuntimeTypeDefinitions;
 using UnitTesting.TypeSystem_TestUtils;
 
@@ -21,7 +23,8 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
     {
         private static readonly Type[] directTypes = new Type[]{
             typeof(string),
-            typeof(bool),            
+            typeof(bool),   
+            typeof(CILStack)
         };
 
         private static readonly Type[] mathTypes = new Type[]{

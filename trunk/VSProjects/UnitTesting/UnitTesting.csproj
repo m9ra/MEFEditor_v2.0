@@ -81,6 +81,7 @@
     <Compile Include="SceneNavigator_Testing.cs" />
     <Compile Include="SourceWriting_Testing.cs" />
     <Compile Include="TypeSystem_TestUtils\AssemblyUtils.cs" />
+    <Compile Include="TypeSystem_TestUtils\CILGenerator.cs" />
     <Compile Include="TypeSystem_TestUtils\EntryPointLoader.cs" />
     <Compile Include="TypeSystem_TestUtils\Method.cs" />
     <Compile Include="TestClass.cs" />

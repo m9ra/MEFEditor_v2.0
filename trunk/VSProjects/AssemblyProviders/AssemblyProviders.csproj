@@ -39,6 +39,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CIL\CILMethod.cs" />
+    <Compile Include="CIL\CILStack.cs" />
+    <Compile Include="CIL\Compiler.cs" />
+    <Compile Include="CIL\ILAnalyzer\DynamicILReaderProvider.cs" />
+    <Compile Include="CIL\ILAnalyzer\IILReaderProvider.cs" />
+    <Compile Include="CIL\ILAnalyzer\ILInstruction.cs" />
+    <Compile Include="CIL\ILAnalyzer\ILReader.cs" />
+    <Compile Include="CIL\ILAnalyzer\ILReaderProvider.cs" />
+    <Compile Include="CIL\ILAnalyzer\ILUtilities.cs" />
     <Compile Include="CSharp\CodeInstructions\CodeAssign.cs" />
     <Compile Include="CSharp\CodeInstructions\CodeInstruction.cs" />
     <Compile Include="CSharp\CodeInstructions\CodeKeyword.cs" />

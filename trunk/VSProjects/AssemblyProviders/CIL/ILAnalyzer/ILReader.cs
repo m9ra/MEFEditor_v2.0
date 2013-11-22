@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Reflection.Emit;
 using System.Reflection;
 
-namespace TypeExperiments.Reflection.ILAnalyzer
+namespace AssemblyProviders.CIL.ILAnalyzer
 {
     /// <summary>
     /// Reads IL instructions from a byte stream.
