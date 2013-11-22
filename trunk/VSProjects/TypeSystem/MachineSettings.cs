@@ -46,6 +46,11 @@ namespace TypeSystem
 
         public MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
         {
+            if (IsDirect(sharedInstanceInfo))
+                //direct types doesn't have static initializers 
+                //TODO this could be potentionall inconsitency drawback
+                return null;
+
             return Naming.Method(sharedInstanceInfo, "#initializer", new ParameterTypeInfo[] { });
         }
 

@@ -48,6 +48,16 @@ namespace UnitTesting.TypeSystem_TestUtils
             return assembly;
         }
 
+        public static TestingAssembly RunCIL(Action sourceMethod)
+        {
+            var assembly = SettingsProvider.CreateTestingAssembly();
+
+            assembly.AddMethod(Method.EntryMethodPath, sourceMethod.Method, Method.Entry_NoParam);
+
+            addStandardMethods(assembly);
+
+            return assembly;
+        }
 
         public static TestResult GetResult(this TestingAssembly assembly)
         {

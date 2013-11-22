@@ -22,6 +22,13 @@ namespace TypeSystem
             return method(path, paramDescription(paramTypes), false);
         }
 
+        public static MethodID Method(MethodBase method)
+        {
+            var paramTypes = (from param in method.GetParameters() select ParameterTypeInfo.From(param)).ToArray();
+
+            return Naming.Method(new InstanceInfo(method.DeclaringType), method.Name, paramTypes);
+        }
+
         public static MethodID Method(InstanceInfo declaringType, string methodName, params ParameterTypeInfo[] parameters)
         {
             var path = declaringType.TypeName + "." + methodName;

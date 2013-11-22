@@ -23,7 +23,18 @@ namespace Research
 {
     static class ResearchSources
     {
-        static internal TestingAssembly CIL_Compiling()
+
+        static internal TestingAssembly CIL_Concat()
+        {
+            return AssemblyUtils.RunCIL(() =>
+            {
+                var x1 = "A";
+                var x2 = "B";
+                string.Concat(x1, x2);
+            });
+        }
+
+        static internal TestingAssembly CIL_HelloWorld()
         {
             return AssemblyUtils.RunCIL(() =>
             {

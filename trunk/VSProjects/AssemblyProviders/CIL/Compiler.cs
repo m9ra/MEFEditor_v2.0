@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Reflection;
+
 using Analyzing;
 using Analyzing.Execution;
 
@@ -30,7 +32,7 @@ namespace AssemblyProviders.CIL
 
             compiler.generateInstructions();
 
-            //Console.WriteLine(emitter.GetEmittedInstructions().Code);
+            Console.WriteLine(emitter.GetEmittedInstructions().Code);
         }
 
         private Compiler(CILMethod method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)
@@ -70,6 +72,28 @@ namespace AssemblyProviders.CIL
             E.Call(Stack_ctor, StackStorage, Arguments.Values());
         }
 
+
+        private void emitPop()
+        {
+            E.Call(Stack_pop, StackStorage, Arguments.Values());
+        }
+
+        private void emitPopTo(string target)
+        {
+            emitPop();
+            E.AssignReturnValue(target, Object_info);
+        }
+
+
+        private string emitPopTmp(Type type)
+        {
+            emitPop();
+
+            var tmp = E.GetTemporaryVariable();
+            E.AssignReturnValue(tmp, new InstanceInfo(type));
+            return tmp;
+        }
+
         private void emitPush<T>(object literal)
         {
             if (!(literal is T))
@@ -80,15 +104,16 @@ namespace AssemblyProviders.CIL
             E.Call(Stack_push, StackStorage, Arguments.Values(tmp));
         }
 
-        private void emitPopTo(string target)
-        {
-            E.Call(Stack_pop, StackStorage, Arguments.Values());
-            E.AssignReturnValue(target, Object_info);
-        }
-
         private void emitPushFrom(string source)
         {
             E.Call(Stack_push, StackStorage, Arguments.Values(source));
+        }
+
+        private void emitPushReturn(Type returnType)
+        {
+            var tmp = E.GetTemporaryVariable();
+            E.AssignReturnValue(tmp, new InstanceInfo(returnType));
+            emitPushFrom(tmp);
         }
 
         private void generateInstructions()
@@ -120,10 +145,36 @@ namespace AssemblyProviders.CIL
                         //TODO generic add store loc operands
                         emitPushFrom(name.Substring(2));
                         break;
+                    case "call":
+                        var info = instruction.Data as MethodInfo;
+                        var methodID = Naming.Method(info);
+
+                        if (info.IsStatic)
+                        {
+                            var args = from param in info.GetParameters() select emitPopTmp(param.ParameterType);
+                            args = args.Reverse();
+                            E.StaticCall(new InstanceInfo(info.DeclaringType), methodID, Arguments.Values(args.ToArray()));
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+
+                        if (info.ReturnType != typeof(void))
+                        {
+                            emitPushReturn(info.ReturnType);
+                        }
+
+                        break;
                     case "ret":
-                        var tmp=E.GetTemporaryVariable("return");
+                        var tmp = E.GetTemporaryVariable("return");
                         emitPopTo(tmp);
                         E.Return(tmp);
+
+                        break;
+                    case "pop":
+                   //     emitPop();
+                        //TODO resolve behaviour
                         break;
                     default:
                         //TODO handle stack behaviour with setting dirty

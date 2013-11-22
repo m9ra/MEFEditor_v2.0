@@ -9,13 +9,13 @@ namespace Analyzing.Execution.Instructions
     class EnsureInitialized : InstructionBase
     {
         private readonly VariableName _targetVariable;
-        private readonly MethodID _initializator;
+        private readonly MethodID _initializer;
         private readonly InstanceInfo _sharedInstanceInfo;
 
         internal EnsureInitialized(VariableName targetVariable, InstanceInfo sharedInstanceInfo, MethodID initializator)
         {
             _targetVariable = targetVariable;
-            _initializator = initializator;
+            _initializer = initializator;
             _sharedInstanceInfo = sharedInstanceInfo;
         }
 
@@ -30,13 +30,14 @@ namespace Analyzing.Execution.Instructions
             //create shared instance
             var sharedInstance = context.Machine.CreateInstance(_sharedInstanceInfo);
             context.SetValue(_targetVariable, sharedInstance);
-
-            context.FetchCall(_initializator, new Instance[] { sharedInstance });
+            if (_initializer != null)
+                context.FetchCall(_initializer, new Instance[] { sharedInstance });
         }
 
         public override string ToString()
         {
-            return string.Format("ensure_init {0} by {1}", _targetVariable, _initializator);
+            var initializer = _initializer == null ? "`nothing`" : _initializer.ToString();
+            return string.Format("ensure_init {0} by {1}", _targetVariable, initializer);
         }
     }
 }

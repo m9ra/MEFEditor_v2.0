@@ -338,7 +338,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_SimpleCIL()
+        public void Emit_CILSimple()
         {
             AssemblyUtils.RunCIL(() =>
             {
@@ -347,6 +347,20 @@ namespace UnitTesting
             })
 
             .AssertReturn().HasValue("hello")
+            ;
+        }
+
+        [TestMethod]
+        public void Emit_CILStaticCall()
+        {
+            AssemblyUtils.RunCIL(() =>
+            {
+                var x1 = "A";
+                var x2 = "B";
+                return string.Concat(x1, x2);
+            })
+
+            .AssertReturn().HasValue("AB")
             ;
         }
 

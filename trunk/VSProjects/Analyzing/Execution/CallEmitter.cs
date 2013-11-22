@@ -98,7 +98,7 @@ namespace Analyzing.Execution
 
             var initializerID = Context.Settings.GetSharedInitializer(sharedInstanceInfo);
 
-            if (initializerID.NeedsDynamicResolving)
+            if (initializerID != null && initializerID.NeedsDynamicResolving)
             {
                 throw new NotImplementedException();
             }
