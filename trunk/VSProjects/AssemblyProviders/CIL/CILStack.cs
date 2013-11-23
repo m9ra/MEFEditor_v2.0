@@ -19,7 +19,8 @@ namespace AssemblyProviders.CIL
 
         public Instance Pop()
         {
-            return _stack.Pop();
+            var popped = _stack.Pop();
+            return popped;
         }
     }
 }

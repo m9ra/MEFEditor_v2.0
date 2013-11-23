@@ -27,7 +27,7 @@ namespace TypeSystem
 
         public void AddExport(InstanceInfo exportType, string getterName)
         {
-            var getterID = Naming.Method(_componentType, "get_"+getterName, new ParameterTypeInfo[0]);
+            var getterID = Naming.Method(_componentType, "get_" + getterName, false, new ParameterTypeInfo[0]);
             _exports.Add(new Export(exportType, getterID));
         }
 
@@ -40,35 +40,35 @@ namespace TypeSystem
 
         public void SetImportingCtor(params InstanceInfo[] importingParameters)
         {
-            var parameters=new ParameterTypeInfo[importingParameters.Length];
+            var parameters = new ParameterTypeInfo[importingParameters.Length];
 
             for (int i = 0; i < parameters.Length; ++i)
             {
-                var importType=importingParameters[i];
-                parameters[i] = ParameterTypeInfo.Create("p",importType);
-                var preImport=new Import(importType,null);
+                var importType = importingParameters[i];
+                parameters[i] = ParameterTypeInfo.Create("p", importType);
+                var preImport = new Import(importType, null);
                 _imports.Add(preImport);
             }
 
-            _importingCtor = Naming.Method(_componentType, "#ctor", parameters);
+            _importingCtor = Naming.Method(_componentType, Naming.CtorName, false, parameters);
         }
 
         private MethodID getSetterID(InstanceInfo importType, string setterName)
         {
             var parameters = new ParameterTypeInfo[] { ParameterTypeInfo.Create("value", importType) };
-            var setterID = Naming.Method(_componentType, "set_" + setterName, parameters);
+            var setterID = Naming.Method(_componentType, "set_" + setterName, false, parameters);
             return setterID;
         }
 
-        public void AddManyImport(InstanceInfo importType,InstanceInfo itemType, string setterName)
+        public void AddManyImport(InstanceInfo importType, InstanceInfo itemType, string setterName)
         {
             var setterID = getSetterID(importType, setterName);
-            _imports.Add(new Import(importType,itemType, setterID,true));
+            _imports.Add(new Import(importType, itemType, setterID, true));
         }
 
         public ComponentInfo BuildInfo()
         {
-            return new ComponentInfo(_componentType,_importingCtor,_imports.ToArray(), _exports.ToArray(), _selfExports.ToArray());
+            return new ComponentInfo(_componentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray());
         }
 
     }

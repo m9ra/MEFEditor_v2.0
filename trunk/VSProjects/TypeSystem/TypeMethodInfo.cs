@@ -21,13 +21,13 @@ namespace TypeSystem
         public readonly InstanceInfo ReturnType;
         public readonly MethodID MethodID;
         public readonly bool HasGenericParameters;
-        
+
 
         public bool HasThis { get { return !IsStatic; } }
 
         public readonly PathInfo Path;
 
-        public TypeMethodInfo(InstanceInfo declaringType, string methodName, InstanceInfo returnType, ParameterTypeInfo[] parameters, bool isStatic, bool hasGenericParams = false,bool isAbstract=false)
+        public TypeMethodInfo(InstanceInfo declaringType, string methodName, InstanceInfo returnType, ParameterTypeInfo[] parameters, bool isStatic, bool hasGenericParams = false, bool isAbstract = false)
         {
             if (declaringType == null)
                 throw new ArgumentNullException("thisType");
@@ -39,7 +39,7 @@ namespace TypeSystem
             IsAbstract = isAbstract;
             Parameters = parameters;
             ReturnType = returnType;
-            MethodID = Naming.Method(declaringType, methodName, parameters);
+            MethodID = Naming.Method(declaringType, methodName, false, parameters);
             if (IsAbstract)
                 MethodID = new MethodID(MethodID.MethodString, true);
 
@@ -59,7 +59,7 @@ namespace TypeSystem
             {
                 var genericParam = Path.GenericArgs[i];
                 var genericArg = searchPath.GenericArgs[i];
-                            
+
                 translations.Add(genericParam, genericArg);
             }
 
@@ -67,7 +67,7 @@ namespace TypeSystem
             var generic = new TypeMethodInfo(
                 translate(DeclaringType, translations), searchPath.Name.Split('.').Last(),
                 translate(ReturnType, translations), Parameters,
-                IsStatic, false,IsAbstract);
+                IsStatic, false, IsAbstract);
 
             return generic;
         }

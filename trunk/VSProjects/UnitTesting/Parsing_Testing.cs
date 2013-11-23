@@ -364,6 +364,20 @@ namespace UnitTesting
             ;
         }
 
+
+        [TestMethod]
+        public void Emit_CILObjectCall()
+        {
+            AssemblyUtils.RunCIL(() =>
+            {
+                var x1 = "ABCD";
+                return x1.Substring(2);
+            })
+
+            .AssertReturn().HasValue("CD")
+            ;
+        }
+
         [TestMethod]
         public void Edit_SimpleReject()
         {

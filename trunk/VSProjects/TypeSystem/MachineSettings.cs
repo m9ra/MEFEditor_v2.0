@@ -13,7 +13,7 @@ namespace TypeSystem
 {
     public delegate void OnInstanceCreated(Instance instance);
 
-    public class MachineSettings:IMachineSettings
+    public class MachineSettings : IMachineSettings
     {
         private readonly OnInstanceCreated _onInstanceCreated;
 
@@ -51,12 +51,12 @@ namespace TypeSystem
                 //TODO this could be potentionall inconsitency drawback
                 return null;
 
-            return Naming.Method(sharedInstanceInfo, "#initializer", new ParameterTypeInfo[] { });
+            return Naming.Method(sharedInstanceInfo, "#initializer", false, new ParameterTypeInfo[] { });
         }
 
         public void InstanceCreated(Instance instance)
         {
-            _onInstanceCreated(instance);   
+            _onInstanceCreated(instance);
         }
 
         public bool IsDirect(InstanceInfo typeInfo)

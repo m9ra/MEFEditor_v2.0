@@ -13,26 +13,35 @@ using TypeSystem;
 
 namespace AssemblyProviders.CIL
 {
+    /// <summary>
+    /// Compiler used for CIL transcription. Needs CILStack as direct type in machine settings.
+    /// </summary>
     public class Compiler
     {
-        private static readonly string StackStorage = "@stack";
-        private static readonly MethodID Stack_ctor = Naming.Method<CILStack>(Naming.CtorName);
-        private static readonly MethodID Stack_push = Naming.Method<CILStack>("Push", typeof(object));
-        private static readonly MethodID Stack_pop = Naming.Method<CILStack>("Pop");
-
-        private static readonly InstanceInfo Object_info = InstanceInfo.Create<object>();
-
+        /// <summary>
+        /// Compiled method
+        /// </summary>
         private readonly CILMethod _method;
-        private readonly EmitterBase E;
+
+        /// <summary>
+        /// Info of compiled method
+        /// </summary>
         private readonly TypeMethodInfo _methodInfo;
+
+        /// <summary>
+        /// Transcriptor used for compilation
+        /// </summary>
+        private readonly EmitterBase E;
+
 
         public static void GenerateInstructions(CILMethod method, TypeMethodInfo info, EmitterBase emitter, TypeServices services)
         {
-            var compiler = new Compiler(method, info, emitter, services);
+         //   Console.WriteLine(method.ToString());
 
+            var compiler = new Compiler(method, info, emitter, services);
             compiler.generateInstructions();
 
-            Console.WriteLine(emitter.GetEmittedInstructions().Code);
+         //   Console.WriteLine(emitter.GetEmittedInstructions().Code);
         }
 
         private Compiler(CILMethod method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)
@@ -40,6 +49,16 @@ namespace AssemblyProviders.CIL
             _method = method;
             _methodInfo = methodInfo;
             E = emitter;
+        }
+
+        /// <summary>
+        /// Generate instructions of _method
+        /// </summary>
+        private void generateInstructions()
+        {
+            compilerPreparations();
+
+            Transcription.Transcript(_methodInfo, _method.Instructions, E);
         }
 
         /// <summary>
@@ -66,123 +85,13 @@ namespace AssemblyProviders.CIL
             }
         }
 
+        /// <summary>
+        /// Prepare stack object
+        /// </summary>
         private void prepareStack()
         {
-            E.AssignNewObject(StackStorage, InstanceInfo.Create<CILStack>());
-            E.Call(Stack_ctor, StackStorage, Arguments.Values());
-        }
-
-
-        private void emitPop()
-        {
-            E.Call(Stack_pop, StackStorage, Arguments.Values());
-        }
-
-        private void emitPopTo(string target)
-        {
-            emitPop();
-            E.AssignReturnValue(target, Object_info);
-        }
-
-
-        private string emitPopTmp(Type type)
-        {
-            emitPop();
-
-            var tmp = E.GetTemporaryVariable();
-            E.AssignReturnValue(tmp, new InstanceInfo(type));
-            return tmp;
-        }
-
-        private void emitPush<T>(object literal)
-        {
-            if (!(literal is T))
-                throw new NotSupportedException("Wrong literal pushing");
-
-            var tmp = E.GetTemporaryVariable("push");
-            E.AssignLiteral(tmp, literal, InstanceInfo.Create<T>());
-            E.Call(Stack_push, StackStorage, Arguments.Values(tmp));
-        }
-
-        private void emitPushFrom(string source)
-        {
-            E.Call(Stack_push, StackStorage, Arguments.Values(source));
-        }
-
-        private void emitPushReturn(Type returnType)
-        {
-            var tmp = E.GetTemporaryVariable();
-            E.AssignReturnValue(tmp, new InstanceInfo(returnType));
-            emitPushFrom(tmp);
-        }
-
-        private void generateInstructions()
-        {
-            compilerPreparations();
-
-            foreach (var instruction in _method.Instructions)
-            {
-                var block = E.StartNewInfoBlock();
-                block.Comment = "\n---" + instruction.ToString();
-
-                var name = instruction.OpCode.Name;
-
-                switch (name)
-                {
-                    case "ldstr":
-                        emitPush<string>(instruction.Data);
-                        break;
-                    case "nop":
-                        E.Nop();
-                        break;
-                    case "stloc.0":
-                    case "stloc.1":
-                        //TODO generic add store loc operands
-                        emitPopTo(name.Substring(2));
-                        break;
-                    case "ldloc.0":
-                    case "ldloc.1":
-                        //TODO generic add store loc operands
-                        emitPushFrom(name.Substring(2));
-                        break;
-                    case "call":
-                        var info = instruction.Data as MethodInfo;
-                        var methodID = Naming.Method(info);
-
-                        if (info.IsStatic)
-                        {
-                            var args = from param in info.GetParameters() select emitPopTmp(param.ParameterType);
-                            args = args.Reverse();
-                            E.StaticCall(new InstanceInfo(info.DeclaringType), methodID, Arguments.Values(args.ToArray()));
-                        }
-                        else
-                        {
-                            throw new NotImplementedException();
-                        }
-
-                        if (info.ReturnType != typeof(void))
-                        {
-                            emitPushReturn(info.ReturnType);
-                        }
-
-                        break;
-                    case "ret":
-                        var tmp = E.GetTemporaryVariable("return");
-                        emitPopTo(tmp);
-                        E.Return(tmp);
-
-                        break;
-                    case "pop":
-                   //     emitPop();
-                        //TODO resolve behaviour
-                        break;
-                    default:
-                        //TODO handle stack behaviour with setting dirty
-                        var temp = E.GetTemporaryVariable();
-                        E.AssignLiteral(temp, "NotImplemented instruction: " + name);
-                        break;
-                }
-            }
+            E.AssignNewObject(Transcription.StackStorage, InstanceInfo.Create<CILStack>());
+            E.Call(Transcription.Stack_ctor, Transcription.StackStorage, Arguments.Values());
         }
     }
 }

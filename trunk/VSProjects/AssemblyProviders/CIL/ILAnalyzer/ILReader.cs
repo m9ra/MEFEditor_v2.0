@@ -18,7 +18,12 @@ namespace AssemblyProviders.CIL.ILAnalyzer
         /// <summary>
         /// The _instruction lookup.
         /// </summary>
-        private static readonly Lazy<Dictionary<short, OpCode>> instructionLookup = new Lazy<Dictionary<short, OpCode>>(ILReader.GetLookupTable, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+        private static readonly Dictionary<short, OpCode> instructionLookup = ILReader.GetLookupTable();
+
+        /// <summary>
+        /// All opcodes available in lookup table
+        /// </summary>
+        internal static IEnumerable<OpCode> Opcodes { get { return instructionLookup.Values; } }
 
         /// <summary>
         /// The IL reader provider.
@@ -63,7 +68,7 @@ namespace AssemblyProviders.CIL.ILAnalyzer
                     position++;
 
                     OpCode code;
-                    if (!instructionLookup.Value.TryGetValue(operationData, out code))
+                    if (!instructionLookup.TryGetValue(operationData, out code))
                     {
                         throw new InvalidProgramException(string.Format("0x{0:X2} is not a valid op code.", operationData));
                     }

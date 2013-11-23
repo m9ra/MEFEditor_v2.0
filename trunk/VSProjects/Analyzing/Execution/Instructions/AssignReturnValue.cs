@@ -9,10 +9,10 @@ namespace Analyzing.Execution.Instructions
     class AssignReturnValue : AssignBase
     {
         private readonly VariableName _targetVariable;
-     
+
 
         internal AssignReturnValue(VariableName targetVariable)
-        {            
+        {
             _targetVariable = targetVariable;
         }
         public override void Execute(AnalyzingContext context)
@@ -22,7 +22,7 @@ namespace Analyzing.Execution.Instructions
 
         public override string ToString()
         {
-            return string.Format("mov_return {0}",  _targetVariable);
+            return string.Format("mov_return {0}", _targetVariable);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Research
             ////force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
 
-            var assembly = ResearchSources.CIL_Concat();
+            var assembly = ResearchSources.CIL_ObjectCall();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 
