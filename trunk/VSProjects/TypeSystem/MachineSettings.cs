@@ -41,7 +41,17 @@ namespace TypeSystem
 
         public bool IsTrue(Instance condition)
         {
-            return (bool)condition.DirectValue;
+            var dirVal = condition.DirectValue;
+            if (dirVal is bool)
+            {
+                return (bool)dirVal;
+            }
+            else if(dirVal is int)
+            {
+                return (int)dirVal != 0;
+            }
+
+            return false;
         }
 
         public MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)

@@ -23,6 +23,19 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly CIL_ForLoop()
+        {
+            return AssemblyUtils.RunCIL(() =>
+            {
+                string str=""; 
+                for (int i = 0; i < 10; ++i)
+                {
+                    str += "a";
+                }
+
+                return str;
+            });
+        }
 
         static internal TestingAssembly CIL_ObjectCall()
         {

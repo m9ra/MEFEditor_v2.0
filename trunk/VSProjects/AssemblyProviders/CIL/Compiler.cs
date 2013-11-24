@@ -90,8 +90,7 @@ namespace AssemblyProviders.CIL
         /// </summary>
         private void prepareStack()
         {
-            E.AssignNewObject(Transcription.StackStorage, InstanceInfo.Create<CILStack>());
-            E.Call(Transcription.Stack_ctor, Transcription.StackStorage, Arguments.Values());
+            E.DirectInvoke(CILStack.InitializeStack);
         }
     }
 }

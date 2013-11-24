@@ -41,7 +41,8 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             var assembly = SettingsProvider.CreateTestingAssembly();
 
-            assembly.AddMethod(Method.EntryMethodPath, sourceMethod.Method, Method.Entry_NoParam);
+            var description = MethodDescription.Create<object>(false);
+            assembly.AddMethod(Method.EntryMethodPath, sourceMethod.Method, description);
 
             addStandardMethods(assembly);
 

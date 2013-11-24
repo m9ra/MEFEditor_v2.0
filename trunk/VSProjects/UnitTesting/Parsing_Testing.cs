@@ -364,7 +364,6 @@ namespace UnitTesting
             ;
         }
 
-
         [TestMethod]
         public void Emit_CILObjectCall()
         {
@@ -378,6 +377,23 @@ namespace UnitTesting
             ;
         }
 
+        [TestMethod]
+        public void Emit_CILForLoop()
+        {
+            AssemblyUtils.RunCIL(() =>
+            {
+                string str = "";
+                for (int i = 0; i < 10; ++i)
+                {
+                    str += "a";
+                }
+
+                return str;
+            })
+            //                        0123456789  
+            .AssertReturn().HasValue("aaaaaaaaaa")
+            ;
+        }
         [TestMethod]
         public void Edit_SimpleReject()
         {

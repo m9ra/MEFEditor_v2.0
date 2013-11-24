@@ -45,6 +45,16 @@ namespace AssemblyProviders.CIL
         internal static readonly MethodID Stack_pop = Naming.Method<CILStack>("Pop");
 
         /// <summary>
+        /// Add two operands on top of the stack and push its result
+        /// </summary>
+        internal static readonly MethodID Stack_add = Naming.Method<CILStack>("Add");
+
+        /// <summary>
+        /// Pop two values on top of the stack, compare them and push the result.
+        /// </summary>
+        internal static readonly MethodID Stack_clt = Naming.Method<CILStack>("CLT");
+
+        /// <summary>
         /// System object info
         /// </summary>
         internal static readonly InstanceInfo Object_info = InstanceInfo.Create<object>();
@@ -75,6 +85,11 @@ namespace AssemblyProviders.CIL
         /// Context method of transcription
         /// </summary>
         private static TypeMethodInfo Method;
+
+        /// <summary>
+        /// Offset to corresponding label tabel
+        /// </summary>
+        private static readonly Dictionary<int, Analyzing.Label> Labels = new Dictionary<int, Analyzing.Label>();
 
         /// <summary>
         /// Variable that could be used for storing info locally in within transcriptor
@@ -146,9 +161,18 @@ namespace AssemblyProviders.CIL
             Method = method;
             LocalTmpVar = E.GetTemporaryVariable("local");
 
+            //prepare labels table
+            Labels.Clear();
+            foreach (var instruction in instructions)
+            {
+                var labelName = string.Format("L_0x{0:x4}", instruction.Address);
+                Labels.Add(instruction.Address, E.CreateLabel(labelName));
+            }
+
             foreach (var instruction in instructions)
             {
                 Instruction = instruction;
+                E.SetLabel(Labels[instruction.Address]);
 
                 var block = E.StartNewInfoBlock();
                 block.Comment = "\n---" + Instruction.ToString();
@@ -223,14 +247,77 @@ namespace AssemblyProviders.CIL
             }
         }
 
+        static void _box()
+        {
+            //boxing is not needed
+            E.Nop();
+        }
+
         static void _ret()
         {
+            //TODO jump to the end
             if (HasReturnValue)
             {
                 emitPopTo(LocalTmpVar);
                 E.Return(LocalTmpVar);
             }
         }
+
+        #region Arithmetic instructions
+
+        static void _add()
+        {
+            E.Call(Stack_add, StackStorage, Arguments.Values());
+        }
+
+        static void _clt()
+        {
+            E.Call(Stack_clt, StackStorage, Arguments.Values());
+        }
+
+        #endregion
+
+        #region Branching instructions
+
+        static void _br_s()
+        {
+            var targetOffset = (int)(sbyte)(byte)Data;
+            if (targetOffset == 0)
+            {
+                //there is no real jumping
+                E.Nop();
+            }
+            else
+            {
+                var target = Instruction.Address + Instruction.Length + targetOffset;
+                var targetLabel = Labels[target];
+                E.Jump(targetLabel);
+            }
+        }
+        
+        static void _brtrue_s()
+        {
+            var targetOffset = (int)(sbyte)(byte)Data;
+            emitPopTo(LocalTmpVar);
+            if (targetOffset == 0)
+            {
+                //there is no real jumping
+                return;
+            }
+
+            var target = Instruction.Address + Instruction.Length + targetOffset;
+            var targetLabel = Labels[target];
+
+            E.ConditionalJump(LocalTmpVar, targetLabel);
+        }
+
+        static void _blt_s()
+        {
+            _clt();
+            _brtrue_s();
+        }
+
+        #endregion
 
         #region Constant loading instructions
 
