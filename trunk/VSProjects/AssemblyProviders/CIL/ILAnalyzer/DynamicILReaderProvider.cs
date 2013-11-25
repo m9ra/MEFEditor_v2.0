@@ -9,6 +9,9 @@ using System.Reflection.Emit;
 
 namespace AssemblyProviders.CIL.ILAnalyzer
 {
+    /// <summary>
+    /// Used from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
+    /// </summary>
     internal class DynamicILReaderProvider : IILReaderProvider
     {
         public const int TypeRidPrefix = 0x02000000;

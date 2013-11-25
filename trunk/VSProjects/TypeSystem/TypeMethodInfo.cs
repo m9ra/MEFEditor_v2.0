@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using Analyzing;
 
+using System.Reflection;
+
 namespace TypeSystem
 {
     public class TypeMethodInfo
@@ -47,7 +49,37 @@ namespace TypeSystem
             HasGenericParameters = hasGenericParams;
         }
 
+        public static TypeMethodInfo Create(MethodInfo method)
+        {
+            var paramsInfo = getParametersInfo(method);
 
+            var declaringInfo = new InstanceInfo(method.DeclaringType);
+            var returnInfo = new InstanceInfo(method.ReturnType);
+
+            var isAbstract = method.IsAbstract;
+            return new TypeMethodInfo(
+                 declaringInfo, method.Name,
+                 returnInfo, paramsInfo.ToArray(),
+                 method.IsStatic, method.IsGenericMethodDefinition);
+        }
+
+        /// <summary>
+        /// Get parameters info for given method base
+        /// </summary>
+        /// <param name="method">Base method which parameters will be created</param>
+        /// <returns>Created parameters info</returns>
+        private static IEnumerable<ParameterTypeInfo> getParametersInfo(MethodBase method)
+        {
+            var paramsInfo = new List<ParameterTypeInfo>();
+            foreach (var param in method.GetParameters())
+            {
+                //TODO resolve generic arguments
+                var paramType = new InstanceInfo(param.ParameterType);
+                var paramInfo = ParameterTypeInfo.From(param, paramType);
+                paramsInfo.Add(paramInfo);
+            }
+            return paramsInfo;
+        }
 
         public TypeMethodInfo MakeGenericMethod(PathInfo searchPath)
         {

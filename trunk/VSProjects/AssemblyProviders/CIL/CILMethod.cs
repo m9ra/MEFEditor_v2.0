@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 
 using System.Reflection;
 
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+
 using AssemblyProviders.CIL.ILAnalyzer;
 
 namespace AssemblyProviders.CIL
 {
     public class CILMethod
     {
-        public readonly IEnumerable<ILInstruction> Instructions;
+        public readonly IEnumerable<CILInstruction> Instructions;
 
         public readonly string Name;
 
@@ -23,7 +26,13 @@ namespace AssemblyProviders.CIL
             Name = method.Name;
             MethodHeader = method.ToString();
             var reader = new ILReader(method);
-            Instructions = reader.Instructions.ToArray();
+
+            Instructions = from instruction in reader.Instructions select new CILInstruction(instruction);
+        }
+
+        public CILMethod(MethodDefinition method) {
+            //copy instructions
+            Instructions = from instruction in method.Body.Instructions select new CILInstruction(instruction);
         }
 
         public override string ToString()

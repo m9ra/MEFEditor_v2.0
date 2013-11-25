@@ -8,6 +8,8 @@ using System.Reflection;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Mono.Cecil;
+
 using TypeSystem;
 using TypeSystem.Runtime;
 
@@ -31,6 +33,53 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             var assembly = SettingsProvider.CreateTestingAssembly();
             assembly.AddMethod(Method.EntryMethodPath, entryMethodSource, Method.Entry_NoParam);
+
+            addStandardMethods(assembly);
+
+            return assembly;
+        }
+
+        public static MethodDefinition FindMethod(string assemblyPath, string methodPath)
+        {
+            var pars = new ReaderParameters();
+            var resolver = new DefaultAssemblyResolver();
+
+            pars.AssemblyResolver = resolver;
+
+            var cecilAssembly = AssemblyDefinition.ReadAssembly(assemblyPath, pars);
+
+            /*foreach (var rf in cecilAssembly.MainModule.AssemblyReferences)
+            {
+                string path;
+                var refAssembly = cecilAssembly.MainModule.AssemblyResolver.Resolve(rf);
+                path = refAssembly.MainModule.FullyQualifiedName;
+            }*/
+
+
+            foreach (var type in cecilAssembly.MainModule.Types)
+            {
+                if (!methodPath.StartsWith(type.FullName))
+                    continue;
+
+                foreach (var method in type.Methods)
+                {
+                    if (!methodPath.EndsWith(method.Name))
+                        continue;
+
+                    return method;
+                }
+            }
+
+            throw new KeyNotFoundException("Cannot find method: " + methodPath);
+        }
+
+        public static TestingAssembly RunCECIL(string assemblyPath, string methodPath)
+        {
+            var sourceMethod = FindMethod(assemblyPath, methodPath);
+            var assembly = SettingsProvider.CreateTestingAssembly();
+
+            var description = new MethodDescription(new InstanceInfo(sourceMethod.ReturnType.FullName), false);
+            assembly.AddMethod(Method.EntryMethodPath, sourceMethod, description);
 
             addStandardMethods(assembly);
 

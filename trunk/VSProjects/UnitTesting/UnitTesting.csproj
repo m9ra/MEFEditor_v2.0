@@ -62,6 +62,7 @@
     <Compile Include="AssemblyProviders_TestUtils\Tools.cs" />
     <Compile Include="AssemblyProviders_TestUtils\SourceTest.cs" />
     <Compile Include="AssemblyProviders_TestUtils\SourceUtils.cs" />
+    <Compile Include="Cecil_Testing.cs" />
     <Compile Include="Drawing_TestUtils\DrawingTest.cs" />
     <Compile Include="Drawing_TestUtils\Extensions.cs" />
     <Compile Include="Drawing_TestUtils\TestContent.cs" />
@@ -91,6 +92,10 @@
     <Compile Include="TypeSystem_TestUtils\TestResult.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ExternalSources\cecil-master\Mono.Cecil.csproj">
+      <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Analyzing\Analyzing.csproj">
       <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
       <Name>Analyzing</Name>

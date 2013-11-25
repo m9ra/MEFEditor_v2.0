@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzingResearchExecutor.cs" />
+    <Compile Include="CecilTestSources.cs" />
     <Compile Include="Drawing\ContentDrawer.cs" />
     <Compile Include="Drawing\DiagramFactory.cs" />
     <Compile Include="Printer.cs" />
@@ -75,6 +76,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ExternalSources\cecil-master\Mono.Cecil.csproj">
+      <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Analyzing\Analyzing.csproj">
       <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
       <Name>Analyzing</Name>

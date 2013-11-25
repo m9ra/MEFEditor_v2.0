@@ -23,6 +23,11 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly CECIL_ForLoop()
+        {
+            return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.ForLoop");
+        }
+
         static internal TestingAssembly CIL_ForLoop()
         {
             return AssemblyUtils.RunCIL(() =>

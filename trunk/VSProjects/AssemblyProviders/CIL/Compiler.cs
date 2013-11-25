@@ -41,7 +41,7 @@ namespace AssemblyProviders.CIL
             var compiler = new Compiler(method, info, emitter, services);
             compiler.generateInstructions();
 
-         //   Console.WriteLine(emitter.GetEmittedInstructions().Code);
+            Console.WriteLine(emitter.GetEmittedInstructions().Code);
         }
 
         private Compiler(CILMethod method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)

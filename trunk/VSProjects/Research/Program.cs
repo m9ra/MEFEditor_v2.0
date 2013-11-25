@@ -11,6 +11,8 @@ using TypeSystem;
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 
+using Mono.Cecil;
+
 using AssemblyProviders;
 using AssemblyProviders.CIL;
 
@@ -18,15 +20,19 @@ namespace Research
 {
     class Program
     {
+
+      
+
+
         /// <summary>
         /// Main for running research sources
         /// </summary>        
         static void Main()
         {
             ////force JIT to precompile before measuring
-            //var entry2 = ResearchSources.Fibonacci(7).GetResult().EntryContext;
+            //var entry2 = ResearchSources.Fibonacci(7).GetResult();
 
-            var assembly = ResearchSources.CIL_ForLoop();
+            var assembly = ResearchSources.CECIL_ForLoop();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 

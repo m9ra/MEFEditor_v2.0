@@ -10,6 +10,8 @@ using System.Reflection;
 namespace AssemblyProviders.CIL.ILAnalyzer
 {
     /// <summary>
+    /// Used from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
+    /// 
     /// Reads IL instructions from a byte stream.
     /// </summary>
     /// <remarks>Allows generated code to be viewed without debugger or enabled debug assemblies.</remarks>
@@ -197,7 +199,6 @@ namespace AssemblyProviders.CIL.ILAnalyzer
                     break;
                 case OperandType.InlineSwitch:
                     data = BitConverter.ToInt32(rawData, 0);
-
                     break;
                 case OperandType.InlineBrTarget:
                 case OperandType.InlineI:
@@ -227,8 +228,10 @@ namespace AssemblyProviders.CIL.ILAnalyzer
                     break;
                 case OperandType.ShortInlineVar:
                 case OperandType.ShortInlineI:
+                    data = (sbyte)rawData[0];
+                    break;
                 case OperandType.ShortInlineBrTarget:
-                    data = rawData[0];
+                    data = (int)(sbyte)rawData[0];
                     break;
                 case OperandType.ShortInlineR:
                     data = BitConverter.ToSingle(rawData, 0);

@@ -8,6 +8,9 @@ using System.Reflection;
 
 namespace AssemblyProviders.CIL.ILAnalyzer
 {
+    /// <summary>
+    /// Used from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
+    /// </summary>
     public interface IILReaderProvider
     {
         byte[] GetMethodBody();

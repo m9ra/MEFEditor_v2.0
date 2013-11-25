@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Reflection;
-using System.Reflection.Emit;
+using R = System.Reflection;
+
+using Mono.Cecil;
 
 using Analyzing;
 using TypeSystem;
@@ -74,7 +75,7 @@ namespace AssemblyProviders.CIL
         /// <summary>
         /// Transcripted instruction
         /// </summary>
-        private static ILInstruction Instruction;
+        private static CILInstruction Instruction;
 
         /// <summary>
         /// Emitter available for transcription
@@ -119,7 +120,7 @@ namespace AssemblyProviders.CIL
         /// </summary>
         static Transcription()
         {
-            var methods = typeof(Transcription).GetMethods(BindingFlags.Static | BindingFlags.NonPublic);
+            var methods = typeof(Transcription).GetMethods(R.BindingFlags.Static | R.BindingFlags.NonPublic);
             var transcriptors = (from method in methods where method.Name.StartsWith("_") select method).ToArray();
 
             var transcriptorNaming = new SortedList<string, Action>();
@@ -155,7 +156,7 @@ namespace AssemblyProviders.CIL
         /// <param name="method">Context method of transcription</param>
         /// <param name="instructions">Transcripted instructions</param>
         /// <param name="emitter">Emitter where transcription is emitted</param>
-        internal static void Transcript(TypeMethodInfo method, IEnumerable<ILInstruction> instructions, EmitterBase emitter)
+        internal static void Transcript(TypeMethodInfo method, IEnumerable<CILInstruction> instructions, EmitterBase emitter)
         {
             E = emitter;
             Method = method;
@@ -223,17 +224,17 @@ namespace AssemblyProviders.CIL
 
         static void _call()
         {
-            var info = Data as MethodInfo;
-            var methodID = Naming.Method(info);
+            var info = getMethodOperand();
+            var methodID = info.MethodID;
 
-            var argumentVariables = from param in info.GetParameters() select emitPopTmp(param.ParameterType);
+            var argumentVariables = from param in info.Parameters select emitPopTmp(param.Type);
             argumentVariables = argumentVariables.Reverse();
 
             var arguments = Arguments.Values(argumentVariables.ToArray());
 
             if (info.IsStatic)
             {
-                E.StaticCall(new InstanceInfo(info.DeclaringType), methodID, arguments);
+                E.StaticCall(info.DeclaringType, methodID, arguments);
             }
             else
             {
@@ -241,7 +242,7 @@ namespace AssemblyProviders.CIL
                 E.Call(methodID, calledObj, arguments);
             }
 
-            if (info.ReturnType != typeof(void))
+            if (!info.ReturnType.Equals(Void_info))
             {
                 emitPushReturn(info.ReturnType);
             }
@@ -260,6 +261,10 @@ namespace AssemblyProviders.CIL
             {
                 emitPopTo(LocalTmpVar);
                 E.Return(LocalTmpVar);
+            }
+            else
+            {
+                E.Nop();
             }
         }
 
@@ -281,34 +286,16 @@ namespace AssemblyProviders.CIL
 
         static void _br_s()
         {
-            var targetOffset = (int)(sbyte)(byte)Data;
-            if (targetOffset == 0)
-            {
-                //there is no real jumping
-                E.Nop();
-            }
-            else
-            {
-                var target = Instruction.Address + Instruction.Length + targetOffset;
-                var targetLabel = Labels[target];
-                E.Jump(targetLabel);
-            }
+            var target = getTargetLabel();
+            E.Jump(target);
         }
-        
+
         static void _brtrue_s()
         {
-            var targetOffset = (int)(sbyte)(byte)Data;
+            var target = getTargetLabel();
             emitPopTo(LocalTmpVar);
-            if (targetOffset == 0)
-            {
-                //there is no real jumping
-                return;
-            }
 
-            var target = Instruction.Address + Instruction.Length + targetOffset;
-            var targetLabel = Labels[target];
-
-            E.ConditionalJump(LocalTmpVar, targetLabel);
+            E.ConditionalJump(LocalTmpVar, target);
         }
 
         static void _blt_s()
@@ -352,7 +339,7 @@ namespace AssemblyProviders.CIL
 
         static void _ldc_i4_s()
         {
-            var data = (int)(sbyte)(byte)Data;
+            var data = (int)(sbyte)Data;
             emitPush<int>(data);
         }
 
@@ -388,6 +375,19 @@ namespace AssemblyProviders.CIL
             return instructionName.Substring(2);
         }
 
+        static Label getTargetLabel()
+        {
+            var targetOffset = Instruction.BranchOperandAddress;
+            var targetLabel = Labels[targetOffset];
+
+            return targetLabel;
+        }
+
+        static TypeMethodInfo getMethodOperand()
+        {
+            return Instruction.MethodOperand;
+        }
+
         #endregion
 
         #region Stack operations
@@ -403,12 +403,12 @@ namespace AssemblyProviders.CIL
             E.AssignReturnValue(target, Object_info);
         }
 
-        private static string emitPopTmp(Type type)
+        private static string emitPopTmp(InstanceInfo type)
         {
             emitPop();
 
             var tmp = E.GetTemporaryVariable();
-            E.AssignReturnValue(tmp, new InstanceInfo(type));
+            E.AssignReturnValue(tmp, type);
             return tmp;
         }
 
@@ -422,10 +422,10 @@ namespace AssemblyProviders.CIL
             emitPushFrom(tmp);
         }
 
-        private static void emitPushReturn(Type returnType)
+        private static void emitPushReturn(InstanceInfo returnType)
         {
             var tmp = LocalTmpVar;
-            E.AssignReturnValue(tmp, new InstanceInfo(returnType));
+            E.AssignReturnValue(tmp, returnType);
             emitPushFrom(tmp);
         }
 

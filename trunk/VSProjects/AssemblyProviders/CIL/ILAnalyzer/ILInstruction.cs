@@ -11,6 +11,9 @@ using System.Runtime.InteropServices;
 
 namespace AssemblyProviders.CIL.ILAnalyzer
 {
+    /// <summary>
+    /// Used from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct ILInstruction
     {

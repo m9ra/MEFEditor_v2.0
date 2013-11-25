@@ -11,6 +11,8 @@ using Analyzing.Editing;
 using TypeSystem;
 using TypeSystem.Runtime;
 
+using Mono.Cecil;
+
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CIL;
@@ -78,6 +80,17 @@ namespace UnitTesting.TypeSystem_TestUtils
         }
 
         public TestingAssembly AddMethod(string methodPath, MethodInfo sourceMethod, MethodDescription description)
+        {
+            var methodInfo = buildDescription(description, methodPath);
+
+            var source = new CILMethod(sourceMethod);
+            var method = new CILGenerator(methodInfo, source, TypeServices);
+            addMethod(method, methodInfo, description.Implemented);
+
+            return this;
+        }
+
+        public TestingAssembly AddMethod(string methodPath, MethodDefinition sourceMethod, MethodDescription description)
         {
             var methodInfo = buildDescription(description, methodPath);
 
