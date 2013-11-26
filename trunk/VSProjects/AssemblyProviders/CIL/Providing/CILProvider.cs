@@ -1,0 +1,135 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Mono.Cecil;
+
+using Analyzing;
+using TypeSystem;
+
+namespace AssemblyProviders.CIL.Providing
+{
+    public class CILProvider : AssemblyProvider
+    {
+        public readonly string Path;
+
+        private readonly HashedMethodContainer _methods = new HashedMethodContainer();
+
+        public CILProvider(string path)
+        {
+            Path = path;
+            OnInitialized += load;
+        }
+
+        private void load()
+        {
+            var pars = new ReaderParameters();
+            var resolver = new DefaultAssemblyResolver();
+
+            pars.AssemblyResolver = resolver;
+
+            var cecilAssembly = AssemblyDefinition.ReadAssembly(Path, pars);
+
+            /*foreach (var rf in cecilAssembly.MainModule.AssemblyReferences)
+            {
+                string path;
+                var refAssembly = cecilAssembly.MainModule.AssemblyResolver.Resolve(rf);
+                path = refAssembly.MainModule.FullyQualifiedName;
+            }*/
+
+
+            foreach (var type in cecilAssembly.MainModule.Types)
+            {
+                if (type.IsSpecialName)
+                    continue;
+
+                foreach (var method in type.Methods)
+                {
+                    var item = createItem(method);
+                    addMethod(item);
+                }
+
+                ensureStaticInitializer(type);
+            }
+        }
+
+        /// <summary>
+        /// Ensure that assembly contains static analyzer. Otherwise 
+        /// it will create default one
+        /// </summary>
+        /// <param name="type"></param>
+        private void ensureStaticInitializer(TypeDefinition type)
+        {
+            var info = new InstanceInfo(type.FullName);
+
+            var initializerId = TypeServices.GetStaticInitializer(info);
+            var implementation = _methods.GetImplementation(initializerId, info);
+
+
+            if (implementation == null)
+            {
+                //add default implementation
+                var methodInfo = new TypeMethodInfo(
+                    info, Naming.GetMethodName(initializerId), new InstanceInfo(typeof(void)),
+                    new ParameterTypeInfo[0], false, false, false
+                    );
+                var item = new MethodItem(new CILGenerator(null, methodInfo, TypeServices), methodInfo);
+                addMethod(item);
+            }
+        }
+
+        private MethodItem createItem(MethodDefinition method)
+        {
+            //TODO resolve generics
+            var methodInfo = CILMethod.CreateInfo(method);
+
+            if (methodInfo.HasGenericParameters)
+                return null;
+
+            var item = new MethodItem(new CILGenerator(method, methodInfo, TypeServices), methodInfo);
+
+            return item;
+        }
+
+        private void addMethod(MethodItem item)
+        {
+            //TODO resolve implemented types
+            if (item == null)
+                return;
+
+            _methods.AddItem(item, new InstanceInfo[0]);
+        }
+
+        public override SearchIterator CreateRootIterator()
+        {
+            return new HashIterator(_methods);
+        }
+
+        public override GeneratorBase GetMethodGenerator(MethodID method)
+        {
+            return _methods.AccordingId(method);
+        }
+
+        public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
+        {
+            return _methods.AccordingGenericId(method, searchPath);
+        }
+
+        public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        {
+            return _methods.GetImplementation(method, dynamicInfo);
+        }
+
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
+        {
+            return _methods.GetGenericImplementation(methodID, methodSearchPath, implementingTypePath);
+        }
+
+        public override InheritanceChain GetInheritanceChain(PathInfo typePath)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

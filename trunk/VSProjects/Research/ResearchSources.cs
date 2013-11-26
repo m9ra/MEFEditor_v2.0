@@ -18,11 +18,19 @@ using Analyzing.Editing;
 
 using MEFAnalyzers;
 
+using AssemblyProviders.CIL.Providing;
 
 namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly CECIL_AssemblyProviding()
+        {
+            var cilAssembly = new CILProvider("Research.exe");
+            return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.CrossStart")
+                .RegisterAssembly(cilAssembly.Path, cilAssembly);
+        }
+
         static internal TestingAssembly CECIL_ForLoop()
         {
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.ForLoop");
@@ -30,9 +38,11 @@ namespace Research
 
         static internal TestingAssembly CIL_ForLoop()
         {
+
+
             return AssemblyUtils.RunCIL(() =>
             {
-                string str=""; 
+                string str = "";
                 for (int i = 0; i < 10; ++i)
                 {
                     str += "a";

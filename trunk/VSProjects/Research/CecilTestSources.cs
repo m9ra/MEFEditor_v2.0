@@ -19,5 +19,16 @@ static class CecilTestSources
 
         return str;
     }
+
+    static string CrossStart()
+    {
+        var x = "x";
+        return x + CrossCall();
+    }
+
+    static string CrossCall()
+    {
+        return "Cross";
+    }
 }
 

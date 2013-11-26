@@ -15,9 +15,9 @@ namespace TypeSystem
     {
         readonly AssembliesManager _assemblies;
 
-        public AssemblyLoader(AssemblyCollection assemblies)
+        public AssemblyLoader(AssemblyCollection assemblies, MachineSettings settings)
         {
-            _assemblies = new AssembliesManager(assemblies);
+            _assemblies = new AssembliesManager(assemblies, settings);
         }
 
         public override GeneratorBase EntryPoint

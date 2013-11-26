@@ -14,6 +14,8 @@ namespace TypeSystem.Core
     {
         readonly AssemblyCollection _assembliesCollection;
 
+        readonly MachineSettings _settings;
+
         /// <summary>
         /// In these assemblies are searched generators
         /// <remarks>May differ from method searcher providing assemblies - that are based on assembly references</remarks>
@@ -28,9 +30,10 @@ namespace TypeSystem.Core
 
         readonly Dictionary<string, TypeAssembly> _loadedAssemblies = new Dictionary<string, TypeAssembly>();
 
-        internal AssembliesManager(AssemblyCollection assemblies)
+        internal AssembliesManager(AssemblyCollection assemblies, MachineSettings settings)
         {
             _services = new TypeServices(this);
+            _settings = settings;
 
             _assembliesCollection = assemblies;
             _assembliesCollection.OnAdd += _onAssemblyAdd;
@@ -132,6 +135,10 @@ namespace TypeSystem.Core
             return new MethodSearcher(_assembliesCollection);
         }
 
+        internal MethodID GetStaticInitializer(InstanceInfo info)
+        {
+            return _settings.GetSharedInitializer(info);
+        }
         #endregion
 
         #region Private utility methods
@@ -247,7 +254,7 @@ namespace TypeSystem.Core
         private void _onAssemblyAdd(AssemblyProvider assembly)
         {
             _assemblies.Add(assembly);
-            assembly.SetServices(_services);
+            assembly.TypeServices = _services;
             assembly.OnComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
         }
 

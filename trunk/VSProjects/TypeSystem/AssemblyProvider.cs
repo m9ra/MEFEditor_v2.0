@@ -16,11 +16,35 @@ namespace TypeSystem
 
     public abstract class AssemblyProvider
     {
+        private TypeServices _services;
+
+        protected event Action OnInitialized;
+
         internal event ComponentAdded OnComponentAdded;
 
-        #region Template method API
 
-        protected TypeServices TypeServices { get; private set; }
+        internal protected TypeServices TypeServices
+        {
+            protected get
+            {
+                if (_services == null)
+                    throw new InvalidOperationException("Cannot request services before theire initiliazed");
+                return _services;
+            }
+
+            set
+            {
+                if (_services != null)
+                    throw new InvalidOperationException("Cannot reset already initialized services");
+
+                _services = value;
+
+                if (OnInitialized != null)
+                    OnInitialized();
+            }
+        }
+
+        #region Template method API
 
         public abstract GeneratorBase GetMethodGenerator(MethodID method);
 
@@ -65,16 +89,6 @@ namespace TypeSystem
         internal void HookChange(ChangeEvent changeEvent)
         {
             throw new NotImplementedException();
-        }
-
-        internal void SetServices(TypeServices services)
-        {
-            if (TypeServices != null)
-            {
-                throw new NotSupportedException("Cannot set services twice");
-            }
-
-            TypeServices = services;
         }
 
         internal void UnloadServices()

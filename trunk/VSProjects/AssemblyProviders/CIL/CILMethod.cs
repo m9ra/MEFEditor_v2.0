@@ -9,6 +9,8 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+using TypeSystem;
+
 using AssemblyProviders.CIL.ILAnalyzer;
 
 namespace AssemblyProviders.CIL
@@ -30,9 +32,24 @@ namespace AssemblyProviders.CIL
             Instructions = from instruction in reader.Instructions select new CILInstruction(instruction);
         }
 
-        public CILMethod(MethodDefinition method) {
-            //copy instructions
-            Instructions = from instruction in method.Body.Instructions select new CILInstruction(instruction);
+        public CILMethod(MethodDefinition method)
+        {
+            if (method== null)
+            {
+                //empty method
+                Instructions = new CILInstruction[0];
+            }
+            else
+            {
+                //wrap instructions
+                Instructions = from instruction in method.Body.Instructions select new CILInstruction(instruction);
+            }
+        }
+
+        internal static TypeMethodInfo CreateInfo(MethodDefinition method)
+        {
+            //TODO refactor
+            return CILInstruction.CreateMethodInfo(method);
         }
 
         public override string ToString()

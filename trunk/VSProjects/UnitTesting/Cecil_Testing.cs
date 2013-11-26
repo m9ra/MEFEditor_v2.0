@@ -19,6 +19,8 @@ using TypeSystem;
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
 
+using AssemblyProviders.CIL.Providing;
+
 namespace UnitTesting
 {
     [TestClass]
@@ -44,10 +46,37 @@ namespace UnitTesting
             return str;
         }
 
+        [TestMethod]
+        public void Provide_CECILCrossCall()
+        {
+            runWithAssemblyLoad(() =>
+            {
+                var x = "Outside";
+                var y = InsideAssembly();
+                return x + "_" + y;
+            }).AssertReturn().HasValue("Outside_Inside");
+        }
+
+        static string InsideAssembly()
+        {
+            return "Inside";
+        }
+
+        #region Testing utilities 
+
         private TestingAssembly run(string methodName)
         {
             var assemblyFile = GetType().Assembly.Location;
             return AssemblyUtils.RunCECIL(assemblyFile, typeof(Cecil_Testing).FullName + "." + methodName);
         }
+
+        private TestingAssembly runWithAssemblyLoad(Func<string> entryMethod)
+        {
+            var assembly = new CILProvider(GetType().Assembly.Location);
+            return AssemblyUtils.RunCIL(entryMethod)
+                .RegisterAssembly(assembly.Path, assembly);
+        }
+
+        #endregion
     }
 }

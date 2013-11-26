@@ -55,7 +55,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             Runtime = settings.Runtime;
             Assemblies = new TestAssemblyCollection(Runtime, this);
 
-            Loader = new AssemblyLoader(Assemblies);
+            Loader = new AssemblyLoader(Assemblies, Settings);
         }
 
         public TestingAssembly AddMethod(string methodPath, string code, MethodDescription description)
@@ -222,10 +222,13 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         #endregion
 
-        public TestingAssembly RegisterAssembly(string assemblyPath, RuntimeAssembly testAssembly)
+        public TestingAssembly RegisterAssembly(string assemblyPath, AssemblyProvider testAssembly)
         {
             TypeServices.RegisterAssembly(assemblyPath, testAssembly);
-            testAssembly.BuildAssembly();
+            var runtime = testAssembly as RuntimeAssembly;
+            if (runtime != null)
+                runtime.BuildAssembly();
+
             return this;
         }
 

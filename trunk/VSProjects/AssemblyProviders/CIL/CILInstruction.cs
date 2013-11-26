@@ -58,7 +58,7 @@ namespace AssemblyProviders.CIL
             Data = instruction.Operand;
 
             OpCode = instruction.OpCode;
-            MethodOperand = getMethodInfo(Data as MethodReference);
+            MethodOperand = CreateMethodInfo(Data as MethodReference);
             BranchOperandAddress = getBranchOffset(Data as Instruction);
         }
 
@@ -118,12 +118,12 @@ namespace AssemblyProviders.CIL
             return instruction.Offset;
         }
 
-        private InstanceInfo getInfo(TypeReference type)
+        internal static InstanceInfo GetInfo(TypeReference type)
         {
             return new InstanceInfo(type.FullName);
         }
 
-        private TypeMethodInfo getMethodInfo(MethodReference method)
+        internal static TypeMethodInfo CreateMethodInfo(MethodReference method)
         {
             if (method == null)
                 return null;
@@ -131,14 +131,14 @@ namespace AssemblyProviders.CIL
             var paramInfos = new List<ParameterTypeInfo>();
             foreach (var param in method.Parameters)
             {
-                var paramInfo = ParameterTypeInfo.Create(param.Name, getInfo(param.ParameterType));
+                var paramInfo = ParameterTypeInfo.Create(param.Name, GetInfo(param.ParameterType));
                 paramInfos.Add(paramInfo);
             }
 
             return new TypeMethodInfo(
-                   getInfo(method.DeclaringType),
+                   GetInfo(method.DeclaringType),
                    method.Name,
-                   getInfo(method.ReturnType),
+                   GetInfo(method.ReturnType),
                    paramInfos.ToArray(),
                    true, //TODO
                    method.HasGenericParameters,

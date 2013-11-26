@@ -41,6 +41,8 @@
   <ItemGroup>
     <Compile Include="CIL\CILInstruction.cs" />
     <Compile Include="CIL\CILMethod.cs" />
+    <Compile Include="CIL\Providing\CILGenerator.cs" />
+    <Compile Include="CIL\Providing\CILProvider.cs" />
     <Compile Include="CIL\CILStack.cs" />
     <Compile Include="CIL\Compiler.cs" />
     <Compile Include="CIL\ILAnalyzer\DynamicILReaderProvider.cs" />
@@ -108,6 +110,7 @@
       <Name>Utilities</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
