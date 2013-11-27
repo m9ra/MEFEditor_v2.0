@@ -149,7 +149,7 @@ namespace UnitTesting
             }
             , Method.StaticString_StringParam)
 
-            .AddMethod("StaticClass.#initializer", (c) =>
+            .AddMethod("StaticClass." + Naming.ClassCtorName, (c) =>
             {
                 var self = c.CurrentArguments[0];
                 c.SetField(self, "StaticField", "InitValue");
@@ -390,7 +390,7 @@ namespace UnitTesting
 
                 return str;
             })
-            //                        0123456789  
+                //                        0123456789  
             .AssertReturn().HasValue("aaaaaaaaaa")
             ;
         }

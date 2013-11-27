@@ -21,7 +21,7 @@ namespace Analyzing.Execution.Instructions
 
         public override void Execute(AnalyzingContext context)
         {
-            if (context.Contains(_targetVariable))
+            if (context.ContainsGlobal(_targetVariable))
             {
                 //shared value is already initialized
                 return;
@@ -29,7 +29,7 @@ namespace Analyzing.Execution.Instructions
 
             //create shared instance
             var sharedInstance = context.Machine.CreateInstance(_sharedInstanceInfo);
-            context.SetValue(_targetVariable, sharedInstance);
+            context.SetGlobal(_targetVariable, sharedInstance);
             if (_initializer != null)
                 context.FetchCall(_initializer, new Instance[] { sharedInstance });
         }

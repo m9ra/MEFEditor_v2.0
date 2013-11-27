@@ -33,27 +33,27 @@ namespace AssemblyProviders.CIL
         /// <summary>
         /// Constructor method of stack
         /// </summary>
-        internal static readonly MethodID Stack_ctor = Naming.Method<CILStack>(Naming.CtorName);
+        internal static readonly MethodID Stack_ctor = Naming.Method<VMStack>(Naming.CtorName);
 
         /// <summary>
         /// Push method of stack
         /// </summary>
-        internal static readonly MethodID Stack_push = Naming.Method<CILStack>("Push", typeof(object));
+        internal static readonly MethodID Stack_push = Naming.Method<VMStack>("Push", typeof(object));
 
         /// <summary>
         /// Pop method of stack
         /// </summary>
-        internal static readonly MethodID Stack_pop = Naming.Method<CILStack>("Pop");
+        internal static readonly MethodID Stack_pop = Naming.Method<VMStack>("Pop");
 
         /// <summary>
         /// Add two operands on top of the stack and push its result
         /// </summary>
-        internal static readonly MethodID Stack_add = Naming.Method<CILStack>("Add");
+        internal static readonly MethodID Stack_add = Naming.Method<VMStack>("Add");
 
         /// <summary>
         /// Pop two values on top of the stack, compare them and push the result.
         /// </summary>
-        internal static readonly MethodID Stack_clt = Naming.Method<CILStack>("CLT");
+        internal static readonly MethodID Stack_clt = Naming.Method<VMStack>("CLT");
 
         /// <summary>
         /// System object info
@@ -224,28 +224,19 @@ namespace AssemblyProviders.CIL
 
         static void _call()
         {
-            var info = getMethodOperand();
-            var methodID = info.MethodID;
+            var info = Instruction.MethodOperand;
+            var staticCall = info.IsStatic;
+            createCall(info, staticCall);
+        }
 
-            var argumentVariables = from param in info.Parameters select emitPopTmp(param.Type);
-            argumentVariables = argumentVariables.Reverse();
+        static void _stsfld()
+        {
+            createCall(Instruction.Setter, true);
+        }
 
-            var arguments = Arguments.Values(argumentVariables.ToArray());
-
-            if (info.IsStatic)
-            {
-                E.StaticCall(info.DeclaringType, methodID, arguments);
-            }
-            else
-            {
-                var calledObj = emitPopTmp(info.DeclaringType);
-                E.Call(methodID, calledObj, arguments);
-            }
-
-            if (!info.ReturnType.Equals(Void_info))
-            {
-                emitPushReturn(info.ReturnType);
-            }
+        static void _ldsfld()
+        {
+            createCall(Instruction.Getter, true);
         }
 
         static void _box()
@@ -362,7 +353,6 @@ namespace AssemblyProviders.CIL
 
         #endregion
 
-
         #region Private helpers
 
         /// <summary>
@@ -383,10 +373,31 @@ namespace AssemblyProviders.CIL
             return targetLabel;
         }
 
-        static TypeMethodInfo getMethodOperand()
+        private static void createCall(TypeMethodInfo info, bool staticCall)
         {
-            return Instruction.MethodOperand;
+            var methodID = info.MethodID;
+
+            var argumentVariables = from param in info.Parameters select emitPopTmp(param.Type);
+            argumentVariables = argumentVariables.Reverse();
+
+            var arguments = Arguments.Values(argumentVariables.ToArray());
+
+            if (staticCall)
+            {
+                E.StaticCall(info.DeclaringType, methodID, arguments);
+            }
+            else
+            {
+                var calledObj = emitPopTmp(info.DeclaringType);
+                E.Call(methodID, calledObj, arguments);
+            }
+
+            if (!info.ReturnType.Equals(Void_info))
+            {
+                emitPushReturn(info.ReturnType);
+            }
         }
+
 
         #endregion
 

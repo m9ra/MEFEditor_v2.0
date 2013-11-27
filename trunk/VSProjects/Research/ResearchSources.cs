@@ -16,6 +16,7 @@ using Analyzing;
 using Analyzing.Execution;
 using Analyzing.Editing;
 
+using MEFEditor;
 using MEFAnalyzers;
 
 using AssemblyProviders.CIL.Providing;
@@ -31,6 +32,7 @@ namespace Research
                 .RegisterAssembly(cilAssembly.Path, cilAssembly);
         }
 
+        [CompositionPoint]
         static internal TestingAssembly CECIL_ForLoop()
         {
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.ForLoop");
@@ -38,8 +40,6 @@ namespace Research
 
         static internal TestingAssembly CIL_ForLoop()
         {
-
-
             return AssemblyUtils.RunCIL(() =>
             {
                 string str = "";

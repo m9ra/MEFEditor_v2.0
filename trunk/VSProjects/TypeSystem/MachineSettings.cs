@@ -46,7 +46,7 @@ namespace TypeSystem
             {
                 return (bool)dirVal;
             }
-            else if(dirVal is int)
+            else if (dirVal is int)
             {
                 return (int)dirVal != 0;
             }
@@ -61,7 +61,7 @@ namespace TypeSystem
                 //TODO this could be potentionall inconsitency drawback
                 return null;
 
-            return Naming.Method(sharedInstanceInfo, "#initializer", false, new ParameterTypeInfo[] { });
+            return Naming.Method(sharedInstanceInfo, Naming.ClassCtorName, false, new ParameterTypeInfo[] { });
         }
 
         public void InstanceCreated(Instance instance)

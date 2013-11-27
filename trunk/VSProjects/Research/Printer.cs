@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Analyzing;
 using Analyzing.Execution;
+using AssemblyProviders.CIL;
 
 using TypeSystem;
 
@@ -18,6 +19,7 @@ namespace Research
     {
         static readonly string[] usings = new[]{
             typeof(List<>).Namespace,
+            typeof(VMStack).Namespace,
         };
 
         static ConsoleColor BySeparatorColor = ConsoleColor.Red;

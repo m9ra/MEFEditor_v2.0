@@ -16,6 +16,7 @@ namespace TypeSystem
         public readonly InstanceInfo Type;
         public readonly object DefaultValue;
         public readonly bool HasDefaultValue;
+        public static readonly ParameterTypeInfo[] NoParams = new ParameterTypeInfo[0];
 
         private ParameterTypeInfo(string name, InstanceInfo type, object defaultValue, bool hasDefaultValue)
         {

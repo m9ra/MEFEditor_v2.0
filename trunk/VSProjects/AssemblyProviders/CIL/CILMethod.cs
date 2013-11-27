@@ -9,6 +9,7 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+using Analyzing;
 using TypeSystem;
 
 using AssemblyProviders.CIL.ILAnalyzer;
@@ -34,7 +35,7 @@ namespace AssemblyProviders.CIL
 
         public CILMethod(MethodDefinition method)
         {
-            if (method== null)
+            if (method == null)
             {
                 //empty method
                 Instructions = new CILInstruction[0];
@@ -46,8 +47,10 @@ namespace AssemblyProviders.CIL
             }
         }
 
-        internal static TypeMethodInfo CreateInfo(MethodDefinition method)
+        internal static TypeMethodInfo CreateInfo(TypeServices services, InstanceInfo declaringType, MethodDefinition method)
         {
+            //TODO use given declaring type and services
+            //TODO check for static initialiazers
             //TODO refactor
             return CILInstruction.CreateMethodInfo(method);
         }

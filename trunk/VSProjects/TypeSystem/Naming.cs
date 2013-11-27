@@ -16,6 +16,8 @@ namespace TypeSystem
 
         public static readonly string CtorName = "#ctor";
 
+        public static readonly string ClassCtorName = "#cctor";
+
         public static MethodID Method<CalledType>(string methodName, params Type[] paramTypes)
         {
             var path = typeof(CalledType).FullName + "." + methodName;

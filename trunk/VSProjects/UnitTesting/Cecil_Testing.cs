@@ -62,7 +62,23 @@ namespace UnitTesting
             return "Inside";
         }
 
-        #region Testing utilities 
+        [TestMethod]
+        public void Provide_CECILStaticInitializer()
+        {
+            runWithAssemblyLoad(() =>
+            {
+                return "Data" + _data;
+            }).AssertReturn().HasValue("DataInitialized");
+        }
+
+        private static string _data;
+
+        static Cecil_Testing()
+        {
+            _data = "Initialized";
+        }
+
+        #region Testing utilities
 
         private TestingAssembly run(string methodName)
         {

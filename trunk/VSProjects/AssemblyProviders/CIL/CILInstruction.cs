@@ -31,6 +31,10 @@ namespace AssemblyProviders.CIL
 
         public readonly int BranchOperandAddress = -1;
 
+        public readonly TypeMethodInfo Setter;
+
+        public readonly TypeMethodInfo Getter;
+
         static CILInstruction()
         {
             foreach (var opCodeField in typeof(OpCodes).GetFields(BindingFlags.Static | BindingFlags.Public))
@@ -48,8 +52,11 @@ namespace AssemblyProviders.CIL
 
             OpCode = OpCodesTable[instruction.OpCode.Name];
 
-            MethodOperand = getMethodInfo(Data as MethodInfo);
+            //TODO resolve ctors
+            MethodOperand = getMethodInfo(Data as MethodInfo); 
             BranchOperandAddress = getBranchOffset(instruction);
+            Setter = getSetter(Data as FieldInfo);
+            Getter = getGetter(Data as FieldInfo);
         }
 
         public CILInstruction(Instruction instruction)
@@ -60,6 +67,9 @@ namespace AssemblyProviders.CIL
             OpCode = instruction.OpCode;
             MethodOperand = CreateMethodInfo(Data as MethodReference);
             BranchOperandAddress = getBranchOffset(Data as Instruction);
+
+            Setter = getSetter(Data as FieldReference);
+            Getter = getGetter(Data as FieldReference);
         }
 
 
@@ -86,6 +96,37 @@ namespace AssemblyProviders.CIL
 
         #region Reflection instructions
 
+        private TypeMethodInfo getGetter(FieldInfo field)
+        {
+            if (field == null)
+                return null;
+
+            var name = "get_" + field.Name;
+            var declaringType = new InstanceInfo(field.DeclaringType);
+            var fieldType = new InstanceInfo(field.FieldType);
+
+            //TODO resolve if it is static
+            return new TypeMethodInfo(declaringType,
+                name, fieldType, ParameterTypeInfo.NoParams,
+                true);
+        }
+
+        private TypeMethodInfo getSetter(FieldInfo field)
+        {
+            if (field == null)
+                return null;
+
+            var name = "set_" + field.Name;
+            var declaringType = new InstanceInfo(field.DeclaringType);
+            var fieldType = new InstanceInfo(field.FieldType);
+
+            //TODO resolve if it is static
+            return new TypeMethodInfo(declaringType,
+                name, new InstanceInfo(typeof(void)), new ParameterTypeInfo[]{
+                    ParameterTypeInfo.Create("value",fieldType)
+                },
+                true);
+        }
 
         private int getBranchOffset(ILInstruction instruction)
         {
@@ -109,6 +150,41 @@ namespace AssemblyProviders.CIL
         }
 
         #endregion
+
+
+        #region Mono Cecil instructions
+
+        private TypeMethodInfo getGetter(FieldReference field)
+        {
+            if (field == null)
+                return null;
+
+            var name = "get_" + field.Name;
+            var declaringType = GetInfo(field.DeclaringType);
+            var fieldType = GetInfo(field.FieldType);
+
+            //TODO resolve if it is static
+            return new TypeMethodInfo(declaringType,
+                name, fieldType, ParameterTypeInfo.NoParams,
+                true);
+        }
+
+        private TypeMethodInfo getSetter(FieldReference field)
+        {
+            if (field == null)
+                return null;
+            
+            var name = "set_" + field.Name;
+            var declaringType = GetInfo(field.DeclaringType);
+            var fieldType = GetInfo(field.FieldType);
+
+            //TODO resolve if it is static
+            return new TypeMethodInfo(declaringType,
+                name, new InstanceInfo(typeof(void)), new ParameterTypeInfo[]{
+                    ParameterTypeInfo.Create("value",fieldType)
+                },
+                true);
+        }
 
         private int getBranchOffset(Instruction instruction)
         {
@@ -135,9 +211,21 @@ namespace AssemblyProviders.CIL
                 paramInfos.Add(paramInfo);
             }
 
+            var name = method.Name;
+            switch (name)
+            {
+                case ".ctor":
+                    name = Naming.CtorName;
+                    break;
+                case ".cctor":
+                    name = Naming.ClassCtorName;
+                    break;
+            }
+
+
             return new TypeMethodInfo(
                    GetInfo(method.DeclaringType),
-                   method.Name,
+                   name,
                    GetInfo(method.ReturnType),
                    paramInfos.ToArray(),
                    true, //TODO
@@ -145,5 +233,7 @@ namespace AssemblyProviders.CIL
                    false //TODO
                    );
         }
+
+        #endregion
     }
 }

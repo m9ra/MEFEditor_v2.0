@@ -12,15 +12,15 @@ namespace Analyzing.Execution
     public class AnalyzingContext
     {
         /// <summary>
-        /// Available machine settings
-        /// </summary>
-        internal IMachineSettings Settings { get { return Machine.Settings; } }
-
-        public readonly Machine Machine;
-        /// <summary>
         /// Current call stack
         /// </summary>
-        Stack<CallContext> _callStack = new Stack<CallContext>();
+        private readonly Stack<CallContext> _callStack = new Stack<CallContext>();
+
+        /// <summary>
+        /// Variables that are available globaly through call stack
+        /// </summary>
+        private readonly Dictionary<VariableName, Instance> _globals = new Dictionary<VariableName, Instance>();
+
         /// <summary>
         /// Loader used for loading and resolving methods and type descriptions
         /// </summary>
@@ -49,6 +49,13 @@ namespace Analyzing.Execution
         internal Instance LastReturnValue { get; private set; }
 
         /// <summary>
+        /// Available machine settings
+        /// </summary>
+        internal IMachineSettings Settings { get { return Machine.Settings; } }
+
+        public readonly Machine Machine;
+
+        /// <summary>
         /// Provider for Edits handling
         /// </summary>
         public EditsProvider Edits { get; private set; }
@@ -68,6 +75,37 @@ namespace Analyzing.Execution
         {
             return CurrentCall.GetValue(variable);
         }
+
+        /// <summary>
+        /// Determine that gloabl scope contains given variable
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <returns></returns>
+        internal bool ContainsGlobal(VariableName variable)
+        {
+            return _globals.ContainsKey(variable);
+        }
+
+        internal Instance GetGlobal(VariableName variable)
+        {
+            Instance result;
+
+            if (!_globals.TryGetValue(variable, out result))
+            {
+                throw new KeyNotFoundException("Cannot find " + variable + " in global scope");
+            }
+
+            return result;
+        }
+
+        internal void SetGlobal(VariableName variable, Instance instance)
+        {
+            if (instance == null)
+                throw new ArgumentNullException("instance");
+
+            _globals[variable] = instance;
+        }
+
         /// <summary>
         /// Set value for variable of given name
         /// </summary>
@@ -245,6 +283,5 @@ namespace Analyzing.Execution
                 Edits = new EditsProvider(call.TransformProvider, CurrentCall.CurrentBlock);
             }
         }
-
     }
 }

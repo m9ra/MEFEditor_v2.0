@@ -9,6 +9,13 @@ using System.Threading.Tasks;
 /// </summary>
 static class CecilTestSources
 {
+    static string data;
+
+    static CecilTestSources()
+    {
+        data = "initialized";
+    }
+
     static string ForLoop()
     {
         string str = "";
@@ -23,7 +30,7 @@ static class CecilTestSources
     static string CrossStart()
     {
         var x = "x";
-        return x + CrossCall();
+        return x + CrossCall() + data;
     }
 
     static string CrossCall()

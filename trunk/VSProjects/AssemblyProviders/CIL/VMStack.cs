@@ -13,7 +13,7 @@ namespace AssemblyProviders.CIL
 {
     internal delegate object MathOp(object op1, object op2);
 
-    public class CILStack
+    public class VMStack
     {
         private readonly Stack<Instance> _stack = new Stack<Instance>();
 
@@ -23,14 +23,14 @@ namespace AssemblyProviders.CIL
         /// Create representation of VM stack.
         /// </summary>
         /// <param name="context">Analyzing context available for method call</param>
-        private CILStack(AnalyzingContext context)
+        private VMStack(AnalyzingContext context)
         {
             _context = context;
         }
 
         internal static void InitializeStack(AnalyzingContext context)
         {
-            var stackInstance = context.Machine.CreateDirectInstance(new CILStack(context));
+            var stackInstance = context.Machine.CreateDirectInstance(new VMStack(context));
             context.SetValue(new VariableName(Transcription.StackStorage), stackInstance);
         }
 
@@ -76,6 +76,11 @@ namespace AssemblyProviders.CIL
         private Instance createInstance(object obj)
         {
             return _context.Machine.CreateDirectInstance(obj);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Stack state: {0}", _stack.Count);
         }
     }
 }

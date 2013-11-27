@@ -14,17 +14,21 @@ namespace TypeSystem
     public class CompositionPoint
     {
         /// <summary>
-        /// Determine if composition point is implicit or explicitly specified via attribute.
+        /// Determine that composition point has been created explicitly
+        /// via attribute.
         /// </summary>
-        public bool IsExplicit { get; private set; }
+        public readonly bool IsExplicit;
+
         /// <summary>
         /// Entry method of composition point.
         /// </summary>
-        public MethodID EntryMethod { get; private set; }
-        /// <summary>
-        /// Arguments which will be pasted into entry method on composition start.
-        /// </summary>
-        public Instance[] Arguments { get; private set; }
+        public readonly MethodID EntryMethod;
+
+        public CompositionPoint(MethodID entryMethod, bool isExplicit)
+        {
+            IsExplicit = isExplicit;
+            EntryMethod = entryMethod;
+        }
     }
 
     /// <summary>
@@ -35,29 +39,29 @@ namespace TypeSystem
         /// <summary>
         /// Type of component
         /// </summary>
-        public InstanceInfo ComponentType { get; private set; }
+        public readonly InstanceInfo ComponentType;
         /// <summary>
         /// Exports defined on whole class.
         /// </summary>
-        public Export[] SelfExports { get; private set; }
+        public readonly Export[] SelfExports;
         /// <summary>
         /// Exports defined on class members.
         /// </summary>
-        public Export[] Exports { get; private set; }
+        public readonly Export[] Exports;
         /// <summary>
         /// Imports defined on component.
         /// </summary>
-        public Import[] Imports { get; private set; }
+        public readonly Import[] Imports;
         /// <summary>
         /// Composition points in component.
         /// </summary>
-        public CompositionPoint[] CompositionPoints { get; private set; }
+        public readonly CompositionPoint[] CompositionPoints;
         /// <summary>
         /// Constructor marked as importing constructor, or paramless constructor.
         /// </summary>
-        public MethodID ImportingConstructor { get; private set; }
+        public readonly MethodID ImportingConstructor;
 
-        public ComponentInfo(InstanceInfo thisType,MethodID importingCtor,Import[] imports, Export[] exports, Export[] selfExports)
+        public ComponentInfo(InstanceInfo thisType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports)
         {
             ComponentType = thisType;
             SelfExports = selfExports;
@@ -97,21 +101,21 @@ namespace TypeSystem
         /// <summary>
         /// Exported metadata for this export.
         /// </summary>
-        public MetaExport Meta { get; private set; }
+        public readonly MetaExport Meta;
         /// <summary>
         /// Contract specified in Export attribute, or default contract according to ExportType.
         /// </summary>
-        public string Contract { get; private set; }
+        public readonly string Contract;
         /// <summary>
         /// Getter, which retrieves exported instance.
         /// </summary>
-        public MethodID Getter { get; private set; }
+        public readonly MethodID Getter;
         /// <summary>
         /// Type of exported value.
         /// </summary>
-        public InstanceInfo ExportType { get; private set; }
+        public readonly InstanceInfo ExportType;
 
-        public Export(InstanceInfo exportType,MethodID getter)
+        public Export(InstanceInfo exportType, MethodID getter)
         {
             ExportType = exportType;
             Contract = exportType.TypeName;
@@ -127,22 +131,22 @@ namespace TypeSystem
         /// <summary>
         /// True, if ItemType is wrapped in lazy object
         /// </summary>
-        public bool IsItemLazy { get; private set; }
+        public readonly bool IsItemLazy;
         /// <summary>
         /// Type of one item, without lazy, collection,... 
         /// Should be used as default Contract.
         /// </summary>
-        public InstanceInfo ItemType { get; private set; }
+        public readonly InstanceInfo ItemType;
         /// <summary>
         /// Type of meta info, null if not available.
         /// </summary>
-        public InstanceInfo MetaDataType { get; private set; }
+        public readonly InstanceInfo MetaDataType;
         /// <summary>
         /// Type for Importing setter/parameter.
         /// </summary>
-        public InstanceInfo ImportType { get; private set; }
+        public readonly InstanceInfo ImportType;
 
-        public ImportTypeInfo(InstanceInfo importType,InstanceInfo itemType=null)
+        public ImportTypeInfo(InstanceInfo importType, InstanceInfo itemType = null)
         {
             if (itemType == null)
                 itemType = importType;
@@ -160,16 +164,16 @@ namespace TypeSystem
         /// <summary>
         /// Contract specified in Import attribute, or default contract according to import type
         /// </summary>
-        public string Contract { get; private set; }
+        public readonly string Contract;
         /// <summary>
         /// Info about importing type, IsLazy,ItemType,...
         /// </summary>
-        public ImportTypeInfo ImportTypeInfo { get; private set; }
+        public readonly ImportTypeInfo ImportTypeInfo;
         /// <summary>
         /// Setter, which set instance to requested target        
         /// is null, if import was obtained from importing constructor
         /// </summary>
-        public MethodID Setter { get; private set; }
+        public readonly MethodID Setter;
 
         /// <summary>
         /// Determine if this import has to be satisfied before instance constructing
@@ -178,13 +182,13 @@ namespace TypeSystem
         /// <summary>
         /// Determine if value can be default (no export needed)
         /// </summary>
-        public bool AllowDefault { get; private set; }
+        public readonly bool AllowDefault;
         /// <summary>
         /// Determine if import can accept more than one export
         /// </summary>
-        public bool AllowMany { get; private set; }
+        public readonly bool AllowMany;
 
-        public Import(InstanceInfo importType,MethodID setter,bool allowMany=false)
+        public Import(InstanceInfo importType, MethodID setter, bool allowMany = false)
         {
             ImportTypeInfo = new ImportTypeInfo(importType);
             Contract = ImportTypeInfo.ItemType.TypeName;
@@ -194,8 +198,8 @@ namespace TypeSystem
 
         public Import(InstanceInfo importType, InstanceInfo itemType, MethodID setter, bool allowMany = false)
         {
-            ImportTypeInfo = new ImportTypeInfo(importType,itemType);
-            Contract =ImportTypeInfo.ItemType.TypeName;
+            ImportTypeInfo = new ImportTypeInfo(importType, itemType);
+            Contract = ImportTypeInfo.ItemType.TypeName;
             Setter = setter;
             AllowMany = allowMany;
         }

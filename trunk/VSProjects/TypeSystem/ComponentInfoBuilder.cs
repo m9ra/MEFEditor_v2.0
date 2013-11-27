@@ -16,9 +16,24 @@ namespace TypeSystem
 
         private readonly List<Import> _imports = new List<Import>();
 
+        private readonly List<CompositionPoint> _explicitCompositionPoints = new List<CompositionPoint>();
+
         private readonly InstanceInfo _componentType;
 
         private MethodID _importingCtor;
+
+        public bool IsEmpty
+        {
+            get
+            {
+                return
+                   _selfExports.Count == 0 &&
+                   _exports.Count == 0 &&
+                   _imports.Count == 0 &&
+                   _explicitCompositionPoints.Count == 0
+                   ;
+            }
+        }
 
         public ComponentInfoBuilder(InstanceInfo componentType)
         {
@@ -37,7 +52,6 @@ namespace TypeSystem
             _imports.Add(new Import(importType, setterID));
         }
 
-
         public void SetImportingCtor(params InstanceInfo[] importingParameters)
         {
             var parameters = new ParameterTypeInfo[importingParameters.Length];
@@ -51,6 +65,11 @@ namespace TypeSystem
             }
 
             _importingCtor = Naming.Method(_componentType, Naming.CtorName, false, parameters);
+        }
+
+        public void AddExplicitCompositionPoint(MethodID method)
+        {
+            _explicitCompositionPoints.Add(new CompositionPoint(method, true));
         }
 
         private MethodID getSetterID(InstanceInfo importType, string setterName)
@@ -70,6 +89,7 @@ namespace TypeSystem
         {
             return new ComponentInfo(_componentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray());
         }
+
 
     }
 }

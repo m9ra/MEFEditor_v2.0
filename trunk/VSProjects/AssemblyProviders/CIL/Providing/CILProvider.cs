@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Mono.Cecil;
 
 using Analyzing;
+using MEFEditor;
 using TypeSystem;
 
 namespace AssemblyProviders.CIL.Providing
@@ -39,20 +40,84 @@ namespace AssemblyProviders.CIL.Providing
                 path = refAssembly.MainModule.FullyQualifiedName;
             }*/
 
+            StartTransaction();
 
             foreach (var type in cecilAssembly.MainModule.Types)
             {
                 if (type.IsSpecialName)
+                    //TODO: can really skip types with special names ?
                     continue;
+
+                var declaringType = getInfo(type);
+                var builder = new ComponentInfoBuilder(declaringType);
 
                 foreach (var method in type.Methods)
                 {
-                    var item = createItem(method);
-                    addMethod(item);
+                    var item = createItem(declaringType, method);
+                    tryReportCompositionPoint(builder, method, item);
+                    addItem(item);
+                }
+
+                foreach (var field in type.Fields)
+                {
+                    addAutoProperty(builder, declaringType, field);
                 }
 
                 ensureStaticInitializer(type);
+
+                if (!builder.IsEmpty)
+                {
+                    //report that we have found component
+                    AddComponent(builder.BuildInfo());
+                }
             }
+
+            CommitTransaction();
+        }
+
+        private void addAutoProperty(ComponentInfoBuilder builder, InstanceInfo declaringType, FieldDefinition field)
+        {
+            var fieldName = field.Name;
+            var isStatic = field.IsStatic;
+            var fieldType = getInfo(field.FieldType);
+
+            var getter = new TypeMethodInfo(declaringType,
+                "get_" + fieldName, fieldType,
+                new ParameterTypeInfo[0], isStatic
+                );
+
+            //TODO generate field load method
+            var getItem = new MethodItem(new GetterGenerator(fieldName), getter);
+            addItem(getItem);
+
+            var setter = new TypeMethodInfo(declaringType,
+                "set_" + fieldName, new InstanceInfo(typeof(void)),
+                new ParameterTypeInfo[]{
+                    ParameterTypeInfo.Create("value",fieldType)
+                    }, isStatic
+                );
+
+            //TODO generate field set method
+            var setItem = new MethodItem(new SetterGenerator(fieldName), setter);
+            addItem(setItem);
+
+            //TODO add component info
+        }
+
+        private void tryReportCompositionPoint(ComponentInfoBuilder builder, MethodDefinition method, MethodItem item)
+        {
+            foreach (var attrib in method.CustomAttributes)
+            {
+                if (attrib.AttributeType.FullName == typeof(CompositionPointAttribute).FullName)
+                {
+                    builder.AddExplicitCompositionPoint(item.Info.MethodID);
+                }
+            }
+        }
+
+        private InstanceInfo getInfo(TypeReference type)
+        {
+            return new InstanceInfo(type.FullName);
         }
 
         /// <summary>
@@ -76,16 +141,22 @@ namespace AssemblyProviders.CIL.Providing
                     new ParameterTypeInfo[0], false, false, false
                     );
                 var item = new MethodItem(new CILGenerator(null, methodInfo, TypeServices), methodInfo);
-                addMethod(item);
+                addItem(item);
             }
         }
 
-        private MethodItem createItem(MethodDefinition method)
+        /// <summary>
+        /// Creates method item from given method definition.
+        /// Static constructors checking is proceeded
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        private MethodItem createItem(InstanceInfo declaringType, MethodDefinition method)
         {
-            //TODO resolve generics
-            var methodInfo = CILMethod.CreateInfo(method);
+            var methodInfo = CILMethod.CreateInfo(TypeServices, declaringType, method);
 
             if (methodInfo.HasGenericParameters)
+                //TODO resolve generics
                 return null;
 
             var item = new MethodItem(new CILGenerator(method, methodInfo, TypeServices), methodInfo);
@@ -93,7 +164,7 @@ namespace AssemblyProviders.CIL.Providing
             return item;
         }
 
-        private void addMethod(MethodItem item)
+        private void addItem(MethodItem item)
         {
             //TODO resolve implemented types
             if (item == null)
@@ -101,6 +172,9 @@ namespace AssemblyProviders.CIL.Providing
 
             _methods.AddItem(item, new InstanceInfo[0]);
         }
+
+
+        #region Assembly provider API implementation
 
         public override SearchIterator CreateRootIterator()
         {
@@ -131,5 +205,7 @@ namespace AssemblyProviders.CIL.Providing
         {
             throw new NotImplementedException();
         }
+
+        #endregion
     }
 }

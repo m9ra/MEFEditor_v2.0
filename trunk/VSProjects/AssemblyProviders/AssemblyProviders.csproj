@@ -43,7 +43,9 @@
     <Compile Include="CIL\CILMethod.cs" />
     <Compile Include="CIL\Providing\CILGenerator.cs" />
     <Compile Include="CIL\Providing\CILProvider.cs" />
-    <Compile Include="CIL\CILStack.cs" />
+    <Compile Include="CIL\Providing\GetterGenerator.cs" />
+    <Compile Include="CIL\Providing\SetterGenerator.cs" />
+    <Compile Include="CIL\VMStack.cs" />
     <Compile Include="CIL\Compiler.cs" />
     <Compile Include="CIL\ILAnalyzer\DynamicILReaderProvider.cs" />
     <Compile Include="CIL\ILAnalyzer\IILReaderProvider.cs" />
@@ -100,6 +102,10 @@
     <ProjectReference Include="..\Analyzing\Analyzing.csproj">
       <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
       <Name>Analyzing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MEFEditor\MEFEditor.csproj">
+      <Project>{79f2bdfb-802b-44e6-b8c6-56e5cf64ecf6}</Project>
+      <Name>MEFEditor</Name>
     </ProjectReference>
     <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>

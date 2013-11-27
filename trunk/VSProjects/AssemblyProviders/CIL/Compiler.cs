@@ -14,7 +14,7 @@ using TypeSystem;
 namespace AssemblyProviders.CIL
 {
     /// <summary>
-    /// Compiler used for CIL transcription. Needs CILStack as direct type in machine settings.
+    /// Compiler used for CIL transcription. Needs VMStack as direct type in machine settings.
     /// </summary>
     public class Compiler
     {
@@ -90,7 +90,7 @@ namespace AssemblyProviders.CIL
         /// </summary>
         private void prepareStack()
         {
-            E.DirectInvoke(CILStack.InitializeStack);
+            E.DirectInvoke(VMStack.InitializeStack);
         }
     }
 }

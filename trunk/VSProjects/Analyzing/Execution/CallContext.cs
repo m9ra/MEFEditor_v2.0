@@ -14,7 +14,9 @@ namespace Analyzing.Execution
         private readonly Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
 
         private uint _instructionPointer;
-                        
+
+        private readonly AnalyzingContext _context;
+
         /// <summary>
         /// Determine that call doesn't have next instructions to proceed
         /// </summary>
@@ -33,10 +35,14 @@ namespace Analyzing.Execution
         public readonly MethodID Name;
 
         public readonly InstructionBatch Program;
-                
 
-        internal CallContext(AnalyzingContext context, MethodID name,CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
+
+
+
+        internal CallContext(AnalyzingContext context, MethodID name, CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
         {
+            _context = context;
+
             ArgumentValues = argumentValues;
             Name = name;
             TransformProvider = transformProvider;
@@ -77,7 +83,7 @@ namespace Analyzing.Execution
 
             if (!_variables.TryGetValue(variable, out value))
             {
-                throw new NotSupportedException(string.Format("Missing entry for reading value from '{0}'", variable));
+                return _context.GetGlobal(variable);
             }
 
             return value;
