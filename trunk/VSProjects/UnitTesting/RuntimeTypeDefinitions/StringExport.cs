@@ -41,7 +41,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             return Export.Get();
         }
 
-        protected override void draw(DrawingServices services)
+        protected override void draw(InstanceDrawer services)
         {
             services.PublishField("Export", Export);
             services.CommitDrawing();

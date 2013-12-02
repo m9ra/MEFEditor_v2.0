@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using Drawing;
 using Analyzing;
 
+using TypeSystem.DrawingServices;
 using TypeSystem.Runtime.Building;
 
 namespace TypeSystem.Runtime
@@ -106,7 +107,7 @@ namespace TypeSystem.Runtime
             return
                 type == typeof(void) ||
                 type.IsArray ||
-                typeof(Instance).IsAssignableFrom(type)||
+                typeof(Instance).IsAssignableFrom(type) ||
                 type == typeof(InstanceWrap) ||
                 _directTypes.ContainsKey(type);
         }
@@ -280,42 +281,17 @@ namespace TypeSystem.Runtime
 
         #endregion
 
-        public void Draw(AnalyzingResult result, Instance instance, DiagramDefinition context)
+        public DataTypeDefinition GetDrawer(Instance instance)
         {
-            var toDraw = new Queue<Instance>();
-            toDraw.Enqueue(instance);
-
-            while (toDraw.Count > 0)
-            {
-                var drawedInstance = toDraw.Dequeue();
-                if (context.ContainsDrawing(drawedInstance.ID))
-                    //instance is already drawed
-                    continue;
-
-                DataTypeDefinition typeDefinition;
-                if (!_dataTypes.TryGetValue(drawedInstance.Info.TypeName, out typeDefinition))
-                    //TODO resolve generic types and inheritance
-                    return;
-
-                var dependencies = typeDefinition.Draw(result, drawedInstance, context);
-
-                foreach (var dependency in dependencies)
-                    toDraw.Enqueue(dependency);
-            }
+            DataTypeDefinition typeDefinition;
+            _dataTypes.TryGetValue(instance.Info.TypeName, out typeDefinition);
+            //TODO resolve generic types and inheritance
+            return typeDefinition;
         }
 
-        /// <summary>
-        /// TODO: Type system will be more connected with drawing assembly
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="diagram"></param>
-        public void Register(AnalyzingResult result, DiagramDefinition diagram)
+        public DrawingPipeline CreateDrawingPipeline(AnalyzingResult result)
         {
-            diagram.OnDragStart += (item) =>
-            {
-                UserInteraction.DraggedInstance = result.GetInstance(item.ID);
-            };
+            return new DrawingPipeline(this, result);
         }
-
     }
 }

@@ -72,7 +72,7 @@ namespace Research
         {
             _entryContext = _result.Execution.EntryContext;
 
-            findDrawings();
+            createDrawings();
             printEntryContext();
             printOtherContexts();
             printAdditionalInfo();
@@ -179,11 +179,10 @@ namespace Research
         /// <summary>
         /// Find drawings between instances created during execution
         /// </summary>
-        private void findDrawings()
+        private void createDrawings()
         {
-            _drawings = new DiagramDefinition(new EditView(_result.Execution.CreateExecutionView()));
-            _assembly.Runtime.Register(_result.Execution, _drawings);
-
+            var pipeline=_assembly.Runtime.CreateDrawingPipeline(_result.Execution);
+            
             foreach (var instance in _result.Execution.CreatedInstances)
             {
                 //TODO display components or types with defined drawers
@@ -191,9 +190,11 @@ namespace Research
 
                 if (info != null || instance.Info.TypeName == "CompositionTester")
                 {
-                    _assembly.Runtime.Draw(_result.Execution, instance, _drawings);
+                    pipeline.AddToDrawQueue(instance);
                 }
             }
+
+            _drawings = pipeline.GetOutput();
         }
 
         /// <summary>

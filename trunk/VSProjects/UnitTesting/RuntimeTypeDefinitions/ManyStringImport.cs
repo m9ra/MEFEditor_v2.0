@@ -40,14 +40,14 @@ namespace UnitTesting.RuntimeTypeDefinitions
             return Import.Get();
         }
 
-        protected override void draw(DrawingServices services)
+        protected override void draw(InstanceDrawer services)
         {
             var importedValues = Import.Get();
 
-            var i=0;
+            var i = 0;
             foreach (var value in importedValues)
             {
-                services.Drawing.SetProperty("Import[" + i + "]", value);
+                services.SetProperty("Import[" + i + "]", value);
                 ++i;
             }
 

@@ -31,6 +31,11 @@ namespace Drawing
         public readonly string ID;
 
         /// <summary>
+        /// Drawing reference to current diagram item
+        /// </summary>
+        public readonly DrawingReference Reference;
+
+        /// <summary>
         /// All properties that has been set for drawing definition
         /// </summary>
         public IEnumerable<DrawingProperty> Properties { get { return _properties.Values; } }
@@ -50,6 +55,8 @@ namespace Drawing
         {
             ID = id;
             DrawedType = drawedType;
+
+            Reference = new DrawingReference(ID);
         }
 
         /// <summary>

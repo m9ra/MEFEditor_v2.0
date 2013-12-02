@@ -43,7 +43,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             return Import.Get();
         }
 
-        protected override void draw(DrawingServices services)
+        protected override void draw(InstanceDrawer services)
         {
             services.PublishField("Import", Import);
             services.PublishField("PreImport", PreImport);

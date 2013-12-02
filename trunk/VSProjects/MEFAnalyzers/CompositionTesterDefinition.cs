@@ -9,6 +9,7 @@ using Analyzing;
 
 using TypeSystem;
 using TypeSystem.Runtime;
+using TypeSystem.DrawingServices;
 
 using Analyzing.Editing;
 
@@ -95,12 +96,12 @@ namespace MEFAnalyzers
             }
         }
 
-        protected override void draw(DrawingServices services)
+        protected override void draw(InstanceDrawer drawer)
         {
-            services.PublishField("AssemblyPath", AssemblyPath);
-            services.PublishField("Composed", Composed);
+            drawer.PublishField("AssemblyPath", AssemblyPath);
+            drawer.PublishField("Composed", Composed);
 
-            var slot = services.AddSlot();
+            var slot = drawer.AddSlot();
 
             var context = CompositionContext.Get();
             if (context != null)
@@ -108,36 +109,38 @@ namespace MEFAnalyzers
 
                 foreach (var component in CompositionContext.Get().InputInstances)
                 {
-                    var reference = services.Draw(component);
-                    slot.Add(reference);
+                    var drawing = drawer.GetInstanceDrawing(component);
+                    slot.Add(drawing.Reference);
                 }
 
                 var compositionResult = CompositionResult.Get();
 
                 foreach (var point in compositionResult.Points)
                 {
-                    var joinPoint = getConnector(point, services);
+                    var joinPoint = getConnector(point, drawer);
                 }
 
                 foreach (var join in compositionResult.Joins)
                 {
-                    var fromPoint = getConnector(join.Export, services);
-                    var toPoint = getConnector(join.Import, services);
+                    var fromPoint = getConnector(join.Export, drawer);
+                    var toPoint = getConnector(join.Import, drawer);
 
-                    var joinDefinition = services.DrawJoin(fromPoint, toPoint);
+                    var joinDefinition = drawer.DrawJoin(fromPoint, toPoint);
                     //TODO set properties of joinDefinition
                 }
             }
 
-            services.CommitDrawing();
+            drawer.CommitDrawing();
         }
 
-        private ConnectorDefinition getConnector(JoinPoint point, DrawingServices services)
+        private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
         {
             //TODO this should set component itself
             var compositionResult = CompositionResult.Get();
-            var instance = point.Instance.Component;
-            var connector = services.GetJoinPoint(instance, point.Point);
+            var instance = drawer.GetInstanceDrawing(point.Instance.Component);
+
+
+            var connector = instance.GetJoinPoint(point.Point);
 
             var kind = getConnectorKind(point);
 

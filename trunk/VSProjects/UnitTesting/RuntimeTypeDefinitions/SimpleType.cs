@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+using TypeSystem;
 using TypeSystem.Runtime;
 
 namespace UnitTesting.RuntimeTypeDefinitions
 {
-    public class SimpleType:DataTypeDefinition
+    public class SimpleType : DataTypeDefinition
     {
         public readonly Field<string> TestProperty;
 
@@ -23,12 +25,12 @@ namespace UnitTesting.RuntimeTypeDefinitions
             TestProperty.Set(data);
         }
 
-        public string _method_Concat(string concated="CallDefault")
+        public string _method_Concat(string concated = "CallDefault")
         {
-            return TestProperty.Get()+"_"+concated;
+            return TestProperty.Get() + "_" + concated;
         }
 
-        protected override void draw(DrawingServices services)
+        protected override void draw(InstanceDrawer services)
         {
             services.PublishField("TestProperty", TestProperty);
             services.CommitDrawing();

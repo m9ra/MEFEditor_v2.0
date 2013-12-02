@@ -9,6 +9,7 @@ using Analyzing.Execution;
 
 using Analyzing.Editing;
 
+using TypeSystem.DrawingServices;
 using TypeSystem.Runtime.Building;
 
 using Drawing;
@@ -69,7 +70,7 @@ namespace TypeSystem.Runtime
             return TypeInfo;
         }
 
-        protected virtual void draw(DrawingServices services)
+        protected virtual void draw(InstanceDrawer drawer)
         {
         }
 
@@ -142,22 +143,14 @@ namespace TypeSystem.Runtime
             }
         }
 
-        /// <summary>
-        /// Provides drawing of instance into context. Drawing dependencies are returned.
-        /// </summary>
-        /// <param name="thisInstance"></param>
-        /// <param name="context"></param>
-        /// <returns>Dependency instances, that has to be drawed for satisfying thisInstance</returns>
-        internal IEnumerable<Instance> Draw(AnalyzingResult result, Instance thisInstance, DiagramDefinition context)
+
+        internal void Draw(DrawedInstance toDraw)
         {
-            This = thisInstance;
+            This = toDraw.WrappedInstance;
 
             try
             {
-                //TODO inheritance drawing
-                var services = new DrawingServices(result, This, context);
-                draw(services);
-                return services.DependencyInstances;
+                draw(toDraw.InstanceDrawer);
             }
             finally
             {

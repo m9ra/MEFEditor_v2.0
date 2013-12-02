@@ -20,10 +20,6 @@ namespace Research
 {
     class Program
     {
-
-      
-
-
         /// <summary>
         /// Main for running research sources
         /// </summary>        
@@ -32,7 +28,7 @@ namespace Research
             ////force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7).GetResult();
 
-            var assembly = ResearchSources.CECIL_AssemblyProviding();
+            var assembly = ResearchSources.DrawingTester_TwoContainers();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 

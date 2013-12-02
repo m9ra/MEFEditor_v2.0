@@ -45,6 +45,8 @@
     <Compile Include="ComponentInfoBuilder.cs" />
     <Compile Include="DirectGenerator.cs" />
     <Compile Include="Core\AssembliesManager.cs" />
+    <Compile Include="DrawingServices\DrawingPipeline.cs" />
+    <Compile Include="DrawingServices\InstanceDrawer.cs" />
     <Compile Include="EditView.cs" />
     <Compile Include="UserInteraction.cs" />
     <Compile Include="HashedMethodContainer.cs" />
@@ -56,7 +58,7 @@
     <Compile Include="Runtime\Building\MethodBuilder.cs" />
     <Compile Include="Runtime\DataTypeDefinition.cs" />
     <Compile Include="Runtime\DirectTypeDefinition.cs" />
-    <Compile Include="Runtime\DrawingServices.cs" />
+    <Compile Include="DrawingServices\DrawedInstance.cs" />
     <Compile Include="Runtime\Field.cs" />
     <Compile Include="Runtime\Building\RuntimeMethodGenerator.cs" />
     <Compile Include="Runtime\RuntimeTypeDefinition.cs" />
