@@ -98,6 +98,7 @@ namespace MEFAnalyzers
 
         protected override void draw(InstanceDrawer drawer)
         {
+            var isComposed=Composed.Get();
             drawer.PublishField("AssemblyPath", AssemblyPath);
             drawer.PublishField("Composed", Composed);
 
@@ -110,6 +111,7 @@ namespace MEFAnalyzers
                 foreach (var component in CompositionContext.Get().InputInstances)
                 {
                     var drawing = drawer.GetInstanceDrawing(component);
+                    drawing.SetProperty("Composed", isComposed.ToString());
                     slot.Add(drawing.Reference);
                 }
 
@@ -135,46 +137,10 @@ namespace MEFAnalyzers
 
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
         {
-            //TODO this should set component itself
-            var compositionResult = CompositionResult.Get();
             var instance = drawer.GetInstanceDrawing(point.Instance.Component);
-
-
+            
             var connector = instance.GetJoinPoint(point.Point);
-
-            var kind = getConnectorKind(point);
-
-            setProperty(connector, "Kind", kind);
-            setProperty(connector, "Contract", point.Contract);
-            setProperty(connector, "ContractType", point.ContractType.TypeName);
-            setProperty(connector, "AllowMany", point.AllowMany);
-            setProperty(connector, "AllowDefault", point.AllowDefault);
-            setProperty(connector, "IsPrerequisity", point.IsPrerequesity);
-
             return connector;
-        }
-
-        private void setProperty(ConnectorDefinition connector, string propertyName, object propertyValue)
-        {
-            connector.SetProperty(new DrawingProperty(propertyName, propertyValue.ToString()));
-        }
-
-        private string getConnectorKind(JoinPoint point)
-        {
-            var pointType = point.Point.GetType();
-
-            if (pointType == typeof(Import))
-            {
-                return "Import";
-            }
-            else if (pointType == typeof(Export))
-            {
-                return "Export";
-            }
-            else
-            {
-                throw new NotSupportedException("Unsupported point kind");
-            }
         }
 
         private CallEditInfo acceptComponent(Instance thisObj, ExecutionView services)

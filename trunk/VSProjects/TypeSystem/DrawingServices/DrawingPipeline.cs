@@ -12,6 +12,12 @@ using TypeSystem.Runtime;
 namespace TypeSystem.DrawingServices
 {
     /// <summary>
+    /// Drawer used by pipeline for providing general drawing support
+    /// </summary>
+    /// <param name="instance">Instance which general drawing will be retrieved</param>
+    public delegate void GeneralDrawer(DrawedInstance instance);
+
+    /// <summary>
     /// Pipeline that is processing 
     /// </summary>
     public class DrawingPipeline
@@ -20,17 +26,19 @@ namespace TypeSystem.DrawingServices
 
         private readonly RuntimeAssembly _runtime;
 
-        internal readonly DiagramDefinition Context;
+        private readonly GeneralDrawer _drawer;
 
         private readonly Queue<DrawedInstance> _toDrawQueue = new Queue<DrawedInstance>();
 
         private readonly Dictionary<Instance, DrawedInstance> _instanceDrawings = new Dictionary<Instance, DrawedInstance>();
 
+        internal readonly DiagramDefinition Context;
 
-        public DrawingPipeline(RuntimeAssembly runtime, AnalyzingResult result)
+        public DrawingPipeline(GeneralDrawer drawer ,RuntimeAssembly runtime, AnalyzingResult result)
         {
             _runtime = runtime;
             _result = result;
+            _drawer = drawer;
 
             var initialView = new EditView(_result.CreateExecutionView());
             Context = new DiagramDefinition(initialView);
@@ -75,7 +83,7 @@ namespace TypeSystem.DrawingServices
 
         private void generalDrawing(DrawedInstance instance)
         {
-            //throw new NotImplementedException();
+            _drawer(instance);
         }
 
         private void concreteDrawing(DrawedInstance instance)

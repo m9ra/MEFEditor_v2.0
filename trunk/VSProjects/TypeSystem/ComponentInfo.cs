@@ -115,6 +115,8 @@ namespace TypeSystem
         /// </summary>
         public readonly InstanceInfo ExportType;
 
+        public InstanceInfo ContractType { get { return ExportType; } }
+
         public Export(InstanceInfo exportType, MethodID getter)
         {
             ExportType = exportType;
@@ -188,6 +190,14 @@ namespace TypeSystem
         /// </summary>
         public readonly bool AllowMany;
 
+        public InstanceInfo ContractType
+        {
+            get
+            {
+                return AllowMany ? ImportTypeInfo.ItemType : ImportTypeInfo.ImportType;
+            }
+        }
+
         public Import(InstanceInfo importType, MethodID setter, bool allowMany = false)
         {
             ImportTypeInfo = new ImportTypeInfo(importType);
@@ -203,5 +213,7 @@ namespace TypeSystem
             Setter = setter;
             AllowMany = allowMany;
         }
+
+
     }
 }

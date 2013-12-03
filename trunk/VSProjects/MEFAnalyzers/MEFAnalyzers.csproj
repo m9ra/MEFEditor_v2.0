@@ -67,6 +67,7 @@
       <DependentUpon>ExportConnector.xaml</DependentUpon>
     </Compile>
     <Compile Include="Drawings\DrawingTools.cs" />
+    <Compile Include="Drawings\GeneralDefinitionProvider.cs" />
     <Compile Include="Drawings\ImportConnector.xaml.cs">
       <DependentUpon>ImportConnector.xaml</DependentUpon>
     </Compile>

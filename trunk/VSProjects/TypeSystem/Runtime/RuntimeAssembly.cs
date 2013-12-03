@@ -289,9 +289,9 @@ namespace TypeSystem.Runtime
             return typeDefinition;
         }
 
-        public DrawingPipeline CreateDrawingPipeline(AnalyzingResult result)
+        public DrawingPipeline CreateDrawingPipeline(GeneralDrawer drawer, AnalyzingResult result)
         {
-            return new DrawingPipeline(this, result);
+            return new DrawingPipeline(drawer, this, result);
         }
     }
 }

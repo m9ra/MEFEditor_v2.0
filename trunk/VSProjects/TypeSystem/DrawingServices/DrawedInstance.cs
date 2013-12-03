@@ -17,13 +17,13 @@ namespace TypeSystem.DrawingServices
     {
         internal readonly DrawingPipeline Pipeline;
 
-        internal readonly Instance WrappedInstance;
+        internal DiagramDefinition Context { get { return Pipeline.Context; } }
 
         internal readonly InstanceDrawer InstanceDrawer;
 
         public DrawingReference Reference { get { return Drawing.Reference; } }
 
-        internal DiagramDefinition Context { get { return Pipeline.Context; } }
+        public readonly Instance WrappedInstance;
 
         public readonly DiagramItemDefinition Drawing;
 

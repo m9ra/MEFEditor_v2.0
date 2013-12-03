@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 using Drawing;
 using TypeSystem;
+using TypeSystem.DrawingServices;
 using Analyzing;
 using Analyzing.Execution;
 using MEFAnalyzers.Drawings;
@@ -78,6 +79,15 @@ namespace Research
             printAdditionalInfo();
         }
 
+        private void refreshResult()
+        {
+            _watch.Reset();
+            _watch.Start();
+            _result = _assembly.GetResult();
+            _watch.Stop();
+        }
+
+
         /// <summary>
         /// If there are available drawings, display window is opened
         /// </summary>
@@ -91,7 +101,7 @@ namespace Research
                 var entryID = Method.EntryInfo.MethodID;
                 var source = _assembly.GetSource(entryID, view);
                 _assembly.SetSource(entryID, source);
-                _result = _assembly.GetResult();
+                refreshResult();
                 analyzeResult();
                 TryShowDrawings();
             };
@@ -171,9 +181,7 @@ namespace Research
         private void runExecution()
         {
             _assembly.Runtime.BuildAssembly();
-            _watch.Start();
-            _result = _assembly.GetResult();
-            _watch.Stop();
+            refreshResult();
         }
 
         /// <summary>
@@ -181,20 +189,28 @@ namespace Research
         /// </summary>
         private void createDrawings()
         {
-            var pipeline=_assembly.Runtime.CreateDrawingPipeline(_result.Execution);
-            
+            var pipeline = _assembly.Runtime.CreateDrawingPipeline(generalDrawer, _result.Execution);
+
             foreach (var instance in _result.Execution.CreatedInstances)
             {
-                //TODO display components or types with defined drawers
-                var info = _assembly.Loader.GetComponentInfo(instance.Info);
+                var hasDrawer = _assembly.Runtime.GetDrawer(instance) != null;
+                var hasComponentInfo = _assembly.Loader.GetComponentInfo(instance.Info) != null;
 
-                if (info != null || instance.Info.TypeName == "CompositionTester")
+                var addToQueue = hasDrawer || hasComponentInfo;
+
+                if (addToQueue)
                 {
                     pipeline.AddToDrawQueue(instance);
                 }
             }
 
             _drawings = pipeline.GetOutput();
+        }
+
+        private void generalDrawer(DrawedInstance instance)
+        {
+            var componentInfo = _assembly.Loader.GetComponentInfo(instance.WrappedInstance.Info);
+            GeneralDefinitionProvider.Draw(instance, componentInfo);
         }
 
         /// <summary>
