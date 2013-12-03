@@ -103,7 +103,7 @@ namespace MEFAnalyzers.CompositionEngine
         {
             Point = export;
             Contract = export.Contract;
-            ContractType = export.ContractType;
+            ContractType = export.ExportType;
             Instance = instance;
         }
 
@@ -117,10 +117,13 @@ namespace MEFAnalyzers.CompositionEngine
             IsPrerequesity = import.IsPrerequisity;
             Point = import;
             Contract = import.Contract;
-            ContractType = import.ContractType;
 
             AllowDefault = import.AllowDefault;
             AllowMany = import.AllowMany;
+
+            var info = import.ImportTypeInfo;
+            ContractType = info.ImportType;
+            if (AllowMany) ImportManyItemType = info.ItemType;
 
             Instance = instance;
         }

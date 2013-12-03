@@ -18,14 +18,14 @@ namespace MEFAnalyzers.Drawings
         {
             if (info == null)
                 return;
-           
+
             foreach (var export in info.Exports)
             {
                 var connector = instance.GetJoinPoint(export);
 
                 setProperty(connector, "Kind", "Export");
                 setProperty(connector, "Contract", export.Contract);
-                setProperty(connector, "ContractType", export.ContractType);
+                setProperty(connector, "ExportType", export.ExportType);
             }
 
             foreach (var import in info.Imports)
@@ -34,7 +34,7 @@ namespace MEFAnalyzers.Drawings
 
                 setProperty(connector, "Kind", "Import");
                 setProperty(connector, "Contract", import.Contract);
-                setProperty(connector, "ContractType", import.ContractType);
+                setProperty(connector, "ImportType", import.ImportTypeInfo.ImportType);
                 setProperty(connector, "AllowMany", import.AllowMany);
                 setProperty(connector, "AllowDefault", import.AllowDefault);
                 setProperty(connector, "IsPrerequisity", import.IsPrerequisity);

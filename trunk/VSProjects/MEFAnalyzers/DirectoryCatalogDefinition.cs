@@ -14,7 +14,7 @@ namespace MEFAnalyzers
 {
     public class DirectoryCatalogDefinition : DataTypeDefinition
     {
-        public readonly Field<List<Instance>> Components;
+        public readonly Field<List<InstanceInfo>> Components;
         public readonly Field<string> Path;
         public readonly Field<string> FullPath;
         public readonly Field<string> Pattern;
@@ -23,7 +23,7 @@ namespace MEFAnalyzers
         {
             Simulate<DirectoryCatalog>();
 
-            Components = new Field<List<Instance>>(this);
+            Components = new Field<List<InstanceInfo>>(this);
             Path = new Field<string>(this);
             FullPath = new Field<string>(this);
             Pattern = new Field<string>(this);            
@@ -35,10 +35,28 @@ namespace MEFAnalyzers
         {
             Path.Set(path);
             Pattern.Set(pattern);
-
+            
             //TODO resolve full path
 
+            //TODO resolve componetn types
+            Components.Set(new List<InstanceInfo>());
+
+
             setCtorEdits();
+        }
+
+        public List<Instance> _get_Parts()
+        {
+            var result=new List<Instance>();
+            var componentTypes=Components.Get();
+
+            foreach (var type in componentTypes)
+            {
+                var part = Context.Machine.CreateInstance(type);
+                result.Add(part);
+            }
+
+            return result;
         }
 
         public string _get_Path()

@@ -114,9 +114,7 @@ namespace TypeSystem
         /// Type of exported value.
         /// </summary>
         public readonly InstanceInfo ExportType;
-
-        public InstanceInfo ContractType { get { return ExportType; } }
-
+        
         public Export(InstanceInfo exportType, MethodID getter)
         {
             ExportType = exportType;
@@ -189,14 +187,6 @@ namespace TypeSystem
         /// Determine if import can accept more than one export
         /// </summary>
         public readonly bool AllowMany;
-
-        public InstanceInfo ContractType
-        {
-            get
-            {
-                return AllowMany ? ImportTypeInfo.ItemType : ImportTypeInfo.ImportType;
-            }
-        }
 
         public Import(InstanceInfo importType, MethodID setter, bool allowMany = false)
         {
