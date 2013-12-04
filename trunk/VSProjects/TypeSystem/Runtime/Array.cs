@@ -74,7 +74,18 @@ namespace TypeSystem.Runtime
             for (int i = 0; i < Length; ++i)
             {
                 var item = get_Item(i);
-                array.SetValue(item.Wrapped.DirectValue, i);
+
+                object value;
+                if (elementType.IsAssignableFrom(item.Wrapped.GetType()))
+                {
+                    value = item.Wrapped;
+                }
+                else
+                {
+                    value = item.Wrapped.DirectValue;
+                }
+
+                array.SetValue(value, i);
             }
 
             var result = (ResultType)(object)array;

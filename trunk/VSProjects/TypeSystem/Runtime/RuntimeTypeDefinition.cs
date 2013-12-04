@@ -16,6 +16,7 @@ using Drawing;
 
 namespace TypeSystem.Runtime
 {
+
     /// <summary>
     /// Base class for runtime type definitions
     /// <remarks>Its used for defining analyzing types</remarks>
@@ -164,6 +165,42 @@ namespace TypeSystem.Runtime
             return new InstanceInfo(type);
         }
 
+        protected void AsyncCall<TResult>(Instance calledObject, string callName, Action<TResult> callback)
+        {
+            var searcher = Services.CreateSearcher();
+            searcher.ExtendName(calledObject.Info.TypeName);
+
+            searcher.Dispatch(callName);
+
+            if (!searcher.HasResults)
+                throw new KeyNotFoundException("Cannot found method: " + callName + ", on " + calledObject);
+
+            var foundMethods = searcher.FoundResult.ToArray();
+            if (foundMethods.Length > 1)
+                throw new NotSupportedException("Cannot process async call on ambiguous call: " + callName + ", on" + calledObject);
+
+            var callGenerator = new DirectedGenerator((e) =>
+            {
+                var arg1 = e.GetTemporaryVariable();
+
+                e.AssignArgument(arg1, calledObject.Info, 1);
+                e.Call(foundMethods[0].MethodID, arg1, Arguments.Values());
+
+                var callReturn = e.GetTemporaryVariable();
+                e.AssignReturnValue(callReturn, InstanceInfo.Create<object>());
+
+                e.DirectInvoke((context) =>
+                {
+                    var callValue = context.GetValue(new VariableName(callReturn));
+                    var unwrapped=Unwrap<TResult>(callValue);
+                    Invoke(context, (c) => callback(unwrapped));
+                });
+            });
+
+
+            Context.DynamicCall(callName, callGenerator, This, calledObject);
+        }
+
         protected void ReportChildAdd(int childArgIndex, string childDescription, bool removeOnlyArg = false)
         {
             var child = CurrentArguments[childArgIndex];
@@ -186,12 +223,19 @@ namespace TypeSystem.Runtime
 
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)
         {
+            if (CurrentArguments.Length >= argIndex)
+                return;
+
             Edits.ChangeArgument(This, argIndex, editName, valueProvider);
         }
 
         protected void AddArg(int argIndex, string editName, ValueProvider valueProvider)
         {
-            throw new NotImplementedException();
+            if (CurrentArguments.Length < argIndex)
+                return;
+
+
+            Edits.AppendArgument(CurrentArguments[0], editName, valueProvider);
         }
     }
 }

@@ -165,7 +165,8 @@ namespace Research
             var form = new TestForm();
             var factory = new DiagramFactory(
                 new ContentDrawer(null, (item) => new ComponentDrawing(item)),
-                new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item))
+                new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.CompositionContainer", (item) => new CompositionTesterDrawing(item))
                 );
 
             _drawingProvider = new DrawingProvider(form.Output, factory);

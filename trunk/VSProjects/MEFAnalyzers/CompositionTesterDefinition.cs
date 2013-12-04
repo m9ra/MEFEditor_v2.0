@@ -38,7 +38,7 @@ namespace MEFAnalyzers
         public void _method_ctor(Instance part1, Instance part2)
         {
             var compositionContext = new CompositionContext(Services, Context);
-            compositionContext.AddConstructedComponents(part1, part2);
+            compositionContext.AddConstructedComponents(new Instance[] { part1, part2 });
 
             compose(compositionContext);
             AssemblyPath.Set("Undefined");
@@ -64,17 +64,18 @@ namespace MEFAnalyzers
             if (path != null)
             {
                 var assembly = Services.LoadAssembly(path);
+                var notConstructed = new List<Instance>();
                 foreach (var componentInfo in assembly.GetComponents())
                 {
-                    compositionContext.AddComponentType(componentInfo);
+                    var instance = Context.Machine.CreateInstance(componentInfo.ComponentType);
+                    notConstructed.Add(instance);
                 }
+
+                compositionContext.AddNotConstructedComponents(notConstructed);
             }
 
-            foreach (var part in Parts.Get())
-            {
-                compositionContext.AddConstructedComponents(part);
-            }
-
+            var parts = Parts.Get();
+            compositionContext.AddConstructedComponents(parts);
             compose(compositionContext);
         }
 
@@ -98,7 +99,7 @@ namespace MEFAnalyzers
 
         protected override void draw(InstanceDrawer drawer)
         {
-            var isComposed=Composed.Get();
+            var isComposed = Composed.Get();
             drawer.PublishField("AssemblyPath", AssemblyPath);
             drawer.PublishField("Composed", Composed);
 
@@ -138,7 +139,7 @@ namespace MEFAnalyzers
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
         {
             var instance = drawer.GetInstanceDrawing(point.Instance.Component);
-            
+
             var connector = instance.GetJoinPoint(point.Point);
             return connector;
         }

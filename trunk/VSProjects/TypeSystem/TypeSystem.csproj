@@ -43,6 +43,7 @@
     <Compile Include="AssemblyProvider.cs" />
     <Compile Include="ComponentInfo.cs" />
     <Compile Include="ComponentInfoBuilder.cs" />
+    <Compile Include="DirectedGenerator.cs" />
     <Compile Include="DirectGenerator.cs" />
     <Compile Include="Core\AssembliesManager.cs" />
     <Compile Include="DrawingServices\DrawingPipeline.cs" />

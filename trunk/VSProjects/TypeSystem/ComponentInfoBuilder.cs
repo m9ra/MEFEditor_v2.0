@@ -87,6 +87,13 @@ namespace TypeSystem
 
         public ComponentInfo BuildInfo()
         {
+            if (_importingCtor == null)
+            {
+                //default importin constructor
+                _importingCtor = Naming.Method(_componentType, Naming.CtorName, false);
+            }
+
+
             return new ComponentInfo(_componentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray());
         }
 

@@ -75,6 +75,7 @@
     <Compile Include="RuntimeTypeDefinitions\ArrayDirectDefinition.cs" />
     <Compile Include="RuntimeTypeDefinitions\ICollectionStringImport.cs" />
     <Compile Include="RuntimeTypeDefinitions\ManyStringImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\SimpleStringExport.cs" />
     <Compile Include="RuntimeTypeDefinitions\StringExport.cs" />
     <Compile Include="RuntimeTypeDefinitions\MathDirectType.cs" />
     <Compile Include="RuntimeTypeDefinitions\SimpleType.cs" />

@@ -26,7 +26,7 @@ namespace MEFAnalyzers
             Components = new Field<List<InstanceInfo>>(this);
             Path = new Field<string>(this);
             FullPath = new Field<string>(this);
-            Pattern = new Field<string>(this);            
+            Pattern = new Field<string>(this);
         }
 
         #region Type members implementation
@@ -34,21 +34,26 @@ namespace MEFAnalyzers
         public void _method_ctor(string path, string pattern = "*.dll")
         {
             Path.Set(path);
+            FullPath.Set(resolveFullPath(path));
             Pattern.Set(pattern);
-            
-            //TODO resolve full path
 
-            //TODO resolve componetn types
-            Components.Set(new List<InstanceInfo>());
+            var components = new List<InstanceInfo>();
+            Components.Set(components);
 
+            var assembly=Services.LoadAssembly(path);
+
+            foreach (var component in assembly.GetComponents())
+            {
+                components.Add(component.ComponentType);
+            }
 
             setCtorEdits();
         }
 
-        public List<Instance> _get_Parts()
+        public Instance[] _get_Parts()
         {
-            var result=new List<Instance>();
-            var componentTypes=Components.Get();
+            var result = new List<Instance>();
+            var componentTypes = Components.Get();
 
             foreach (var type in componentTypes)
             {
@@ -56,7 +61,7 @@ namespace MEFAnalyzers
                 result.Add(part);
             }
 
-            return result;
+            return result.ToArray();
         }
 
         public string _get_Path()
@@ -64,12 +69,27 @@ namespace MEFAnalyzers
             return Path.Get();
         }
 
+        public string _get_FullPath()
+        {
+            return FullPath.Get();
+        }
+
+        #endregion
+
+        #region Private utilities
+
+        private string resolveFullPath(string relativePath)
+        {
+            //TODO resolve according to codebase
+            return "FullPath://" + relativePath;
+        }
+
         #endregion
 
         #region Edits handling
 
         private void setCtorEdits()
-        {            
+        {
             RewriteArg(0, "Change path", _pathInput);
             AddArg(1, "Add search pattern", _patternInput);
             RewriteArg(1, "Change search pattern", _patternInput);

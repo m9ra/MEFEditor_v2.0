@@ -25,6 +25,33 @@ namespace Research
 {
     static class ResearchSources
     {
+
+        static internal TestingAssembly MEF_DirectoryCatalog()
+        {
+            var testAssembly = new RuntimeAssembly();
+            testAssembly.AddDefinition(new SimpleStringExport());
+            testAssembly.AddDefinition(new ICollectionStringImport());
+
+            return AssemblyUtils.Run(@"        
+                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+
+                compCont.ComposeParts();
+   
+            ")
+            .AddToRuntime<DirectoryCatalogDefinition>()
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<SimpleStringExport>() //because of drawing provider
+            .AddToRuntime<ICollectionStringImport>()
+            .AddDirectToRuntime<ICollection<string>>()
+            .AddDirectToRuntime<List<string>>()
+
+            .RegisterAssembly("test.exe", testAssembly)
+            ;
+
+
+        }
+
         static internal TestingAssembly CECIL_AssemblyProviding()
         {
             var cilAssembly = new CILProvider("Research.exe");

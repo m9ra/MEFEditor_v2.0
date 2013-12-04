@@ -56,7 +56,7 @@ namespace MEFAnalyzers.CompositionEngine
 
             foreach (var inst in _componentsStorage.GetComponents())
             {
-                if (inst.ComponentInfo == null || !inst.HasImports)
+                if (inst.ComponentInfo == null)
                     //there is nothing to import
                     continue;
 
@@ -796,7 +796,7 @@ namespace MEFAnalyzers.CompositionEngine
             var points = _componentsStorage.GetPoints();
 
             if (_componentsStorage.Failed)
-                return new CompositionResult(joins, points, _context.Generator, _componentsStorage.Error);
+                return new CompositionResult(_context, joins, points, _context.Generator, _componentsStorage.Error);
 
             string error = null;
             if (_failed)
@@ -804,7 +804,7 @@ namespace MEFAnalyzers.CompositionEngine
                 error = "Composition failed because there were some errors";
             }
 
-            return new CompositionResult(joins, points, _context.Generator, error);
+            return new CompositionResult(_context, joins, points, _context.Generator, error);
         }
     }
 }

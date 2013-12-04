@@ -10,6 +10,8 @@ using AssemblyProviders.CIL;
 
 using TypeSystem;
 
+
+
 namespace Research
 {
     /// <summary>
@@ -20,6 +22,7 @@ namespace Research
         static readonly string[] usings = new[]{
             typeof(List<>).Namespace,
             typeof(VMStack).Namespace,
+            "System.ComponentModel.Composition.Hosting"
         };
 
         static ConsoleColor BySeparatorColor = ConsoleColor.Red;
@@ -54,12 +57,14 @@ namespace Research
 
         public static void Print(ConsoleColor color, string text, params object[] formatArgs)
         {
+            var output = string.Format(text, formatArgs);
             foreach (var ns in usings)
             {
-                text = text.Replace(ns, "@");
+                output = output.Replace(ns, "@");
             }
+
             Console.ForegroundColor = color;
-            Console.Write(text, formatArgs);
+            Console.Write(output);
         }
 
         public static void PrintIAL(string code)

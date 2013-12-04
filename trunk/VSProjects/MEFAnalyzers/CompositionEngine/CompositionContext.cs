@@ -40,7 +40,7 @@ namespace MEFAnalyzers.CompositionEngine
             _context = context;
         }
 
-        internal void AddConstructedComponents(params Instance[] components)
+        internal void AddConstructedComponents(IEnumerable<Instance> components)
         {
             foreach (var component in components)
             {
@@ -51,12 +51,15 @@ namespace MEFAnalyzers.CompositionEngine
             }
         }
 
-        internal void AddComponentType(ComponentInfo componentInfo)
+        internal void AddNotConstructedComponents(IEnumerable<Instance> components)
         {
-            var component = _context.Machine.CreateInstance(componentInfo.ComponentType);
-            var componentRef = new ComponentRef(this, false, componentInfo, component);
+            foreach (var component in components)
+            {
+                var info = _services.GetComponentInfo(component.Info);
+                var componentRef = new ComponentRef(this, false, info, component);
 
-            addInputComponent(component, componentRef);
+                addInputComponent(component, componentRef);
+            }
         }
 
         /// <summary>

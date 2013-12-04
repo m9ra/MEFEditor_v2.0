@@ -34,7 +34,7 @@ namespace MEFAnalyzers.CompositionEngine
         public static CompositionResult Compose(CompositionContext context)
         {
             if (_processingCompositions > _processingCompositionsLimit)
-                return new CompositionResult(null, null, null, "Limit of simultaneously processing compositions was reached - possible recursion in ImportingConstructor?");
+                return new CompositionResult(context,null, null, null, "Limit of simultaneously processing compositions was reached - possible recursion in ImportingConstructor?");
 
             ++_processingCompositions;
             var worker = new CompositionWorker(context);
