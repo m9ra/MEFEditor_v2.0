@@ -289,6 +289,12 @@ namespace TypeSystem.Runtime
             return typeDefinition;
         }
 
+        internal RuntimeTypeDefinition GetTypeDefinition(Instance instance)
+        {
+            //TODO: what about direct types ?
+            return _dataTypes[instance.Info.TypeName];
+        }
+
         public DrawingPipeline CreateDrawingPipeline(GeneralDrawer drawer, AnalyzingResult result)
         {
             return new DrawingPipeline(drawer, this, result);

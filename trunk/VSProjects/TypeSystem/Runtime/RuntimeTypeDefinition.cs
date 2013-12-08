@@ -192,7 +192,7 @@ namespace TypeSystem.Runtime
                 e.DirectInvoke((context) =>
                 {
                     var callValue = context.GetValue(new VariableName(callReturn));
-                    var unwrapped=Unwrap<TResult>(callValue);
+                    var unwrapped = Unwrap<TResult>(callValue);
                     Invoke(context, (c) => callback(unwrapped));
                 });
             });
@@ -201,19 +201,24 @@ namespace TypeSystem.Runtime
             Context.DynamicCall(callName, callGenerator, This, calledObject);
         }
 
-        protected void ReportChildAdd(int childArgIndex, string childDescription, bool removeOnlyArg = false)
+        protected void ReportChildAdd(int childArgIndex, string childDescription, bool isOptional = false)
         {
             var child = CurrentArguments[childArgIndex];
             var editName = ".exclude";
 
-            if (removeOnlyArg)
-            {
-                Edits.AttachRemoveArgument(This, child, childArgIndex, editName);
-            }
-            else
-            {
-                Edits.AttachRemoveCall(This, child, editName);
-            }
+            /* if (isOptional)
+             {
+                 Edits.AttachRemoveArgument(This, child, childArgIndex, editName);
+             }
+             else
+             {
+                 Edits.AttachRemoveCall(This, child, editName);
+             } */
+
+            if (isOptional)
+                Edits.SetOptional(childArgIndex);
+
+            Edits.AttachRemoveArgument(This, child, childArgIndex, editName);
         }
 
         protected void AddCallEdit(CallProvider accepter)
@@ -223,19 +228,25 @@ namespace TypeSystem.Runtime
 
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)
         {
-            if (CurrentArguments.Length >= argIndex)
-                return;
-
             Edits.ChangeArgument(This, argIndex, editName, valueProvider);
         }
 
-        protected void AddArg(int argIndex, string editName, ValueProvider valueProvider)
+        protected void AppendArg(int argIndex, string editName, ValueProvider valueProvider)
         {
-            if (CurrentArguments.Length < argIndex)
-                return;
+            Edits.AppendArgument(CurrentArguments[0], argIndex, editName, valueProvider);
+        }
 
-
-            Edits.AppendArgument(CurrentArguments[0], editName, valueProvider);
+        internal EditViewBase RunEdit(Instance thisObj, Edit edit, EditView view)
+        {
+            try
+            {
+                This = thisObj;
+                return view.Apply(edit.Transformation);
+            }
+            finally
+            {
+                This = null;
+            }
         }
     }
 }

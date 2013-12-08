@@ -35,8 +35,8 @@ namespace AssemblyProviders.CSharp.Transformations
             //remove whole statement;
             return new SourceTransformation((view,source) =>
             {
-                source.EditContext(view).VariableNodeRemoved(variableNode);
-                source.Remove(view,assignOperator, false);
+                source.RemoveNode(view, variableNode, false);
+               
             },_assignedValue.Source);
         }
     }

@@ -52,6 +52,8 @@ namespace Drawing.Behaviours
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
+            e.Handled = true;
+
             _item.CaptureMouse();
             var adorner = new DragAdorner(_item, e.GetPosition(_item.Output));
             adorner.DragStart();
@@ -61,10 +63,21 @@ namespace Drawing.Behaviours
             try
             {
                 var effect = DragDrop.DoDragDrop(_item, data, DragDropEffects.Move);
+
+                var view = adorner.EditView;
+                if (view != null && effect != DragDropEffects.None)
+                {
+                    view.Commit();
+                }
             }
             finally
             {
                 _item.DiagramContext.Diagram.DragEnd();
+            }
+
+            if (DiagramCanvasBase.DropStrategy.DropException != null)
+            {
+                throw new Utilities.ExceptionWrapper(DiagramCanvasBase.DropStrategy.DropException);
             }
 
             adorner.DragEnd();

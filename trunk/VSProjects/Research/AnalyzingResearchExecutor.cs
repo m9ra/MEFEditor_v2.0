@@ -166,7 +166,8 @@ namespace Research
             var factory = new DiagramFactory(
                 new ContentDrawer(null, (item) => new ComponentDrawing(item)),
                 new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.CompositionContainer", (item) => new CompositionTesterDrawing(item))
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.CompositionContainer", (item) => new CompositionTesterDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.DirectoryCatalog", (item) => new DirectoryCatalogDrawing(item))
                 );
 
             _drawingProvider = new DrawingProvider(form.Output, factory);
@@ -326,9 +327,14 @@ namespace Research
                 }
 
                 lastOriginalIndent = originalIndent;
+                if (currIndent < 0)
+                {
+                    currIndent = 0;
+                }
 
                 var indentedLine = "".PadLeft(currIndent * 3, ' ') + line.Trim();
                 result.AppendLine(indentedLine);
+
             }
 
             return result.ToString();

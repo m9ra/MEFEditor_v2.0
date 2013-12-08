@@ -22,11 +22,11 @@ namespace AssemblyProviders.CSharp.Compiling
 
         internal readonly INodeAST Declaration;
 
-        private readonly List<INodeAST> _variableAssigns = new List<INodeAST>();
+        private readonly List<INodeAST> _variableUsings = new List<INodeAST>();
 
         internal VariableInfo(INodeAST declaration)
-        {            
-            Declaration = declaration;            
+        {
+            Declaration = declaration;
             Name = declaration.Arguments[1].Value;
 
             //TODO chained type names, namespace resolvings,..
@@ -45,20 +45,42 @@ namespace AssemblyProviders.CSharp.Compiling
 
         internal VariableInfo(string variableName)
         {
-            Name = variableName;            
+            Name = variableName;
+        }
+
+        internal IEnumerable<INodeAST> VariableUsings
+        {
+            get
+            {
+                return _variableUsings;
+            }
         }
 
         internal IEnumerable<INodeAST> VariableAssigns
         {
             get
             {
-                return _variableAssigns;
+                var result = new List<INodeAST>();
+
+                foreach (var varUsing in _variableUsings)
+                {
+                    var parent = varUsing.Parent;
+                    if (parent == null)
+                        continue;
+
+                    if (parent.IsAssign() && parent.Arguments[0] == varUsing)
+                    {
+                        result.Add(varUsing);
+                    }
+                }
+
+                return result;
             }
         }
 
-        internal void AddVariableUse(INodeAST variableAssign)
+        internal void AddVariableUsing(INodeAST variableUse)
         {
-            _variableAssigns.Add(variableAssign);
+            _variableUsings.Add(variableUse);
         }
 
         internal void HintAssignedType(InstanceInfo info)

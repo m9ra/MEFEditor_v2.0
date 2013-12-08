@@ -8,13 +8,14 @@ using System.ComponentModel.Composition.Hosting;
 
 using Analyzing;
 using Analyzing.Editing;
+using TypeSystem;
 using TypeSystem.Runtime;
 
 namespace MEFAnalyzers
 {
     public class DirectoryCatalogDefinition : DataTypeDefinition
     {
-        public readonly Field<List<InstanceInfo>> Components;
+        public readonly Field<List<Instance>> Components;
         public readonly Field<string> Path;
         public readonly Field<string> FullPath;
         public readonly Field<string> Pattern;
@@ -23,7 +24,7 @@ namespace MEFAnalyzers
         {
             Simulate<DirectoryCatalog>();
 
-            Components = new Field<List<InstanceInfo>>(this);
+            Components = new Field<List<Instance>>(this);
             Path = new Field<string>(this);
             FullPath = new Field<string>(this);
             Pattern = new Field<string>(this);
@@ -37,14 +38,15 @@ namespace MEFAnalyzers
             FullPath.Set(resolveFullPath(path));
             Pattern.Set(pattern);
 
-            var components = new List<InstanceInfo>();
+            var components = new List<Instance>();
             Components.Set(components);
 
-            var assembly=Services.LoadAssembly(path);
+            var assembly = Services.LoadAssembly(path);
 
-            foreach (var component in assembly.GetComponents())
+            foreach (var componentInfo in assembly.GetComponents())
             {
-                components.Add(component.ComponentType);
+                var component = Context.Machine.CreateInstance(componentInfo.ComponentType);
+                components.Add(component);
             }
 
             setCtorEdits();
@@ -52,16 +54,7 @@ namespace MEFAnalyzers
 
         public Instance[] _get_Parts()
         {
-            var result = new List<Instance>();
-            var componentTypes = Components.Get();
-
-            foreach (var type in componentTypes)
-            {
-                var part = Context.Machine.CreateInstance(type);
-                result.Add(part);
-            }
-
-            return result.ToArray();
+            return Components.Get().ToArray();
         }
 
         public string _get_Path()
@@ -90,15 +83,16 @@ namespace MEFAnalyzers
 
         private void setCtorEdits()
         {
-            RewriteArg(0, "Change path", _pathInput);
-            AddArg(1, "Add search pattern", _patternInput);
-            RewriteArg(1, "Change search pattern", _patternInput);
+            RewriteArg(1, "Change path", _pathInput);
+            AppendArg(2, "Add search pattern", _patternInput);
+            RewriteArg(2, "Change search pattern", _patternInput);
         }
 
         private object _patternInput(ExecutionView services)
         {
             var oldPattern = Pattern.Get();
 
+            //TODO
             return "*.newPattern" + oldPattern;
         }
 
@@ -110,5 +104,18 @@ namespace MEFAnalyzers
         }
 
         #endregion
+
+        protected override void draw(InstanceDrawer drawer)
+        {
+            var slot = drawer.AddSlot();
+
+            foreach (var component in Components.Get())
+            {
+                var componentDrawing = drawer.GetInstanceDrawing(component);
+                slot.Add(componentDrawing.Reference);
+            }
+
+            drawer.CommitDrawing();
+        }
     }
 }

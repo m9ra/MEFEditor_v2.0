@@ -15,14 +15,14 @@ namespace Drawing
 {
     public abstract class DiagramCanvasBase : Panel
     {
-        private static readonly DropStrategyBase _previewDrop = new PreviewDropStrategy();
+        internal static readonly DropStrategyBase PreviewDropStrategy = new PreviewDropStrategy();
 
-        private static readonly DropStrategyBase _drop = new DropStrategy();
+        internal static readonly DropStrategyBase DropStrategy = new DropStrategy();
 
         internal DiagramItem OwnerItem { get; private set; }
 
         internal DiagramContext DiagramContext { get; private set; }
-  
+
 
         protected DiagramCanvasBase()
         {
@@ -126,12 +126,13 @@ namespace Drawing
 
         protected override void OnDragOver(DragEventArgs e)
         {
-            _previewDrop.OnDrop(this, e);
+            PreviewDropStrategy.OnDrop(this, e);
         }
 
         protected override void OnDrop(DragEventArgs e)
         {
-            _drop.OnDrop(this, e);
+            DropStrategy.OnDrop(this, e);
+            e.Handled = true;
         }
 
 

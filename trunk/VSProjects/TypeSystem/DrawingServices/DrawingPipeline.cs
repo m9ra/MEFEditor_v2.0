@@ -34,7 +34,7 @@ namespace TypeSystem.DrawingServices
 
         internal readonly DiagramDefinition Context;
 
-        public DrawingPipeline(GeneralDrawer drawer ,RuntimeAssembly runtime, AnalyzingResult result)
+        public DrawingPipeline(GeneralDrawer drawer, RuntimeAssembly runtime, AnalyzingResult result)
         {
             _runtime = runtime;
             _result = result;
@@ -44,23 +44,23 @@ namespace TypeSystem.DrawingServices
             Context = new DiagramDefinition(initialView);
         }
 
-        internal DrawedInstance GetDrawing(Instance instance)
+        /// <summary>
+        /// Get drawing and force this drawing to be present in the diagram
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public DrawedInstance GetDrawing(Instance instance)
         {
-            DrawedInstance result;
-            if (!_instanceDrawings.TryGetValue(instance, out result))
-            {
-                result = new DrawedInstance(instance, this);
-                _instanceDrawings[instance] = result;
+            var drawing = getDrawing(instance);
 
-                _toDrawQueue.Enqueue(result);
-            }
-
-            return result;
+            //force drawing to be in the diagram
+            drawing.CommitDrawing();
+            return drawing;
         }
 
         public void AddToDrawQueue(Instance instance)
         {
-            GetDrawing(instance);            
+            getDrawing(instance);
         }
 
         public DiagramDefinition GetOutput()
@@ -91,6 +91,22 @@ namespace TypeSystem.DrawingServices
             var drawer = _runtime.GetDrawer(instance.WrappedInstance);
             if (drawer != null)
                 drawer.Draw(instance);
+        }
+
+        private DrawedInstance getDrawing(Instance instance)
+        {
+            DrawedInstance result;
+            if (!_instanceDrawings.TryGetValue(instance, out result))
+            {
+                var runtimeTypeDefinition = _runtime.GetTypeDefinition(instance);
+
+                result = new DrawedInstance(runtimeTypeDefinition, instance, this);
+                _instanceDrawings[instance] = result;
+
+                _toDrawQueue.Enqueue(result);
+            }
+
+            return result;
         }
 
         /// <summary>

@@ -50,7 +50,7 @@ namespace Drawing
         public void DrawItem(DiagramItemDefinition drawing)
         {
             if (ContainsDrawing(drawing.ID))
-                throw new NotSupportedException("Drawing definition with same ID has already been added");
+                return;
 
             _definitions.Add(drawing.ID, drawing);
         }

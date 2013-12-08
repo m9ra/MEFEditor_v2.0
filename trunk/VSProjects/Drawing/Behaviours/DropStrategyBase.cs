@@ -10,6 +10,8 @@ namespace Drawing.Behaviours
 {
     abstract class DropStrategyBase
     {
+        internal Exception DropException;
+
         protected DiagramCanvasBase DropTarget { get; private set; }
         protected DragAdorner DragAdorner { get; private set; }
         protected DiagramItem DragItem { get { return DragAdorner.Item; } }
@@ -33,6 +35,22 @@ namespace Drawing.Behaviours
         protected abstract void accept();
 
         internal void OnDrop(DiagramCanvasBase dropTarget, DragEventArgs e)
+        {
+            DropException = null;
+
+            onDrop(dropTarget, e);
+
+   /*         try
+            {
+                onDrop(dropTarget, e);
+            }
+            catch (Exception ex)
+            {
+                DropException = ex;
+            }*/
+        }
+
+        private void onDrop(DiagramCanvasBase dropTarget, DragEventArgs e)
         {
             DragAdorner = e.Data.GetData("DragAdorner") as DragAdorner;
             if (DragAdorner == null)

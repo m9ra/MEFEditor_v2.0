@@ -9,16 +9,20 @@ using Drawing;
 using Analyzing;
 using Analyzing.Editing;
 
+using TypeSystem.Runtime;
 using TypeSystem.DrawingServices;
 
 namespace TypeSystem
 {
     public class InstanceDrawer
     {
+        private readonly RuntimeTypeDefinition _definition;
+
         public readonly DrawedInstance Instance;
 
-        internal InstanceDrawer(DrawedInstance instance)
+        internal InstanceDrawer(RuntimeTypeDefinition definition, DrawedInstance instance)
         {
+            _definition = definition;
             Instance = instance;
         }
 
@@ -34,7 +38,6 @@ namespace TypeSystem
             var join = new JoinDefinition(from, to);
 
             Instance.Context.DrawJoin(join);
-
 
             return join;
         }
@@ -59,7 +62,7 @@ namespace TypeSystem
 
         private EditViewBase runEdit(Edit edit, EditView view)
         {
-            return view.Apply(edit.Transformation);
+            return _definition.RunEdit(Instance.WrappedInstance, edit, view);
         }
 
 

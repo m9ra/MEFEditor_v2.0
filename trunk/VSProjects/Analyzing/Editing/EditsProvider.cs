@@ -47,9 +47,9 @@ namespace Analyzing.Editing
             return transformation.ScopeVariable;
         }
 
-        public void AppendArgument(Instance editProvider, string editName, ValueProvider valueProvider)
+        public void AppendArgument(Instance editProvider, int argIndex, string editName, ValueProvider valueProvider)
         {
-            var transformation = TransformProvider.AppendArgument(valueProvider);
+            var transformation = TransformProvider.AppendArgument(argIndex, valueProvider);
             addEdit(editProvider, editName, transformation);
         }
 
@@ -96,12 +96,18 @@ namespace Analyzing.Editing
 
         private void addEdit(Instance editProvider, string editName, Transformation transformation)
         {
+            if (transformation == null)
+                return;
+
             var edit = new Edit(editName, transformation);
             editProvider.AddEdit(edit);
         }
 
         private void attachEdit(Instance attachingInstance, Instance editProvider, string editName, Transformation transformation)
         {
+            if (transformation == null)
+                return;
+
             var edit = new Edit(editName, transformation);
             editProvider.AttachEdit(attachingInstance, edit);
         }

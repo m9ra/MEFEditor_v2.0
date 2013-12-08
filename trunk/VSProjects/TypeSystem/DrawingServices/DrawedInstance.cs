@@ -27,14 +27,13 @@ namespace TypeSystem.DrawingServices
 
         public readonly DiagramItemDefinition Drawing;
 
-        internal DrawedInstance(Instance instance, DrawingPipeline pipeline)
+        internal DrawedInstance(RuntimeTypeDefinition definition, Instance instance, DrawingPipeline pipeline)
         {
             Pipeline = pipeline;
             WrappedInstance = instance;
 
             Drawing = new DiagramItemDefinition(instance.ID, instance.Info.TypeName);
-            InstanceDrawer = new InstanceDrawer(this);
-
+            InstanceDrawer = new InstanceDrawer(definition, this);
 
             addEdits();
         }

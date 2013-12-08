@@ -42,6 +42,9 @@ namespace MEFAnalyzers.CompositionEngine
 
         internal void AddConstructedComponents(IEnumerable<Instance> components)
         {
+            if (components == null)
+                return;
+
             foreach (var component in components)
             {
                 var info = _services.GetComponentInfo(component.Info);
@@ -53,6 +56,9 @@ namespace MEFAnalyzers.CompositionEngine
 
         internal void AddNotConstructedComponents(IEnumerable<Instance> components)
         {
+            if (components == null)
+                return;
+
             foreach (var component in components)
             {
                 var info = _services.GetComponentInfo(component.Info);

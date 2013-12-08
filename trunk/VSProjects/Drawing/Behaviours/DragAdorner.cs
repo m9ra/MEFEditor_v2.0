@@ -25,6 +25,8 @@ namespace Drawing.Behaviours
     {
         internal readonly DiagramItem Item;
 
+        internal EditViewBase EditView;
+
         Vector _center;
         DiagramCanvas _dragScope;
         AdornerLayer _dragLayer;
@@ -98,7 +100,7 @@ namespace Drawing.Behaviours
                 if (Item.CanExcludeFromParent)
                 {
                     globalPos = oldPos;
-                }                
+                }
             }
 
             GlobalPosition = globalPos;

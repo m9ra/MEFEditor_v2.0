@@ -20,7 +20,7 @@ namespace Analyzing.Editing
             return new EmptyTransformation();
         }
 
-        public override Transformation AppendArgument(ValueProvider valueProvider)
+        public override Transformation AppendArgument(int argumentIndex, ValueProvider valueProvider)
         {
             return new EmptyTransformation();
         }

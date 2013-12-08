@@ -14,9 +14,11 @@ namespace AssemblyProviders.CSharp.Transformations
 {
     class EditContext : ExecutionViewData
     {
-        private readonly HashSet<INodeAST> _removedVariableUsings = new HashSet<INodeAST>();
+        private readonly HashSet<INodeAST> _removedNodes = new HashSet<INodeAST>();
 
         private readonly Source _source;
+
+        private readonly ExecutionView _view;
 
         internal readonly StripManager Strips;
 
@@ -24,8 +26,9 @@ namespace AssemblyProviders.CSharp.Transformations
 
         public string Code { get; private set; }
 
-        internal EditContext(Source source, string code)
+        internal EditContext(ExecutionView view, Source source, string code)
         {
+            _view = view;
             Code = code;
             Strips = new StripManager(Code);
             _source = source;
@@ -33,27 +36,20 @@ namespace AssemblyProviders.CSharp.Transformations
 
         internal EditContext(EditContext toClone)
         {
-            _removedVariableUsings = new HashSet<INodeAST>(toClone._removedVariableUsings);
+            _removedNodes = new HashSet<INodeAST>(toClone._removedNodes);
             _source = toClone._source;
             Strips = new StripManager(toClone.Strips);
             IsCommited = toClone.IsCommited;
             Code = toClone.Code;
         }
 
-        internal void VariableNodeRemoved(INodeAST variableUse)
+
+
+        internal void NodeRemoved(INodeAST removedNode)
         {
-            switch (variableUse.NodeType)
-            {
-                case NodeTypes.hierarchy:
-                case NodeTypes.declaration:
-                    break;
-
-                default:
-                    throw new NotSupportedException("Expecting variable usage node");
-            }
-
-            _removedVariableUsings.Add(variableUse);
+            _removedNodes.Add(removedNode);
         }
+
 
         protected override void commit()
         {
@@ -69,7 +65,7 @@ namespace AssemblyProviders.CSharp.Transformations
             Code = Strips.Data;
             IsCommited = true;
         }
-        
+
         protected override ExecutionViewData clone()
         {
             return new EditContext(this);
@@ -77,9 +73,9 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private void checkVariableRemoving(VariableInfo variable)
         {
-            foreach (var usage in variable.VariableAssigns)
+            foreach (var usage in variable.VariableUsings)
             {
-                if (!_removedVariableUsings.Contains(usage))
+                if (!_removedNodes.Contains(usage))
                     continue;
 
                 if (variable.Declaration == usage)
@@ -117,19 +113,38 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private void redeclare(VariableInfo variable)
         {
-            var leavedAssigns = variable.VariableAssigns.Except(_removedVariableUsings);
-            if (!leavedAssigns.Any())
+            var assigns = variable.VariableAssigns;
+
+            //remove all variable ussings before assign that can be redeclared
+            INodeAST redeclaredAssign = null;
+            foreach (var varUsing in variable.VariableUsings)
             {
-                //variable has been completly removed - it doesn't need to be redeclared
-                return;
+                if (_removedNodes.Contains(varUsing))
+                {
+                    continue;
+                }
+
+                if (assigns.Contains(varUsing))
+                {
+                    //we found using that can be used for redeclaration
+                    redeclaredAssign = varUsing;
+                    break;
+                }
+                else
+                {
+                    _source.RemoveNode(_view, varUsing, true);
+                }
             }
 
-            var variableAssign = leavedAssigns.First();
-            var redeclarationPoint = getRedeclarationNode(variableAssign);
-            var beforeStatementOffset = _source.BeforeStatementOffset(redeclarationPoint);
-            var isUninitializedDeclaration = variableAssign != redeclarationPoint;
+            if (redeclaredAssign == null)
+                //there is nothing to be redeclared
+                return;
 
-            var redeclarationType = resolveRedeclarationType(variable, variableAssign, !isUninitializedDeclaration);
+            var redeclarationPoint = getRedeclarationNode(redeclaredAssign);
+            var beforeStatementOffset = _source.BeforeStatementOffset(redeclarationPoint);
+            var isUninitializedDeclaration = redeclaredAssign != redeclarationPoint;
+
+            var redeclarationType = resolveRedeclarationType(variable, redeclaredAssign, !isUninitializedDeclaration);
 
             var toWrite = redeclarationType + " ";
             if (isUninitializedDeclaration)
@@ -177,7 +192,7 @@ namespace AssemblyProviders.CSharp.Transformations
                 return variable.Info;
             }
 
-            foreach (var assignedVar in variable.VariableAssigns)
+            foreach (var assignedVar in variable.VariableUsings)
             {
                 var type = resolveAssignType(assignedVar);
                 if (type != null)

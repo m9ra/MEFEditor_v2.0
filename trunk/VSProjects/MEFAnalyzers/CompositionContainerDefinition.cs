@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.Composition.Hosting;
 
 using Analyzing;
+using Analyzing.Editing;
 using TypeSystem;
 using TypeSystem.Runtime;
 
@@ -35,7 +36,17 @@ namespace MEFAnalyzers
         /// <param name="composablePartCatalog"></param>
         public void _method_ctor(Instance composablePartCatalog)
         {
+            ReportChildAdd(1, "Composable part catalog", true);
+
+
             ComposableCatalog.Set(composablePartCatalog);
+        }
+
+        public void _method_ctor()
+        {
+            //TODO provide edit context
+            var e = Edits;
+            AppendArg(1, ".accept", (v) => acceptPartCatalog(e, v));
         }
 
         public void _method_ComposeParts()
@@ -43,10 +54,19 @@ namespace MEFAnalyzers
             var catalog = ComposableCatalog.Get();
             var constructedParts = new Instance[0];
 
-            AsyncCall<Instance[]>(catalog, "get_Parts", (catalogParts) =>
+            if (catalog == null)
             {
-                processComposition(catalogParts, constructedParts);
-            });
+                //there is no catalog which parts can be retrieved
+                processComposition(null, constructedParts);
+            }
+            else
+            {
+
+                AsyncCall<Instance[]>(catalog, "get_Parts", (catalogParts) =>
+                {
+                    processComposition(catalogParts, constructedParts);
+                });
+            }
         }
 
         /// <summary>
@@ -78,10 +98,41 @@ namespace MEFAnalyzers
             }
         }
 
+        #region Container edits
+
+        private object acceptPartCatalog(EditsProvider e, ExecutionView view)
+        {
+            var instance = UserInteraction.DraggedInstance;
+
+            //TODO determine that instance is part catalog
+            var isCatalog = instance.Info.TypeName == typeof(DirectoryCatalog).FullName;
+
+            if (!isCatalog)
+            {
+                //allow accepting only components
+                view.Abort("CompositionContainer can only accept part catalogs");
+                return null;
+            }
+
+            return e.GetVariableFor(instance, view);
+        }
+
+        #endregion
+
+        #region Container drawing
+
         protected override void draw(InstanceDrawer drawer)
         {
             var slot = drawer.AddSlot();
 
+            drawCatalog(drawer, slot);
+            setCompositionInfo(drawer);
+
+            drawer.CommitDrawing();
+        }
+
+        private void setCompositionInfo(InstanceDrawer drawer)
+        {
             var compositionResult = CompositionResult.Get();
             var context = compositionResult.Context;
 
@@ -92,9 +143,8 @@ namespace MEFAnalyzers
                 {
                     var drawing = drawer.GetInstanceDrawing(component);
                     drawing.SetProperty("Composed", "True");
-                    slot.Add(drawing.Reference);
                 }
-                                
+
                 foreach (var point in compositionResult.Points)
                 {
                     var joinPoint = getConnector(point, drawer);
@@ -109,8 +159,16 @@ namespace MEFAnalyzers
                     //TODO set properties of joinDefinition
                 }
             }
+        }
 
-            drawer.CommitDrawing();
+        private void drawCatalog(InstanceDrawer drawer, SlotDefinition slot)
+        {
+            var composableCatalog = ComposableCatalog.Get();
+            if (composableCatalog != null)
+            {
+                var catalogDrawing = drawer.GetInstanceDrawing(composableCatalog);
+                slot.Add(catalogDrawing.Reference);
+            }
         }
 
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
@@ -120,5 +178,7 @@ namespace MEFAnalyzers
             var connector = instance.GetJoinPoint(point.Point);
             return connector;
         }
+
+        #endregion
     }
 }

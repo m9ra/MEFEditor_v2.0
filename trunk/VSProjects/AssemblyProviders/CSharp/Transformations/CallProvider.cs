@@ -29,12 +29,15 @@ namespace AssemblyProviders.CSharp.Transformations
             return new SourceRemoveProvider((view, source) =>
             {
                 var sideEffect = keepSideEffect && !hasSideEffect(argNode);
-                source.Remove(view, argNode, sideEffect);
+                source.RemoveNode(view, argNode, sideEffect);
             }, argNode.Source);
         }
 
         public override Transformation RewriteArgument(int argumentIndex, ValueProvider valuePovider)
         {
+            if (_call.Arguments.Length <= argumentIndex - 1)
+                return null;
+
             var argNode = _call.Arguments[argumentIndex - 1];
 
             return new SourceTransformation((view, source) =>
@@ -44,8 +47,13 @@ namespace AssemblyProviders.CSharp.Transformations
             }, _call.Source);
         }
 
-        public override Transformation AppendArgument(ValueProvider valueProvider)
+        public override Transformation AppendArgument(int argumentIndex, ValueProvider valueProvider)
         {
+            var index = argumentIndex - 1;
+            if (_call.Arguments.Length != index)
+                //cannot append argument
+                return null;
+
             return new SourceTransformation((view, source) =>
             {
                 var value = valueProvider(view);
@@ -56,15 +64,12 @@ namespace AssemblyProviders.CSharp.Transformations
             }, _call.Source);
         }
 
-
-
-
         public override RemoveTransformProvider Remove()
         {
             return new SourceRemoveProvider((view, source) =>
             {
-                keepParent(view, _call);
-                source.Remove(view, _call, false);
+                source.OnChildRemoved(view, _call);
+                source.RemoveNode(view, _call, false);
             }, _call.Source);
         }
 
@@ -93,62 +98,6 @@ namespace AssemblyProviders.CSharp.Transformations
             return new NodeTypes[] { NodeTypes.hierarchy, NodeTypes.prefixOperator }.Contains(node.NodeType);
         }
 
-        private void keepParent(ExecutionView view, INodeAST node)
-        {
-            var parent = node.Parent;
-
-            if (parent == null)
-            {
-                //there is no action for keeping parent
-                return;
-            }
-
-            switch (parent.NodeType)
-            {
-                case NodeTypes.binaryOperator:
-                    if (parent.IsAssign())
-                    {
-                        //report assigned variable change
-                        parent.Source.EditContext(view).VariableNodeRemoved(parent.Arguments[0]);
-                    }
-                    parent.Source.Remove(view, parent, false);
-                    keepParent(view, parent);
-                    break;
-                case NodeTypes.call:
-                    if (!isOptionalArgument(parent, node))
-                    {
-                        parent.Source.Remove(view, parent, false);
-                        keepParent(view, parent);
-                    }
-                    break;
-                case NodeTypes.hierarchy:
-                    parent.Source.Remove(view, parent, false);
-                    keepParent(view, parent);
-                    break;
-
-                default:
-
-                    throw new NotImplementedException();
-            }
-
-        }
-
-        private int getArgumentIndex(INodeAST call, INodeAST argument)
-        {
-            for (int i = 0; i < call.Arguments.Length; ++i)
-            {
-                if (call.Arguments[i] == argument)
-                    return i;
-            }
-            throw new NotSupportedException("Given argument is not node of given call");
-        }
-
-        private bool isOptionalArgument(INodeAST call, INodeAST argument)
-        {
-            var provider = call.Source.CompilationInfo.GetProvider(call);
-            var index = getArgumentIndex(call, argument);
-            return provider.IsOptionalArgument(index + 1);
-        }
         #endregion
     }
 }

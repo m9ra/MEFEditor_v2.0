@@ -33,7 +33,7 @@ namespace AssemblyProviders.CSharp
 
         internal EditContext EditContext(ExecutionView view)
         {
-            return view.Data(this, () => new EditContext(this, OriginalCode));
+            return view.Data(this, () => new EditContext(view, this, OriginalCode));
         }
 
         public Source(string code, TypeMethodInfo methodInfo)
@@ -42,7 +42,13 @@ namespace AssemblyProviders.CSharp
             OriginalMethod = methodInfo;
         }
 
-        internal void Remove(ExecutionView view, INodeAST node, bool keepSideEffect)
+        internal void RemoveNode(ExecutionView view, INodeAST node, bool keepSideEffect)
+        {
+            remove(view, node, keepSideEffect);
+            OnChildRemoved(view, node);
+        }
+
+        private void remove(ExecutionView view, INodeAST node, bool keepSideEffect)
         {
             if (keepSideEffect)
                 handleSideEffect(view, node);
@@ -80,12 +86,24 @@ namespace AssemblyProviders.CSharp
 
         internal void AppendArgument(ExecutionView view, INodeAST call, object value)
         {
-            var lastArg = call.Arguments.Last();
-
-            var behindArg = getBehindOffset(lastArg);
             var stringRepresentation = toCSharp(value);
 
-            write(view, behindArg, "," + stringRepresentation);
+            int behindArgOffset;
+            var argCn = call.Arguments.Length;
+            if (argCn == 0)
+            {
+                //                     callName      (    )
+                behindArgOffset = call.StartingToken.Next.Next.Position.Offset;
+            }
+            else
+            {
+                stringRepresentation = "," + stringRepresentation;
+                var lastArg = call.Arguments[argCn - 1];
+                behindArgOffset = getBehindOffset(lastArg);
+            }
+
+
+            write(view, behindArgOffset, stringRepresentation);
         }
 
         internal void ShiftBehind(ExecutionView view, INodeAST shiftedLine, INodeAST behindLine)
@@ -97,6 +115,72 @@ namespace AssemblyProviders.CSharp
             var shiftLen = shiftEnd - shiftStart;
 
             move(view, shiftStart, shiftTargetOffset, shiftLen);
+        }
+
+        internal void OnChildRemoved(ExecutionView view, INodeAST removedChild)
+        {
+            var parent = removedChild.Parent;
+
+            if (parent == null)
+            {
+                //node has been removed and has no parent - handle it
+                OnNodeRemoved(view, removedChild);
+
+                //there is no action for keeping parent
+                return;
+            }
+
+            switch (parent.NodeType)
+            {
+                case NodeTypes.binaryOperator:
+                    parent.Source.remove(view, parent, false);
+                    OnChildRemoved(view, parent);
+                    return;
+
+                case NodeTypes.call:
+                    if (!IsOptionalArgument(parent, removedChild))
+                    {
+                        parent.Source.remove(view, parent, false);
+                        OnChildRemoved(view, parent);
+                        return;
+                    }
+                    break;
+
+                case NodeTypes.prefixOperator:
+                case NodeTypes.hierarchy:
+                    parent.Source.remove(view, parent, false);
+                    OnChildRemoved(view, parent);
+                    return;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            //BE CAREFULL: Only node which parent is not handled by OnChildRemoved
+            //travers top down nodes and call removed handler
+            OnNodeRemoved(view, removedChild);
+        }
+
+        internal void OnNodeRemoved(ExecutionView view, INodeAST removedNode)
+        {
+            if (removedNode == null)
+                return;
+
+            EditContext(view).NodeRemoved(removedNode);
+
+            foreach (var removedChild in removedNode.Arguments)
+            {
+                OnNodeRemoved(view, removedChild);
+            }
+
+            OnNodeRemoved(view, removedNode.Child);
+        }
+
+        internal bool IsOptionalArgument(INodeAST call, INodeAST argument)
+        {
+            var provider = call.Source.CompilationInfo.GetProvider(call);
+            var index = call.GetArgumentIndex(argument);
+            return provider.IsOptionalArgument(index + 1);
         }
 
         /// <summary>
@@ -205,5 +289,6 @@ namespace AssemblyProviders.CSharp
 
 
         #endregion
+
     }
 }

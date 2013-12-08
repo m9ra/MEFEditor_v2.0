@@ -88,7 +88,7 @@
     <Compile Include="CSharp\Transformations\CallProvider.cs" />
     <Compile Include="CSharp\Transformations\AssignRemove.cs" />
     <Compile Include="CSharp\Transformations\EditContext.cs" />
-    <Compile Include="CSharp\Transformations\NodeExtensions.cs" />
+    <Compile Include="CSharp\NodeExtensions.cs" />
     <Compile Include="CSharp\Transformations\SourceRemoveProvider.cs" />
     <Compile Include="CSharp\Transformations\BlockProvider.cs" />
     <Compile Include="CSharp\Transformations\SourceTransformation.cs" />

@@ -64,6 +64,9 @@
     <Compile Include="Drawings\CompositionTesterDrawing.xaml.cs">
       <DependentUpon>CompositionTesterDrawing.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Drawings\DirectoryCatalogDrawing.xaml.cs">
+      <DependentUpon>DirectoryCatalogDrawing.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Drawings\ExportConnector.xaml.cs">
       <DependentUpon>ExportConnector.xaml</DependentUpon>
     </Compile>
@@ -102,6 +105,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Drawings\CompositionTesterDrawing.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Drawings\DirectoryCatalogDrawing.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

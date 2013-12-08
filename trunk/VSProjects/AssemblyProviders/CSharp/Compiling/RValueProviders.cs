@@ -148,6 +148,7 @@ namespace AssemblyProviders.CSharp.Compiling
         public VariableRValue(VariableInfo variable, INodeAST variableNode, Context context)
             : base(context)
         {
+            variable.AddVariableUsing(variableNode);
             _variable = variable;
             _variableNode = variableNode;
         }

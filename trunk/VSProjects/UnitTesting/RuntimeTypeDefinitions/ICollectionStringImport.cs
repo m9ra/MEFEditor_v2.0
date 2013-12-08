@@ -45,11 +45,14 @@ namespace UnitTesting.RuntimeTypeDefinitions
         {
             var importedValues = Import.Get();
 
-            var i = 0;
-            foreach (var value in importedValues)
+            if (importedValues != null)
             {
-                drawer.SetProperty("Import[" + i + "]", value);
-                ++i;
+                var i = 0;
+                foreach (var value in importedValues)
+                {
+                    drawer.SetProperty("Import[" + i + "]", value);
+                    ++i;
+                }
             }
 
             drawer.CommitDrawing();

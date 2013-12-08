@@ -71,7 +71,7 @@ namespace Drawing.Behaviours
         protected override void onDropEnd()
         {
             if (CurrentView != Diagram.InitialView)
-                CurrentView.Commit();
+                DragAdorner.EditView = CurrentView;
 
             //else there is nothing to commit
         }

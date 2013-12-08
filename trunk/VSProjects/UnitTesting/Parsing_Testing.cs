@@ -406,6 +406,7 @@ namespace UnitTesting
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.RemoveArgument(arg, 1, ".reject");
+                c.Edits.SetOptional(1);
             }, Method.Void_StringParam)
 
             .RunEditAction("arg", ".reject")
@@ -427,6 +428,7 @@ namespace UnitTesting
             {
                 var arg = c.CurrentArguments[1];
                 c.Edits.RemoveArgument(arg, 1, ".reject");
+                c.Edits.SetOptional(1);
             }, Method.Void_StringParam)
 
             .RunEditAction("arg", ".reject")
@@ -472,7 +474,7 @@ namespace UnitTesting
             {
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
-                c.Edits.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
+                c.Edits.AppendArgument(thisInst, 2, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
             }, Method.Void_StringParam)
 
             .UserAction((c) =>
@@ -507,7 +509,7 @@ namespace UnitTesting
             {
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
-                e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
+                e.AppendArgument(thisInst, 2, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
 
             }, Method.Void_StringParam)
 
@@ -549,7 +551,7 @@ namespace UnitTesting
             {
                 var thisInst = c.CurrentArguments[0];
                 var e = c.Edits;
-                e.AppendArgument(thisInst, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
+                e.AppendArgument(thisInst, 2, "Append", (s) => e.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, s));
 
             }, Method.Void_StringParam)
 
@@ -770,6 +772,23 @@ namespace UnitTesting
                 
                 System.String b;        
                 a=b=c;      
+         ");
+        }
+
+        [TestMethod]
+        public void Edit_RemoveVariableCall()
+        {
+            AssemblyUtils.Run(@"
+                var a=""valA"";
+                var b=a.ToString();
+                var c=b.ToString();
+                c=""ForceRedeclare"";
+            ")
+
+         .RunRemoveAction("a")
+
+         .AssertSourceEquivalence(@"
+                var c=""ForceRedeclare"";
          ");
         }
     }
