@@ -498,9 +498,9 @@ namespace AssemblyProviders.CSharp
             if (callNode.NodeType != NodeTypes.call && callNode.Indexer != null)
             {
                 //array definition
-                typeName = string.Format("Array<{0},{1}>", typeName,callNode.Indexer.Arguments.Length);
+                typeName = string.Format("Array<{0},{1}>", typeName, callNode.Indexer.Arguments.Length);
             }
-            
+
             return new InstanceInfo(typeName);
         }
 
@@ -516,57 +516,43 @@ namespace AssemblyProviders.CSharp
             var currNode = callHierarchy;
             var searcher = _context.CreateSearcher();
 
-            if (calledObject != null)
+            if (calledObject == null)
+            {
+                //TODO add namespaces
+                searcher.ExtendName("", _methodInfo.DeclaringType.TypeName);
+            }
+            else
             {
                 var calledObjectInfo = calledObject.GetResultInfo();
                 searcher.SetCalledObject(calledObjectInfo);
             }
-            else
-            {
-                searcher.ExtendName("", _methodInfo.DeclaringType.TypeName);
-            }
 
             while (currNode != null)
             {
-
                 var nextNode = currNode.Child;
-                //TODO add namespaces
 
-                switch (currNode.NodeType)
-                {
-                    case NodeTypes.hierarchy:
-                        if (currNode.Indexer == null)
-                        {
-                            Debug.Assert(currNode.Arguments.Length == 0);
-                            searcher.Dispatch("get_" + currNode.Value);
-                            searcher.Dispatch("set_" + currNode.Value);
-                        }
-                        else
-                        {
-                            searcher.Dispatch("get_Item");
-                            searcher.Dispatch("set_Item");
-                        }
-                        break;
-                    case NodeTypes.call:
-                        //TODO this is not correct!!
-                        searcher.Dispatch(_context.Map(currNode.Value));
-                        break;
-                    default:
-                        throw new NotSupportedException("Cannot resolve given node type inside hierarchy");
-                }
+                dispatchByNode(currNode, searcher);
 
                 if (searcher.HasResults)
                 {
-                    //TODO method chaining
-
                     var callActivation = findMatchingActivation(calledObject, currNode, searcher.FoundResult);
                     if (callActivation == null)
                     {
                         break;
                     }
 
-                    call = new CallRValue(callActivation, _context);
-                    return true;
+                    var resolvedCall= new CallRValue(callActivation, _context);
+                    if (nextNode == null)
+                    {
+                        //end of call chain
+                        call = resolvedCall;
+                        return true;
+                    }
+                    else
+                    {
+                        //call chaining
+                        return tryGetCall(nextNode, out call, resolvedCall);
+                    }
                 }
 
                 if (currNode.NodeType == NodeTypes.hierarchy)
@@ -584,6 +570,32 @@ namespace AssemblyProviders.CSharp
 
             call = null;
             return false;
+        }
+
+        private void dispatchByNode(INodeAST currNode, MethodSearcher searcher)
+        {
+            switch (currNode.NodeType)
+            {
+                case NodeTypes.hierarchy:
+                    if (currNode.Indexer == null)
+                    {
+                        Debug.Assert(currNode.Arguments.Length == 0);
+                        searcher.Dispatch("get_" + currNode.Value);
+                        searcher.Dispatch("set_" + currNode.Value);
+                    }
+                    else
+                    {
+                        searcher.Dispatch("get_Item");
+                        searcher.Dispatch("set_Item");
+                    }
+                    break;
+                case NodeTypes.call:
+                    //TODO this is not correct!!
+                    searcher.Dispatch(_context.Map(currNode.Value));
+                    break;
+                default:
+                    throw new NotSupportedException("Cannot resolve given node type inside hierarchy");
+            }
         }
 
         private CallActivation findMatchingActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)

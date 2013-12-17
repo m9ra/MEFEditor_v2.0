@@ -28,7 +28,7 @@ namespace TypeSystem.Runtime.Building
         /// Definition that is declaring builded method
         /// </summary>
         private readonly RuntimeTypeDefinition _declaringDefinition;
-     
+
         /// <summary>
         /// Array where arguments are stored
         /// </summary>
@@ -96,10 +96,10 @@ namespace TypeSystem.Runtime.Building
             Adapter = generateAdapter(method);
             var paramsInfo = getParametersInfo(method);
 
-            var returnInfo = getInstanceInfo(method.ReturnType);
+            var returnInfo = getReturnType(method);
 
             var isAbstract = method.IsAbstract || _declaringDefinition.IsInterface;
-            BuildedMethodInfo= new TypeMethodInfo(
+            BuildedMethodInfo = new TypeMethodInfo(
                 _declaringDefinition.TypeInfo, _methodName,
                 returnInfo, paramsInfo.ToArray(),
                 method.IsStatic, _declaringDefinition.IsGeneric, isAbstract);
@@ -112,12 +112,12 @@ namespace TypeSystem.Runtime.Building
             var adapter = Adapter;
 
             return new RuntimeMethodGenerator(
-                (c) => invoke(c,methodInfo, Adapter, _declaringDefinition),
+                (c) => invoke(c, methodInfo, Adapter, _declaringDefinition),
                 methodInfo,
                 implementedTypes);
         }
 
-        private static void invoke(AnalyzingContext context,TypeMethodInfo method, DirectMethod adapter, RuntimeTypeDefinition definition)
+        private static void invoke(AnalyzingContext context, TypeMethodInfo method, DirectMethod adapter, RuntimeTypeDefinition definition)
         {
             definition.Invoke(context, adapter);
         }
@@ -139,6 +139,20 @@ namespace TypeSystem.Runtime.Building
             return paramsInfo;
         }
 
+        private InstanceInfo getReturnType(MethodInfo method)
+        {
+            var attribute = method.GetCustomAttribute<ReturnTypeAttribute>();
+
+            if (attribute == null)
+            {
+                return getInstanceInfo(method.ReturnType);
+            }
+            else
+            {
+                return attribute.ReturnInfo;
+            }
+        }
+
         private InstanceInfo getInstanceInfo(Type type)
         {
             return _declaringDefinition.GetInstanceInfo(type);
@@ -151,7 +165,7 @@ namespace TypeSystem.Runtime.Building
             for (var i = 0; i < parameters.Length; ++i)
             {
                 var argInstance = ArgumentInstanceExpression(i + 1);
-                arguments[i] = convert(argInstance,parameters[i].ParameterType);
+                arguments[i] = convert(argInstance, parameters[i].ParameterType);
             }
 
             var thisExpression = convert(ThisObjectExpression, method.DeclaringType);
@@ -182,7 +196,7 @@ namespace TypeSystem.Runtime.Building
             {
                 //Direct object has been returned - create its direct instance
                 var machine = Expression.PropertyOrField(_contextParam, "Machine");
-                
+
                 if (returnType.IsArray)
                 {
                     var arrayWrapType = typeof(Array<InstanceWrap>);

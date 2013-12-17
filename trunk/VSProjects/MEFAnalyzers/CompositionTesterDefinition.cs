@@ -54,7 +54,7 @@ namespace MEFAnalyzers
         {
             Parts.Set(new List<Instance>());
             var thisObj = This;
-            AddCallEdit((s) => acceptComponent(thisObj, s));
+            AddCallEdit(".accept", (s) => acceptComponent(thisObj, s));
         }
 
         public void _method_Compose()

@@ -49,6 +49,7 @@
     <Compile Include="DrawingServices\DrawingPipeline.cs" />
     <Compile Include="DrawingServices\InstanceDrawer.cs" />
     <Compile Include="EditView.cs" />
+    <Compile Include="Runtime\Attributes.cs" />
     <Compile Include="UserInteraction.cs" />
     <Compile Include="HashedMethodContainer.cs" />
     <Compile Include="InheritanceChain.cs" />

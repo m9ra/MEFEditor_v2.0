@@ -145,6 +145,21 @@ namespace TypeSystem.Runtime
         }
 
 
+        internal void RunInContextOf(Instance contextInstance, Action runnedAction)
+        {
+            var thisSwp = This;
+
+            try
+            {
+                This = contextInstance;
+                runnedAction();
+            }
+            finally
+            {
+                This = thisSwp;
+            }
+        }
+
         internal void Draw(DrawedInstance toDraw)
         {
             This = toDraw.WrappedInstance;
@@ -165,7 +180,7 @@ namespace TypeSystem.Runtime
             return new InstanceInfo(type);
         }
 
-        protected void AsyncCall<TResult>(Instance calledObject, string callName, Action<TResult> callback)
+        protected void AsyncCall<TResult>(Instance calledObject, string callName, Action<TResult> callback = null, params Instance[] passedArgs)
         {
             var searcher = Services.CreateSearcher();
             searcher.ExtendName(calledObject.Info.TypeName);
@@ -175,55 +190,50 @@ namespace TypeSystem.Runtime
             if (!searcher.HasResults)
                 throw new KeyNotFoundException("Cannot found method: " + callName + ", on " + calledObject);
 
-            var foundMethods = searcher.FoundResult.ToArray();
-            if (foundMethods.Length > 1)
-                throw new NotSupportedException("Cannot process async call on ambiguous call: " + callName + ", on" + calledObject);
+            var foundMethods = searcher.FoundResult;
+            var matchingMethods = (from method in foundMethods where method.Parameters.Length == passedArgs.Length select method).ToArray();
+
+            if (matchingMethods.Length > 1)
+                throw new NotSupportedException("Cannot process async call on ambiguous method: " + callName + ", on" + calledObject);
+
 
             var callGenerator = new DirectedGenerator((e) =>
             {
-                var arg1 = e.GetTemporaryVariable();
+                var thisArg = e.GetTemporaryVariable();
 
-                e.AssignArgument(arg1, calledObject.Info, 1);
-                e.Call(foundMethods[0].MethodID, arg1, Arguments.Values());
-
-                var callReturn = e.GetTemporaryVariable();
-                e.AssignReturnValue(callReturn, InstanceInfo.Create<object>());
-
-                e.DirectInvoke((context) =>
+                var argVars = new List<string>();
+                foreach (var passedArg in passedArgs)
                 {
-                    var callValue = context.GetValue(new VariableName(callReturn));
-                    var unwrapped = Unwrap<TResult>(callValue);
-                    Invoke(context, (c) => callback(unwrapped));
-                });
+                    var argVar = e.GetTemporaryVariable();
+
+                    e.AssignInstance(argVar, passedArg, passedArg.Info);
+                    argVars.Add(argVar);
+                }
+
+                e.AssignArgument(thisArg, calledObject.Info, 1);
+                e.Call(matchingMethods[0].MethodID, thisArg, Arguments.Values(argVars));
+
+                if (callback != null)
+                {
+                    var callReturn = e.GetTemporaryVariable();
+                    e.AssignReturnValue(callReturn, InstanceInfo.Create<object>());
+
+                    e.DirectInvoke((context) =>
+                    {
+                        var callValue = context.GetValue(new VariableName(callReturn));
+                        var unwrapped = Unwrap<TResult>(callValue);
+                        Invoke(context, (c) => callback(unwrapped));
+                    });
+                }
             });
 
 
             Context.DynamicCall(callName, callGenerator, This, calledObject);
         }
 
-        protected void ReportChildAdd(int childArgIndex, string childDescription, bool isOptional = false)
+        protected void AddCallEdit(string name, CallProvider accepter)
         {
-            var child = CurrentArguments[childArgIndex];
-            var editName = ".exclude";
-
-            /* if (isOptional)
-             {
-                 Edits.AttachRemoveArgument(This, child, childArgIndex, editName);
-             }
-             else
-             {
-                 Edits.AttachRemoveCall(This, child, editName);
-             } */
-
-            if (isOptional)
-                Edits.SetOptional(childArgIndex);
-
-            Edits.AttachRemoveArgument(This, child, childArgIndex, editName);
-        }
-
-        protected void AddCallEdit(CallProvider accepter)
-        {
-            Edits.AddCall(This, ".accept", accepter);
+            Edits.AddCall(This, name, accepter);
         }
 
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)

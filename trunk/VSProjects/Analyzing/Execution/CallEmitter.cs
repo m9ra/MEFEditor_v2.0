@@ -51,6 +51,19 @@ namespace Analyzing.Execution
             return new AssignBuilder(result);
         }
 
+        public override AssignBuilder AssignInstance(string targetVar, Instance instance, InstanceInfo instanceInfo = null)
+        {
+            if (instanceInfo == null)
+                instanceInfo = instance.Info;
+
+            var target = getVariable(targetVar, instanceInfo);
+
+            var result = new AssignLiteral(target, instance);
+            emitInstruction(result);
+
+            return new AssignBuilder(result);
+        }
+
         public override AssignBuilder Assign(string targetVar, string sourceVar)
         {
             var source = getVariable(sourceVar);

@@ -26,6 +26,17 @@ namespace Research
     static class ResearchSources
     {
 
+        static internal TestingAssembly MEF_AggregateCatalog()
+        {
+            return AssemblyUtils.Run(@"                        
+                var aggrCat=new System.ComponentModel.Composition.Hosting.AggregateCatalog();       
+                var aggrCat2=new System.ComponentModel.Composition.Hosting.AggregateCatalog(); 
+            ")
+            .AddToRuntime<AggregateCatalogDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+            ;
+        }
+
         static internal TestingAssembly MEF_DirectoryCatalog()
         {
             var testAssembly = new RuntimeAssembly();

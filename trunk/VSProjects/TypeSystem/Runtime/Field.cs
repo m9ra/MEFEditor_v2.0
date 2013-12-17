@@ -25,6 +25,13 @@ namespace TypeSystem.Runtime
             DefiningType = definingType;
             DefiningType.RegisterField(this, out Storage);
         }
+
+        internal Field(DataTypeDefinition definingType, string fieldId)
+        {
+            DefiningType = definingType;
+            DefiningType.RegisterField(this, out Storage);
+            Storage = fieldId;
+        }
     }
 
 
@@ -40,6 +47,11 @@ namespace TypeSystem.Runtime
             : base(definingType)
         {
 
+        }
+
+        internal Field(DataTypeDefinition definingType, string fieldId)
+            : base(definingType, fieldId)
+        {
         }
 
         /// <summary>

@@ -51,6 +51,8 @@ namespace Analyzing
 
         public abstract AssignBuilder AssignLiteral(string targetVar, object literal, InstanceInfo literalInfo = null);
 
+        public abstract AssignBuilder AssignInstance(string targetVar, Instance instance, InstanceInfo instanceInfo = null);
+
         public abstract AssignBuilder AssignNewObject(string targetVar, InstanceInfo objectInfo);
 
         public abstract AssignBuilder Assign(string targetVar, string sourceVar);

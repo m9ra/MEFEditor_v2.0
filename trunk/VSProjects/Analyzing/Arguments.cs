@@ -41,6 +41,11 @@ namespace Analyzing
             return new Arguments(valueArguments, new InstanceInfo[0]);
         }
 
+        public static Arguments Values(IEnumerable<string> valueArguments)
+        {
+            return new Arguments(valueArguments.ToArray(), new InstanceInfo[0]);
+        }
+
         internal void Initialize(VariableName calledObject)
         {
             System.Diagnostics.Debug.Assert(!IsInitialized, "Cannot initialize arguments twice");
