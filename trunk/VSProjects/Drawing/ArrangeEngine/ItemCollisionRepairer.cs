@@ -68,8 +68,8 @@ namespace Drawing.ArrangeEngine
         private Rect GetSpan(DiagramItem item)
         {
             var position = getPosition(item);
-            var rect= new Rect(position.X, position.Y, item.ActualWidth, item.ActualHeight);
-            
+            var rect = new Rect(position.X, position.Y, item.DesiredSize.Width, item.DesiredSize.Height);
+
             return rect;
         }
 
@@ -132,6 +132,11 @@ namespace Drawing.ArrangeEngine
 
         private ItemMoveability computePossibilities(DiagramItem movedItem, DiagramCanvasBase container)
         {
+            if (movedItem.IsRootItem)
+            {
+                return new ItemMoveability(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
+            }
+
             var span = GetSpan(movedItem);
 
             var upPossib = span.Top;

@@ -69,8 +69,7 @@ namespace Drawing
             _rootItems.Clear();
             Output.Children.Clear();
         }
-
-
+        
         #endregion
 
         #region Display building methods
@@ -86,13 +85,27 @@ namespace Drawing
                 _rootItems.Add(item);
 
             if (!_oldPositions.ContainsKey(item.ParentID))
+            {
+                setDefaultPosition(item);
                 return;
+            }
 
             var parentPositions = _oldPositions[item.ParentID];
             if (!parentPositions.ContainsKey(item.ID))
+            {
+                setDefaultPosition(item);
                 return;
+            }
 
             SetPosition(item, parentPositions[item.ID]);
+        }
+
+        private void setDefaultPosition(DiagramItem item) {
+            if (item.IsRootItem)
+            {
+                //TODO arrange
+                SetPosition(item, new Point(50, 50));
+            }
         }
 
         internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
@@ -146,8 +159,7 @@ namespace Drawing
         }
 
         #endregion
-
-
+        
         internal void ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
         {
             var collisionDetector = new ItemCollisionRepairer();
@@ -159,7 +171,7 @@ namespace Drawing
                 if (!isRoot)
                 {
                     //only slots are limited to borders
-                    if (container.ActualHeight > 0 || container.ActualWidth > 0)
+                    if (container.DesiredSize.Height > 0 || container.DesiredSize.Width> 0)
                     {
                         // check only if container is arranged
                         CheckBorders(child, container);
