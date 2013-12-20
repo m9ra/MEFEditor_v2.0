@@ -61,8 +61,7 @@ namespace Drawing.Behaviours
         /// Create adorner which will show dragged object.   
         /// </summary>
         /// <param name="item">Dragged object.</param>
-        /// <param name="dragScope">Bounds where can be thumb draged.</param>
-        /// <param name="center">Point where the drag started relative to adornElement.</param>
+        /// <param name="dragStart">Drag start in mouse relative coordinates!!</param>
         public DragAdorner(DiagramItem item, Point dragStart)
             : base(item)
         {
@@ -131,7 +130,6 @@ namespace Drawing.Behaviours
             drawingContext.DrawRectangle(_visualBrush, _visualPen, new Rect(pos, new Size(Item.ActualWidth, Item.ActualHeight)));
 
 
-
             //TODO optimize, refactor, change,... this is only for visual testing :]
 
             var typeFace = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
@@ -139,6 +137,8 @@ namespace Drawing.Behaviours
 
             var padding = 5;
             var textPos = new Point(pos.X + _center.X + 3 * padding, pos.Y + _center.Y + 3 * padding);
+            var shift=Item.DiagramContext.Provider.Output.Shift;
+            textPos = new Point(textPos.X - shift.X, textPos.Y - shift.Y);
 
             var fontRectPos = new Point(textPos.X - padding, textPos.Y - padding);
             var fontRect = new Rect(fontRectPos, new Size(formattedHint.Width + padding * 2, formattedHint.Height + padding * 2));

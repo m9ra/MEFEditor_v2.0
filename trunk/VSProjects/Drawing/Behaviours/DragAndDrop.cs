@@ -55,6 +55,7 @@ namespace Drawing.Behaviours
             e.Handled = true;
 
             _item.CaptureMouse();
+
             var adorner = new DragAdorner(_item, e.GetPosition(_item.Output));
             adorner.DragStart();
 

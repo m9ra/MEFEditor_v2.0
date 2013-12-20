@@ -27,7 +27,9 @@ namespace MEFAnalyzers.Drawings
         {
             InitializeComponent();
 
-            TypeName.Text = Definition.DrawedType;
+            DrawingTools.SetToolTip(CaptionText, Definition.DrawedType);
+            DrawingTools.SetIcon(CaptionIcon, Icons.Composition);
+
 
             foreach (var property in Definition.Properties)
             {

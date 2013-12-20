@@ -54,10 +54,10 @@ namespace MEFAnalyzers.Drawings
         /// <summary>
         /// Set ToolTip from content with specified delay to parent.
         /// </summary>
-        /// <param name="content">Content to be displayed in ToolTip.</param>
-        /// <param name="delay">Delay before ToolTip is displayed.</param>      
         /// <param name="parent">Element where ToolTip will be displayed.</param>
-        internal static void SetToolTip(FrameworkElement content, FrameworkElement parent)
+        /// <param name="delay">Delay before ToolTip is displayed.</param>      
+        /// <param name="content">Content to be displayed in ToolTip.</param>
+        internal static void SetToolTip(FrameworkElement parent, FrameworkElement content)
         {
             var tip = new ToolTip();
             tip.Content = content;
@@ -65,6 +65,24 @@ namespace MEFAnalyzers.Drawings
             ToolTipService.SetInitialShowDelay(parent, ToolTip_Quick);
         }
 
+        /// <summary>
+        /// Set ToolTip from content with specified delay to parent.
+        /// </summary>
+        /// <param name="target">Target which ToolTip will be set.</param>
+        internal static void SetToolTip(FrameworkElement target, string toolTipText)
+        {
+            SetToolTip(target, DrawingTools.GetText(toolTipText));
+        }
+
+        internal static void SetImage(Image target, System.Drawing.Bitmap image)
+        {
+            target.Source = DrawingTools.Convert(image);
+        }
+
+        internal static void SetIcon(Image target, System.Drawing.Bitmap image)
+        {
+            SetImage(target, image);
+        }
 
         internal static StackPanel ConnectorProperties(ConnectorDefinition connector, string heading, IEnumerable<KeyValuePair<string, string>> mapping)
         {

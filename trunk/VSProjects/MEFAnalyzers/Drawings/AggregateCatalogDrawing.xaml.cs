@@ -23,11 +23,13 @@ namespace MEFAnalyzers.Drawings
     public partial class AggregateCatalogDrawing : ContentDrawing
     {
         public AggregateCatalogDrawing(DiagramItem item)
-            :base(item)
+            : base(item)
         {
+
             InitializeComponent();
 
-            TypeName.Text = Definition.DrawedType;
+            DrawingTools.SetToolTip(CaptionText, Definition.DrawedType);
+            DrawingTools.SetIcon(CaptionIcon, Icons.Container);
 
             foreach (var property in Definition.Properties)
             {
@@ -38,7 +40,7 @@ namespace MEFAnalyzers.Drawings
             }
 
             var slot = Definition.Slots.First();
-            Item.FillSlot(Composition, slot);
+            Item.FillSlot(Catalogs, slot);
         }
     }
 }

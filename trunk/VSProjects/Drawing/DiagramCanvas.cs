@@ -11,30 +11,44 @@ using System.ComponentModel;
 
 namespace Drawing
 {
-    public class DiagramCanvas:DiagramCanvasBase
+    public class DiagramCanvas : DiagramCanvasBase
     {
-        #region GlobalPosition property
+        private Vector _shift;
 
- /*       public static readonly DependencyProperty GlobalPositionProperty =
-            DependencyProperty.RegisterAttached("GlobalPosition", typeof(Point),
-            typeof(DiagramCanvas), new FrameworkPropertyMetadata(new Point(0, 0),
-            FrameworkPropertyMetadataOptions.AffectsParentArrange));
-
-        public static void SetGlobalPosition(UIElement element, Point position)
+        public Vector Shift
         {
-            var pos = GetGlobalPosition(element);
-            if (pos == position)
-                return;
+            get
+            {
+                return _shift;
+            }
 
-            element.SetValue(GlobalPositionProperty, position);
+            set
+            {
+                if (_shift == value)
+                    return;
+
+                _shift = value;
+                InvalidateArrange();
+            }
         }
 
-        public static Point GetGlobalPosition(UIElement element)
-        {
-            return (Point)element.GetValue(GlobalPositionProperty);
-        }
-        */
-        #endregion
 
+
+        protected override Size ArrangeOverride(Size arrangeSize)
+        {
+            if (DiagramContext != null)
+            {
+                DiagramContext.Provider.Engine.ArrangeChildren(OwnerItem, this);
+            }
+
+            foreach (FrameworkElement child in Children)
+            {
+                var position = GetPosition(child);
+
+                var shiftedPosition = new Point(position.X + Shift.X, position.Y + Shift.Y);
+                child.Arrange(new Rect(shiftedPosition, child.DesiredSize));
+            }
+            return arrangeSize;
+        }
     }
 }

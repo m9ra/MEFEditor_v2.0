@@ -50,6 +50,7 @@
     <Compile Include="ArrangeEngine\JoinTracer.cs" />
     <Compile Include="ArrangeEngine\Planes.cs" />
     <Compile Include="ArrangeEngine\SceneNavigator.cs" />
+    <Compile Include="Behaviours\ContentShiftable.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
     <Compile Include="Behaviours\DropStrategy.cs" />
     <Compile Include="Behaviours\FollowConnectorPosition.cs" />

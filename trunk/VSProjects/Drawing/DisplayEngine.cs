@@ -41,6 +41,8 @@ namespace Drawing
         internal DisplayEngine(DiagramCanvas output)
         {
             Output = output;
+
+            ContentShiftable.Attach(Output);
         }
 
         #region Public API
@@ -79,6 +81,7 @@ namespace Drawing
             ZOrdering.Attach(item, _orderingGroup);
             DragAndDrop.Attach(item, GetPosition, SetPosition);
             UpdateGlobalPosition.Attach(item);
+
             _items.Add(item.Definition.ID, item);
 
             if (item.IsRootItem)

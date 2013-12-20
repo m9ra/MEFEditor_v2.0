@@ -9,11 +9,14 @@
              MinHeight="150"
              MinWidth="150"
             
-             Background="LightGray"
-             BorderBrush="Blue"
-             BorderThickness="5">
-    <DockPanel>
-        <TextBlock DockPanel.Dock="Top" Name="TypeName" FontSize="15" FontWeight="Bold" Margin="0 0 10 0"/>
+             Background="LightGreen"
+             BorderBrush="Green"
+             BorderThickness="2"  
+             CornerRadius="10"
+                   
+                   >
+    <DockPanel Margin="10">
+        <TextBlock DockPanel.Dock="Top" Name="TypeName" FontSize="20" Margin="0 0 10 0"/>
         <StackPanel Name="Properties"></StackPanel>
     </DockPanel>
 </dr:ContentDrawing>

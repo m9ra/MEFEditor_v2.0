@@ -27,17 +27,16 @@ namespace MEFAnalyzers.Drawings
         {
             InitializeComponent();
 
-            TypeName.Text = Definition.DrawedType;
+            DrawingTools.SetToolTip(CaptionText, Definition.DrawedType);
+            DrawingTools.SetIcon(CaptionIcon, Icons.Folder);
 
-            foreach (var property in Definition.Properties)
-            {
-                var propertyBlock = new TextBlock();
-                propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);
+            var path = Definition.GetProperty("Path");
+            var pattern = Definition.GetProperty("Pattern");
 
-                Properties.Children.Add(propertyBlock);
-            }
-
-            Item.FillSlot(Composition, Definition.Slots.First());
+            Path.Text = path.Value;
+            Pattern.Text = pattern.Value;
+       
+            Item.FillSlot(Components, Definition.Slots.First());
         }
     }
 }

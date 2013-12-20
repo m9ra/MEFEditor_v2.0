@@ -149,9 +149,18 @@ namespace Drawing
             connectors.Children.Add(connector);
         }
 
-        internal void SetContent(FrameworkElement content)
+        internal void SetContent(ContentDrawing content)
         {
             ContentDrawing.Content = content;
+
+            //set margins for connectors - for radius corners is needed to shift its position
+            var cr = content.CornerRadius;
+
+            LeftConnectors.Margin = new Thickness(0, cr.TopLeft, 0, cr.BottomLeft);
+            RightConnectors.Margin = new Thickness(0, cr.TopRight, 0, cr.BottomRight);
+
+            TopConnectors.Margin = new Thickness(cr.TopLeft, 0, cr.TopRight, 0);
+            BottomConnectors.Margin = new Thickness(cr.BottomLeft, 0, cr.BottomRight, 0);
         }
 
         internal ConnectorDrawing GetConnector(ConnectorDefinition point)

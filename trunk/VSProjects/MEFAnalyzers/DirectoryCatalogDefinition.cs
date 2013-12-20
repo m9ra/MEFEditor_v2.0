@@ -107,6 +107,10 @@ namespace MEFAnalyzers
 
         protected override void draw(InstanceDrawer drawer)
         {
+            drawer.SetProperty("Path", Path.Get());
+            drawer.SetProperty("FullPath", FullPath.Get());
+            drawer.SetProperty("Pattern", Pattern.Get());
+
             var slot = drawer.AddSlot();
 
             foreach (var component in Components.Get())

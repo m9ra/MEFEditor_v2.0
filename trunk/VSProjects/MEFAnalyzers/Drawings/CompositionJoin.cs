@@ -16,7 +16,7 @@ namespace MEFAnalyzers.Drawings
         public CompositionJoin(JoinDefinition definition) :
             base(definition)
         {
-            this.Stroke = Brushes.Orange;
+            this.Stroke = Brushes.DimGray;
             this.StrokeThickness = 2;
         }
 
