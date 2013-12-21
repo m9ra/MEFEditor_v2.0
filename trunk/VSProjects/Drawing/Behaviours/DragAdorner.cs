@@ -23,32 +23,28 @@ namespace Drawing.Behaviours
     /// </summary>
     class DragAdorner : Adorner
     {
+        private readonly Brush _visualBrush = null;
+
+        private readonly Pen _visualPen = null;
+
+        private readonly MouseHint _hint;
+
+        private Vector _center;
+
+        private DiagramCanvas _dragScope;
+
+        private AdornerLayer _dragLayer;
+        
+        private Point _startPosition;
+
         internal readonly DiagramItem Item;
 
         internal EditViewBase EditView;
-
-        Vector _center;
-        DiagramCanvas _dragScope;
-        AdornerLayer _dragLayer;
-
-        Brush _visualBrush;
-        Pen _visualPen;
-
-        Rectangle visChild = new Rectangle();
-
-        StackPanel _visual = new StackPanel();
-
-        private Point _startPosition;
 
         /// <summary>
         /// Hint displayed when adorner is dragged.
         /// </summary>
         internal string Hint;
-
-        /// <summary>
-        /// Number of Visual children.
-        /// </summary>
-        protected override int VisualChildrenCount { get { return 1; } }
 
         /// <summary>
         /// Position of adorner relative to workspace
@@ -66,8 +62,14 @@ namespace Drawing.Behaviours
             : base(item)
         {
             Item = item;
+
             _dragScope = item.DiagramContext.Provider.Output;
+
             _dragLayer = AdornerLayer.GetAdornerLayer(_dragScope);
+            _dragLayer.Add(this);
+
+            _hint = new MouseHint(_dragScope);
+
 
             _visualBrush = new VisualBrush(item);
             _visualBrush.Opacity = 0.5;
@@ -76,7 +78,9 @@ namespace Drawing.Behaviours
             _startPosition = item.GlobalPosition;
             GlobalPosition = _startPosition;
 
-            _center = dragStart - _startPosition;
+            _center = getScaledPosition(dragStart) - _startPosition;
+
+
 
             IsHitTestVisible = false;
             _dragScope.PreviewDragOver += _updatePosition;
@@ -90,6 +94,11 @@ namespace Drawing.Behaviours
         private void _updatePosition(object sender, DragEventArgs e)
         {
             var globalPos = e.GetPosition(_dragScope);
+            _hint.UpdateCursor(globalPos);
+            _hint.HintText = Hint;
+
+            globalPos = getScaledPosition(globalPos);
+
             globalPos.X -= _center.X;
             globalPos.Y -= _center.Y;
             var oldPos = globalPos;
@@ -98,6 +107,7 @@ namespace Drawing.Behaviours
             {
                 if (Item.CanExcludeFromParent)
                 {
+                    //don't need to be bounded
                     globalPos = oldPos;
                 }
             }
@@ -106,20 +116,18 @@ namespace Drawing.Behaviours
             _dragLayer.Update(this.AdornedElement);
         }
 
-        protected override Visual GetVisualChild(int index)
+        private Point getScaledPosition(Point rawPoint)
         {
-            return visChild;
-        }
+            var scaleFactor = _dragScope.Zoom;
 
-        internal void DragStart()
-        {
-            _dragLayer.Add(this);
+            return new Point(rawPoint.X / scaleFactor, rawPoint.Y / scaleFactor);
         }
-
+        
         internal void DragEnd()
         {
             _dragScope.PreviewDragOver -= _updatePosition;
             _dragLayer.Remove(this);
+            _hint.HintEnd();
         }
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -128,26 +136,6 @@ namespace Drawing.Behaviours
 
             var pos = new Point(offset.X, offset.Y);
             drawingContext.DrawRectangle(_visualBrush, _visualPen, new Rect(pos, new Size(Item.ActualWidth, Item.ActualHeight)));
-
-
-            //TODO optimize, refactor, change,... this is only for visual testing :]
-
-            var typeFace = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
-            var formattedHint = new FormattedText(Hint, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeFace, 12, Brushes.Blue);
-
-            var padding = 5;
-            var textPos = new Point(pos.X + _center.X + 3 * padding, pos.Y + _center.Y + 3 * padding);
-            var shift=Item.DiagramContext.Provider.Output.Shift;
-            textPos = new Point(textPos.X - shift.X, textPos.Y - shift.Y);
-
-            var fontRectPos = new Point(textPos.X - padding, textPos.Y - padding);
-            var fontRect = new Rect(fontRectPos, new Size(formattedHint.Width + padding * 2, formattedHint.Height + padding * 2));
-
-            var brush = new LinearGradientBrush(Colors.White, Colors.LightGray, 90);
-            var pen = new Pen(Brushes.Gray, 1);
-
-            drawingContext.DrawRoundedRectangle(brush, pen, fontRect, 5, 5);
-            drawingContext.DrawText(formattedHint, textPos);
         }
 
         protected override Size MeasureOverride(Size finalSize)

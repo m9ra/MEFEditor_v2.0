@@ -51,9 +51,11 @@
     <Compile Include="ArrangeEngine\Planes.cs" />
     <Compile Include="ArrangeEngine\SceneNavigator.cs" />
     <Compile Include="Behaviours\ContentShiftable.cs" />
+    <Compile Include="Behaviours\ContentZoomable.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
     <Compile Include="Behaviours\DropStrategy.cs" />
     <Compile Include="Behaviours\FollowConnectorPosition.cs" />
+    <Compile Include="Behaviours\MouseHint.cs" />
     <Compile Include="Behaviours\PreviewDropStrategy.cs" />
     <Compile Include="Behaviours\UpdateGlobalPosition.cs" />
     <Compile Include="Behaviours\ZOrdering.cs" />

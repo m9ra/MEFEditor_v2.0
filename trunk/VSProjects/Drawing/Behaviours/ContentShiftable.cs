@@ -47,6 +47,8 @@ namespace Drawing.Behaviours
             if (!_isShifting)
                 return;
 
+            Mouse.OverrideCursor = null;
+
             _canvas.MouseMove -= _canvas_MouseMove;
             _isShifting = false;
             _canvas.ReleaseMouseCapture();
@@ -61,6 +63,8 @@ namespace Drawing.Behaviours
                 return;
 
             _canvas.CaptureMouse();
+
+            Mouse.OverrideCursor = Cursors.SizeAll;
 
             _isShifting = true;
             _lastPos = e.GetPosition(_canvas);

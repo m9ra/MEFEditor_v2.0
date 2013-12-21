@@ -43,6 +43,7 @@ namespace Drawing
             Output = output;
 
             ContentShiftable.Attach(Output);
+            ContentZoomable.Attach(Output);
         }
 
         #region Public API
@@ -104,10 +105,21 @@ namespace Drawing
         }
 
         private void setDefaultPosition(DiagramItem item) {
+            //TODO refactor
             if (item.IsRootItem)
             {
-                //TODO arrange
-                SetPosition(item, new Point(50, 50));
+                //TODO arrange items
+                var currentPos=item.GlobalPosition;
+
+                if (currentPos.X == 0 && currentPos.Y == 0)
+                {
+                    SetPosition(item, new Point(50, 50));
+                }
+                else
+                {
+                    //needed because of tests
+                    SetPosition(item, currentPos);
+                }
             }
         }
 

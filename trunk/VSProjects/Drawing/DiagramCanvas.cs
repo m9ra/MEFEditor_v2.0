@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 
 using System.Windows;
+using System.Windows.Media;
+
 using System.ComponentModel;
 
 
@@ -13,7 +15,10 @@ namespace Drawing
 {
     public class DiagramCanvas : DiagramCanvasBase
     {
+        private readonly ScaleTransform _scale = new ScaleTransform();
+
         private Vector _shift;
+
 
         public Vector Shift
         {
@@ -32,6 +37,24 @@ namespace Drawing
             }
         }
 
+        public double Zoom
+        {
+            get
+            {
+                //both scale factors has same value
+                return _scale.ScaleX;
+            }
+            set
+            {
+                if (_scale.ScaleX == value)
+                    return;
+
+                _scale.ScaleX = value;
+                _scale.ScaleY = value;
+
+                InvalidateArrange();
+            }
+        }
 
 
         protected override Size ArrangeOverride(Size arrangeSize)
@@ -45,7 +68,11 @@ namespace Drawing
             {
                 var position = GetPosition(child);
 
-                var shiftedPosition = new Point(position.X + Shift.X, position.Y + Shift.Y);
+                child.RenderTransform = _scale;
+
+                var scaledPosition = _scale.Transform(position);
+                var shiftedPosition = new Point(scaledPosition.X + Shift.X, scaledPosition.Y + Shift.Y);
+
                 child.Arrange(new Rect(shiftedPosition, child.DesiredSize));
             }
             return arrangeSize;
