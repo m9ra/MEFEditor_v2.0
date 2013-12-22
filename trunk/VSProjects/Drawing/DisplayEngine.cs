@@ -64,7 +64,7 @@ namespace Drawing
             {
                 var position = GetPosition(item);
                 //keep old parent positions
-                setOldPosition(item.ParentItem, item, position);
+                saveOldPosition(item.ParentItem, item, position);
             }
 
             _orderingGroup = new ElementGroup();
@@ -72,7 +72,7 @@ namespace Drawing
             _rootItems.Clear();
             Output.Children.Clear();
         }
-        
+
         #endregion
 
         #region Display building methods
@@ -88,41 +88,9 @@ namespace Drawing
             if (item.IsRootItem)
                 _rootItems.Add(item);
 
-            if (!_oldPositions.ContainsKey(item.ParentID))
-            {
-                setDefaultPosition(item);
-                return;
-            }
-
-            var parentPositions = _oldPositions[item.ParentID];
-            if (!parentPositions.ContainsKey(item.ID))
-            {
-                setDefaultPosition(item);
-                return;
-            }
-
-            SetPosition(item, parentPositions[item.ID]);
+            setInitialPosition(item);
         }
-
-        private void setDefaultPosition(DiagramItem item) {
-            //TODO refactor
-            if (item.IsRootItem)
-            {
-                //TODO arrange items
-                var currentPos=item.GlobalPosition;
-
-                if (currentPos.X == 0 && currentPos.Y == 0)
-                {
-                    SetPosition(item, new Point(50, 50));
-                }
-                else
-                {
-                    //needed because of tests
-                    SetPosition(item, currentPos);
-                }
-            }
-        }
-
+            
         internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
         {
             var from = fromItem.GetConnector(join.Definition.From);
@@ -132,12 +100,12 @@ namespace Drawing
 
             FollowConnectorPosition.Attach(from, this, (p) =>
             {
-                RefreshJoinPath(join);
+                refreshJoinPath(join);
             });
 
             FollowConnectorPosition.Attach(to, this, (p) =>
             {
-                RefreshJoinPath(join);
+                refreshJoinPath(join);
             });
 
             _joins.Add(join);
@@ -170,11 +138,16 @@ namespace Drawing
 
         internal void HintPosition(DiagramItem hintContext, DiagramItem hintedItem, Point point)
         {
-            setOldPosition(hintContext, hintedItem, point);
+            saveOldPosition(hintContext, hintedItem, point);
         }
 
         #endregion
         
+        /// <summary>
+        /// Arrange children of given owner according to Arrange algorithm
+        /// </summary>
+        /// <param name="owner">Owner which children will be arranged</param>
+        /// <param name="container">Container where children are arranged</param>
         internal void ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
         {
             var collisionDetector = new ItemCollisionRepairer();
@@ -186,10 +159,10 @@ namespace Drawing
                 if (!isRoot)
                 {
                     //only slots are limited to borders
-                    if (container.DesiredSize.Height > 0 || container.DesiredSize.Width> 0)
+                    if (container.DesiredSize.Height > 0 || container.DesiredSize.Width > 0)
                     {
                         // check only if container is arranged
-                        CheckBorders(child, container);
+                        checkBorders(child, container);
                     }
                 }
                 collisionDetector.AddItem(child);
@@ -209,52 +182,47 @@ namespace Drawing
             {
                 //TODO: detect if refresh is necessary
 
-                RefreshJoinPath(join);
+                refreshJoinPath(join);
             }
         }
 
-        private void UpdateCrossedLines(DiagramItem item)
-        {
-            foreach (var join in _joins)
-            {
-                if (join.PointPathArray.Length == 0)
-                    continue;
-
-                var from = join.PointPathArray[0];
-                for (int i = 1; i < join.PointPathArray.Length; ++i)
-                {
-                    var to = join.PointPathArray[1];
-
-                    //TODO: check crossing between from-to line
-                    from = to;
-                }
-            }
-        }
-
-        internal void RefreshJoinPath(JoinDrawing join)
+        /// <summary>
+        /// Recompoute join path for given join
+        /// </summary>
+        /// <param name="join">Join which path will be recomputed</param>
+        private void refreshJoinPath(JoinDrawing join)
         {
             var tracer = new JoinTracer(this);
             join.PointPath = tracer.GetPath(join.From, join.To);
         }
 
-        private void CheckBorders(FrameworkElement element, DiagramCanvasBase container)
+        /// <summary>
+        /// Check position according to borders of given element within given container
+        /// </summary>
+        /// <param name="element">Element which position is checked</param>
+        /// <param name="container">Container which borders are used for position check</param>
+        private void checkBorders(FrameworkElement element, DiagramCanvasBase container)
         {
             var position = GetPosition(element);
             var update = false;
 
-            var actualHeight = container.ActualHeight;
-            var actualWidth = container.ActualWidth;
+            var containerHeight = container.DesiredSize.Height;
+            var containerWidth = container.DesiredSize.Width;
 
-            if (position.X + element.ActualWidth > actualWidth)
+            var elHeight = element.DesiredSize.Height;
+            var elWidth = element.DesiredSize.Width;
+
+
+            if (position.X + elWidth > containerWidth)
             {
                 update = true;
-                position.X = actualWidth - element.ActualWidth;
+                position.X = containerWidth - elWidth;
             }
 
-            if (position.Y + element.ActualHeight > actualHeight)
+            if (position.Y + elHeight > containerHeight)
             {
                 update = true;
-                position.Y = actualHeight - element.ActualHeight;
+                position.Y = containerHeight - elHeight;
             }
 
             if (position.X < 0)
@@ -273,9 +241,82 @@ namespace Drawing
                 SetPosition(element, position);
         }
 
-        private void setOldPosition(DiagramItem context, DiagramItem item, Point position)
+        private void updateCrossedLines(DiagramItem item)
         {
-            var contextID = context == null ? "" : context.ID;
+            foreach (var join in _joins)
+            {
+                if (join.PointPathArray.Length == 0)
+                    continue;
+
+                var from = join.PointPathArray[0];
+                for (int i = 1; i < join.PointPathArray.Length; ++i)
+                {
+                    var to = join.PointPathArray[1];
+
+                    //TODO: check crossing between from-to line
+                    from = to;
+                }
+            }
+        }
+        
+        #region Positioning routines
+
+        /// <summary>
+        /// Set initial position for given item. 
+        /// Accordingly old positions, default positions,..
+        /// </summary>
+        /// <param name="item">Item which position will be set</param>
+        private void setInitialPosition(DiagramItem item)
+        {
+            if (!_oldPositions.ContainsKey(item.ParentID))
+            {
+                setDefaultPosition(item);
+                return;
+            }
+
+            var parentPositions = _oldPositions[item.ParentID];
+            if (!parentPositions.ContainsKey(item.ID))
+            {
+                setDefaultPosition(item);
+                return;
+            }
+
+            SetPosition(item, parentPositions[item.ID]);
+        }
+
+        /// <summary>
+        /// Set default position for given item
+        /// </summary>
+        /// <param name="item">Item which position will be set</param>
+        private void setDefaultPosition(DiagramItem item)
+        {
+            //TODO refactor
+            if (item.IsRootItem)
+            {
+                //TODO arrange items
+                var currentPos = item.GlobalPosition;
+
+                if (currentPos.X == 0 && currentPos.Y == 0)
+                {
+                    SetPosition(item, new Point(50, 50));
+                }
+                else
+                {
+                    //needed because of tests
+                    SetPosition(item, currentPos);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Save position of given item to be hold for another display
+        /// </summary>
+        /// <param name="contextItem">Context item, where saved position is valid</param>
+        /// <param name="item">Item which position is saved</param>
+        /// <param name="position">Saved position</param>
+        private void saveOldPosition(DiagramItem contextItem, DiagramItem item, Point position)
+        {
+            var contextID = contextItem == null ? "" : contextItem.ID;
 
             Dictionary<string, Point> positions;
             if (!_oldPositions.TryGetValue(contextID, out positions))
@@ -284,8 +325,9 @@ namespace Drawing
                 _oldPositions[contextID] = positions;
             }
 
-            positions[item.ID]=position;
+            positions[item.ID] = position;
         }
 
+        #endregion
     }
 }

@@ -79,7 +79,8 @@ namespace MEFAnalyzers.CompositionEngine
             var argumentIndex = _inputInstances.Count;
 
             _inputInstances.Add(component);
-            var storage = string.Format("arg_{0}", argumentIndex);
+
+            var storage = string.Format("$arg_{0}", argumentIndex);
             emit((e) => e.AssignArgument(storage, component.Info, (uint)argumentIndex));
 
             _instanceStorages.Add(componentRef, storage);

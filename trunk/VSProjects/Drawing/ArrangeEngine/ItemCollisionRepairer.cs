@@ -140,8 +140,8 @@ namespace Drawing.ArrangeEngine
             var span = GetSpan(movedItem);
 
             var upPossib = span.Top;
-            var downPossib = container.ActualHeight - span.Bottom;
-            var rightPossib = container.ActualWidth - span.Right;
+            var downPossib = container.DesiredSize.Height - span.Bottom;
+            var rightPossib = container.DesiredSize.Width - span.Right;
             var leftPossib = span.Left;
 
             return new ItemMoveability(
