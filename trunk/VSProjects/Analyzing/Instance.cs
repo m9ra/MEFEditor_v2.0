@@ -76,6 +76,12 @@ namespace Analyzing
             }
         }
 
+        internal void RemoveEdit(Edit edit)
+        {
+            _edits.Remove(edit);
+            //TODO remove attached edits
+        }
+
         public IEnumerable<Edit> GetAttachedEdits(Instance attachingInstance)
         {
             return _attachedEdits.Get(attachingInstance);

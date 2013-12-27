@@ -62,6 +62,19 @@ namespace TypeSystem.Runtime
             ReportChildAdd(This, childArgIndex, childDescription, isOptional);
         }
 
+        protected void ReportParamChildAdd(int childParamArgIndex, Instance child, string childDescription, bool isOptional = false)
+        {
+            var attachedInstance = This;
+
+            addChild(attachedInstance, child);
+
+            if (isOptional)
+                Edits.SetOptional(childParamArgIndex);
+
+            var editName = UserInteraction.ExcludeName;
+            Edits.AttachRemoveArgument(attachedInstance, child, childParamArgIndex, editName);
+        }
+
         protected void ReportChildAdd(Instance attachedInstance, int childArgIndex, string childDescription, bool isOptional = false)
         {
             var child = CurrentArguments[childArgIndex];
@@ -70,7 +83,7 @@ namespace TypeSystem.Runtime
             if (isOptional)
                 Edits.SetOptional(childArgIndex);
 
-            var editName = ".exclude";
+            var editName = UserInteraction.ExcludeName;
             Edits.AttachRemoveArgument(attachedInstance, child, childArgIndex, editName);
         }
 

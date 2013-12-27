@@ -16,11 +16,11 @@ namespace AssemblyProviders.CSharp.Compiling
     class MethodSelector
     {
         LinkedList<ArgumentIterator> _argumentIterators = new LinkedList<ArgumentIterator>();
-        internal MethodSelector(IEnumerable<TypeMethodInfo> overloads,Context context)
+        internal MethodSelector(IEnumerable<TypeMethodInfo> overloads, Context context)
         {
             foreach (var overload in overloads)
             {
-                _argumentIterators.AddFirst(new ArgumentIterator(overload,context));
+                _argumentIterators.AddFirst(new ArgumentIterator(overload, context));
             }
         }
 
@@ -128,7 +128,9 @@ namespace AssemblyProviders.CSharp.Compiling
             else
             {
                 paramToMatch = getCurrentParam();
-                ++_orderedArgIndex;
+                if (paramToMatch != null && !paramToMatch.HasParam)
+                    //shift until we have HasParam parameter
+                    ++_orderedArgIndex;
             }
             return paramToMatch;
         }
@@ -157,22 +159,38 @@ namespace AssemblyProviders.CSharp.Compiling
 
                 if (isUnresolved(param))
                 {
-                    if (!param.HasDefaultValue)
-                        //missing argument
+                    if (param.HasDefaultValue)
+                    {
+                        //there is default value for the argument
+                        arg = new DefaultArgValue(param.DefaultValue, param.Type, _context);
+                    }
+                    else if (param.HasParam)
+                    {
+                        arg = new ParamArgValue(param.Type, new RValueProvider[0], _context);
+                    }
+                    else
+                    {
+                        //parameter doesnt match
                         return null;
-
-                    arg = new DefaultArgValue(param.DefaultValue, param.Type, _context);
+                    }
                 }
                 else
                 {
                     var args = _argBindings.Get(param).ToArray();
-                    if (args.Length != 1)
-                    {
-                        throw new NotImplementedException("Resolve params argument");
-                    }
 
-                    //TODO type conversions
-                    arg = args[0];
+                    if (param.HasParam)
+                    {
+                        arg = new ParamArgValue(param.Type, args, _context);
+                    }
+                    else if (args.Length != 1)
+                    {
+                        throw new NotSupportedException("Wrong argument count for parameter: " + param.Name);
+                    }
+                    else
+                    {
+                        //TODO type conversions
+                        arg = args[0];
+                    }
                 }
 
                 activation.AddArgument(arg);

@@ -25,6 +25,12 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly ParamTesting()
+        {
+            return AssemblyUtils.Run(@"
+                var formated=System.String.Format(""{0}{1}{2}"",""a"",""b"",""c"");               
+            ");
+        }
 
         static internal TestingAssembly MEF_AggregateCatalog()
         {
@@ -46,8 +52,11 @@ namespace Research
             return AssemblyUtils.Run(@"        
                 var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test.exe"");       
                 var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
-
-                compCont.ComposeParts();
+            
+                var export=new SimpleStringExport();
+                var export2=new SimpleStringExport();
+                
+                compCont.ComposeParts(export);
    
             ")
             .AddToRuntime<DirectoryCatalogDefinition>()

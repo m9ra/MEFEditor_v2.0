@@ -338,6 +338,19 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Emit_ParamCall()
+        {
+            AssemblyUtils.Run(@"
+                var formated=System.String.Format(""{0}{1}{2}"",""a"",""b"",""c"");               
+            ")
+
+            .AssertVariable("formated").HasValue(string.Format("{0}{1}{2}", "a", "b", "c"))
+            ;
+        }
+
+
+
+        [TestMethod]
         public void Emit_CILSimple()
         {
             AssemblyUtils.RunCIL(() =>

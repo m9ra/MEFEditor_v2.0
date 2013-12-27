@@ -37,12 +37,12 @@ namespace Analyzing.Editing
         /// is used.
         /// </summary>
         /// <param name="instance">Instance which variable is searched.</param>
-        /// <param name="services"></param>
+        /// <param name="view"></param>
         /// <returns></returns>
-        public VariableName GetVariableFor(Instance instance, ExecutionView services)
+        public VariableName GetVariableFor(Instance instance, ExecutionView view)
         {
             var transformation = new ScopeBlockTransformation(_block, instance);
-            services.Apply(transformation);
+            view.Apply(transformation);
 
             return transformation.ScopeVariable;
         }
@@ -53,10 +53,10 @@ namespace Analyzing.Editing
             addEdit(editProvider, editName, transformation);
         }
 
-        public void AddCall(Instance editProvider, string editName, CallProvider callProvider)
+        public Edit AddCall(Instance editProvider, string editName, CallProvider callProvider)
         {
             var transformation = new AddCallTransformation(callProvider);
-            addEdit(editProvider, editName, transformation);
+            return addEdit(editProvider, editName, transformation);
         }
 
         public void RemoveArgument(Instance editProvider, int argumentIndex, string editName)
@@ -94,13 +94,22 @@ namespace Analyzing.Editing
             TransformProvider.SetOptionalArgument(index);
         }
 
-        private void addEdit(Instance editProvider, string editName, Transformation transformation)
+        public void Remove(Edit edit)
         {
-            if (transformation == null)
+            if (edit == null)
                 return;
 
-            var edit = new Edit(editName, transformation);
+            edit.Provider.RemoveEdit(edit);
+        }
+
+        private Edit addEdit(Instance editProvider, string editName, Transformation transformation)
+        {
+            if (transformation == null)
+                return null;
+
+            var edit = new Edit(editProvider, editName, transformation);
             editProvider.AddEdit(edit);
+            return edit;
         }
 
         private void attachEdit(Instance attachingInstance, Instance editProvider, string editName, Transformation transformation)
@@ -108,7 +117,7 @@ namespace Analyzing.Editing
             if (transformation == null)
                 return;
 
-            var edit = new Edit(editName, transformation);
+            var edit = new Edit(editProvider, editName, transformation);
             editProvider.AttachEdit(attachingInstance, edit);
         }
 

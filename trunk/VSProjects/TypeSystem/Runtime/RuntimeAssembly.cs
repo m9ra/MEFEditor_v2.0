@@ -20,6 +20,11 @@ namespace TypeSystem.Runtime
     public class RuntimeAssembly : AssemblyProvider
     {
         /// <summary>
+        /// TODO: Correct generic typing for array
+        /// </summary>
+        public static readonly InstanceInfo ArrayInfo = new InstanceInfo("Array<ItemType,Dimension>");
+
+        /// <summary>
         /// Determine that assembly has been builded
         /// </summary>
         private bool _isBuilded = false;
@@ -54,7 +59,7 @@ namespace TypeSystem.Runtime
 
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
             arrayDefinition.IsGeneric = true;
-            arrayDefinition.ForcedInfo = new InstanceInfo("Array<ItemType,Dimension>");
+            arrayDefinition.ForcedInfo = ArrayInfo;
             AddDirectDefinition<Array<InstanceWrap>>(arrayDefinition);
         }
 

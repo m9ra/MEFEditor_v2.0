@@ -69,6 +69,7 @@ namespace Research
 
         public static void PrintIAL(string code)
         {
+            code = code.Replace("{", "{{").Replace("}", "}}");
             var lines = code.Split('\n');
 
             foreach (var line in lines)
@@ -82,8 +83,6 @@ namespace Research
                 {
                     printComment(line);
                 }
-
-
             }
 
             Console.ForegroundColor = ConsoleColor.Gray;

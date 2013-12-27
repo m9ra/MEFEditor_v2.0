@@ -17,6 +17,18 @@ namespace TypeSystem.Runtime
 
         public int Length { get; private set; }
 
+        public MethodID SetItemMethod
+        {
+            get
+            {
+                var index = ParameterTypeInfo.Create("index", InstanceInfo.Create<int>());
+                var item = ParameterTypeInfo.Create("item", InstanceInfo.Create<ItemType>());
+                return Naming.Method(new InstanceInfo("Array<" + item.Type.TypeName + ",1>"), "set_Item", false, index, item);
+            }
+        }
+
+        public static MethodID GetItemMethod { get; internal set; }
+
         public Array(int length)
         {
             //TODO multidimensional array
@@ -25,21 +37,22 @@ namespace TypeSystem.Runtime
 
         public Array(IEnumerable data, AnalyzingContext context)
         {
-            int i=0;
+            int i = 0;
             foreach (var item in data)
             {
                 var toSet = item as InstanceWrap;
-                if (toSet==null)
+                if (toSet == null)
                 {
-                    var instance=item as Instance;
-                    if(instance==null){
-                        instance=context.Machine.CreateDirectInstance(item);
+                    var instance = item as Instance;
+                    if (instance == null)
+                    {
+                        instance = context.Machine.CreateDirectInstance(item);
                     }
                     toSet = new InstanceWrap(instance);
                 }
-             
 
-                set_Item(i,toSet as ItemType);
+
+                set_Item(i, toSet as ItemType);
                 ++i;
             }
             Length = _data.Count;
@@ -68,21 +81,26 @@ namespace TypeSystem.Runtime
         internal ResultType Unwrap<ResultType>()
         {
             //TODO multidimensional array
-            var elementType=typeof(ResultType).GetElementType();
-            var array=Array.CreateInstance(elementType, Length);
+            var elementType = typeof(ResultType).GetElementType();
+            var array = Array.CreateInstance(elementType, Length);
 
             for (int i = 0; i < Length; ++i)
             {
                 var item = get_Item(i);
 
                 object value;
-                if (elementType.IsAssignableFrom(item.Wrapped.GetType()))
+                if (typeof(Instance).IsAssignableFrom(elementType))
                 {
+                    //instance shouldnt been unwrapped
                     value = item.Wrapped;
+                }
+                else if (item.Wrapped is DirectInstance)
+                {
+                    value = item.Wrapped.DirectValue;
                 }
                 else
                 {
-                    value = item.Wrapped.DirectValue;
+                    value = item.Wrapped;
                 }
 
                 array.SetValue(value, i);

@@ -31,6 +31,11 @@ namespace TypeSystem
 
         public InstanceInfo GetNativeInfo(Type literalType)
         {
+            if (literalType.IsAssignableFrom(typeof(Array<InstanceWrap>)))
+            {
+                return RuntimeAssembly.ArrayInfo;
+            }
+
             return new InstanceInfo(literalType);
         }
 

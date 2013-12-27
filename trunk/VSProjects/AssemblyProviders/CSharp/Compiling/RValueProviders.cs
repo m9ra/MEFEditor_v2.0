@@ -10,6 +10,8 @@ using TypeSystem;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Transformations;
 
+using TypeSystem.Runtime;
+
 namespace AssemblyProviders.CSharp.Compiling
 {
 
@@ -186,7 +188,7 @@ namespace AssemblyProviders.CSharp.Compiling
         private readonly object _defaultValue;
         private readonly InstanceInfo _resultType;
 
-        internal DefaultArgValue(object defaultValue,InstanceInfo resultType, Context context)
+        internal DefaultArgValue(object defaultValue, InstanceInfo resultType, Context context)
             : base(context)
         {
             _defaultValue = defaultValue;
@@ -210,8 +212,59 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public override string GetStorage()
         {
-            var tmp=E.GetTemporaryVariable("default");
+            var tmp = E.GetTemporaryVariable("default");
             E.AssignLiteral(tmp, _defaultValue, _resultType);
+            return tmp;
+        }
+
+        public override void Generate()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class ParamArgValue : RValueProvider
+    {
+        private readonly InstanceInfo _arrayType;
+        private readonly RValueProvider[] _args;
+
+        public ParamArgValue(InstanceInfo arrayType, RValueProvider[] args, Context context)
+            : base(context)
+        {
+            _arrayType = arrayType;
+            _args = args;
+        }
+
+        public override void AssignInto(LValueProvider lValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Return()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override InstanceInfo GetResultInfo()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetStorage()
+        {
+            var tmp = E.GetTemporaryVariable("param");
+            var array = new Array<InstanceWrap>(_args.Length);
+            E.AssignLiteral(tmp, array);
+
+            var setMethod = array.SetItemMethod;
+            var index = E.GetTemporaryVariable("index");
+            for (int i = 0; i < _args.Length; ++i)
+            {
+                var arg = _args[i];
+                E.AssignLiteral(index, i);
+
+                E.Call(setMethod, tmp, Arguments.Values(index, arg.GetStorage()));
+            }
             return tmp;
         }
 

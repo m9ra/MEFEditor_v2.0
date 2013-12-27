@@ -231,9 +231,9 @@ namespace TypeSystem.Runtime
             Context.DynamicCall(callName, callGenerator, This, calledObject);
         }
 
-        protected void AddCallEdit(string name, CallProvider accepter)
+        protected Edit AddCallEdit(string name, CallProvider accepter)
         {
-            Edits.AddCall(This, name, accepter);
+            return Edits.AddCall(This, name, accepter);
         }
 
         protected void RewriteArg(int argIndex, string editName, ValueProvider valueProvider)

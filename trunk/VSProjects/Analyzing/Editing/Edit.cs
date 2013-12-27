@@ -14,12 +14,15 @@ namespace Analyzing.Editing
 
         public readonly Transformation Transformation;
 
+        internal readonly Instance Provider;
+
         internal bool IsEmpty { get { return Transformation is EmptyTransformation; } }
 
-        public Edit(string name, Transformation transformation)
+        public Edit(Instance provider, string name, Transformation transformation)
         {
             Name = name;
             Transformation = transformation;
+            Provider = provider;
         }
     }
 }

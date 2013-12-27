@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 
 using Analyzing;
@@ -20,7 +21,10 @@ namespace MEFAnalyzers
     public class CompositionContainerDefinition : DataTypeDefinition
     {
         Field<Instance> ComposableCatalog;
+        Field<Instance[]> ComposedParts;
         Field<CompositionResult> CompositionResult;
+        Field<Edit> ComposePartsCreate;
+
 
         public CompositionContainerDefinition()
         {
@@ -28,6 +32,8 @@ namespace MEFAnalyzers
 
             ComposableCatalog = new Field<Instance>(this);
             CompositionResult = new Field<CompositionResult>(this);
+            ComposedParts = new Field<Instance[]>(this);
+            ComposePartsCreate = new Field<Edit>(this);
         }
 
         /// <summary>
@@ -36,23 +42,34 @@ namespace MEFAnalyzers
         /// <param name="composablePartCatalog"></param>
         public void _method_ctor(Instance composablePartCatalog)
         {
+            initEdits(false);
+
             ReportChildAdd(1, "Composable part catalog", true);
-
-
             ComposableCatalog.Set(composablePartCatalog);
         }
 
         public void _method_ctor()
         {
-            //TODO provide edit context
-            var e = Edits;
-            AppendArg(1, ".accept", (v) => acceptPartCatalog(e, v));
+            initEdits(true);
         }
 
-        public void _method_ComposeParts()
+        public void _method_ComposeParts(params Instance[] constructedParts)
         {
+            //there is already compose part call 
+            Edits.Remove(ComposePartsCreate.Get());
+            //so we will accept components to this call
+            var e = Edits;
+            AppendArg(constructedParts.Length + 1, UserInteraction.AcceptName, (v) => acceptAppendComponent(e, v));
+
+
+            //collect instances for composition
             var catalog = ComposableCatalog.Get();
-            var constructedParts = new Instance[0];
+
+            ComposedParts.Set(constructedParts);
+            for (int i = 0; i < constructedParts.Length; ++i)
+            {
+                ReportParamChildAdd(i + 1, constructedParts[i], "Composed part", true);
+            }
 
             if (catalog == null)
             {
@@ -61,7 +78,6 @@ namespace MEFAnalyzers
             }
             else
             {
-
                 AsyncCall<Instance[]>(catalog, "get_Parts", (catalogParts) =>
                 {
                     processComposition(catalogParts, constructedParts);
@@ -99,6 +115,48 @@ namespace MEFAnalyzers
         }
 
         #region Container edits
+
+        private void initEdits(bool acceptCatalog)
+        {
+            //TODO provide edit context
+            var e = Edits;
+            if (acceptCatalog)
+            {
+                AppendArg(1, UserInteraction.AcceptName, (v) => acceptPartCatalog(e, v));
+            }
+
+            ComposePartsCreate.Set(
+                AddCallEdit(UserInteraction.AcceptName, (v) => acceptComponent(v))
+            );
+        }
+
+        private CallEditInfo acceptComponent(ExecutionView view)
+        {
+            //TODO check for using System.ComponentModel.Composition;
+            var toAccept = UserInteraction.DraggedInstance;
+            var componentInfo = Services.GetComponentInfo(toAccept.Info);
+
+            if (componentInfo == null)
+            {
+                view.Abort("Can accept only components");
+                return null;
+            }
+
+            return new CallEditInfo(This, "ComposeParts", toAccept);
+        }
+
+        private object acceptAppendComponent(EditsProvider e, ExecutionView view)
+        {
+            var toAccept = UserInteraction.DraggedInstance;
+            var componentInfo = Services.GetComponentInfo(toAccept.Info);
+
+            if (componentInfo == null)
+            {
+                view.Abort("Can accept only components");
+                return null;
+            }
+            return e.GetVariableFor(toAccept, view);
+        }
 
         private object acceptPartCatalog(EditsProvider e, ExecutionView view)
         {
@@ -168,6 +226,16 @@ namespace MEFAnalyzers
             {
                 var catalogDrawing = drawer.GetInstanceDrawing(composableCatalog);
                 slot.Add(catalogDrawing.Reference);
+            }
+
+            var composedParts = ComposedParts.Get();
+            if (composedParts != null)
+            {
+                foreach (var composedPart in composedParts)
+                {
+                    var partDrawing = drawer.GetInstanceDrawing(composedPart);
+                    slot.Add(partDrawing.Reference);
+                }
             }
         }
 
