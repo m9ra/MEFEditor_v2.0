@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing;
+
 namespace TypeSystem
 {
     public class PathInfo
@@ -20,6 +22,11 @@ namespace TypeSystem
         {
             Name = name;
             Signature = parseSignature(Name);
+        }
+
+        public PathInfo(Type type)
+            : this(new InstanceInfo(type).TypeName)
+        {
         }
 
         public PathInfo(PathInfo path, string extendingName)

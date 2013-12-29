@@ -66,6 +66,8 @@ namespace TypeSystem.Runtime
 
         abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
 
+        abstract internal IEnumerable<InheritanceChain> GetSubChains();
+
         protected InstanceInfo GetTypeInfo()
         {
             return TypeInfo;
@@ -178,6 +180,16 @@ namespace TypeSystem.Runtime
         {
             //TODO consider generic params
             return new InstanceInfo(type);
+        }
+
+        protected IEnumerable<InheritanceChain> GetSubChains(Type type)
+        {
+            yield return ContainingAssembly.GetChain(type.BaseType);
+
+            foreach (var subType in type.GetInterfaces())
+            {
+                yield return ContainingAssembly.GetChain(subType);
+            }
         }
 
         protected void AsyncCall<TResult>(Instance calledObject, string callName, Action<TResult> callback = null, params Instance[] passedArgs)

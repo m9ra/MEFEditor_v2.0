@@ -43,6 +43,11 @@ namespace TypeSystem
             return _manager.IsAssignable(targetTypeName, assignedTypeName);
         }
 
+        public bool IsAssignable(InstanceInfo targetType, InstanceInfo assignedType)
+        {
+            return IsAssignable(targetType.TypeName, assignedType.TypeName);
+        }
+
         public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
         {
             return _manager.GetComponentInfo(instanceInfo);

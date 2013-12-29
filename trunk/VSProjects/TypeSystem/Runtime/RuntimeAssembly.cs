@@ -48,6 +48,8 @@ namespace TypeSystem.Runtime
 
         private readonly Dictionary<string, GeneratorProvider> _methodGeneratorProviders;
 
+        private readonly Dictionary<string, InheritanceChain> _inheritanceChains = new Dictionary<string, InheritanceChain>();
+
         public RuntimeAssembly()
         {
             _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
@@ -56,6 +58,9 @@ namespace TypeSystem.Runtime
                 {"_get_",_createProperty},
                 {"_set_",_createProperty},
             };
+
+            var chain = new InheritanceChain(InstanceInfo.Create<object>(), new InheritanceChain[0]);
+            _inheritanceChains.Add(chain.Path.Signature, chain);
 
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
             arrayDefinition.IsGeneric = true;
@@ -107,6 +112,42 @@ namespace TypeSystem.Runtime
             _isBuilded = true;
         }
 
+        internal InheritanceChain GetChain(Type type)
+        {
+            //TODO resolve generic chains
+            if (type == null)
+                return null;
+
+            var path = new PathInfo(type);
+
+            InheritanceChain existingChain;
+            if (_inheritanceChains.TryGetValue(path.Signature, out existingChain))
+            {
+                return existingChain;
+            }
+
+            //we have to create new chain
+            var subChains = new List<InheritanceChain>();
+
+            var baseChain = GetChain(type.BaseType);
+            if (baseChain != null)
+                subChains.Add(baseChain);
+
+            foreach (var iface in type.GetInterfaces())
+            {
+                var subChain = GetChain(iface);
+                if (subChain != null)
+                    subChains.Add(subChain);
+            }
+
+            var info = new InstanceInfo(type);
+            var createdChain = new InheritanceChain(info, subChains);
+
+            _inheritanceChains.Add(createdChain.Path.Signature, createdChain);
+            return createdChain;
+        }
+
+
         internal bool IsInDirectCover(Type type)
         {
             return
@@ -122,6 +163,7 @@ namespace TypeSystem.Runtime
             var signature = new PathInfo(typeInfo.TypeName).Signature;
             return _directSignatures.Contains(signature);
         }
+
 
         #region Assembly provider implementation
 
@@ -152,7 +194,11 @@ namespace TypeSystem.Runtime
 
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
-            throw new NotImplementedException();
+            InheritanceChain chain;
+            //TODO generic chains
+            _inheritanceChains.TryGetValue(typePath.Signature, out chain);
+
+            return chain;
         }
 
         #endregion
@@ -167,6 +213,9 @@ namespace TypeSystem.Runtime
         {
             //every definition needs initialization
             definition.Initialize(this, this.TypeServices);
+
+            //efery definition needs to register its chain
+            registerChain(definition);
 
             //get all methods defined by definition
             var methodGenerators = definition.GetMethods();
@@ -183,6 +232,18 @@ namespace TypeSystem.Runtime
                 }
                 _runtimeMethods.AddItem(item, generator.Implemented());
             }
+        }
+
+        /// <summary>
+        /// Register inheritance chain for given definition
+        /// </summary>
+        /// <param name="definition">Definition which chain is registered</param>
+        private void registerChain(RuntimeTypeDefinition definition)
+        {
+            var subChains = definition.GetSubChains();
+
+            var chain = new InheritanceChain(definition.TypeInfo, subChains);
+            _inheritanceChains.Add(chain.Path.Signature, chain);
         }
 
         /// <summary>

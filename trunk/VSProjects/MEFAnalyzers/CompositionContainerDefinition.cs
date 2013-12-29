@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 
 using Analyzing;
 using Analyzing.Editing;
@@ -161,9 +162,7 @@ namespace MEFAnalyzers
         private object acceptPartCatalog(EditsProvider e, ExecutionView view)
         {
             var instance = UserInteraction.DraggedInstance;
-
-            //TODO determine that instance is part catalog
-            var isCatalog = instance.Info.TypeName == typeof(DirectoryCatalog).FullName;
+            var isCatalog = Services.IsAssignable(InstanceInfo.Create<ComposablePartCatalog>(), instance.Info);
 
             if (!isCatalog)
             {

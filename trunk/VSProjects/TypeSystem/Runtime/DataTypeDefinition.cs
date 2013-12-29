@@ -19,6 +19,8 @@ namespace TypeSystem.Runtime
 
         private readonly Field<HashSet<Instance>> _children;
 
+        private Type _simulatedType;
+
         /// <summary>
         /// Fullname of defined type
         /// </summary>
@@ -47,6 +49,7 @@ namespace TypeSystem.Runtime
             }
         }
 
+
         protected DataTypeDefinition()
         {
             _children = new Field<HashSet<Instance>>(this, "_children");
@@ -54,7 +57,21 @@ namespace TypeSystem.Runtime
 
         protected void Simulate<T>()
         {
-            FullName = typeof(T).FullName;
+            _simulatedType = typeof(T);
+            FullName = _simulatedType.FullName;
+        }
+
+        internal override IEnumerable<InheritanceChain> GetSubChains()
+        {
+            if (_simulatedType == null)
+            {
+                //TODO allow overwrite base type
+                return new InheritanceChain[] { ContainingAssembly.GetChain(typeof(object)) };
+            }
+            else
+            {
+                return GetSubChains(_simulatedType);
+            }
         }
 
         protected void ReportChildAdd(int childArgIndex, string childDescription, bool isOptional = false)

@@ -33,13 +33,18 @@ namespace TypeSystem.Runtime
         /// Type representation of direct type
         /// </summary>
         private readonly Type _directType = typeof(DirectType);
-        
+
         public InstanceInfo ForcedInfo;
 
 
         public DirectTypeDefinition()
         {
             IsInterface = _directType.IsInterface;
+        }
+
+        internal override IEnumerable<InheritanceChain> GetSubChains()
+        {
+            return GetSubChains(_directType);
         }
 
         /// <summary>
@@ -219,7 +224,7 @@ namespace TypeSystem.Runtime
             var ctorMethod = Expression.Call(contextParameter, contextType.GetMethod("Initialize"), thisInstance, constructed);
             return Expression.Lambda<DirectMethod>(ctorMethod, inputParameters).Compile();
         }
-           
+
         /// <summary>
         /// Get argument expressions for given method. Argument expression get value from context.CurrentArguments
         /// </summary>
@@ -321,7 +326,6 @@ namespace TypeSystem.Runtime
         }
 
         #endregion
-
 
     }
 }

@@ -100,14 +100,14 @@ namespace TypeSystem.Core
             if (targetTypeName == assignedTypeName)
                 return true;
 
-            var typePath = new PathInfo(targetTypeName);
+            var typePath = new PathInfo(assignedTypeName);
             foreach (var assembly in _assemblies)
             {
                 var inheritanceChain = assembly.GetInheritanceChain(typePath);
 
                 if (inheritanceChain != null)
                 {
-                    throw new NotImplementedException();
+                    return inheritanceChain.HasSubType(targetTypeName);
                 }
             }
 

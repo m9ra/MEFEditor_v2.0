@@ -59,6 +59,13 @@ namespace AssemblyProviders.CSharp
             write(view, p1, p2, "");
         }
 
+        private void remove(ExecutionView view, IToken token)
+        {
+            var p1 = token.Position.Offset;
+            var p2 = token.Position.Offset + token.Value.Length;
+            write(view, p1, p2, "");
+        }
+
         internal void Rewrite(ExecutionView view, INodeAST node, object value, bool keepSideEffect)
         {
             if (keepSideEffect)
@@ -133,14 +140,30 @@ namespace AssemblyProviders.CSharp
             switch (parent.NodeType)
             {
                 case NodeTypes.binaryOperator:
-                    parent.Source.remove(view, parent, false);
+                    remove(view, parent, false);
                     OnChildRemoved(view, parent);
                     return;
 
                 case NodeTypes.call:
-                    if (!IsOptionalArgument(parent, removedChild))
+                    if (IsOptionalArgument(parent, removedChild))
                     {
-                        parent.Source.remove(view, parent, false);
+                        //check for remaining argument delimiters
+                        var argCount = parent.Arguments.Length;
+                        if (argCount == 1)
+                            //there is no missing delimiter
+                            break;
+
+                        //needs removing remaining argument delimiter
+                        var argIndex = parent.GetArgumentIndex(removedChild);
+
+                        //last argument has leading delimiter, non last has trailing delimiter
+                        var isLastArg = argCount - 1 == argIndex;
+                        var delimiterToken = isLastArg ? removedChild.StartingToken.Previous : removedChild.EndingToken.Next;
+                        remove(view, delimiterToken);
+                    }
+                    else
+                    {
+                        remove(view, parent, false);
                         OnChildRemoved(view, parent);
                         return;
                     }
@@ -148,7 +171,7 @@ namespace AssemblyProviders.CSharp
 
                 case NodeTypes.prefixOperator:
                 case NodeTypes.hierarchy:
-                    parent.Source.remove(view, parent, false);
+                    remove(view, parent, false);
                     OnChildRemoved(view, parent);
                     return;
 

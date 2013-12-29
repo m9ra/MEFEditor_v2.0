@@ -114,14 +114,25 @@ namespace Drawing
 
         protected override Size MeasureOverride(Size constraint)
         {
+            var totHeight = 0.0;
+            var totWidth = 0.0;
+
             foreach (UIElement child in Children)
             {
                 //no borders on child size
                 child.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+
+                var measured = child.DesiredSize;
+                totHeight += measured.Height;
+                totWidth += measured.Width;
             }
 
-            //canvas doesn't need no size itself
-            return new Size(MinHeight, MinWidth);
+            var scale = 1.2;
+            var reqHeight = Math.Max(totHeight * scale, MinHeight);
+            var reqWidth = Math.Max(totWidth * scale, MinWidth);
+
+            //canvas doesn't need no place itself
+            return new Size(reqWidth, reqHeight);
         }
 
         protected override void OnDragOver(DragEventArgs e)
