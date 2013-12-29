@@ -18,13 +18,11 @@ namespace MEFAnalyzers
 {
     public class AggregateCatalogDefinition : DataTypeDefinition
     {
-        Field<Instance> Catalogs;
+        protected Field<Instance> Catalogs;
 
         public AggregateCatalogDefinition()
         {
             Simulate<AggregateCatalog>();
-
-            Catalogs = new Field<Instance>(this);
         }
 
         public void _method_ctor()

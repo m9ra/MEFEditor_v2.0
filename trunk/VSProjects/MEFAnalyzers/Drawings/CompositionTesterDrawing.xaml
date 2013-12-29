@@ -9,15 +9,15 @@
              MinHeight="150"
              MinWidth="150"
             
-             Background="Green"
-             BorderBrush="LightGreen"
+             Background="LightGreen"
+             BorderBrush="Green"
              BorderThickness="2"
              CornerRadius="10"
                    >
     <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Center">
             <Image Name="CaptionIcon" Width="32" Height="32" Margin="10 0"></Image>
-            <TextBlock Name="CaptionText" FontSize="22" Foreground="White">CompositionContainer</TextBlock>
+            <TextBlock Name="CaptionText" FontSize="22" Foreground="Black">CompositionContainer</TextBlock>
         </StackPanel>
 
         <StackPanel Name="Properties" DockPanel.Dock="Top" ></StackPanel>

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Reflection;
+using System.Globalization;
+
 using Analyzing;
 
 using TypeSystem.Runtime.Building;
@@ -53,12 +56,22 @@ namespace TypeSystem.Runtime
         protected DataTypeDefinition()
         {
             _children = new Field<HashSet<Instance>>(this, "_children");
+
+            initializeFieldHandlers();
         }
 
-        protected void Simulate<T>()
+
+
+        internal void RegisterField(Field directProperty, out string storage)
         {
-            _simulatedType = typeof(T);
-            FullName = _simulatedType.FullName;
+            _fields.Add(directProperty);
+            storage = string.Format("@prop_{0}_{1}_{2}", _fields.Count, directProperty, GetType());
+        }
+
+        internal override IEnumerable<RuntimeMethodGenerator> GetMethods()
+        {
+            //TODO resolve inheritance
+            return ContainingAssembly.GetMethodGenerators(this);
         }
 
         internal override IEnumerable<InheritanceChain> GetSubChains()
@@ -72,6 +85,13 @@ namespace TypeSystem.Runtime
             {
                 return GetSubChains(_simulatedType);
             }
+        }
+
+
+        protected void Simulate<T>()
+        {
+            _simulatedType = typeof(T);
+            FullName = _simulatedType.FullName;
         }
 
         protected void ReportChildAdd(int childArgIndex, string childDescription, bool isOptional = false)
@@ -119,16 +139,28 @@ namespace TypeSystem.Runtime
             });
         }
 
-        internal void RegisterField(Field directProperty, out string storage)
+        private void initializeFieldHandlers()
         {
-            _fields.Add(directProperty);
-            storage = string.Format("@prop_{0}_{1}_{2}", _fields.Count, directProperty, GetType());
+            var fields = this.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+            foreach (var field in fields)
+            {
+                var fieldType = field.FieldType;
+                if (!typeof(Field).IsAssignableFrom(fieldType))
+                {
+                    //wrong type of field
+                    continue;
+                }
+
+                //create field handler
+                CultureInfo culture = null;
+                var fieldHandler = Activator.CreateInstance(fieldType, BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { this }, culture);
+
+                //assign created handler
+                field.SetValue(this, fieldHandler);
+            }
         }
 
-        internal override IEnumerable<RuntimeMethodGenerator> GetMethods()
-        {
-            //TODO resolve inheritance
-            return ContainingAssembly.GetMethodGenerators(this);
-        }
     }
 }

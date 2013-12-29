@@ -17,8 +17,6 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
         public StringImport()
         {
-            Import = new Field<string>(this);
-            PreImport = new Field<string>(this);
             FullName = "StringImport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());

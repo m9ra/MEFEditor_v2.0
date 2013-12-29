@@ -19,20 +19,15 @@ namespace MEFAnalyzers
 {
     public class CompositionTesterDefinition : DataTypeDefinition
     {
-        Field<string> AssemblyPath;
-        Field<List<Instance>> Parts;
-        Field<bool> Composed;
-        Field<CompositionResult> CompositionResult;
-        Field<CompositionContext> CompositionContext;
+        protected Field<string> AssemblyPath;
+        protected Field<List<Instance>> Parts;
+        protected Field<bool> Composed;
+        protected Field<CompositionResult> CompositionResult;
+        protected Field<CompositionContext> CompositionContext;
 
         public CompositionTesterDefinition()
         {
             FullName = "CompositionTester";
-            AssemblyPath = new Field<string>(this);
-            Parts = new Field<List<Instance>>(this);
-            Composed = new Field<bool>(this);
-            CompositionContext = new Field<CompositionContext>(this);
-            CompositionResult = new Field<CompositionResult>(this);
         }
 
         public void _method_ctor(Instance part1, Instance part2)

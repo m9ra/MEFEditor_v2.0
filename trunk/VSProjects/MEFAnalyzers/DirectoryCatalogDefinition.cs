@@ -23,11 +23,6 @@ namespace MEFAnalyzers
         public DirectoryCatalogDefinition()
         {
             Simulate<DirectoryCatalog>();
-
-            Components = new Field<List<Instance>>(this);
-            Path = new Field<string>(this);
-            FullPath = new Field<string>(this);
-            Pattern = new Field<string>(this);
         }
 
         #region Type members implementation

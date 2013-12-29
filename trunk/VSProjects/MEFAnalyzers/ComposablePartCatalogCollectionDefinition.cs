@@ -20,16 +20,13 @@ namespace MEFAnalyzers
     {
         public const string TypeFullname = "System.ComponentModel.Composition.Hosting";
 
-        readonly Field<Instance> Parent;
+        protected Field<Instance> Parent;
 
-        readonly Field<List<Instance>> Catalogs;
+        protected Field<List<Instance>> Catalogs;
 
         public ComposablePartCatalogCollectionDefinition()
         {
             FullName = TypeFullname;
-
-            Catalogs = new Field<List<Instance>>(this);
-            Parent = new Field<Instance>(this);
         }
 
         public void _method_ctor(Instance parent)

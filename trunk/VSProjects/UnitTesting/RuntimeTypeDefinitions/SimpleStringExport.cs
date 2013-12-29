@@ -10,13 +10,12 @@ using TypeSystem.Runtime;
 
 namespace UnitTesting.RuntimeTypeDefinitions
 {
-    public class SimpleStringExport:DataTypeDefinition
+    public class SimpleStringExport : DataTypeDefinition
     {
-         public readonly Field<string> Export;
+        protected Field<string> Export;
 
         public SimpleStringExport()
         {
-            Export = new Field<string>(this);
             FullName = "SimpleStringExport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());

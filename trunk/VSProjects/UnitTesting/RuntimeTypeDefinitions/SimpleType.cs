@@ -12,11 +12,10 @@ namespace UnitTesting.RuntimeTypeDefinitions
 {
     public class SimpleType : DataTypeDefinition
     {
-        public readonly Field<string> TestProperty;
+        protected Field<string> TestProperty;
 
         public SimpleType()
         {
-            TestProperty = new Field<string>(this);
             FullName = "SimpleType";
         }
 

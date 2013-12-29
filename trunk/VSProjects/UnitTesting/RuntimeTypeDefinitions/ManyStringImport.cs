@@ -12,11 +12,10 @@ namespace UnitTesting.RuntimeTypeDefinitions
 {
     public class ManyStringImport : DataTypeDefinition
     {
-        public readonly Field<string[]> Import;
+        protected Field<string[]> Import;
 
         public ManyStringImport()
         {
-            Import = new Field<string[]>(this);
             FullName = "ManyStringImport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());

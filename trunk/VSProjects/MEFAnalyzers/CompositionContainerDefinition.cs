@@ -21,20 +21,15 @@ namespace MEFAnalyzers
 {
     public class CompositionContainerDefinition : DataTypeDefinition
     {
-        Field<Instance> ComposableCatalog;
-        Field<Instance[]> ComposedParts;
-        Field<CompositionResult> CompositionResult;
-        Field<Edit> ComposePartsCreate;
+        protected Field<Instance> ComposableCatalog;
+        protected Field<Instance[]> ComposedParts;
+        protected Field<CompositionResult> CompositionResult;
+        protected Field<Edit> ComposePartsCreate;
 
 
         public CompositionContainerDefinition()
         {
             Simulate<CompositionContainer>();
-
-            ComposableCatalog = new Field<Instance>(this);
-            CompositionResult = new Field<CompositionResult>(this);
-            ComposedParts = new Field<Instance[]>(this);
-            ComposePartsCreate = new Field<Edit>(this);
         }
 
         /// <summary>

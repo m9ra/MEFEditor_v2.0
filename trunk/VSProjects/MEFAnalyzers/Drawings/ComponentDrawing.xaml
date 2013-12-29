@@ -9,8 +9,8 @@
              MinHeight="150"
              MinWidth="150"
             
-             Background="LightGreen"
-             BorderBrush="Green"
+             Background="LightBlue"
+             BorderBrush="DarkBlue"
              BorderThickness="2"  
              CornerRadius="10"
                    

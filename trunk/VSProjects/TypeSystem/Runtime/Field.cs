@@ -20,7 +20,7 @@ namespace TypeSystem.Runtime
 
         internal abstract object RawObject { get; }
 
-        public Field(DataTypeDefinition definingType)
+        internal Field(DataTypeDefinition definingType)
         {
             DefiningType = definingType;
             DefiningType.RegisterField(this, out Storage);
@@ -43,7 +43,7 @@ namespace TypeSystem.Runtime
     {
         internal override object RawObject { get { return Get(); } }
 
-        public Field(DataTypeDefinition definingType)
+        internal Field(DataTypeDefinition definingType)
             : base(definingType)
         {
 

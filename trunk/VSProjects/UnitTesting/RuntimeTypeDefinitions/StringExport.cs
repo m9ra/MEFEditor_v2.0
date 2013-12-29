@@ -13,11 +13,10 @@ namespace UnitTesting.RuntimeTypeDefinitions
 {
     public class StringExport : DataTypeDefinition
     {
-        public readonly Field<string> Export;
+        protected Field<string> Export;
 
         public StringExport()
         {
-            Export = new Field<string>(this);
             FullName = "StringExport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());

@@ -12,11 +12,10 @@ namespace UnitTesting.RuntimeTypeDefinitions
 {
     public class ICollectionStringImport : DataTypeDefinition
     {
-        public readonly Field<List<string>> Import;
+        protected Field<List<string>> Import;
 
         public ICollectionStringImport()
         {
-            Import = new Field<List<string>>(this);
             FullName = "ICollectionStringImport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
