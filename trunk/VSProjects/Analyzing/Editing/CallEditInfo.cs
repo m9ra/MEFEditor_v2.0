@@ -18,6 +18,11 @@ namespace Analyzing.Editing
         public readonly string CallName;
         public readonly object[] CallArguments;
 
+        /// <summary>
+        /// Name of variable that will contain call return value
+        /// </summary>
+        public string ReturnName;
+
         public CallEditInfo(object thisObj, string callName, params object[] callArgs)
         {
             ThisObj = thisObj;

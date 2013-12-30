@@ -16,8 +16,18 @@ namespace TypeSystem
         public override string Error { get { return _data.AbortMessage; } }
 
         public EditView(ExecutionView data)
+            : this(data, true)
         {
-            _data = data.Clone();
+        }
+
+        private EditView(ExecutionView data, bool copy)
+        {
+            _data = copy ? data.Clone() : data;
+        }
+
+        public static EditViewBase Wrap(ExecutionView v)
+        {
+            return new EditView(v,false);
         }
 
         protected override void commit()
@@ -33,6 +43,11 @@ namespace TypeSystem
             return new EditView(_data);
         }
 
+        public ExecutionView CopyView()
+        {
+            return _data.Clone();
+        }
+
         internal EditViewBase Apply(Transformation transformation)
         {
             var clonned = Clone();
@@ -40,5 +55,6 @@ namespace TypeSystem
 
             return clonned;
         }
+
     }
 }

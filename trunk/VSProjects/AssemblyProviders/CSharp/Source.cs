@@ -81,14 +81,46 @@ namespace AssemblyProviders.CSharp
 
         internal void AppendCall(ExecutionView view, INodeAST lineNode, CallEditInfo call)
         {
-            var thisObj = toCSharp(call.ThisObj);
-            var args = (from arg in call.CallArguments select toCSharp(arg)).ToArray();
+            var callRepresentation = callToCSharp(call);
 
-
-            var callRepresentation = string.Format("{0}.{1}({2});\n", thisObj, call.CallName, string.Join(",", args));
             var behindLineOffset = getBehindOffset(lineNode);
-
             write(view, behindLineOffset, callRepresentation);
+        }
+
+        internal void PrependCall(ExecutionView view, INodeAST lineNode, CallEditInfo call)
+        {
+            var callRepresentation = callToCSharp(call);
+
+            var beforeLineOffset = getBeforeOffset(lineNode);
+            write(view, beforeLineOffset, callRepresentation);
+        }
+
+        private string callToCSharp(CallEditInfo call)
+        {
+            string thisObj;
+            string callFormat;
+            if (call.CallName == Naming.CtorName)
+            {
+                callFormat = "new {0}({2})";
+                thisObj = call.ThisObj.ToString();
+            }
+            else
+            {
+                callFormat = "{0}.{1}({2})";
+                thisObj = toCSharp(call.ThisObj);
+            }
+
+            var args = (from arg in call.CallArguments select toCSharp(arg)).ToArray();
+            var argsList = string.Join(",", args);
+            var callRepresentation = string.Format(callFormat + ";\n", thisObj, call.CallName, argsList);
+
+            if (call.ReturnName != null)
+            {
+                //assign to desired variable
+                callRepresentation = string.Format("var {0} = {1}", call.ReturnName, callRepresentation);
+            }
+
+            return callRepresentation;
         }
 
         internal void AppendArgument(ExecutionView view, INodeAST call, object value)
@@ -108,7 +140,6 @@ namespace AssemblyProviders.CSharp
                 var lastArg = call.Arguments[argCn - 1];
                 behindArgOffset = getBehindOffset(lastArg);
             }
-
 
             write(view, behindArgOffset, stringRepresentation);
         }
@@ -273,9 +304,26 @@ namespace AssemblyProviders.CSharp
         /// <returns>Offset behind node</returns>
         private int getBehindOffset(INodeAST node)
         {
+            if (node == null)
+                return OriginalCode.Length - 1;
+
             var end = node.EndingToken;
             return end.Next.Position.Offset;
         }
+
+        /// <summary>
+        /// Get offset before given node
+        /// </summary>
+        /// <param name="node">Resolved node</param>
+        /// <returns>Offset before node</returns>
+        private int getBeforeOffset(INodeAST node)
+        {
+            if (node == null)
+                return 0;
+
+            return node.StartingToken.Position.Offset;
+        }
+
         #endregion
 
         #region Writing utilities

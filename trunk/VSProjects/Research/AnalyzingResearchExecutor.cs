@@ -12,6 +12,7 @@ using Drawing;
 using TypeSystem;
 using TypeSystem.DrawingServices;
 using Analyzing;
+using Analyzing.Editing;
 using Analyzing.Execution;
 using MEFAnalyzers.Drawings;
 
@@ -35,7 +36,7 @@ namespace Research
         /// <summary>
         /// All discovered drawings (is filled in post processing)
         /// </summary>
-        private DiagramDefinition _drawings;
+        private DiagramDefinition _diagramDefinition;
 
         /// <summary>
         /// Result of analyzing execution is stored here
@@ -93,7 +94,7 @@ namespace Research
         /// </summary>
         internal void TryShowDrawings()
         {
-            if (_drawings.Count == 0)
+            if (_diagramDefinition.Count == 0)
                 return;
 
             _result.Execution.OnViewCommit += (view) =>
@@ -115,7 +116,7 @@ namespace Research
             }
             else
             {
-                _drawingProvider.Display(_drawings);
+                _drawingProvider.Display(_diagramDefinition);
             }
         }
 
@@ -172,7 +173,7 @@ namespace Research
                 );
 
             _drawingProvider = new DrawingProvider(form.Output, factory);
-            _drawingProvider.Display(_drawings);
+            _drawingProvider.Display(_diagramDefinition);
 
             form.Show();
             Dispatcher.Run();
@@ -207,8 +208,28 @@ namespace Research
                 }
             }
 
-            _drawings = pipeline.GetOutput();
+            _diagramDefinition = pipeline.GetOutput();
+            addGlobalEdits(_diagramDefinition);
         }
+
+        private void addGlobalEdits(DiagramDefinition diagram)
+        {
+            diagram.AddEdit(
+                new EditDefinition("Create SimpleStringExport", (ev) =>
+                {
+                    var v = (ev as EditView).CopyView();
+
+                    var call = new CallEditInfo("SimpleStringExport", Naming.CtorName);
+                    call.ReturnName = "testVar";
+
+                    v.PrependCall(_entryContext.EntryBlock, call);
+                    return EditView.Wrap(v);
+                }, () => true)
+
+                );
+        }
+
+
 
         private void generalDrawer(DrawedInstance instance)
         {

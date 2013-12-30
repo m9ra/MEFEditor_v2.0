@@ -227,8 +227,6 @@ namespace Drawing
                     item.Click += (e, s) => edit.Commit(DiagramContext.Diagram.InitialView);
                     break;
             }
-
-
         }
 
         public override string ToString()

@@ -84,7 +84,9 @@ namespace AssemblyProviders.CSharp
         #region Instruction generating
         private void generateInstructions()
         {
-            E.StartNewInfoBlock().Comment = "===Compiler initialization===";
+            var entryBlock = E.StartNewInfoBlock();
+            entryBlock.Comment = "===Compiler initialization===";
+            entryBlock.BlockTransformProvider = new Transformations.BlockProvider(getFirstLine(), _method.Source);
 
             if (_methodInfo.HasThis)
             {
@@ -104,6 +106,18 @@ namespace AssemblyProviders.CSharp
 
             //generate method body
             generateSubsequence(_method);
+        }
+
+        private INodeAST getFirstLine()
+        {
+            if (_method.Subsequence.Lines.Length > 0)
+            {
+                return _method.Subsequence.Lines[0];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private void generateSubsequence(INodeAST node)
@@ -541,7 +555,7 @@ namespace AssemblyProviders.CSharp
                         break;
                     }
 
-                    var resolvedCall= new CallRValue(callActivation, _context);
+                    var resolvedCall = new CallRValue(callActivation, _context);
                     if (nextNode == null)
                     {
                         //end of call chain

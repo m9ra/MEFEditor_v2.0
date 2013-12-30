@@ -22,9 +22,13 @@ namespace Drawing
 
         private readonly HashSet<JoinDefinition> _joinDefinitions = new HashSet<JoinDefinition>();
 
+        private readonly List<EditDefinition> _edits = new List<EditDefinition>();
+
         public IEnumerable<DiagramItemDefinition> ItemDefinitions { get { return _definitions.Values; } }
 
         public IEnumerable<JoinDefinition> JoinDefinitions { get { return _joinDefinitions; } }
+
+        public IEnumerable<EditDefinition> Edits { get { return _edits; } }
 
         public event OnDragEnd OnDragEnd;
 
@@ -133,6 +137,9 @@ namespace Drawing
                 OnDragEnd();
         }
 
-
+        public void AddEdit(EditDefinition edit)
+        {
+            _edits.Add(edit);
+        }
     }
 }

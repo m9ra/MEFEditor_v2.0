@@ -243,7 +243,7 @@ namespace TypeSystem.Runtime
             var subChains = definition.GetSubChains();
 
             var chain = new InheritanceChain(definition.TypeInfo, subChains);
-            _inheritanceChains.Add(chain.Path.Signature, chain);
+            _inheritanceChains[chain.Path.Signature] = chain;
         }
 
         /// <summary>

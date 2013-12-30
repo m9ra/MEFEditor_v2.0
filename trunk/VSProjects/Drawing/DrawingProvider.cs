@@ -47,6 +47,18 @@ namespace Drawing
                 }
             }
 
+            var menu = new ContextMenu();
+            foreach (var edit in diagramDefinition.Edits)
+            {
+                var item = new MenuItem();
+                item.Header = edit.Name;
+
+                item.Click += (e, s) => edit.Commit(context.Diagram.InitialView);
+                menu.Items.Add(item);
+            }
+
+            Engine.Output.ContextMenu = menu;
+
             Engine.Output.SetContext(context);
             Engine.Display();
 

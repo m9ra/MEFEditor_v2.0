@@ -13,9 +13,14 @@ namespace AssemblyProviders.CSharp.Transformations
     class BlockProvider : BlockTransformationProvider
     {
         readonly INodeAST _line;
-        internal BlockProvider(INodeAST lineNode)
+        readonly Source _source;
+        internal BlockProvider(INodeAST lineNode, Source source = null)
         {
             _line = lineNode;
+            _source = _line == null ? source : _line.Source;
+
+            if (_source == null)
+                throw new ArgumentNullException("source");
         }
 
         public override Transformation ShiftBefore(BlockTransformationProvider provider)
@@ -41,7 +46,10 @@ namespace AssemblyProviders.CSharp.Transformations
 
         public override Transformation PrependCall(CallEditInfo call)
         {
-            throw new NotImplementedException();
+            return new SourceTransformation((view, source) =>
+            {
+                source.PrependCall(view, _line, call);
+            }, _line.Source);
         }
 
         public override Transformation AppendCall(CallEditInfo call)

@@ -169,6 +169,12 @@ namespace Analyzing.Editing
             Apply(appendTransform);
         }
 
+        public void PrependCall(ExecutedBlock block, CallEditInfo call)
+        {
+            var prependTransform = block.Info.BlockTransformProvider.PrependCall(call);
+            Apply(prependTransform);
+        }
+
         #endregion
     }
 }
