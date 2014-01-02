@@ -204,10 +204,14 @@ namespace MEFAnalyzers
 
                 foreach (var join in compositionResult.Joins)
                 {
+                    if (compositionResult.Failed && !join.IsErrorJoin)
+                        //on error we want to display only error joins
+                        continue;
+
                     var fromPoint = getConnector(join.Export, drawer);
                     var toPoint = getConnector(join.Import, drawer);
 
-                    var joinDefinition = drawer.DrawJoin(fromPoint, toPoint);
+                    var joinDefinition = drawer.DrawJoin(fromPoint, toPoint);                    
                     //TODO set properties of joinDefinition
                 }
             }
@@ -236,8 +240,12 @@ namespace MEFAnalyzers
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
         {
             var instance = drawer.GetInstanceDrawing(point.Instance.Component);
-
+            
             var connector = instance.GetJoinPoint(point.Point);
+
+            connector.SetProperty("Error", point.Error);
+            connector.SetProperty("Warning", point.Warning);
+
             return connector;
         }
 

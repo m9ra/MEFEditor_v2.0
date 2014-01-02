@@ -25,6 +25,29 @@ namespace Research
 {
     static class ResearchSources
     {
+
+        static internal TestingAssembly MEF_CompositionErrors() {
+            var testAssembly = new RuntimeAssembly();
+            testAssembly.AddDefinition(new StringImport());
+
+            return AssemblyUtils.Run(@"        
+                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+            
+                var export=new SimpleStringExport();
+                
+                compCont.ComposeParts();
+   
+            ")
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<DirectoryCatalogDefinition>()
+            .AddToRuntime<SimpleStringExport>() 
+            .AddToRuntime<StringImport>()
+
+            .RegisterAssembly("test.exe", testAssembly)
+            ;
+        }
+
         static internal TestingAssembly ParamTesting()
         {
             return AssemblyUtils.Run(@"

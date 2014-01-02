@@ -84,21 +84,6 @@ namespace MEFAnalyzers.Drawings
             SetImage(target, image);
         }
 
-        internal static StackPanel ConnectorProperties(ConnectorDefinition connector, string heading, IEnumerable<KeyValuePair<string, string>> mapping)
-        {
-            var propertiesText = new StringBuilder();
-            foreach (var map in mapping)
-            {
-                var property = connector.GetProperty(map.Key);
-                if (property == null || property.Value == null)
-                    continue;
-
-                propertiesText.AppendFormat("{0}: {1}\n", map.Key, property.Value);
-            }
-
-            return GetHeadingText(heading, propertiesText.ToString());
-        }
-
         /// <summary>
         /// Convert bitmap into wpf usable bitmap source
         /// </summary>

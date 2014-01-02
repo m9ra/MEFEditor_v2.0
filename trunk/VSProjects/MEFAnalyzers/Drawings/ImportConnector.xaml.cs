@@ -36,8 +36,8 @@ namespace MEFAnalyzers.Drawings
             InitializeComponent();
             Contract.Text = definition.GetProperty("Contract").Value;
 
-            var tooltip = DrawingTools.ConnectorProperties(definition, "Import info", ImportProperties);
-            DrawingTools.SetToolTip(this, tooltip);
+            ConnectorTools.SetProperties(this, "Import info", ImportProperties);
+            ConnectorTools.SetMessages(ErrorOutput, definition);
         }
 
         public override Point ConnectPoint

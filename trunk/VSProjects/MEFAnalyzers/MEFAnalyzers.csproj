@@ -69,6 +69,7 @@
     <Compile Include="Drawings\AggregateCatalogDrawing.xaml.cs">
       <DependentUpon>AggregateCatalogDrawing.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Drawings\ConnectorTools.cs" />
     <Compile Include="Drawings\DirectoryCatalogDrawing.xaml.cs">
       <DependentUpon>DirectoryCatalogDrawing.xaml</DependentUpon>
     </Compile>
@@ -162,6 +163,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Type.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\error.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\warning.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

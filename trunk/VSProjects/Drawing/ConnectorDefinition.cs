@@ -19,14 +19,28 @@ namespace Drawing
 
         public void SetProperty(DrawingProperty property)
         {
-            _properties[property.Name] = property;  
+            _properties[property.Name] = property;
+        }
+
+        public void SetProperty(string name, string value)
+        {
+            SetProperty(new DrawingProperty(name, value));
         }
 
         public DrawingProperty GetProperty(string name)
         {
             DrawingProperty result;
             _properties.TryGetValue(name, out result);
-            return result;  
+            return result;
+        }
+
+        public string GetPropertyValue(string name)
+        {
+            var property = GetProperty(name);
+            if (property == null)
+                return null;
+
+            return property.Value;
         }
     }
 }
