@@ -19,6 +19,7 @@ namespace MEFAnalyzers
         public readonly Field<string> Path;
         public readonly Field<string> FullPath;
         public readonly Field<string> Pattern;
+        public readonly Field<string> Error;
 
         public DirectoryCatalogDefinition()
         {
@@ -37,11 +38,17 @@ namespace MEFAnalyzers
             Components.Set(components);
 
             var assembly = Services.LoadAssembly(path);
-
-            foreach (var componentInfo in assembly.GetComponents())
+            if (assembly == null)
             {
-                var component = Context.Machine.CreateInstance(componentInfo.ComponentType);
-                components.Add(component);
+                Error.Set("Assembly file hasn't been found");
+            }
+            else
+            {
+                foreach (var componentInfo in assembly.GetComponents())
+                {
+                    var component = Context.Machine.CreateInstance(componentInfo.ComponentType);
+                    components.Add(component);
+                }
             }
 
             setCtorEdits();
@@ -105,6 +112,7 @@ namespace MEFAnalyzers
             drawer.SetProperty("Path", Path.Get());
             drawer.SetProperty("FullPath", FullPath.Get());
             drawer.SetProperty("Pattern", Pattern.Get());
+            drawer.SetProperty("Error", Error.Get());
 
             var slot = drawer.AddSlot();
 
@@ -114,7 +122,7 @@ namespace MEFAnalyzers
                 slot.Add(componentDrawing.Reference);
             }
 
-            drawer.CommitDrawing();
+            drawer.ForceShow();
         }
     }
 }

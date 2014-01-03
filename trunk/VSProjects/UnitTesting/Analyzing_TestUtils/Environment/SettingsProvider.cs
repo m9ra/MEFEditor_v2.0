@@ -13,6 +13,7 @@ using TypeSystem;
 using TypeSystem.Runtime;
 
 using AssemblyProviders.CIL;
+using AssemblyProviders.TypeDefinitions;
 
 using UnitTesting.RuntimeTypeDefinitions;
 using UnitTesting.TypeSystem_TestUtils;
@@ -24,7 +25,8 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
         private static readonly Type[] directTypes = new Type[]{
             typeof(string),
             typeof(bool),   
-            typeof(VMStack)
+            typeof(VMStack),
+            typeof(LiteralType)
         };
 
         private static readonly Type[] mathTypes = new Type[]{

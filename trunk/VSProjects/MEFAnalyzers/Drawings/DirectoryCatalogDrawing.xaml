@@ -15,13 +15,19 @@
                    
                    >
     <DockPanel>
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Center">
+        <StackPanel Name="Caption" Orientation="Horizontal" DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Center">
             <Image Name="CaptionIcon" Width="32" Height="32" Margin="10 0"></Image>
             <TextBlock Name="CaptionText" FontSize="22" Foreground="Black">DirectoryCatalog</TextBlock>
         </StackPanel>
 
+        
+        
         <StackPanel Name="Properties" DockPanel.Dock="Top" Margin="10">
-            <DockPanel>
+            <DockPanel Name="ErrorDock">
+                <TextBlock FontWeight="Bold" Margin="5 0" Foreground="Red">Error:</TextBlock>
+                <TextBlock Name="ErrorText" Foreground="Red">No error</TextBlock>
+            </DockPanel>
+            <DockPanel Name="PathDock">
                 <TextBlock FontWeight="Bold" Margin="5 0">Path:</TextBlock>
                 <TextBlock Name="Path">No path</TextBlock>
             </DockPanel>

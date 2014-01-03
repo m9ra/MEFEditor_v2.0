@@ -54,7 +54,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
                 }
             }
 
-            drawer.CommitDrawing();
+            drawer.ForceShow();
         }
     }
 }

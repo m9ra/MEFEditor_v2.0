@@ -63,7 +63,9 @@ namespace TypeSystem.Core
 
         internal TypeAssembly LoadAssembly(string assemblyPath)
         {
-            return _loadedAssemblies[assemblyPath];
+            TypeAssembly assembly;
+            _loadedAssemblies.TryGetValue(assemblyPath, out assembly);
+            return assembly;
         }
 
         internal GeneratorBase StaticResolve(MethodID method)

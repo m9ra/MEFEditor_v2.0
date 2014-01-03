@@ -209,6 +209,8 @@ namespace TypeSystem.Runtime
                 throw new NotSupportedException("Cannot process async call on ambiguous method: " + callName + ", on" + calledObject);
 
 
+            var edits = Edits;
+
             var callGenerator = new DirectedGenerator((e) =>
             {
                 var thisArg = e.GetTemporaryVariable();
@@ -234,6 +236,8 @@ namespace TypeSystem.Runtime
                     {
                         var callValue = context.GetValue(new VariableName(callReturn));
                         var unwrapped = Unwrap<TResult>(callValue);
+
+                        context.ShareEdits(edits);
                         Invoke(context, (c) => callback(unwrapped));
                     });
                 }
@@ -241,6 +245,18 @@ namespace TypeSystem.Runtime
 
 
             Context.DynamicCall(callName, callGenerator, This, calledObject);
+        }
+
+        protected void ContinuationCall(DirectMethod callback)
+        {
+            var callGenerator = new DirectedGenerator((e) =>
+            {
+                e.DirectInvoke((c) =>
+                    Invoke(c, callback)
+                    );
+            });
+
+            Context.DynamicCall("DirectAsyncCall", callGenerator, This);
         }
 
         protected Edit AddCallEdit(string name, CallProvider accepter)

@@ -101,6 +101,14 @@ namespace Drawing
             return result;
         }
 
+        public string GetPropertyValue(string name)
+        {
+            var property = GetProperty(name);
+            if (property == null)
+                return null;
+
+            return property.Value;
+        }
 
     }
 }

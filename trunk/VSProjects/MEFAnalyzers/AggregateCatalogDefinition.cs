@@ -28,12 +28,12 @@ namespace MEFAnalyzers
         public void _method_ctor()
         {
             var catalogsInstance = Context.Machine.CreateInstance(new InstanceInfo(ComposablePartCatalogCollectionDefinition.TypeFullname));
+            Catalogs.Set(catalogsInstance);
 
             AddCallEdit(UserInteraction.AcceptName, acceptCatalog);
 
             //call list constructor
             AsyncCall<Instance>(catalogsInstance, Naming.CtorName, null, This);
-            Catalogs.Set(catalogsInstance);
         }
 
         [ReturnType(ComposablePartCatalogCollectionDefinition.TypeFullname)]
@@ -57,7 +57,7 @@ namespace MEFAnalyzers
                 slot.Add(childDrawing.Reference);
             }
 
-            drawer.CommitDrawing();
+            drawer.ForceShow();
         }
     }
 }

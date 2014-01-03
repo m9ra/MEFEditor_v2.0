@@ -91,6 +91,7 @@ namespace MEFAnalyzers.Drawings
         /// <returns></returns>
         internal static BitmapSource Convert(System.Drawing.Bitmap source)
         {
+            //TODO cache converted images
             var result = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(source.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty,
                 System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
 

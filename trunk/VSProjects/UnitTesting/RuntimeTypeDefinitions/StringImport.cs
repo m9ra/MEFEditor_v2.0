@@ -45,7 +45,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
         {
             services.PublishField("Import", Import);
             services.PublishField("PreImport", PreImport);
-            services.CommitDrawing();
+            services.ForceShow();
         }
     }
 }

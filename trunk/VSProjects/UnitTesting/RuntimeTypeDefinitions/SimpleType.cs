@@ -32,7 +32,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
         protected override void draw(InstanceDrawer services)
         {
             services.PublishField("TestProperty", TestProperty);
-            services.CommitDrawing();
+            services.ForceShow();
 
         }
     }

@@ -180,14 +180,19 @@ namespace MEFAnalyzers
             drawCatalog(drawer, slot);
             setCompositionInfo(drawer);
 
-            drawer.CommitDrawing();
+            drawer.ForceShow();
         }
 
         private void setCompositionInfo(InstanceDrawer drawer)
         {
             var compositionResult = CompositionResult.Get();
-            var context = compositionResult.Context;
 
+            CompositionContext context=null;
+            if (compositionResult != null)
+            {
+                context = compositionResult.Context;
+                drawer.SetProperty("Error", compositionResult.Error);
+            }
 
             if (context != null)
             {
@@ -211,7 +216,7 @@ namespace MEFAnalyzers
                     var fromPoint = getConnector(join.Export, drawer);
                     var toPoint = getConnector(join.Import, drawer);
 
-                    var joinDefinition = drawer.DrawJoin(fromPoint, toPoint);                    
+                    var joinDefinition = drawer.DrawJoin(fromPoint, toPoint);
                     //TODO set properties of joinDefinition
                 }
             }
@@ -240,7 +245,7 @@ namespace MEFAnalyzers
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
         {
             var instance = drawer.GetInstanceDrawing(point.Instance.Component);
-            
+
             var connector = instance.GetJoinPoint(point.Point);
 
             connector.SetProperty("Error", point.Error);

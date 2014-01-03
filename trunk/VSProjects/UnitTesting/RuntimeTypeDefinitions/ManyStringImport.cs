@@ -50,7 +50,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
                 ++i;
             }
 
-            services.CommitDrawing();
+            services.ForceShow();
         }
     }
 }

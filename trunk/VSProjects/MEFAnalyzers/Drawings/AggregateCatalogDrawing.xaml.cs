@@ -28,7 +28,7 @@ namespace MEFAnalyzers.Drawings
 
             InitializeComponent();
 
-            DrawingTools.SetToolTip(CaptionText, Definition.DrawedType);
+            DrawingTools.SetToolTip(Caption, Definition.DrawedType);
             DrawingTools.SetIcon(CaptionIcon, Icons.Container);
 
             foreach (var property in Definition.Properties)

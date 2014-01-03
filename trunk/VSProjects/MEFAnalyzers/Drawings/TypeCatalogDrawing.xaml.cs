@@ -20,23 +20,26 @@ namespace MEFAnalyzers.Drawings
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class CompositionTesterDrawing : ContentDrawing
+    public partial class TypeCatalogDrawing : ContentDrawing
     {
-        public CompositionTesterDrawing(DiagramItem item)
+        public TypeCatalogDrawing(DiagramItem item)
             : base(item)
         {
             InitializeComponent();
 
             DrawingTools.SetToolTip(Caption, Definition.DrawedType);
-            DrawingTools.SetIcon(CaptionIcon, Icons.Composition);
+            DrawingTools.SetIcon(CaptionIcon, Icons.Type);
 
-            var error = Definition.GetPropertyValue("Error");
-            var hasError = error != null;
-            ErrorDock.Visibility = hasError ? Visibility.Visible : Visibility.Hidden;
-            ErrorText.Text = error;
+            foreach (var property in Definition.Properties)
+            {
+                var propertyBlock = new TextBlock();
+                propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);
 
+                Properties.Children.Add(propertyBlock);
+            }
 
-            Item.FillSlot(Composition, Definition.Slots.First());
+            var slot = Definition.Slots.First();
+            Item.FillSlot(Catalogs, slot);
         }
     }
 }

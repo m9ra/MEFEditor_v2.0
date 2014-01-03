@@ -128,7 +128,7 @@ namespace MEFAnalyzers
                 }
             }
 
-            drawer.CommitDrawing();
+            drawer.ForceShow();
         }
 
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)

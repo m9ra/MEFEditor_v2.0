@@ -8,9 +8,10 @@ using System.Diagnostics;
 
 using Analyzing;
 using TypeSystem;
+
+using AssemblyProviders.TypeDefinitions;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
-
 using AssemblyProviders.CSharp.Compiling;
 
 namespace AssemblyProviders.CSharp
@@ -472,9 +473,44 @@ namespace AssemblyProviders.CSharp
                 return true;
             }
 
+            if (literalNode.Value == "typeof")
+            {
+                if (literalNode.Arguments.Length == 0)
+                {
+                    throw new NotSupportedException("typeof doesn't have type specified");
+                }
+
+                var type = resolveTypeofArg(literalNode.Arguments[0]);
+
+                literal = new LiteralValue(type, literalNode, _context);
+                return true;
+            }
 
             literal = null;
             return false;
+        }
+
+        private LiteralType resolveTypeofArg(INodeAST typeofArg)
+        {
+            var resultType = new StringBuilder();
+            var currentNode = typeofArg;
+
+            while (currentNode != null)
+            {
+                if (resultType.Length > 0)
+                {
+                    //add delimiter between namespaces
+                    resultType.Append('.');
+                }
+                resultType.Append(currentNode.Value);
+
+                //shift to next namespace
+                currentNode = currentNode.Child;
+            }
+
+            var info = new InstanceInfo(resultType.ToString());
+
+            return new LiteralType(info);
         }
 
         private bool tryGetVariable(INodeAST variableNode, out RValueProvider variable)

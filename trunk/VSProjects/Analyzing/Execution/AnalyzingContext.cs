@@ -268,6 +268,11 @@ namespace Analyzing.Execution
             return Settings.IsTrue(GetValue(condition));
         }
 
+        public void ShareEdits(EditsProvider edits)
+        {
+            Edits = edits;
+        }
+
         internal void Prepare(InstructionBase instruction)
         {
             var call = instruction as Call;

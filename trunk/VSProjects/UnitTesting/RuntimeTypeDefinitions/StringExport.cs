@@ -43,7 +43,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
         protected override void draw(InstanceDrawer services)
         {
             services.PublishField("Export", Export);
-            services.CommitDrawing();
+            services.ForceShow();
         }
     }
 }

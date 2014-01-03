@@ -93,6 +93,8 @@
     <Compile Include="CSharp\Transformations\BlockProvider.cs" />
     <Compile Include="CSharp\Transformations\SourceTransformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeDefinitions\LiteralType.cs" />
+    <Compile Include="TypeDefinitions\LiteralTypeDefinition.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ExternalSources\cecil-master\Mono.Cecil.csproj">

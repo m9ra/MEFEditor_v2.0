@@ -26,7 +26,23 @@ namespace Research
     static class ResearchSources
     {
 
-        static internal TestingAssembly MEF_CompositionErrors() {
+        static internal TestingAssembly MEF_TypeCatalog()
+        {
+            return AssemblyUtils.Run(@"                        
+                var exportType=typeof(SimpleStringExport);
+                var typeCat=new System.ComponentModel.Composition.Hosting.TypeCatalog(exportType);       
+
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(typeCat);            
+                compCont.ComposeParts();
+            ")
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<TypeCatalogDefinition>()
+            .AddToRuntime<SimpleStringExport>()
+            ;
+        }
+
+        static internal TestingAssembly MEF_CompositionErrors()
+        {
             var testAssembly = new RuntimeAssembly();
             testAssembly.AddDefinition(new StringImport());
 
@@ -41,7 +57,7 @@ namespace Research
             ")
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<DirectoryCatalogDefinition>()
-            .AddToRuntime<SimpleStringExport>() 
+            .AddToRuntime<SimpleStringExport>()
             .AddToRuntime<StringImport>()
 
             .RegisterAssembly("test.exe", testAssembly)

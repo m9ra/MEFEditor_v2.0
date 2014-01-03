@@ -66,7 +66,7 @@ namespace TypeSystem
         }
 
 
-        public void CommitDrawing()
+        public void ForceShow()
         {
             Instance.CommitDrawing();
         }

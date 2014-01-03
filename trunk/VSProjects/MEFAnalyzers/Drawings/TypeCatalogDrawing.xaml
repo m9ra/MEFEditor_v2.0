@@ -1,4 +1,4 @@
-﻿<dr:ContentDrawing x:Class="MEFAnalyzers.Drawings.AggregateCatalogDrawing"
+﻿<dr:ContentDrawing x:Class="MEFAnalyzers.Drawings.TypeCatalogDrawing"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,8 +9,8 @@
              MinHeight="50"
              MinWidth="50"
             
-             Background="DarkRed"
-             BorderBrush="Red"
+             Background="Orange"
+             BorderBrush="DarkOrange"
              BorderThickness="2"
                   
              CornerRadius="10"
@@ -19,7 +19,7 @@
     <DockPanel>
         <StackPanel Name="Caption" Orientation="Horizontal" DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Center">
             <Image Name="CaptionIcon" Width="32" Height="32" Margin="10 0"></Image>
-            <TextBlock Name="CaptionText" FontSize="22" Foreground="White">AggregateCatalog</TextBlock>
+            <TextBlock Name="CaptionText" FontSize="22" Foreground="Black">TypeCatalog</TextBlock>
         </StackPanel>
         
         <StackPanel Name="Properties"></StackPanel>

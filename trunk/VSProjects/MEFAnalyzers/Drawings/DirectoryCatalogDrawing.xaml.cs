@@ -27,15 +27,25 @@ namespace MEFAnalyzers.Drawings
         {
             InitializeComponent();
 
-            DrawingTools.SetToolTip(CaptionText, Definition.DrawedType);
+            DrawingTools.SetToolTip(Caption, Definition.DrawedType);
             DrawingTools.SetIcon(CaptionIcon, Icons.Folder);
 
-            var path = Definition.GetProperty("Path");
-            var pattern = Definition.GetProperty("Pattern");
+            var path = Definition.GetPropertyValue("Path");
+            var fullPath = Definition.GetPropertyValue("FullPath");
+            var pattern = Definition.GetPropertyValue("Pattern");
+            var error = Definition.GetPropertyValue("Error");
 
-            Path.Text = path.Value;
-            Pattern.Text = pattern.Value;
-       
+            Path.Text = path;
+            Pattern.Text = pattern;
+
+            var fullPathInfo = DrawingTools.GetHeadingText("FullPath", fullPath);
+            DrawingTools.SetToolTip(PathDock, fullPath);
+
+            //Display error message if needed
+            ErrorText.Text = error;
+            var hasError = error != null;
+            ErrorDock.Visibility = hasError ? Visibility.Visible : Visibility.Hidden;
+
             Item.FillSlot(Components, Definition.Slots.First());
         }
     }
