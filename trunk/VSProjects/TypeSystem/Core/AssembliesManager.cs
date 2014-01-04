@@ -20,7 +20,7 @@ namespace TypeSystem.Core
         /// In these assemblies are searched generators
         /// <remarks>May differ from method searcher providing assemblies - that are based on assembly references</remarks>
         /// </summary>
-        readonly List<AssemblyProvider> _assemblies = new List<AssemblyProvider>();
+        readonly Dictionary<AssemblyProvider, TypeAssembly> _assemblies = new Dictionary<AssemblyProvider, TypeAssembly>();
 
         readonly TypeServices _services;
 
@@ -28,7 +28,12 @@ namespace TypeSystem.Core
 
         readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
 
-        readonly Dictionary<string, TypeAssembly> _loadedAssemblies = new Dictionary<string, TypeAssembly>();
+
+
+        /// <summary>
+        /// asssemblies loaded from files
+        /// </summary>
+        readonly Dictionary<string, AssemblyProvider> _loadedAssemblies = new Dictionary<string, AssemblyProvider>();
 
         internal AssembliesManager(AssemblyCollection assemblies, MachineSettings settings)
         {
@@ -56,16 +61,32 @@ namespace TypeSystem.Core
         internal void RegisterAssembly(string assemblyPath, AssemblyProvider assembly)
         {
             _onAssemblyAdd(assembly);
-            var typeAssembly = new TypeAssembly(this, assembly);
 
-            _loadedAssemblies[assemblyPath] = typeAssembly;
+            _loadedAssemblies[assemblyPath] = assembly;
         }
 
         internal TypeAssembly LoadAssembly(string assemblyPath)
         {
-            TypeAssembly assembly;
-            _loadedAssemblies.TryGetValue(assemblyPath, out assembly);
-            return assembly;
+            AssemblyProvider assembly;
+            if (!_loadedAssemblies.TryGetValue(assemblyPath, out assembly))
+                return null;
+
+            TypeAssembly result;
+            _assemblies.TryGetValue(assembly, out result);
+            return result;
+        }
+
+        internal TypeAssembly DefiningAssembly(MethodID callerId)
+        {
+            foreach (var assemblyPair in _assemblies)
+            {
+                var assembly = assemblyPair.Key;
+                var generator = assembly.GetMethodGenerator(callerId);
+                if (generator != null)
+                    return assemblyPair.Value;
+            }
+
+            return null;
         }
 
         internal GeneratorBase StaticResolve(MethodID method)
@@ -103,7 +124,7 @@ namespace TypeSystem.Core
                 return true;
 
             var typePath = new PathInfo(assignedTypeName);
-            foreach (var assembly in _assemblies)
+            foreach (var assembly in _assemblies.Keys)
             {
                 var inheritanceChain = assembly.GetInheritanceChain(typePath);
 
@@ -182,7 +203,7 @@ namespace TypeSystem.Core
                 return null;
 
 
-            foreach (var assembly in _assemblies)
+            foreach (var assembly in _assemblies.Keys)
             {
                 var generator = assembly.GetGenericMethodGenerator(method, searchPath);
                 if (generator != null)
@@ -201,7 +222,7 @@ namespace TypeSystem.Core
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
         private GeneratorBase staticExplicitResolve(MethodID method)
         {
-            foreach (var assembly in _assemblies)
+            foreach (var assembly in _assemblies.Keys)
             {
                 var generator = assembly.GetMethodGenerator(method);
 
@@ -223,7 +244,7 @@ namespace TypeSystem.Core
             var methodSignature = Naming.ChangeDeclaringType(searchPath.Signature, method, true);
             var typePath = new PathInfo(dynamicInfo.TypeName);
 
-            foreach (var assembly in _assemblies)
+            foreach (var assembly in _assemblies.Keys)
             {
                 var implementation = assembly.GetGenericImplementation(method, searchPath, typePath);
                 if (implementation != null)
@@ -237,7 +258,7 @@ namespace TypeSystem.Core
 
         private MethodID dynamicExplicitResolve(MethodID method, InstanceInfo dynamicInfo)
         {
-            foreach (var assembly in _assemblies)
+            foreach (var assembly in _assemblies.Keys)
             {
                 var implementation = assembly.GetImplementation(method, dynamicInfo);
                 if (implementation != null)
@@ -255,7 +276,8 @@ namespace TypeSystem.Core
 
         private void _onAssemblyAdd(AssemblyProvider assembly)
         {
-            _assemblies.Add(assembly);
+            var typeAssembly = new TypeAssembly(this, assembly);
+            _assemblies.Add(assembly, typeAssembly);
             assembly.TypeServices = _services;
             assembly.OnComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
         }
@@ -267,6 +289,8 @@ namespace TypeSystem.Core
 
         private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
         {
+            componentInfo.DefiningAssembly = _assemblies[assembly];
+
             _assemblyComponents.Add(assembly, componentInfo);
 
             if (_components.ContainsKey(componentInfo.ComponentType))

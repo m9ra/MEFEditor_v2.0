@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TypeSystem;
+using Analyzing;
 using Analyzing.Editing;
 
 using AssemblyProviders.CSharp.Compiling;
@@ -253,6 +254,13 @@ namespace AssemblyProviders.CSharp
             if (value is string)
             {
                 value = string.Format("\"{0}\"", value);
+            }
+
+            if (value is InstanceInfo)
+            {
+                var instanceInfo=value as InstanceInfo;
+                //TODO namespace shortening
+                value = string.Format("typeof({0})", instanceInfo.TypeName);
             }
 
             return value.ToString();

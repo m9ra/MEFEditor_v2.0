@@ -14,7 +14,7 @@ namespace Analyzing
         /// <summary>
         /// Entry point for execution start
         /// </summary>
-        public abstract GeneratorBase EntryPoint { get; }
+        public abstract MethodID EntryPoint { get; }
 
         /// <summary>
         /// Resolve method with static argument info

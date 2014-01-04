@@ -36,13 +36,14 @@ namespace Analyzing.Execution
 
         public readonly InstructionBatch Program;
 
-
+        public readonly CallContext Caller;
 
 
         internal CallContext(AnalyzingContext context, MethodID name, CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
         {
             _context = context;
 
+            Caller = context.CurrentCall;
             ArgumentValues = argumentValues;
             Name = name;
             TransformProvider = transformProvider;

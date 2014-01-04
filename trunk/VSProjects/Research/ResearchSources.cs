@@ -38,6 +38,7 @@ namespace Research
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<TypeCatalogDefinition>()
             .AddToRuntime<SimpleStringExport>()
+            .AddToRuntime<StringImport>()
             ;
         }
 

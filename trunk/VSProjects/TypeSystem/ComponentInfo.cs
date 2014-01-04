@@ -61,6 +61,11 @@ namespace TypeSystem
         /// </summary>
         public readonly MethodID ImportingConstructor;
 
+        /// <summary>
+        /// Assembly where current component was defined
+        /// </summary>
+        public TypeAssembly DefiningAssembly {get;internal set;}
+
         public ComponentInfo(InstanceInfo thisType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports)
         {
             ComponentType = thisType;

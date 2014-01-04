@@ -10,19 +10,19 @@ using TypeSystem;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    class EntryPointLoader:LoaderBase
+    class EntryPointLoader : LoaderBase
     {
         readonly LoaderBase _wrapped;
         readonly MethodID _entryPointName;
-        internal EntryPointLoader(MethodID entryPointName,LoaderBase wrapped)
+        internal EntryPointLoader(MethodID entryPointName, LoaderBase wrapped)
         {
             _entryPointName = entryPointName;
             _wrapped = wrapped;
         }
 
-        public override GeneratorBase EntryPoint
+        public override MethodID EntryPoint
         {
-            get { return _wrapped.StaticResolve(_entryPointName); }
+            get { return _entryPointName; }
         }
 
         public override GeneratorBase StaticResolve(MethodID method)

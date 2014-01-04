@@ -32,7 +32,20 @@ namespace Analyzing.Execution
         /// <summary>
         /// Current call context on call stack
         /// </summary>
-        private CallContext CurrentCall { get { return _callStack.Peek(); } }
+        public CallContext CurrentCall
+        {
+            get
+            {
+                if (_callStack.Count == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    return _callStack.Peek();
+                }
+            }
+        }
 
         /// <summary>
         /// Array of arguments available for current call

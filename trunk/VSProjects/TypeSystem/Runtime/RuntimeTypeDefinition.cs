@@ -145,8 +145,7 @@ namespace TypeSystem.Runtime
                 Context = null;
             }
         }
-
-
+        
         internal void RunInContextOf(Instance contextInstance, Action runnedAction)
         {
             var thisSwp = This;
@@ -181,6 +180,18 @@ namespace TypeSystem.Runtime
             //TODO consider generic params
             return new InstanceInfo(type);
         }
+
+        protected TypeAssembly GetCallerAssembly()
+        {
+            var callerContext = Context.CurrentCall.Caller;
+            if (callerContext == null)
+                return null;
+
+            var callerId = callerContext.Name;
+            var callerAssembly = Services.DefiningAssembly(callerId);
+            return callerAssembly;
+        }
+
 
         protected IEnumerable<InheritanceChain> GetSubChains(Type type)
         {

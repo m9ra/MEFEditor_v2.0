@@ -132,7 +132,7 @@ namespace AssemblyProviders.CSharp.Transformations
                 }
                 else
                 {
-                    _source.RemoveNode(_view, varUsing, true);
+                    _source.RemoveNode(_view, varUsing, false);
                 }
             }
 

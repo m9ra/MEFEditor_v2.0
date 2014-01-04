@@ -20,7 +20,7 @@ namespace TypeSystem
             _assemblies = new AssembliesManager(assemblies, settings);
         }
 
-        public override GeneratorBase EntryPoint
+        public override MethodID EntryPoint
         {
             get { throw new NotImplementedException(); }
         }

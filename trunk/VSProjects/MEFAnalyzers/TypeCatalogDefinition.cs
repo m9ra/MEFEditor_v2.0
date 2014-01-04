@@ -14,6 +14,8 @@ using TypeSystem.Runtime;
 
 using Drawing;
 
+using MEFAnalyzers.Drawings.Dialogs;
+
 namespace MEFAnalyzers
 {
     public class TypeCatalogDefinition : DataTypeDefinition
@@ -29,14 +31,29 @@ namespace MEFAnalyzers
         {
             var parts = new List<Instance>();
             Parts.Set(parts);
-            
+
+            //offer components available in place of calling - they can be added to ctor
+            TypeAssembly callerAssembly = GetCallerAssembly();
+            Edits.AppendArgument(This, types.Length + 1, "Add component type", (v) => addComponentTypeProvider(callerAssembly, v));
+
+            //keeping in closure
+            var edits = Edits;
+            var thisInst = This;
+
             //collect names of types
-            foreach (var type in types)
+            for (var i = 0; i < types.Length; ++i)
             {
+                //because of keeping values in closure
+                var index = i;
+                var type = types[index];
+
                 AsyncCall<string>(type, "get_FullName", (fullname) =>
                 {
                     var info = new InstanceInfo(fullname);
                     var part = Context.Machine.CreateInstance(info);
+
+                    edits.SetOptional(index + 1);
+                    edits.AttachRemoveArgument(thisInst, part, index + 1, "Exclude from TypeCatalog");
 
                     parts.Add(part);
                 });
@@ -59,6 +76,34 @@ namespace MEFAnalyzers
             }
 
             drawer.ForceShow();
+        }
+
+
+        private object addComponentTypeProvider(TypeAssembly callerAssembly, ExecutionView v)
+        {
+            var components = getComponents(callerAssembly);
+            var dialog = new ComponentTypeDialog(components);
+
+            if (dialog.ShowDialog() == true)
+            {
+                return dialog.SelectedComponent;
+            }
+            else
+            {
+                v.Abort("Nothing selected");
+                return null;
+            }
+        }
+
+        private IEnumerable<ComponentInfo> getComponents(TypeAssembly assembly)
+        {
+            var result = new List<ComponentInfo>(assembly.GetComponents());
+
+            //runtime is implicitly referenced from every assembly 
+            var runtimeComponents = Services.GetComponents(ContainingAssembly);
+            result.AddRange(runtimeComponents);
+
+            return result;
         }
     }
 }

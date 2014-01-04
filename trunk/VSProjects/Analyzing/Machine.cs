@@ -112,7 +112,9 @@ namespace Analyzing
         {
             _createdInstances.Clear();
             var context = new Execution.AnalyzingContext(this, loader);
-            context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);
+
+            context.FetchCall(loader.EntryPoint, arguments);
+            //context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);
 
             //instance processing
             while (!context.IsExecutionEnd)

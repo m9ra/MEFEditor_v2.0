@@ -33,6 +33,10 @@ namespace Drawing
         internal bool Commit(EditViewBase view)
         {
             var editedView = Action(view);
+
+            if (editedView.HasError)
+                return false;
+
             return editedView.Commit();
         }
     }

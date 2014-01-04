@@ -8,10 +8,12 @@ using Analyzing;
 
 namespace UnitTesting.Analyzing_TestUtils
 {
-    class EmitDirectorLoader:LoaderBase
+    class EmitDirectorLoader : LoaderBase
     {
         private readonly EmitDirector _director;
         private readonly LoaderBase _wrapped;
+
+        private readonly MethodID _entryPoint = new MethodID("DirectedEntryPoint", false);
 
         internal EmitDirectorLoader(EmitDirector director, LoaderBase wrappedLoader)
         {
@@ -19,13 +21,18 @@ namespace UnitTesting.Analyzing_TestUtils
             _wrapped = wrappedLoader;
         }
 
-        public override GeneratorBase EntryPoint
+        public override MethodID EntryPoint
         {
-            get { return new EmitDirectorGenerator(_director); }
+            get { return _entryPoint; }
         }
 
         public override GeneratorBase StaticResolve(MethodID method)
         {
+            if (method == EntryPoint)
+            {
+                return new EmitDirectorGenerator(_director);
+            }
+
             return _wrapped.StaticResolve(method);
         }
 

@@ -68,9 +68,19 @@ namespace TypeSystem
             _manager.RegisterAssembly(assemblyPath, assembly);
         }
 
-        public  MethodID GetStaticInitializer(InstanceInfo info)
+        public MethodID GetStaticInitializer(InstanceInfo info)
         {
             return _manager.GetStaticInitializer(info);
+        }
+
+        public TypeAssembly DefiningAssembly(MethodID callerId)
+        {
+            return _manager.DefiningAssembly(callerId);
+        }
+
+        public IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
+        {
+            return _manager.GetComponents(assembly);
         }
     }
 }

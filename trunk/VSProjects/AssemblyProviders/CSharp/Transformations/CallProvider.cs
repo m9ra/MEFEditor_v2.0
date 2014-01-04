@@ -28,7 +28,7 @@ namespace AssemblyProviders.CSharp.Transformations
 
             return new SourceRemoveProvider((view, source) =>
             {
-                var sideEffect = keepSideEffect && !hasSideEffect(argNode);
+                var sideEffect = keepSideEffect && hasSideEffect(argNode);
                 source.RemoveNode(view, argNode, sideEffect);
             }, argNode.Source);
         }
@@ -42,7 +42,7 @@ namespace AssemblyProviders.CSharp.Transformations
 
             return new SourceTransformation((view, source) =>
             {
-                var keepSideEffect = !hasSideEffect(argNode);
+                var keepSideEffect = hasSideEffect(argNode);
                 source.Rewrite(view, argNode, valuePovider(view), keepSideEffect);
             }, _call.Source);
         }
@@ -94,8 +94,14 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private bool hasSideEffect(INodeAST node)
         {
-            //TODO: binary side effect has only assign
-            return new NodeTypes[] { NodeTypes.hierarchy, NodeTypes.prefixOperator }.Contains(node.NodeType);
+            if (node.Value == "typeof")
+                return false;
+
+            if (node.IsAssign())
+                return true;
+
+            //TODO: calls with namespaces
+            return new NodeTypes[] { NodeTypes.call, NodeTypes.prefixOperator }.Contains(node.NodeType);
         }
 
         #endregion

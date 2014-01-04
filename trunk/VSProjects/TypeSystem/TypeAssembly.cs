@@ -23,5 +23,10 @@ namespace TypeSystem
         {
             return _manager.GetComponents(_assembly);
         }
+
+        public override string ToString()
+        {
+            return _assembly.ToString();
+        }
     }
 }

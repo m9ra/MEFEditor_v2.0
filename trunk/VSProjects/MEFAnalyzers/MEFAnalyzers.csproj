@@ -70,6 +70,9 @@
       <DependentUpon>AggregateCatalogDrawing.xaml</DependentUpon>
     </Compile>
     <Compile Include="Drawings\ConnectorTools.cs" />
+    <Compile Include="Drawings\Dialogs\ComponentTypeDialog.xaml.cs">
+      <DependentUpon>ComponentTypeDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Drawings\TypeCatalogDrawing.xaml.cs">
       <DependentUpon>TypeCatalogDrawing.xaml</DependentUpon>
     </Compile>
@@ -127,6 +130,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Drawings\Dialogs\ComponentTypeDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Drawings\TypeCatalogDrawing.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -178,6 +185,7 @@
   <ItemGroup>
     <None Include="Resources\warning.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

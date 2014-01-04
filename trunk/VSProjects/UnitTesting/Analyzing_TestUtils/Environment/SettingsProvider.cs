@@ -50,8 +50,8 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
         {
             var settings = new MachineSettings(onInstanceCreated);
             InitializeRuntime(settings.Runtime);
-            var assembly = new TestingAssembly(settings);
 
+            var assembly = new TestingAssembly(settings);
             return assembly;
         }
 
