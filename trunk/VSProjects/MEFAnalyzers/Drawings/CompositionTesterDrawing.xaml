@@ -15,10 +15,12 @@
              CornerRadius="10"
                    >
     <DockPanel>
-        <StackPanel Name="Caption" Orientation="Horizontal" DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Center">
+        <StackPanel Name="Caption" Orientation="Horizontal" DockPanel.Dock="Top" Margin="0 10 0 0" HorizontalAlignment="Center">
             <Image Name="CaptionIcon" Width="32" Height="32" Margin="10 0"></Image>
             <TextBlock Name="CaptionText" FontSize="22" Foreground="Black">CompositionContainer</TextBlock>
         </StackPanel>
+        <TextBlock Name="InstanceID" DockPanel.Dock="Top" FontStyle="Italic" HorizontalAlignment="Center">No id specified</TextBlock>
+        
 
         <DockPanel Name="ErrorDock" DockPanel.Dock="Top">
             <TextBlock Name="ErrorText" Margin="5 0" Foreground="DarkRed" FontWeight="Bold" FontSize="15">No error</TextBlock>

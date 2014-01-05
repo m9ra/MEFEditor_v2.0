@@ -8,6 +8,7 @@ using Analyzing;
 using Analyzing.Execution;
 
 using Analyzing.Editing;
+using Analyzing.Editing.Transformations;
 
 using TypeSystem.DrawingServices;
 using TypeSystem.Runtime.Building;
@@ -16,6 +17,10 @@ using Drawing;
 
 namespace TypeSystem.Runtime
 {
+
+    public delegate string NameProvider(RuntimeTypeDefinition definition);
+
+    public delegate object[] ArgumentsProvider();
 
     /// <summary>
     /// Base class for runtime type definitions
@@ -32,6 +37,8 @@ namespace TypeSystem.Runtime
         /// Determine that defined type is interface
         /// </summary>
         public bool IsInterface;
+
+        internal IEnumerable<Edit> StaticEdits { get { return _staticEdits; } }
 
         /// <summary>
         /// Available type services
@@ -63,6 +70,8 @@ namespace TypeSystem.Runtime
         internal protected Instance This { get; private set; }
 
         abstract internal InstanceInfo TypeInfo { get; }
+
+        private List<Edit> _staticEdits = new List<Edit>();
 
         abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
 
@@ -145,7 +154,7 @@ namespace TypeSystem.Runtime
                 Context = null;
             }
         }
-        
+
         internal void RunInContextOf(Instance contextInstance, Action runnedAction)
         {
             var thisSwp = This;
@@ -268,6 +277,35 @@ namespace TypeSystem.Runtime
             });
 
             Context.DynamicCall("DirectAsyncCall", callGenerator, This);
+        }
+
+        protected Edit AddCreationEdit(string editName, NameProvider variableNameProvider, ArgumentsProvider argumentsProvider = null)
+        {
+            var creationTransformation = new AddCallTransformation((v) =>
+            {
+                var name = variableNameProvider(this);
+                var args = argumentsProvider == null ? null : argumentsProvider();
+
+                if (args == null)
+                {
+                    args = new object[0];
+                }
+
+                if (name == null)
+                {
+                    v.Abort("Name hasn't been selected");
+                    return null;
+                }
+
+                var call = new CallEditInfo(TypeInfo.TypeName, Naming.CtorName, args);
+                call.ReturnName = name;
+                return call;
+            });
+
+            var edit = new Edit(null, editName, creationTransformation);
+            _staticEdits.Add(edit);
+
+            return edit;
         }
 
         protected Edit AddCallEdit(string name, CallProvider accepter)

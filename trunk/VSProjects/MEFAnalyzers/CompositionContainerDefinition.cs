@@ -30,6 +30,7 @@ namespace MEFAnalyzers
         public CompositionContainerDefinition()
         {
             Simulate<CompositionContainer>();
+            AddCreationEdit("Add CompositionContainer", Dialogs.VariableName.GetName);
         }
 
         /// <summary>
@@ -187,7 +188,7 @@ namespace MEFAnalyzers
         {
             var compositionResult = CompositionResult.Get();
 
-            CompositionContext context=null;
+            CompositionContext context = null;
             if (compositionResult != null)
             {
                 context = compositionResult.Context;

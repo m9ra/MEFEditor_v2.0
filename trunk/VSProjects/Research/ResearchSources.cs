@@ -26,6 +26,32 @@ namespace Research
     static class ResearchSources
     {
 
+        static internal TestingAssembly MEF_AssemblyCatalog()
+        {
+            var testAssembly = new RuntimeAssembly();
+            testAssembly.AddDefinition(new SimpleStringExport());
+            testAssembly.AddDefinition(new ICollectionStringImport());
+
+            return AssemblyUtils.Run(@"        
+                var assemCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(assemCat);
+            
+                var export=new SimpleStringExport();
+                
+                compCont.ComposeParts(export);
+   
+            ")
+            .AddToRuntime<AssemblyCatalogDefinition>()
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<SimpleStringExport>() //because of drawing provider
+            .AddToRuntime<ICollectionStringImport>()
+            .AddDirectToRuntime<ICollection<string>>()
+            .AddDirectToRuntime<List<string>>()
+
+            .RegisterAssembly("test.exe", testAssembly)
+            ;
+        }
+
         static internal TestingAssembly MEF_TypeCatalog()
         {
             return AssemblyUtils.Run(@"                        
@@ -56,6 +82,7 @@ namespace Research
                 compCont.ComposeParts();
    
             ")
+
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<DirectoryCatalogDefinition>()
             .AddToRuntime<SimpleStringExport>()
@@ -99,6 +126,8 @@ namespace Research
                 compCont.ComposeParts(export);
    
             ")
+            .AddToRuntime<AggregateCatalogDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
             .AddToRuntime<DirectoryCatalogDefinition>()
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<SimpleStringExport>() //because of drawing provider

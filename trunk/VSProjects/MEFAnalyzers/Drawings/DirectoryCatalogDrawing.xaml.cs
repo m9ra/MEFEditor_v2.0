@@ -29,6 +29,7 @@ namespace MEFAnalyzers.Drawings
 
             DrawingTools.SetToolTip(Caption, Definition.DrawedType);
             DrawingTools.SetIcon(CaptionIcon, Icons.Folder);
+            InstanceID.Text = Definition.ID;
 
             var path = Definition.GetPropertyValue("Path");
             var fullPath = Definition.GetPropertyValue("FullPath");

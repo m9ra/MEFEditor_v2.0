@@ -263,6 +263,11 @@ namespace AssemblyProviders.CSharp
                 value = string.Format("typeof({0})", instanceInfo.TypeName);
             }
 
+            if (value == null)
+            {
+                value = "null";
+            }
+
             return value.ToString();
         }
 

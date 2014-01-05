@@ -51,9 +51,13 @@ namespace Analyzing.Editing
                 args.Add(subsitute(arg, substitutions));
             }
 
-            return new CallEditInfo(
+            var call= new CallEditInfo(
                 subsitute(ThisObj, substitutions), CallName, args.ToArray()
                 );
+
+            call.ReturnName = ReturnName;
+
+            return call;    
         }
 
         private object subsitute(object oldValue, Dictionary<Instance, VariableName> subsitutions)

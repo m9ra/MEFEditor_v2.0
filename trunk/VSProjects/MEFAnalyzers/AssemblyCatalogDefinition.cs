@@ -13,26 +13,24 @@ using TypeSystem.Runtime;
 
 namespace MEFAnalyzers
 {
-    public class DirectoryCatalogDefinition : DataTypeDefinition
+    public class AssemblyCatalogDefinition : DataTypeDefinition
     {
         public readonly Field<List<Instance>> Components;
         public readonly Field<string> Path;
         public readonly Field<string> FullPath;
-        public readonly Field<string> Pattern;
         public readonly Field<string> Error;
 
-        public DirectoryCatalogDefinition()
+        public AssemblyCatalogDefinition()
         {
-            Simulate<DirectoryCatalog>();
+            Simulate<AssemblyCatalog>();
         }
 
         #region Type members implementation
 
-        public void _method_ctor(string path, string pattern = "*.dll")
+        public void _method_ctor(string path)
         {
             Path.Set(path);
             FullPath.Set(resolveFullPath(path));
-            Pattern.Set(pattern);
 
             var components = new List<Instance>();
             Components.Set(components);
@@ -76,7 +74,7 @@ namespace MEFAnalyzers
         private string resolveFullPath(string relativePath)
         {
             //TODO resolve according to codebase
-            return relativePath;
+            return "FullPath://" + relativePath;
         }
 
         #endregion
@@ -86,29 +84,13 @@ namespace MEFAnalyzers
         private void setCtorEdits()
         {
             RewriteArg(1, "Change path", _pathInput);
-            AppendArg(2, "Add search pattern", _patternInput);
-            RewriteArg(2, "Change search pattern", _patternInput);
-        }
-
-        private object _patternInput(ExecutionView view)
-        {
-            var oldPattern = Pattern.Get();
-
-            var inputPattern = Dialogs.ValueProvider.GetSearchPattern(oldPattern);
-            if (inputPattern == null || inputPattern == "")
-            {
-                view.Abort("No pattern has been selected");
-                return null;
-            }
-
-            return inputPattern;
         }
 
         private object _pathInput(ExecutionView view)
         {
             //TODO resolve base path
             var oldPath = FullPath.Get();
-            var path = Dialogs.PathProvider.GetFolderPath(oldPath);
+            var path = Dialogs.PathProvider.GetAssemblyPath(oldPath);
 
             if (path == null)
             {
@@ -125,7 +107,6 @@ namespace MEFAnalyzers
         {
             drawer.SetProperty("Path", Path.Get());
             drawer.SetProperty("FullPath", FullPath.Get());
-            drawer.SetProperty("Pattern", Pattern.Get());
             drawer.SetProperty("Error", Error.Get());
 
             var slot = drawer.AddSlot();

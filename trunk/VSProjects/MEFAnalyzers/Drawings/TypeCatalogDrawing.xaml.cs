@@ -29,6 +29,7 @@ namespace MEFAnalyzers.Drawings
 
             DrawingTools.SetToolTip(Caption, Definition.DrawedType);
             DrawingTools.SetIcon(CaptionIcon, Icons.Type);
+            InstanceID.Text = Definition.ID;
 
             foreach (var property in Definition.Properties)
             {

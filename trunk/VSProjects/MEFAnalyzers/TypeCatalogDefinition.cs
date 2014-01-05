@@ -14,7 +14,7 @@ using TypeSystem.Runtime;
 
 using Drawing;
 
-using MEFAnalyzers.Drawings.Dialogs;
+using MEFAnalyzers.Dialogs;
 
 namespace MEFAnalyzers
 {
@@ -82,7 +82,7 @@ namespace MEFAnalyzers
         private object addComponentTypeProvider(TypeAssembly callerAssembly, ExecutionView v)
         {
             var components = getComponents(callerAssembly);
-            var dialog = new ComponentTypeDialog(components);
+            var dialog = new ComponentType(components);
 
             if (dialog.ShowDialog() == true)
             {
@@ -90,7 +90,7 @@ namespace MEFAnalyzers
             }
             else
             {
-                v.Abort("Nothing selected");
+                v.Abort("No component has been selected");
                 return null;
             }
         }

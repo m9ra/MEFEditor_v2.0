@@ -30,12 +30,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -58,6 +60,12 @@
     <Compile Include="CompositionEngine\ComponentStorage.cs" />
     <Compile Include="CompositionEngine\CompositionWorker.cs" />
     <Compile Include="CompositionTesterDefinition.cs" />
+    <Compile Include="AssemblyCatalogDefinition.cs" />
+    <Compile Include="Dialogs\VariableName.xaml.cs">
+      <DependentUpon>VariableName.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\PathProvider.cs" />
+    <Compile Include="Dialogs\ValueProvider.cs" />
     <Compile Include="DirectoryCatalogDefinition.cs" />
     <Compile Include="Drawings\BezierSpline.cs" />
     <Compile Include="Drawings\ComponentDrawing.xaml.cs">
@@ -70,8 +78,11 @@
       <DependentUpon>AggregateCatalogDrawing.xaml</DependentUpon>
     </Compile>
     <Compile Include="Drawings\ConnectorTools.cs" />
-    <Compile Include="Drawings\Dialogs\ComponentTypeDialog.xaml.cs">
-      <DependentUpon>ComponentTypeDialog.xaml</DependentUpon>
+    <Compile Include="Drawings\AssemblyCatalogDrawing.xaml.cs">
+      <DependentUpon>AssemblyCatalogDrawing.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ComponentType.xaml.cs">
+      <DependentUpon>ComponentType.xaml</DependentUpon>
     </Compile>
     <Compile Include="Drawings\TypeCatalogDrawing.xaml.cs">
       <DependentUpon>TypeCatalogDrawing.xaml</DependentUpon>
@@ -118,6 +129,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Dialogs\VariableName.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Drawings\ComponentDrawing.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -130,7 +145,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Drawings\Dialogs\ComponentTypeDialog.xaml">
+    <Page Include="Drawings\AssemblyCatalogDrawing.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogs\ComponentType.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

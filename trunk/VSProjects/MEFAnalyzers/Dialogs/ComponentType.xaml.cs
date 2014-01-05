@@ -16,16 +16,18 @@ using System.Windows.Shapes;
 using Analyzing;
 using TypeSystem;
 
-namespace MEFAnalyzers.Drawings.Dialogs
+using MEFAnalyzers.Drawings;
+
+namespace MEFAnalyzers.Dialogs
 {
     /// <summary>
     /// Interaction logic for ComponentTypeDialog.xaml
     /// </summary>
-    public partial class ComponentTypeDialog : Window
+    public partial class ComponentType : Window
     {
         public InstanceInfo SelectedComponent { get; private set; }
 
-        public ComponentTypeDialog(IEnumerable<ComponentInfo> components)
+        public ComponentType(IEnumerable<ComponentInfo> components)
         {
             InitializeComponent();
 

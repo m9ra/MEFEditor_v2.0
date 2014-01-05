@@ -170,7 +170,8 @@ namespace Research
                 new ContentDrawer("System.ComponentModel.Composition.Hosting.CompositionContainer", (item) => new CompositionTesterDrawing(item)),
                 new ContentDrawer("System.ComponentModel.Composition.Hosting.DirectoryCatalog", (item) => new DirectoryCatalogDrawing(item)),
                 new ContentDrawer("System.ComponentModel.Composition.Hosting.AggregateCatalog", (item) => new AggregateCatalogDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.TypeCatalog", (item) => new TypeCatalogDrawing(item))
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.TypeCatalog", (item) => new TypeCatalogDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.AssemblyCatalog", (item) => new AssemblyCatalogDrawing(item))
                 );
 
             _drawingProvider = new DrawingProvider(form.Output, factory);
@@ -210,27 +211,7 @@ namespace Research
             }
 
             _diagramDefinition = pipeline.GetOutput();
-            addGlobalEdits(_diagramDefinition);
         }
-
-        private void addGlobalEdits(DiagramDefinition diagram)
-        {
-            diagram.AddEdit(
-                new EditDefinition("Create SimpleStringExport", (ev) =>
-                {
-                    var v = (ev as EditView).CopyView();
-
-                    var call = new CallEditInfo("SimpleStringExport", Naming.CtorName);
-                    call.ReturnName = "testVar";
-
-                    v.PrependCall(_entryContext.EntryBlock, call);
-                    return EditView.Wrap(v);
-                }, () => true)
-
-                );
-        }
-
-
 
         private void generalDrawer(DrawedInstance instance)
         {

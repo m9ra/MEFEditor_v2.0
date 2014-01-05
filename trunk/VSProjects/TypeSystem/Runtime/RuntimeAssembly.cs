@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 
 using Drawing;
 using Analyzing;
+using Analyzing.Editing;
 
 using TypeSystem.DrawingServices;
 using TypeSystem.Runtime.Building;
@@ -23,6 +24,11 @@ namespace TypeSystem.Runtime
         /// TODO: Correct generic typing for array
         /// </summary>
         public static readonly InstanceInfo ArrayInfo = new InstanceInfo("Array<ItemType,Dimension>");
+
+        /// <summary>
+        /// Static edits that are available without instance context
+        /// </summary>
+        public IEnumerable<Edit> StaticEdits { get { return _staticEdits; } }
 
         /// <summary>
         /// Determine that assembly has been builded
@@ -40,6 +46,8 @@ namespace TypeSystem.Runtime
         private readonly Dictionary<Type, RuntimeTypeDefinition> _directTypes = new Dictionary<Type, RuntimeTypeDefinition>();
 
         private readonly HashSet<string> _directSignatures = new HashSet<string>();
+
+        private readonly List<Edit> _staticEdits = new List<Edit>();
 
         /// <summary>
         /// Registered data types
@@ -213,6 +221,9 @@ namespace TypeSystem.Runtime
         {
             //every definition needs initialization
             definition.Initialize(this, this.TypeServices);
+
+            //add static edits defined by builded definition
+            _staticEdits.AddRange(definition.StaticEdits);
 
             //efery definition needs to register its chain
             registerChain(definition);

@@ -23,6 +23,7 @@ namespace MEFAnalyzers
         public AggregateCatalogDefinition()
         {
             Simulate<AggregateCatalog>();
+            AddCreationEdit("Add AggregateCatalog", Dialogs.VariableName.GetName);
         }
 
         public void _method_ctor()
@@ -42,10 +43,24 @@ namespace MEFAnalyzers
             return Catalogs.Get();
         }
 
+        public Instance[] _get_Parts()
+        {
+            throw new NotImplementedException();
+        }
+
         private CallEditInfo acceptCatalog(ExecutionView view)
         {
-            //TODO check for accepting only ComposableParts
-            return new CallEditInfo(This, "Catalogs.Add", UserInteraction.DraggedInstance);
+            var instance = UserInteraction.DraggedInstance;
+            var isCatalog = Services.IsAssignable(InstanceInfo.Create<ComposablePartCatalog>(), instance.Info);
+
+            if (!isCatalog)
+            {
+                //allow accepting only components
+                view.Abort("CompositionContainer can only accept part catalogs");
+                return null;
+            }
+
+            return new CallEditInfo(This, "Catalogs.Add", instance);
         }
 
         protected override void draw(InstanceDrawer drawer)

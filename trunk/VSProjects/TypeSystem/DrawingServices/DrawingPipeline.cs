@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Drawing;
 using Analyzing;
+using Analyzing.Editing;
 
 using TypeSystem.Runtime;
 
@@ -42,6 +43,12 @@ namespace TypeSystem.DrawingServices
 
             var initialView = new EditView(_result.CreateExecutionView());
             Context = new DiagramDefinition(initialView);
+
+            foreach (var edit in runtime.StaticEdits)
+            {
+                var drawingEdit = CreateEditDefinition(edit);
+                Context.AddEdit(drawingEdit);
+            }
         }
 
         /// <summary>
@@ -121,5 +128,17 @@ namespace TypeSystem.DrawingServices
                 UserInteraction.DraggedInstance = _result.GetInstance(item.ID);
             };
         }
+
+        internal EditDefinition CreateEditDefinition(Edit edit)
+        {
+            return new EditDefinition(edit.Name, (view) => runEdit(edit, view as EditView), () => false);
+        }
+
+
+        private EditViewBase runEdit(Edit edit, EditView view)
+        {
+            return view.Apply(edit.Transformation);
+        }
+
     }
 }

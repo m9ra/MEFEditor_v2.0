@@ -28,6 +28,7 @@ namespace MEFAnalyzers.Drawings
             InitializeComponent();
 
             TypeName.Text = Definition.DrawedType;
+            InstanceID.Text = Definition.ID;
 
             foreach (var property in Definition.Properties)
             {

@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Editing.Transformations
 {
-    class AddCallTransformation : Transformation
+    public class AddCallTransformation : Transformation
     {
         /// <summary>
         /// Call provider that will be asked for call definition        
         /// </summary>
         private readonly CallProvider _provider;
 
-        internal AddCallTransformation(CallProvider provider)
+        public AddCallTransformation(CallProvider provider)
         {
             _provider = provider;
         }
