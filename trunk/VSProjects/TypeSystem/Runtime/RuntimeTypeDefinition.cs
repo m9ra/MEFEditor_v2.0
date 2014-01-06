@@ -18,9 +18,9 @@ using Drawing;
 namespace TypeSystem.Runtime
 {
 
-    public delegate string NameProvider(RuntimeTypeDefinition definition);
+    public delegate string NameProvider(RuntimeTypeDefinition definition, CallContext context);
 
-    public delegate object[] ArgumentsProvider();
+    public delegate object[] ArgumentsProvider(ExecutionView view);
 
     /// <summary>
     /// Base class for runtime type definitions
@@ -69,7 +69,7 @@ namespace TypeSystem.Runtime
 
         internal protected Instance This { get; private set; }
 
-        abstract internal InstanceInfo TypeInfo { get; }
+        abstract public InstanceInfo TypeInfo { get; }
 
         private List<Edit> _staticEdits = new List<Edit>();
 
@@ -283,8 +283,15 @@ namespace TypeSystem.Runtime
         {
             var creationTransformation = new AddCallTransformation((v) =>
             {
-                var name = variableNameProvider(this);
-                var args = argumentsProvider == null ? null : argumentsProvider();
+                var entryContext = v.EntryBlock.Call;
+                var name = variableNameProvider(this, entryContext);
+
+                var args = argumentsProvider == null ? null : argumentsProvider(v);
+
+                if (v.IsAborted)
+                {
+                    return null;
+                }
 
                 if (args == null)
                 {

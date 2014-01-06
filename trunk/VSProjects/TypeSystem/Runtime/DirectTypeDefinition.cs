@@ -50,7 +50,7 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// Type info of current DirectType (or generic definition if TypeDefinition is marked with IsGeneric)
         /// </summary>
-        internal override InstanceInfo TypeInfo
+        public override InstanceInfo TypeInfo
         {
             get
             {

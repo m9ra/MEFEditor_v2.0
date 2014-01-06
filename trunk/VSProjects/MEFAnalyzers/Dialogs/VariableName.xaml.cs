@@ -16,6 +16,8 @@ using System.Windows.Shapes;
 using System.Text.RegularExpressions;
 
 using Analyzing;
+using Analyzing.Execution;
+
 using TypeSystem;
 using TypeSystem.Runtime;
 
@@ -30,6 +32,8 @@ namespace MEFAnalyzers.Dialogs
     {
         public string ResultName { get; private set; }
 
+        private readonly CallContext _context;
+
         static readonly Regex _variableValidator = new Regex(@"^[a-zA-Z]\w*$", RegexOptions.Compiled);
 
         static readonly HashSet<string> _keywords = new HashSet<string>(){
@@ -37,21 +41,40 @@ namespace MEFAnalyzers.Dialogs
             "while", "do", "this", "self", "until", "base", "class", "interface", "public", "protected",
         };
 
-        public VariableName(string initialName)
+        public VariableName(string initialName, CallContext context)
         {
             InitializeComponent();
 
+            _context = context;
             Input.Text = initialName;
+            Input.TextChanged += (e, s) => hasError();
 
             hasError();
         }
 
-        public static string GetName(RuntimeTypeDefinition namedDefinition)
+        public static string GetName(RuntimeTypeDefinition namedDefinition, CallContext creationContext)
         {
-            var dialog = new VariableName("test");
+            var name = getDefaultName(namedDefinition, creationContext);
 
+            var dialog = new VariableName(name, creationContext);
             dialog.ShowDialog();
             return dialog.ResultName;
+        }
+
+        private static string getDefaultName(RuntimeTypeDefinition namedDefinition, CallContext context)
+        {
+            var basename = namedDefinition.TypeInfo.TypeName.Split('.').Last();
+            basename = char.ToLowerInvariant(basename[0]) + basename.Substring(1);
+
+            var name = basename;
+            var variableNumber = 0;
+            while (context.IsVariableDefined(name))
+            {
+                ++variableNumber;
+                name = basename + variableNumber;
+            }
+
+            return name;
         }
 
         private void OK_Click(object sender, RoutedEventArgs e)
@@ -87,11 +110,17 @@ namespace MEFAnalyzers.Dialogs
             {
                 error = "Name has incorrect format";
             }
+            else if (_context.IsVariableDefined(name))
+            {
+                error = "There already exists variable with same name";
+            }
 
             var hasError = error != null;
 
             Error.Text = error;
             Error.Visibility = hasError ? Visibility.Visible : Visibility.Hidden;
+
+            OK.IsEnabled = !hasError;
 
             return hasError;
         }

@@ -55,8 +55,7 @@ namespace MEFAnalyzers
 
             if (!isCatalog)
             {
-                //allow accepting only components
-                view.Abort("CompositionContainer can only accept part catalogs");
+                view.Abort("AggregateCatalog can only accept part catalogs");
                 return null;
             }
 

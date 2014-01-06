@@ -24,6 +24,12 @@ namespace MEFAnalyzers
         public DirectoryCatalogDefinition()
         {
             Simulate<DirectoryCatalog>();
+            AddCreationEdit("Add DirectoryCatolog", Dialogs.VariableName.GetName, (v) =>
+            {
+                return new object[]{
+                    _pathInput(v)
+                };
+            });
         }
 
         #region Type members implementation

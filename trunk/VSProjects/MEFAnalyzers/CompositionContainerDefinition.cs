@@ -163,7 +163,7 @@ namespace MEFAnalyzers
             if (!isCatalog)
             {
                 //allow accepting only components
-                view.Abort("CompositionContainer can only accept part catalogs");
+                view.Abort("CompositionContainer can accept only single part catalog");
                 return null;
             }
 

@@ -32,7 +32,7 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// Create info for defined type by its FullName
         /// </summary>
-        internal override InstanceInfo TypeInfo
+        public override InstanceInfo TypeInfo
         {
             get { return new InstanceInfo(FullName); }
         }

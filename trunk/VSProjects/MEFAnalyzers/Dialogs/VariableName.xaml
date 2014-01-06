@@ -29,8 +29,8 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             
-            <Button Width="100" Grid.Column="0" Height="22" VerticalAlignment="Top" Click="Storno_Click">Storno</Button>
-            <Button Width="100" Grid.Column="2" Click="OK_Click">OK</Button>
+            <Button Width="100" IsCancel="True" Grid.Column="0" Height="22" VerticalAlignment="Top" Click="Storno_Click">Storno</Button>
+            <Button Width="100" IsDefault="True" Name="OK"  Grid.Column="2" Click="OK_Click">OK</Button>
         </Grid>
     </StackPanel>
 </Window>

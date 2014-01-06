@@ -23,6 +23,12 @@ namespace MEFAnalyzers
         public AssemblyCatalogDefinition()
         {
             Simulate<AssemblyCatalog>();
+            AddCreationEdit("Add AssemblyCatolog", Dialogs.VariableName.GetName, (v) =>
+            {
+                return new object[]{
+                    _pathInput(v)
+                };
+            });
         }
 
         #region Type members implementation

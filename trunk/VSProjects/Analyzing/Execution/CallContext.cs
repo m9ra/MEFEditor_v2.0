@@ -90,6 +90,13 @@ namespace Analyzing.Execution
             return value;
         }
 
+
+        public bool IsVariableDefined(string name)
+        {
+            var variable=new VariableName(name);
+            return _variables.ContainsKey(variable);
+        }
+
         internal InstructionBase NextInstrution()
         {
             if (IsCallEnd)
@@ -125,5 +132,6 @@ namespace Analyzing.Execution
             CurrentBlock.NextBlock = newExecutedBlock;
             CurrentBlock = newExecutedBlock;
         }
+
     }
 }
