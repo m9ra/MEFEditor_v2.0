@@ -107,8 +107,8 @@ namespace MEFAnalyzers.CompositionEngine
         {
             var instArray = instances.ToArray();
 
-            var arrayInfo = new InstanceInfo(string.Format("Array<{0},1>", itemType.TypeName));
-            var intParam = ParameterTypeInfo.Create("p", InstanceInfo.Create<int>());
+            var arrayInfo = TypeDescriptor.Create(string.Format("Array<{0},1>", itemType.TypeName));
+            var intParam = ParameterTypeInfo.Create("p", TypeDescriptor.Create<int>());
             var ctorID = Naming.Method(arrayInfo, Naming.CtorName, false, intParam);
             var setID = Naming.Method(arrayInfo, "set_Item", false, intParam, ParameterTypeInfo.Create("p2", itemType));
 

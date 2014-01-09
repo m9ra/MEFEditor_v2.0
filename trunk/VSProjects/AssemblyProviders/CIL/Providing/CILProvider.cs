@@ -91,7 +91,7 @@ namespace AssemblyProviders.CIL.Providing
             addItem(getItem);
 
             var setter = new TypeMethodInfo(declaringType,
-                "set_" + fieldName, new InstanceInfo(typeof(void)),
+                "set_" + fieldName, TypeDescriptor.Void,
                 new ParameterTypeInfo[]{
                     ParameterTypeInfo.Create("value",fieldType)
                     }, isStatic
@@ -117,7 +117,7 @@ namespace AssemblyProviders.CIL.Providing
 
         private InstanceInfo getInfo(TypeReference type)
         {
-            return new InstanceInfo(type.FullName);
+            return TypeDescriptor.Create(type.FullName);
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace AssemblyProviders.CIL.Providing
         /// <param name="type"></param>
         private void ensureStaticInitializer(TypeDefinition type)
         {
-            var info = new InstanceInfo(type.FullName);
+            var info = TypeDescriptor.Create(type.FullName);
 
             var initializerId = TypeServices.GetStaticInitializer(info);
             var implementation = _methods.GetImplementation(initializerId, info);
@@ -137,7 +137,7 @@ namespace AssemblyProviders.CIL.Providing
             {
                 //add default implementation
                 var methodInfo = new TypeMethodInfo(
-                    info, Naming.GetMethodName(initializerId), new InstanceInfo(typeof(void)),
+                    info, Naming.GetMethodName(initializerId), TypeDescriptor.Void,
                     new ParameterTypeInfo[0], false, false, false
                     );
                 var item = new MethodItem(new CILGenerator(null, methodInfo, TypeServices), methodInfo);

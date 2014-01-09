@@ -39,7 +39,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
         private TypeMethodInfo operatorInfo(string methodName)
         {
-            var thisInfo = InstanceInfo.Create<T>();
+            var thisInfo = TypeDescriptor.Create<T>();
 
             var op1 = ParameterTypeInfo.Create("op1", thisInfo);
             var op2 = ParameterTypeInfo.Create("op2", thisInfo);

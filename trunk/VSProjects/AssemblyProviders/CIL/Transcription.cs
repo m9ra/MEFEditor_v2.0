@@ -58,12 +58,12 @@ namespace AssemblyProviders.CIL
         /// <summary>
         /// System object info
         /// </summary>
-        internal static readonly InstanceInfo Object_info = InstanceInfo.Create<object>();
+        internal static readonly InstanceInfo Object_info = TypeDescriptor.Create<object>();
 
         /// <summary>
         /// System void info
         /// </summary>
-        internal static readonly InstanceInfo Void_info = new InstanceInfo(typeof(void));
+        internal static readonly InstanceInfo Void_info = TypeDescriptor.Void;
 
         /// <summary>
         /// Table of instruction transcriptors
@@ -101,7 +101,7 @@ namespace AssemblyProviders.CIL
         /// <summary>
         /// Determine that trancripted method has return value
         /// </summary>
-        private static bool HasReturnValue { get { return !Method.ReturnType.Equals(new InstanceInfo(typeof(void))); } }
+        private static bool HasReturnValue { get { return !Method.ReturnType.Equals(TypeDescriptor.Void); } }
 
         /// <summary>
         /// Data of transcripted instruction
@@ -429,7 +429,7 @@ namespace AssemblyProviders.CIL
                 throw new NotSupportedException("Wrong literal pushing");
 
             var tmp = LocalTmpVar;
-            E.AssignLiteral(tmp, literal, InstanceInfo.Create<T>());
+            E.AssignLiteral(tmp, literal, TypeDescriptor.Create<T>());
             emitPushFrom(tmp);
         }
 

@@ -49,7 +49,7 @@ namespace MEFAnalyzers
 
                 AsyncCall<string>(type, "get_FullName", (fullname) =>
                 {
-                    var info = new InstanceInfo(fullname);
+                    var info = TypeDescriptor.Create(fullname);
                     var part = Context.Machine.CreateInstance(info);
 
                     edits.SetOptional(index + 1);

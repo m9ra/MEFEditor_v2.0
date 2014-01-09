@@ -20,8 +20,8 @@ namespace UnitTesting.RuntimeTypeDefinitions
             FullName = "StringExport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
-            builder.AddExport(InstanceInfo.Create<string>(), "Export");
-            builder.SetImportingCtor(InstanceInfo.Create<string>());
+            builder.AddExport(TypeDescriptor.Create<string>(), "Export");
+            builder.SetImportingCtor(TypeDescriptor.Create<string>());
             ComponentInfo = builder.BuildInfo();
         }
 

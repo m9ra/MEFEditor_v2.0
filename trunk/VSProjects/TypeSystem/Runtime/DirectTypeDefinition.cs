@@ -63,7 +63,7 @@ namespace TypeSystem.Runtime
                     definingType = _directType.GetGenericTypeDefinition();
                 }
 
-                return new InstanceInfo(definingType);
+                return TypeDescriptor.Create(definingType);
             }
         }
 
@@ -125,7 +125,7 @@ namespace TypeSystem.Runtime
                 var directMethod = generateDirectCtor(ctor);
                 var paramsInfo = getParametersInfo(ctor);
 
-                var returnInfo = InstanceInfo.Void;
+                var returnInfo = TypeDescriptor.Void;
                 var info = new TypeMethodInfo(
                     TypeInfo, "#ctor",
                     returnInfo, paramsInfo.ToArray(),

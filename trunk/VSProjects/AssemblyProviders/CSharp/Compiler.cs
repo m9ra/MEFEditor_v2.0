@@ -508,7 +508,7 @@ namespace AssemblyProviders.CSharp
                 currentNode = currentNode.Child;
             }
 
-            var info = new InstanceInfo(resultType.ToString());
+            var info = TypeDescriptor.Create(resultType.ToString());
 
             return new LiteralType(info);
         }
@@ -551,7 +551,7 @@ namespace AssemblyProviders.CSharp
                 typeName = string.Format("Array<{0},{1}>", typeName, callNode.Indexer.Arguments.Length);
             }
 
-            return new InstanceInfo(typeName);
+            return TypeDescriptor.Create(typeName);
         }
 
         private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)

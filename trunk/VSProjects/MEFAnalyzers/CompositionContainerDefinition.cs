@@ -158,7 +158,7 @@ namespace MEFAnalyzers
         private object acceptPartCatalog(EditsProvider e, ExecutionView view)
         {
             var instance = UserInteraction.DraggedInstance;
-            var isCatalog = Services.IsAssignable(InstanceInfo.Create<ComposablePartCatalog>(), instance.Info);
+            var isCatalog = Services.IsAssignable(TypeDescriptor.Create<ComposablePartCatalog>(), instance.Info);
 
             if (!isCatalog)
             {

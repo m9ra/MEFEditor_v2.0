@@ -28,7 +28,7 @@ namespace TypeSystem
         {
             var paramTypes = (from param in method.GetParameters() select ParameterTypeInfo.From(param)).ToArray();
 
-            return Naming.Method(new InstanceInfo(method.DeclaringType), method.Name, method.IsVirtual, paramTypes);
+            return Naming.Method(TypeDescriptor.Create(method.DeclaringType), method.Name, method.IsVirtual, paramTypes);
         }
 
         public static MethodID Method(InstanceInfo declaringType, string methodName, bool needsDynamicResolution, params ParameterTypeInfo[] parameters)

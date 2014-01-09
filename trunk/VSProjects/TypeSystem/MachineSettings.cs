@@ -36,12 +36,12 @@ namespace TypeSystem
                 return RuntimeAssembly.ArrayInfo;
             }
 
-            return new InstanceInfo(literalType);
+            return TypeDescriptor.Create(literalType);
         }
 
         public InstanceInfo GetSharedInstanceInfo(string typeFullname)
         {
-            return new InstanceInfo(typeFullname);
+            return TypeDescriptor.Create(typeFullname);
         }
 
         public bool IsTrue(Instance condition)

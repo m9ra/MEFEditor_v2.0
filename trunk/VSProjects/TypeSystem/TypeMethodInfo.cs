@@ -53,8 +53,8 @@ namespace TypeSystem
         {
             var paramsInfo = getParametersInfo(method);
 
-            var declaringInfo = new InstanceInfo(method.DeclaringType);
-            var returnInfo = new InstanceInfo(method.ReturnType);
+            var declaringInfo = TypeDescriptor.Create(method.DeclaringType);
+            var returnInfo = TypeDescriptor.Create(method.ReturnType);
 
             var isAbstract = method.IsAbstract;
             return new TypeMethodInfo(
@@ -74,7 +74,7 @@ namespace TypeSystem
             foreach (var param in method.GetParameters())
             {
                 //TODO resolve generic arguments
-                var paramType = new InstanceInfo(param.ParameterType);
+                var paramType = TypeDescriptor.Create(param.ParameterType);
                 var paramInfo = ParameterTypeInfo.From(param, paramType);
                 paramsInfo.Add(paramInfo);
             }
@@ -115,7 +115,7 @@ namespace TypeSystem
 
                 name = name.Replace(pair.Key, pair.Value);
             }
-            return new InstanceInfo(name);
+            return TypeDescriptor.Create(name);
         }
     }
 }

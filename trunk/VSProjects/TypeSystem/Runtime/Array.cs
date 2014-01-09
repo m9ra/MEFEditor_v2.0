@@ -21,9 +21,9 @@ namespace TypeSystem.Runtime
         {
             get
             {
-                var index = ParameterTypeInfo.Create("index", InstanceInfo.Create<int>());
-                var item = ParameterTypeInfo.Create("item", InstanceInfo.Create<ItemType>());
-                return Naming.Method(new InstanceInfo("Array<" + item.Type.TypeName + ",1>"), "set_Item", false, index, item);
+                var index = ParameterTypeInfo.Create("index", TypeDescriptor.Create<int>());
+                var item = ParameterTypeInfo.Create("item", TypeDescriptor.Create<ItemType>());
+                return Naming.Method(TypeDescriptor.Create("Array<" + item.Type.TypeName + ",1>"), "set_Item", false, index, item);
             }
         }
 

@@ -207,7 +207,7 @@ namespace TypeSystem.Runtime.Building
                 if (!typeof(Instance).IsAssignableFrom(returnType))
                 {
                     //Instance needs to be converted to direct instance
-                    var instanceInfo = Expression.Constant(new InstanceInfo(returnType));
+                    var instanceInfo = Expression.Constant(TypeDescriptor.Create(returnType));
                     returnValue = Expression.Convert(returnValue, typeof(object));
                     returnValue = Expression.Call(machine, typeof(Machine).GetMethod("CreateDirectInstance"), returnValue, instanceInfo);
                 }

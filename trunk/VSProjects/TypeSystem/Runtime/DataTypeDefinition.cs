@@ -34,7 +34,7 @@ namespace TypeSystem.Runtime
         /// </summary>
         public override InstanceInfo TypeInfo
         {
-            get { return new InstanceInfo(FullName); }
+            get { return TypeDescriptor.Create(FullName); }
         }
 
         /// <summary>

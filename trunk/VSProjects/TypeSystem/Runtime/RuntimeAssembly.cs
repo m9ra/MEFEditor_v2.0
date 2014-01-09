@@ -23,7 +23,7 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// TODO: Correct generic typing for array
         /// </summary>
-        public static readonly InstanceInfo ArrayInfo = new InstanceInfo("Array<ItemType,Dimension>");
+        public static readonly InstanceInfo ArrayInfo = TypeDescriptor.Create("Array<ItemType,Dimension>");
 
         /// <summary>
         /// Static edits that are available without instance context
@@ -67,7 +67,7 @@ namespace TypeSystem.Runtime
                 {"_set_",_createProperty},
             };
 
-            var chain = new InheritanceChain(InstanceInfo.Create<object>(), new InheritanceChain[0]);
+            var chain = new InheritanceChain(TypeDescriptor.Create<object>(), new InheritanceChain[0]);
             _inheritanceChains.Add(chain.Path.Signature, chain);
 
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
@@ -148,7 +148,7 @@ namespace TypeSystem.Runtime
                     subChains.Add(subChain);
             }
 
-            var info = new InstanceInfo(type);
+            var info = TypeDescriptor.Create(type);
             var createdChain = new InheritanceChain(info, subChains);
 
             _inheritanceChains.Add(createdChain.Path.Signature, createdChain);

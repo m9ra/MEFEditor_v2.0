@@ -39,7 +39,7 @@ namespace AssemblyProviders.CSharp.Compiling
             {
                 //not implicitly typed variable, we can determine type
                 IsImplicitlyTyped = false;
-                Info = new InstanceInfo(typeName);
+                Info = TypeDescriptor.Create(typeName);
             }
         }
 

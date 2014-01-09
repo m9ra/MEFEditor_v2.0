@@ -78,7 +78,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             var sourceMethod = FindMethod(assemblyPath, methodPath);
             var assembly = SettingsProvider.CreateTestingAssembly();
 
-            var description = new MethodDescription(new InstanceInfo(sourceMethod.ReturnType.FullName), false);
+            var description = new MethodDescription(TypeDescriptor.Create(sourceMethod.ReturnType.FullName), false);
             assembly.AddMethod(Method.EntryMethodPath, sourceMethod, description);
 
             addStandardMethods(assembly);
@@ -119,7 +119,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             assembly.Runtime.BuildAssembly();
 
             var machine = SettingsProvider.CreateMachine(assembly.Settings);
-            var entryObj = machine.CreateDirectInstance("EntryObject", new InstanceInfo(typeof(string)));
+            var entryObj = machine.CreateDirectInstance("EntryObject", TypeDescriptor.Create(typeof(string)));
             var result = machine.Run(entryLoader, entryObj);
 
             foreach (var action in assembly.UserActions)

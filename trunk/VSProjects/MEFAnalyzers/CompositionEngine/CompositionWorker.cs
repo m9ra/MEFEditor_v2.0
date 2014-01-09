@@ -709,7 +709,7 @@ namespace MEFAnalyzers.CompositionEngine
 
             var itemType = imp.ImportTypeInfo.ItemType;
             var collectionTypeName = string.Format("System.Collections.Generic.ICollection<{0}>", itemType.TypeName);
-            var collectionType = new InstanceInfo(collectionTypeName);
+            var collectionType = TypeDescriptor.Create(collectionTypeName);
             var collectionAddMethod = _context.GetMethod(collectionType, "Add").MethodID;
 
             addMethod = _context.TryGetImplementation(imp.ImportTypeInfo.ImportType, collectionAddMethod);

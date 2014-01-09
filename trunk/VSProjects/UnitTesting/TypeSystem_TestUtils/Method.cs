@@ -11,19 +11,19 @@ using TypeSystem;
 namespace UnitTesting.TypeSystem_TestUtils
 {
     public static class Method
-    {        
+    {
 
-        public readonly static ParameterTypeInfo StringParam1 = ParameterTypeInfo.Create("p", InstanceInfo.Create<string>());
+        public readonly static ParameterTypeInfo StringParam1 = ParameterTypeInfo.Create("p", TypeDescriptor.Create<string>());
 
-        public readonly static ParameterTypeInfo IntParam1 = ParameterTypeInfo.Create("n", InstanceInfo.Create<int>());
+        public readonly static ParameterTypeInfo IntParam1 = ParameterTypeInfo.Create("n", TypeDescriptor.Create<int>());
 
-        public readonly static ParameterTypeInfo StringICollectionParam1 = ParameterTypeInfo.Create("c", InstanceInfo.Create<InstanceInfo>());
-            
-        
+        public readonly static ParameterTypeInfo StringICollectionParam1 = ParameterTypeInfo.Create("c", TypeDescriptor.Create<InstanceInfo>());
 
-        public readonly static MethodDescription Void_NoParam = new MethodDescription(InstanceInfo.Void, false);
 
-        public readonly static MethodDescription Void_StringParam = new MethodDescription(InstanceInfo.Void, false, StringParam1);
+
+        public readonly static MethodDescription Void_NoParam = new MethodDescription(TypeDescriptor.Void, false);
+
+        public readonly static MethodDescription Void_StringParam = new MethodDescription(TypeDescriptor.Void, false, StringParam1);
 
         public readonly static MethodDescription Int_IntParam = MethodDescription.CreateInstance<int>(IntParam1);
 

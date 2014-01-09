@@ -28,7 +28,7 @@ namespace MEFAnalyzers
 
         public void _method_ctor()
         {
-            var catalogsInstance = Context.Machine.CreateInstance(new InstanceInfo(ComposablePartCatalogCollectionDefinition.TypeFullname));
+            var catalogsInstance = Context.Machine.CreateInstance(TypeDescriptor.Create(ComposablePartCatalogCollectionDefinition.TypeFullname));
             Catalogs.Set(catalogsInstance);
 
             AddCallEdit(UserInteraction.AcceptName, acceptCatalog);
@@ -51,7 +51,7 @@ namespace MEFAnalyzers
         private CallEditInfo acceptCatalog(ExecutionView view)
         {
             var instance = UserInteraction.DraggedInstance;
-            var isCatalog = Services.IsAssignable(InstanceInfo.Create<ComposablePartCatalog>(), instance.Info);
+            var isCatalog = Services.IsAssignable(TypeDescriptor.Create<ComposablePartCatalog>(), instance.Info);
 
             if (!isCatalog)
             {

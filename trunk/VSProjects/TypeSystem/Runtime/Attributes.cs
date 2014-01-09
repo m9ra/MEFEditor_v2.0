@@ -15,12 +15,12 @@ namespace TypeSystem.Runtime
 
         public ReturnTypeAttribute(Type returnType)
         {
-            ReturnInfo = new InstanceInfo(returnType);
+            ReturnInfo = TypeDescriptor.Create(returnType);
         }
 
         public ReturnTypeAttribute(string returnTypeFullname)
         {
-            ReturnInfo = new InstanceInfo(returnTypeFullname);
+            ReturnInfo = TypeDescriptor.Create(returnTypeFullname);
         }
     }
 }

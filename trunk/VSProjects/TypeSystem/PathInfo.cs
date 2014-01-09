@@ -25,7 +25,7 @@ namespace TypeSystem
         }
 
         public PathInfo(Type type)
-            : this(new InstanceInfo(type).TypeName)
+            : this(TypeDescriptor.Create(type).TypeName)
         {
         }
 

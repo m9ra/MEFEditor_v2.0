@@ -131,7 +131,7 @@ namespace TypeSystem.Runtime
             if (typeof(T).IsArray)
             {
                 var array = new Array<InstanceWrap>((System.Collections.IEnumerable)data, context);
-                return machine.CreateDirectInstance(array, InstanceInfo.Create<T>());
+                return machine.CreateDirectInstance(array, TypeDescriptor.Create<T>());
             }
             else
             {
@@ -187,7 +187,7 @@ namespace TypeSystem.Runtime
         internal virtual InstanceInfo GetInstanceInfo(Type type)
         {
             //TODO consider generic params
-            return new InstanceInfo(type);
+            return TypeDescriptor.Create(type);
         }
 
         protected TypeAssembly GetCallerAssembly()
@@ -250,7 +250,7 @@ namespace TypeSystem.Runtime
                 if (callback != null)
                 {
                     var callReturn = e.GetTemporaryVariable();
-                    e.AssignReturnValue(callReturn, InstanceInfo.Create<object>());
+                    e.AssignReturnValue(callReturn, TypeDescriptor.Create<object>());
 
                     e.DirectInvoke((context) =>
                     {

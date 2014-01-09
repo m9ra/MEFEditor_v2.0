@@ -109,7 +109,7 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             _literal = literal;
             _literalNode = literalNode;
-            _literalInfo = new InstanceInfo(_literal.GetType());
+            _literalInfo = TypeDescriptor.Create(_literal.GetType());
         }
 
         public override void AssignInto(LValueProvider lValue)

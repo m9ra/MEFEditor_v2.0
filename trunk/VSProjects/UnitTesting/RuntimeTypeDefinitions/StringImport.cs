@@ -20,7 +20,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             FullName = "StringImport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
-            builder.AddImport(InstanceInfo.Create<string>(), "Import");
+            builder.AddImport(TypeDescriptor.Create<string>(), "Import");
             builder.SetImportingCtor();
 
             ComponentInfo = builder.BuildInfo();

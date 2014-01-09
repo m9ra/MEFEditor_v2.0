@@ -33,7 +33,7 @@ namespace TypeSystem.Runtime.Building
             var implementedTypes = new List<InstanceInfo>();
             foreach (var implemented in ImplementTypes)
             {
-                implementedTypes.Add(new InstanceInfo(implemented));
+                implementedTypes.Add(TypeDescriptor.Create(implemented));
             }
             return implementedTypes;
         }

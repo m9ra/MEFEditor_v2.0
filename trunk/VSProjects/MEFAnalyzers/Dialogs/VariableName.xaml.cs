@@ -30,18 +30,39 @@ namespace MEFAnalyzers.Dialogs
     /// </summary>
     public partial class VariableName : Window
     {
+        /// <summary>
+        /// Name of variable that has been selected by user. Name is validated according
+        /// to basic naming rules, context duplicity is checked.
+        /// 
+        /// If no name is selected null is present.
+        /// </summary>
         public string ResultName { get; private set; }
 
+        /// <summary>
+        /// Context of call, where new variable name will be used. Is used for 
+        /// duplicity checking.
+        /// </summary>
         private readonly CallContext _context;
 
+        /// <summary>
+        /// Validator for variable form
+        /// </summary>
         static readonly Regex _variableValidator = new Regex(@"^[a-zA-Z]\w*$", RegexOptions.Compiled);
 
+        /// <summary>
+        /// Keywords that cannot be used as variable names
+        /// </summary>
         static readonly HashSet<string> _keywords = new HashSet<string>(){
             //TODO extend this list
             "while", "do", "this", "self", "until", "base", "class", "interface", "public", "protected",
         };
 
-        public VariableName(string initialName, CallContext context)
+        /// <summary>
+        /// Create dialog for selecting
+        /// </summary>
+        /// <param name="initialName">Initial hint that will be offered to user</param>
+        /// <param name="context">Context of call, where new variable name will be used. Is used for duplicity checking</param>
+        private VariableName(string initialName, CallContext context)
         {
             InitializeComponent();
 
@@ -52,18 +73,32 @@ namespace MEFAnalyzers.Dialogs
             hasError();
         }
 
-        public static string GetName(RuntimeTypeDefinition namedDefinition, CallContext creationContext)
+        /// <summary>
+        /// Provide variable name dialog for creation edit of given definition
+        /// </summary>
+        /// <param name="definition">Definition which creation edit is active</param>
+        /// <param name="creationContext">Context of call, where new variable name will be used. Is used for duplicity checking</param>
+        /// <returns>Name of variable that has been selected by user. Name is validated according
+        /// to basic naming rules, context duplicity is checked.
+        /// If no name is selected null is returned.</returns>
+        public static string GetName(RuntimeTypeDefinition definition, CallContext creationContext)
         {
-            var name = getDefaultName(namedDefinition, creationContext);
+            var name = getDefaultName(definition, creationContext);
 
             var dialog = new VariableName(name, creationContext);
             dialog.ShowDialog();
             return dialog.ResultName;
         }
 
-        private static string getDefaultName(RuntimeTypeDefinition namedDefinition, CallContext context)
+        /// <summary>
+        /// Create default name hint for given definition
+        /// </summary>
+        /// <param name="definition">Definition which name is created</param>
+        /// <param name="context">Context used for uniqueness guarancy</param>
+        /// <returns>Created name</returns>
+        private static string getDefaultName(RuntimeTypeDefinition definition, CallContext context)
         {
-            var basename = namedDefinition.TypeInfo.TypeName.Split('.').Last();
+            var basename = definition.TypeInfo.TypeName.Split('.').Last();
             basename = char.ToLowerInvariant(basename[0]) + basename.Substring(1);
 
             var name = basename;
@@ -77,21 +112,10 @@ namespace MEFAnalyzers.Dialogs
             return name;
         }
 
-        private void OK_Click(object sender, RoutedEventArgs e)
-        {
-            if (!hasError())
-            {
-                ResultName = Input.Text;
-                DialogResult = true;
-            }
-        }
-
-        private void Storno_Click(object sender, RoutedEventArgs e)
-        {
-            ResultName = null;
-            DialogResult = true;
-        }
-
+        /// <summary>
+        /// Determine that current name has validation error
+        /// </summary>
+        /// <returns>True if there is validation error in variable name</returns>
         private bool hasError()
         {
             //error that will be displayed
@@ -125,6 +149,19 @@ namespace MEFAnalyzers.Dialogs
             return hasError;
         }
 
+        private void OK_Click(object sender, RoutedEventArgs e)
+        {
+            if (!hasError())
+            {
+                ResultName = Input.Text;
+                DialogResult = true;
+            }
+        }
 
+        private void Storno_Click(object sender, RoutedEventArgs e)
+        {
+            ResultName = null;
+            DialogResult = true;
+        }
     }
 }

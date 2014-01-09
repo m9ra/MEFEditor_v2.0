@@ -19,7 +19,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             FullName = "ICollectionStringImport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
-            builder.AddManyImport(InstanceInfo.Create<List<string>>(), InstanceInfo.Create<string>(), "Import");
+            builder.AddManyImport(TypeDescriptor.Create<List<string>>(), TypeDescriptor.Create<string>(), "Import");
             ComponentInfo = builder.BuildInfo();
         }
 

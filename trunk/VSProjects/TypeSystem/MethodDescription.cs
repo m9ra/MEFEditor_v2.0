@@ -36,7 +36,7 @@ namespace TypeSystem
             var methodName = nameFrom(methodPath);
             var typeName = typeFrom(methodPath);
 
-            var declaringType = new InstanceInfo(typeName);
+            var declaringType = TypeDescriptor.Create(typeName);
 
             var isGeneric = methodPath.Contains('<');
 
@@ -59,7 +59,7 @@ namespace TypeSystem
 
         public static MethodDescription Create<T>(bool isStatic, params ParameterTypeInfo[] parameters)
         {
-            return new MethodDescription(InstanceInfo.Create<T>(), isStatic, parameters);
+            return new MethodDescription(TypeDescriptor.Create<T>(), isStatic, parameters);
         }
 
         public static MethodDescription CreateInstance<T>(params ParameterTypeInfo[] parameters)
@@ -77,20 +77,20 @@ namespace TypeSystem
             var implemented = new List<InstanceInfo>();
             foreach (var type in types)
             {
-                implemented.Add(new InstanceInfo(type));
+                implemented.Add(TypeDescriptor.Create(type));
             }
             return new MethodDescription(ReturnType, IsStatic, implemented, Parameters);
         }
 
         public MethodDescription WithReturn(Type type)
         {
-            var returnInfo = new InstanceInfo(type);
+            var returnInfo = TypeDescriptor.Create(type);
             return WithReturn(returnInfo);
         }
 
         public MethodDescription WithReturn(string returnTypeName)
         {
-            var returnInfo = new InstanceInfo(returnTypeName);
+            var returnInfo = TypeDescriptor.Create(returnTypeName);
             return WithReturn(returnInfo);
         }
 

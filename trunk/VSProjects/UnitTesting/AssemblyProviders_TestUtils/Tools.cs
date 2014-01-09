@@ -25,6 +25,14 @@ namespace UnitTesting.AssemblyProviders_TestUtils
             CollectionAssert.AreEquivalent(path.GenericArgs, genericArgs, "Generic arguments parsing");
         }
 
+        public static void AssertFullname(this Type type, string fullname)
+        {
+            var descriptor = TypeDescriptor.Create(type);
+
+            var typeName = descriptor.TypeName;
+            Assert.AreEqual(fullname,typeName,"Type name parsing mismatched");
+        }
+
         public static void AssertTokens(this string source, params string[] tokens)
         {
             var lexer = new Lexer(new Source(source, Method.EntryInfo));
@@ -37,7 +45,7 @@ namespace UnitTesting.AssemblyProviders_TestUtils
 
         public static void AssertName<T>(string typeName)
         {
-            var info = Analyzing.InstanceInfo.Create<T>();
+            var info = TypeDescriptor.Create<T>();
 
             Assert.AreEqual(typeName, info.TypeName);
         }

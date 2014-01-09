@@ -10,8 +10,6 @@ namespace Analyzing
     {
         public readonly string TypeName;
 
-        public static readonly InstanceInfo Void = new InstanceInfo(typeof(void));
-
         public InstanceInfo(string typeName)
         {
             if (typeName == null || typeName == "")
@@ -19,94 +17,6 @@ namespace Analyzing
                 throw new NotSupportedException("Unsupported typename: " + typeName);
             }
             TypeName = typeName;
-        }
-
-        public InstanceInfo(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                TypeName = GenericTypeName(type);
-            }
-            else if (type.IsArray)
-            {
-                //TODO determine dimensions
-                //TODO array nesting and generics
-                TypeName = string.Format("Array<{0},1>", GenericTypeName(type.GetElementType()));
-            }
-            else
-            {
-                TypeName = type.FullName;
-            }
-        }
-
-        public static string GenericTypeName(Type genericType, Queue<Type> genericArguments = null)
-        {
-            if (genericArguments == null)
-            {
-                //initialize generic arguments used for generic parameters substitution
-                genericArguments = new Queue<Type>(genericType.GetGenericArguments());
-            }
-
-            if (genericType.IsGenericParameter)
-            {
-                return genericType.Name;
-            }
-
-            var result = typeNamePrefix(genericType, genericArguments);
-
-            var name = genericType.Name;
-            if (!genericType.IsGenericType)
-            {
-                //there are no generic arguments
-                result.Append(name);
-            }
-            else
-            {
-                //repair generic name
-                var nameEnding = name.IndexOf('`');
-                result.Append(name.Substring(0, nameEnding));
-
-                //handle generic arguments
-                result.Append('<');
-                foreach (var genericArg in genericArguments)
-                {
-                    result.Append(GenericTypeName(genericArg));
-                    result.Append(',');
-                }
-                //overwrite last coma
-                result[result.Length - 1] = '>';
-            }
-
-            return result.ToString();
-        }
-
-        private static StringBuilder typeNamePrefix(Type genericType, Queue<Type> genericArguments)
-        {
-            var result = new StringBuilder();
-            if (genericType.DeclaringType != null)
-            {
-                //there is an outer declaring type - it preceeds it's name in notation
-                var declaringType = genericType.DeclaringType;
-                var declaringArgumentsCount = declaringType.GetGenericArguments().Length;
-                var substitutedArguments = genericArguments.Take(declaringArgumentsCount);
-                var substitutingQueue = new Queue<Type>(substitutedArguments);
-
-                //prefix with declaring type name
-                result.Append(GenericTypeName(declaringType, substitutingQueue));
-                result.Append('.');
-
-                //remove substituted arguments
-                for (int i = 0; i < declaringArgumentsCount; ++i) genericArguments.Dequeue();
-            }
-
-            result.Append(genericType.Namespace);
-            result.Append('.');
-            return result;
-        }
-
-        public static InstanceInfo Create<Type>()
-        {
-            return new InstanceInfo(typeof(Type));
         }
 
         public override string ToString()

@@ -43,6 +43,64 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void TypeDescriptor_SimpleType()
+        {
+            typeof(string)
+            .AssertFullname("System.String");
+        }
+
+        [TestMethod]
+        public void TypeDescriptor_GenericType()
+        {
+            typeof(List<string>)
+            .AssertFullname("System.Collections.Generic.List<System.String>");
+        }
+
+        [TestMethod]
+        public void TypeDescriptor_GenericDefinition()
+        {
+            typeof(Dictionary<,>)
+            .AssertFullname("System.Collections.Generic.Dictionary<@0,@1>");
+        }
+
+        [TestMethod]
+        public void TypeDescriptor_GenericNamespaceDefinition()
+        {
+            typeof(NamespaceClass<>.InnerClass<>)
+            .AssertFullname("NamespaceClass<@0>.InnerClass<@1>");
+        }
+
+        [TestMethod]
+        public void TypeDescriptor_GenericNamespaceType()
+        {
+            typeof(NamespaceClass<string>.InnerClass<int>)
+            .AssertFullname("NamespaceClass<System.String>.InnerClass<System.Int32>");
+        }
+
+
+        [TestMethod]
+        public void TypeDescriptor_LongGenericNamespaceType()
+        {
+            typeof(NamespaceClass<string>.NamespaceClass2<object>.InnerClass<int>)
+            .AssertFullname("NamespaceClass<System.String>.NamespaceClass2<System.Object>.InnerClass<System.Int32>");
+        }
+
+
+        [TestMethod]
+        public void TypeDescriptor_ArrayType()
+        {
+            typeof(NamespaceClass<string>.InnerClass<int>[])
+            .AssertFullname("Array<NamespaceClass<System.String>.InnerClass<System.Int32>,1>");
+        }
+
+        [TestMethod]
+        public void TypeDescriptor_NestedGenericType()
+        {
+            typeof(List<NamespaceClass<string>.InnerClass<int>>)
+            .AssertFullname("System.Collections.Generic.List<NamespaceClass<System.String>.InnerClass<System.Int32>>");
+        }
+
+        [TestMethod]
         public void PathInfo_NoArg()
         {
             "Test.Call"
@@ -269,7 +327,7 @@ namespace UnitTesting
             {
                 var thisObj = c.CurrentArguments[0];
                 var value = c.GetField(thisObj, "value") as string;
-                var result = c.Machine.CreateDirectInstance("Test2_" + value, InstanceInfo.Create<string>());
+                var result = c.Machine.CreateDirectInstance("Test2_" + value, TypeDescriptor.Create<string>());
                 c.Return(result);
             }, Method.String_NoParam)
 

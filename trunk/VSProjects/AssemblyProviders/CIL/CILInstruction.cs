@@ -102,8 +102,8 @@ namespace AssemblyProviders.CIL
                 return null;
 
             var name = "get_" + field.Name;
-            var declaringType = new InstanceInfo(field.DeclaringType);
-            var fieldType = new InstanceInfo(field.FieldType);
+            var declaringType = TypeDescriptor.Create(field.DeclaringType);
+            var fieldType = TypeDescriptor.Create(field.FieldType);
 
             //TODO resolve if it is static
             return new TypeMethodInfo(declaringType,
@@ -117,12 +117,12 @@ namespace AssemblyProviders.CIL
                 return null;
 
             var name = "set_" + field.Name;
-            var declaringType = new InstanceInfo(field.DeclaringType);
-            var fieldType = new InstanceInfo(field.FieldType);
+            var declaringType = TypeDescriptor.Create(field.DeclaringType);
+            var fieldType = TypeDescriptor.Create(field.FieldType);
 
             //TODO resolve if it is static
             return new TypeMethodInfo(declaringType,
-                name, new InstanceInfo(typeof(void)), new ParameterTypeInfo[]{
+                name, TypeDescriptor.Void, new ParameterTypeInfo[]{
                     ParameterTypeInfo.Create("value",fieldType)
                 },
                 true);
@@ -180,7 +180,7 @@ namespace AssemblyProviders.CIL
 
             //TODO resolve if it is static
             return new TypeMethodInfo(declaringType,
-                name, new InstanceInfo(typeof(void)), new ParameterTypeInfo[]{
+                name, TypeDescriptor.Void, new ParameterTypeInfo[]{
                     ParameterTypeInfo.Create("value",fieldType)
                 },
                 true);
@@ -196,7 +196,7 @@ namespace AssemblyProviders.CIL
 
         internal static InstanceInfo GetInfo(TypeReference type)
         {
-            return new InstanceInfo(type.FullName);
+            return TypeDescriptor.Create(type.FullName);
         }
 
         internal static TypeMethodInfo CreateMethodInfo(MethodReference method)

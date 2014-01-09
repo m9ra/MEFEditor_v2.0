@@ -45,7 +45,7 @@ namespace TypeSystem
 
             if (paramType == null)
             {
-                paramType = new InstanceInfo(param.ParameterType);
+                paramType = TypeDescriptor.Create(param.ParameterType);
             }
 
             var hasParam = param.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0;
