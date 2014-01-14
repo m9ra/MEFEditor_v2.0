@@ -21,7 +21,18 @@ namespace TypeSystem.Runtime
     /// Represents definitions of types that are stored directly in DirectInstance    
     /// </summary>
     /// <typeparam name="DirectType">DirectType represented by thid definition</typeparam>
-    public class DirectTypeDefinition<DirectType> : RuntimeTypeDefinition
+    public class DirectTypeDefinition<DirectType> : DirectTypeDefinition
+    {
+        public DirectTypeDefinition()
+            : base(typeof(DirectType))
+        {
+        }
+    }
+
+    /// <summary>
+    /// Represents definitions of types that are stored directly in DirectInstance    
+    /// </summary>
+    public class DirectTypeDefinition : RuntimeTypeDefinition
     {
         /// <summary>
         /// Method generators added explicitly to direct type
@@ -32,35 +43,36 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// Type representation of direct type
         /// </summary>
-        private readonly Type _directType = typeof(DirectType);
+        internal readonly Type DirectType;
 
-        public InstanceInfo ForcedInfo;
+        public TypeDescriptor ForcedInfo;
 
 
-        public DirectTypeDefinition()
+        public DirectTypeDefinition(Type directType)
         {
-            IsInterface = _directType.IsInterface;
+            DirectType = directType;
+            IsInterface = DirectType.IsInterface;
         }
 
         internal override IEnumerable<InheritanceChain> GetSubChains()
         {
-            return GetSubChains(_directType);
+            return GetSubChains(DirectType);
         }
 
         /// <summary>
         /// Type info of current DirectType (or generic definition if TypeDefinition is marked with IsGeneric)
         /// </summary>
-        public override InstanceInfo TypeInfo
+        public override TypeDescriptor TypeInfo
         {
             get
             {
                 if (ForcedInfo != null)
                     return ForcedInfo;
 
-                var definingType = _directType;
+                var definingType = DirectType;
                 if (IsGeneric)
                 {
-                    definingType = _directType.GetGenericTypeDefinition();
+                    definingType = DirectType.GetGenericTypeDefinition();
                 }
 
                 return TypeDescriptor.Create(definingType);
@@ -85,7 +97,7 @@ namespace TypeSystem.Runtime
         internal override IEnumerable<RuntimeMethodGenerator> GetMethods()
         {
             //TODO resolve method replacing
-            return generateDirectMethods(_directType).Union(_explicitGenerators);
+            return generateDirectMethods(DirectType).Union(_explicitGenerators);
         }
 
         #region Direct methods generation
@@ -117,7 +129,9 @@ namespace TypeSystem.Runtime
         /// <returns>Generated constructor methods</returns>
         private IEnumerable<RuntimeMethodGenerator> generateConstructorMethods(Type type)
         {
-            foreach (var ctor in type.GetConstructors())
+            var wrappedType = getWrappedType(type);
+
+            foreach (var ctor in wrappedType.GetConstructors())
             {
                 if (!areParamsInDirectCover(ctor))
                     continue;
@@ -141,17 +155,22 @@ namespace TypeSystem.Runtime
         /// <returns>Generated methods</returns>
         private IEnumerable<RuntimeMethodGenerator> generatePublicMethods(Type type)
         {
-            var implementedTypesMap = createImplementedTypesMap(type);
+            var wrappedType = getWrappedType(type);
+            var implementedTypesMap = createImplementedTypesMap(wrappedType);
 
-            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            var wrappedMethods = getPublicMethods(wrappedType);
+
+            for (var i = 0; i < wrappedMethods.Length; ++i)
             {
-                if (!isInDirectCover(method))
+                var wrappedMethod = wrappedMethods[i];
+
+                if (!isInDirectCover(wrappedMethod))
                     continue;
 
-                var implementedTypes = implementedTypesMap.Get(method);
+                var implementedTypes = implementedTypesMap.Get(wrappedMethod);
 
-                var builder = new MethodBuilder(this, method.Name);
-                if (method.IsStatic)
+                var builder = new MethodBuilder(this, wrappedMethod.Name);
+                if (wrappedMethod.IsStatic)
                 {
                     builder.ThisObjectExpression = null;
                 }
@@ -161,8 +180,28 @@ namespace TypeSystem.Runtime
                 }
 
                 builder.ImplementedTypes.UnionWith(implementedTypes);
-                builder.AdapterFor(method);
+                builder.AdapterFor(wrappedMethod);
                 yield return builder.Build();
+            }
+        }
+
+        private static MethodInfo[] getPublicMethods(Type type)
+        {
+            return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        }
+
+        private static Type getWrappedType(Type type)
+        {
+            if (type.IsGenericTypeDefinition)
+            {
+                var argumentsCount = type.GetGenericArguments().Length;
+                var wrappedArguments = Enumerable.Repeat(typeof(InstanceWrap), argumentsCount).ToArray();
+
+                return type.MakeGenericType(wrappedArguments);
+            }
+            else
+            {
+                return type;
             }
         }
 

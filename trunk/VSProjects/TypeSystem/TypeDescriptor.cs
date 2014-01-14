@@ -25,6 +25,17 @@ namespace TypeSystem
         /// </summary>
         private readonly Dictionary<string, TypeDescriptor> _typeArguments;
 
+        /// <summary>
+        /// Returns enumeration of arguments ordered as in type
+        /// </summary>
+        public IEnumerable<string> Arguments
+        {
+            get
+            {
+                //TODO make sure that correct ordering is returned
+                return _typeArguments.Keys;
+            }
+        }
 
         internal TypeDescriptor(string typeName, Dictionary<string, TypeDescriptor> typeArguments = null)
             : base(typeName)
@@ -40,7 +51,7 @@ namespace TypeSystem
             }
         }
 
-        #region Factory methods for type descriptor creation 
+        #region Factory methods for type descriptor creation
 
         /// <summary>
         /// Creates type descriptor from given name

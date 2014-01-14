@@ -95,10 +95,20 @@ namespace TypeSystem
                 translations.Add(genericParam, genericArg);
             }
 
+            var translatedParams = new List<ParameterTypeInfo>();
+            foreach (var parameter in Parameters)
+            {
+                var translatedType = translate(parameter.Type, translations);
+                var translatedParam = parameter.MakeGeneric(translatedType);
+                translatedParams.Add(translatedParam);
+            }
+
+            var translatedName=searchPath.Name.Split('.').Last();
+
             //TODO translate parameters, return type,..
             var generic = new TypeMethodInfo(
-                translate(DeclaringType, translations), searchPath.Name.Split('.').Last(),
-                translate(ReturnType, translations), Parameters,
+                translate(DeclaringType, translations),translatedName ,
+                translate(ReturnType, translations), translatedParams.ToArray(),
                 IsStatic, false, IsAbstract);
 
             return generic;

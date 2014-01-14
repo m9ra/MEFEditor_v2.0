@@ -59,37 +59,30 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
         {
             foreach (var directType in directTypes)
             {
-                AddDirectType(runtime, typeof(DirectTypeDefinition<>), directType);
+                AddDirectType(runtime, directType);
             }
 
             foreach (var mathType in mathTypes)
             {
-                AddDirectType(runtime, typeof(MathDirectType<>), mathType);
+                AddDirectMathType(runtime, mathType);
             }
         }
 
-        public static void AddDirectType(RuntimeAssembly runtime, Type directDefinition, Type directType)
+        public static void AddDirectMathType(RuntimeAssembly runtime, Type mathType)
+        {
+            var type=typeof(MathDirectType<>).MakeGenericType(mathType);
+
+            var typeDefinition = Activator.CreateInstance(type) as DirectTypeDefinition;
+            runtime.AddDirectDefinition(typeDefinition);
+        }
+
+        public static void AddDirectType(RuntimeAssembly runtime, Type directType)
         {
             var isGeneric = directType.ContainsGenericParameters;
-            if (isGeneric)
-            {
-                var genericArgs = new List<Type>();
-                foreach (var param in directType.GetGenericArguments())
-                {
-                    genericArgs.Add(typeof(InstanceWrap));
-                }
 
-                directType = directType.MakeGenericType(genericArgs.ToArray());
-            }
-
-            var addDirectDefinition = runtime.GetType().GetMethod("AddDirectDefinition");
-            var directTypeDef = directDefinition.MakeGenericType(directType);
-            var runtimeType = Activator.CreateInstance(directTypeDef) as RuntimeTypeDefinition;
-            runtimeType.IsGeneric = isGeneric;
-
-            var genericAdd = addDirectDefinition.MakeGenericMethod(directType);
-            genericAdd.Invoke(runtime, new object[] { runtimeType });
-
+            var typeDefinition = new DirectTypeDefinition(directType);
+            typeDefinition.IsGeneric = isGeneric;
+            runtime.AddDirectDefinition(typeDefinition);
         }
 
         private static void onInstanceCreated(Instance instance)

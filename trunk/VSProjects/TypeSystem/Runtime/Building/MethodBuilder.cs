@@ -72,6 +72,9 @@ namespace TypeSystem.Runtime.Building
         /// </summary>
         internal HashSet<Type> ImplementedTypes = new HashSet<Type>();
 
+
+        internal readonly GenericParamTranslator Translator;
+
         /// <summary>
         /// 
         /// </summary>
@@ -84,6 +87,8 @@ namespace TypeSystem.Runtime.Building
             _argumentsArray = Expression.Property(DeclaringDefinitionConstant, "CurrentArguments");
             _contextParam = Expression.Parameter(typeof(AnalyzingContext), "context");
             _methodName = methodName;
+
+            Translator = new GenericParamTranslator(declaringDefinition.TypeInfo);
         }
 
         internal Expression ArgumentInstanceExpression(int argumentIndex)
@@ -93,7 +98,6 @@ namespace TypeSystem.Runtime.Building
 
         internal void AdapterFor(MethodInfo method)
         {
-            Adapter = generateAdapter(method);
             var paramsInfo = getParametersInfo(method);
 
             var returnInfo = getReturnType(method);
@@ -103,6 +107,8 @@ namespace TypeSystem.Runtime.Building
                 _declaringDefinition.TypeInfo, _methodName,
                 returnInfo, paramsInfo.ToArray(),
                 method.IsStatic, _declaringDefinition.IsGeneric, isAbstract);
+
+            Adapter = generateAdapter(method);
         }
 
         internal RuntimeMethodGenerator Build()
@@ -130,9 +136,13 @@ namespace TypeSystem.Runtime.Building
         private IEnumerable<ParameterTypeInfo> getParametersInfo(MethodBase method)
         {
             var paramsInfo = new List<ParameterTypeInfo>();
-            foreach (var param in method.GetParameters())
+            var parameters = method.GetParameters();
+
+            for (var i = 0; i < parameters.Length; ++i)
             {
-                var paramType = getInstanceInfo(param.ParameterType);
+                var paramType = Translator.GetTypeDescriptorFromBase(method, (m) => m.GetParameters()[i].ParameterType);
+
+                var param = parameters[i];
                 var paramInfo = ParameterTypeInfo.From(param, paramType);
                 paramsInfo.Add(paramInfo);
             }
@@ -145,7 +155,7 @@ namespace TypeSystem.Runtime.Building
 
             if (attribute == null)
             {
-                return getInstanceInfo(method.ReturnType);
+                return Translator.GetTypeDescriptor(method, (m) => m.ReturnType);
             }
             else
             {
@@ -153,13 +163,14 @@ namespace TypeSystem.Runtime.Building
             }
         }
 
-        private InstanceInfo getInstanceInfo(Type type)
-        {
-            return _declaringDefinition.GetInstanceInfo(type);
-        }
-
         private DirectMethod generateAdapter(MethodInfo method)
         {
+            if (method.IsGenericMethodDefinition)
+            {
+                var wrappingParameters = Enumerable.Repeat(typeof(InstanceWrap), method.GetGenericArguments().Length).ToArray();
+                method = method.MakeGenericMethod(wrappingParameters);
+            }
+
             var parameters = method.GetParameters();
             var arguments = new Expression[parameters.Length];
             for (var i = 0; i < parameters.Length; ++i)

@@ -16,14 +16,14 @@ using TypeSystem.Runtime.Building;
 
 namespace TypeSystem.Runtime
 {
-    delegate RuntimeMethodGenerator GeneratorProvider(RuntimeTypeDefinition definition, System.Reflection.MethodInfo method, string name);
+    delegate RuntimeMethodGenerator GeneratorProvider(RuntimeTypeDefinition definition, MethodInfo method, string name);
 
     public class RuntimeAssembly : AssemblyProvider
     {
         /// <summary>
         /// TODO: Correct generic typing for array
         /// </summary>
-        public static readonly InstanceInfo ArrayInfo = TypeDescriptor.Create("Array<ItemType,Dimension>");
+        public static readonly TypeDescriptor ArrayInfo = TypeDescriptor.Create("Array<ItemType,Dimension>");
 
         /// <summary>
         /// Static edits that are available without instance context
@@ -73,7 +73,7 @@ namespace TypeSystem.Runtime
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
             arrayDefinition.IsGeneric = true;
             arrayDefinition.ForcedInfo = ArrayInfo;
-            AddDirectDefinition<Array<InstanceWrap>>(arrayDefinition);
+            AddDirectDefinition(arrayDefinition);
         }
 
         /// <summary>
@@ -85,9 +85,10 @@ namespace TypeSystem.Runtime
             _dataTypes.Add(definition.FullName, definition);
         }
 
-        public void AddDirectDefinition<T>(DirectTypeDefinition<T> definition)
+
+        public void AddDirectDefinition(DirectTypeDefinition definition)
         {
-            _directTypes[typeof(T)] = definition;
+            _directTypes[definition.DirectType] = definition;
 
             var typeInfo = definition.TypeInfo;
             _directSignatures.Add(new PathInfo(typeInfo.TypeName).Signature);
@@ -171,7 +172,6 @@ namespace TypeSystem.Runtime
             var signature = new PathInfo(typeInfo.TypeName).Signature;
             return _directSignatures.Contains(signature);
         }
-
 
         #region Assembly provider implementation
 
@@ -298,18 +298,6 @@ namespace TypeSystem.Runtime
         /// <returns>Builder where method is builded</returns>
         private RuntimeMethodGenerator buildMethod(RuntimeTypeDefinition definition, MethodInfo method, string methodName)
         {
-            /*      var wrapping = new MethodBuilder_obsolete(definition, method, methodName);
-                  foreach (var param in method.GetParameters())
-                  {
-                      if (needWrapping(param))
-                      {
-                          wrapping.AddUnwrappedParam(param);
-                      }
-                      else
-                      {
-                          wrapping.AddRawParam(param, "TypeName.NotImplemented");
-                      }
-                  }*/
 
             var builder = new MethodBuilder(definition, methodName);
             builder.ThisObjectExpression = builder.DeclaringDefinitionConstant;
@@ -338,7 +326,7 @@ namespace TypeSystem.Runtime
 
         #region Method generator providers
 
-        private RuntimeMethodGenerator _createMethod(RuntimeTypeDefinition definition, System.Reflection.MethodInfo method, string name)
+        private RuntimeMethodGenerator _createMethod(RuntimeTypeDefinition definition, MethodInfo method, string name)
         {
             if (name == "ctor")
             {
@@ -349,7 +337,7 @@ namespace TypeSystem.Runtime
             return generator;
         }
 
-        private RuntimeMethodGenerator _createProperty(RuntimeTypeDefinition definition, System.Reflection.MethodInfo method, string name)
+        private RuntimeMethodGenerator _createProperty(RuntimeTypeDefinition definition, MethodInfo method, string name)
         {
             var generator = buildMethod(definition, method, method.Name.Substring(1));
 

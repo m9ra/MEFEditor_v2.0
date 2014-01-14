@@ -112,7 +112,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public TestingAssembly AddDirectToRuntime<T>()
         {
-            SettingsProvider.AddDirectType(Runtime, typeof(DirectTypeDefinition<>), typeof(T));
+            SettingsProvider.AddDirectType(Runtime, typeof(T));
             return this;
         }
 
@@ -123,7 +123,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// <returns></returns>
         public TestingAssembly AddWrappedGenericToRuntime(Type genericType)
         {
-            SettingsProvider.AddDirectType(Runtime, typeof(DirectTypeDefinition<>), genericType);
+            SettingsProvider.AddDirectType(Runtime, genericType);
             return this;
         }
 

@@ -69,7 +69,7 @@ namespace TypeSystem.Runtime
 
         internal protected Instance This { get; private set; }
 
-        abstract public InstanceInfo TypeInfo { get; }
+        abstract public  TypeDescriptor TypeInfo { get; }
 
         private List<Edit> _staticEdits = new List<Edit>();
 
@@ -77,7 +77,7 @@ namespace TypeSystem.Runtime
 
         abstract internal IEnumerable<InheritanceChain> GetSubChains();
 
-        protected InstanceInfo GetTypeInfo()
+        protected TypeDescriptor GetTypeInfo()
         {
             return TypeInfo;
         }

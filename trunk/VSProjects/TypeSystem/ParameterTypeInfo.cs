@@ -33,7 +33,12 @@ namespace TypeSystem
         {
             return new ParameterTypeInfo(name, type, null, false, false);
         }
-        
+
+        public ParameterTypeInfo MakeGeneric(InstanceInfo substitutedType)
+        {
+            return new ParameterTypeInfo(Name, substitutedType, DefaultValue, HasDefaultValue, HasParam);
+        }
+
         public static ParameterTypeInfo From(ParameterInfo param, InstanceInfo paramType = null)
         {
             var name = param.Name;
