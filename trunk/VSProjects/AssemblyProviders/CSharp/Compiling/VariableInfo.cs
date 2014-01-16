@@ -12,7 +12,7 @@ namespace AssemblyProviders.CSharp.Compiling
 {
     public class VariableInfo
     {
-        public InstanceInfo Info { get; private set; }
+        public TypeDescriptor Info { get; private set; }
 
         public readonly string Name;
 
@@ -83,7 +83,7 @@ namespace AssemblyProviders.CSharp.Compiling
             _variableUsings.Add(variableUse);
         }
 
-        internal void HintAssignedType(InstanceInfo info)
+        internal void HintAssignedType(TypeDescriptor info)
         {
             if (Info != null)
                 //we already have type information

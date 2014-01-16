@@ -15,7 +15,7 @@ namespace TypeSystem
         readonly private MultiDictionary<string, MethodItem> _methodPaths = new MultiDictionary<string, MethodItem>();
         readonly private Dictionary<MethodID, MethodItem> _methodIds = new Dictionary<MethodID, MethodItem>();
 
-        readonly private Dictionary<Tuple<InstanceInfo, MethodID>, MethodID> _explicitImplementations = new Dictionary<Tuple<InstanceInfo, MethodID>, MethodID>();
+        readonly private Dictionary<Tuple<TypeDescriptor, MethodID>, MethodID> _explicitImplementations = new Dictionary<Tuple<TypeDescriptor, MethodID>, MethodID>();
         readonly private Dictionary<Tuple<string, string>, MethodItem> _genericImplementations = new Dictionary<Tuple<string, string>, MethodItem>();
 
         public void AddItem(MethodItem item, IEnumerable<InstanceInfo> implementedTypes)
@@ -93,7 +93,7 @@ namespace TypeSystem
             return null;
         }
 
-        public MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        public MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
             var implementationEntry = Tuple.Create(dynamicInfo, method);
 

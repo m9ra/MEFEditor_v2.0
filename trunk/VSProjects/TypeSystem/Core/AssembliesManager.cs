@@ -102,7 +102,7 @@ namespace TypeSystem.Core
         internal MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             //resolving of .NET objects depends only on called object type
-            var calledObjectType = dynamicArgumentInfo[0];
+            var calledObjectType = dynamicArgumentInfo[0] as TypeDescriptor;
             var methodImplementation = tryDynamicResolve(calledObjectType, method);
 
             if (methodImplementation == null)
@@ -144,7 +144,7 @@ namespace TypeSystem.Core
             return result;
         }
 
-        internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
+        internal MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
         {
             return tryDynamicResolve(type, abstractMethod);
         }
@@ -166,7 +166,7 @@ namespace TypeSystem.Core
 
         #region Private utility methods
 
-        private MethodID tryDynamicResolve(InstanceInfo dynamicInfo, MethodID method)
+        private MethodID tryDynamicResolve(TypeDescriptor dynamicInfo, MethodID method)
         {
             var result = dynamicExplicitResolve(method, dynamicInfo);
 
@@ -256,7 +256,7 @@ namespace TypeSystem.Core
             return null;
         }
 
-        private MethodID dynamicExplicitResolve(MethodID method, InstanceInfo dynamicInfo)
+        private MethodID dynamicExplicitResolve(MethodID method, TypeDescriptor dynamicInfo)
         {
             foreach (var assembly in _assemblies.Keys)
             {

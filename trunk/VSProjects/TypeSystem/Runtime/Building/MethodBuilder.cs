@@ -11,6 +11,8 @@ using System.Linq.Expressions;
 using Analyzing;
 using Analyzing.Execution;
 
+using TypeSystem.TypeParsing;
+
 namespace TypeSystem.Runtime.Building
 {
     /// <summary>
@@ -72,7 +74,9 @@ namespace TypeSystem.Runtime.Building
         /// </summary>
         internal HashSet<Type> ImplementedTypes = new HashSet<Type>();
 
-
+        /// <summary>
+        /// Translator used for TypeMethodInfo building
+        /// </summary>
         internal readonly GenericParamTranslator Translator;
 
         /// <summary>
@@ -149,7 +153,7 @@ namespace TypeSystem.Runtime.Building
             return paramsInfo;
         }
 
-        private InstanceInfo getReturnType(MethodInfo method)
+        private TypeDescriptor getReturnType(MethodInfo method)
         {
             var attribute = method.GetCustomAttribute<ReturnTypeAttribute>();
 

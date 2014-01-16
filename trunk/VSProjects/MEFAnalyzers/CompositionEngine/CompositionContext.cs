@@ -230,7 +230,7 @@ namespace MEFAnalyzers.CompositionEngine
             return string.Format("{0}_{1}", nameHint, _instanceStorages.Count);
         }
 
-        internal MethodID TryGetImplementation(InstanceInfo type, MethodID abstractMethod)
+        internal MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
         {
             return _services.TryGetImplementation(type, abstractMethod);
         }

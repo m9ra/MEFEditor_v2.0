@@ -33,6 +33,16 @@ namespace Utilities
             }
         }
 
+        public void Set(TKey key, IEnumerable<TValue> values)
+        {
+            _data.Remove(key);
+
+            foreach (var value in values)
+            {
+                Add(key, value);
+            }
+        }
+
         public bool Remove(TKey key, TValue value)
         {
             HashSet<TValue> values;

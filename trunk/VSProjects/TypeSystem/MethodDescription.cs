@@ -10,20 +10,20 @@ namespace TypeSystem
 {
     public class MethodDescription
     {
-        public readonly InstanceInfo ReturnType;
+        public readonly TypeDescriptor ReturnType;
         public readonly ParameterTypeInfo[] Parameters;
-        public readonly IEnumerable<InstanceInfo> Implemented;
+        public readonly IEnumerable<TypeDescriptor> Implemented;
         public readonly bool IsStatic;
 
-        public MethodDescription(InstanceInfo returnType, bool isStatic, params ParameterTypeInfo[] parameters)
+        public MethodDescription(TypeDescriptor returnType, bool isStatic, params ParameterTypeInfo[] parameters)
         {
             ReturnType = returnType;
             IsStatic = isStatic;
             Parameters = parameters;
-            Implemented = new InstanceInfo[0];
+            Implemented = new TypeDescriptor[0];
         }
 
-        public MethodDescription(InstanceInfo returnType, bool isStatic, IEnumerable<InstanceInfo> implemented, params ParameterTypeInfo[] parameters)
+        public MethodDescription(TypeDescriptor returnType, bool isStatic, IEnumerable<TypeDescriptor> implemented, params ParameterTypeInfo[] parameters)
         {
             ReturnType = returnType;
             IsStatic = isStatic;
@@ -74,7 +74,7 @@ namespace TypeSystem
 
         public MethodDescription Implements(params Type[] types)
         {
-            var implemented = new List<InstanceInfo>();
+            var implemented = new List<TypeDescriptor>();
             foreach (var type in types)
             {
                 implemented.Add(TypeDescriptor.Create(type));
@@ -94,7 +94,7 @@ namespace TypeSystem
             return WithReturn(returnInfo);
         }
 
-        public MethodDescription WithReturn(InstanceInfo returnInfo)
+        public MethodDescription WithReturn(TypeDescriptor returnInfo)
         {
             return new MethodDescription(returnInfo, IsStatic, Implemented, Parameters);
         }

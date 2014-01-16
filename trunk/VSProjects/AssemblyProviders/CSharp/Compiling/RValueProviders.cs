@@ -32,7 +32,7 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         public abstract void AssignInto(LValueProvider lValue);
         public abstract void Return();
-        public abstract InstanceInfo GetResultInfo();
+        public abstract TypeDescriptor GetResultInfo();
         /// <summary>
         /// Get storage where RValue is available. If there is no such storage, temporary variable is used
         /// </summary>
@@ -51,12 +51,12 @@ namespace AssemblyProviders.CSharp.Compiling
 
     class NewObjectValue : RValueProvider
     {
-        readonly InstanceInfo _objectType;
+        readonly TypeDescriptor _objectType;
 
         RValueProvider _ctorCall;
         string _storage;
 
-        public NewObjectValue(InstanceInfo objectType, Context context) :
+        public NewObjectValue(TypeDescriptor objectType, Context context) :
             base(context)
         {
             _objectType = objectType;
@@ -74,7 +74,7 @@ namespace AssemblyProviders.CSharp.Compiling
             throw new NotImplementedException();
         }
 
-        public override InstanceInfo GetResultInfo()
+        public override TypeDescriptor GetResultInfo()
         {
             return _objectType;
         }
@@ -102,7 +102,7 @@ namespace AssemblyProviders.CSharp.Compiling
     class LiteralValue : RValueProvider
     {
         private readonly object _literal;
-        private readonly InstanceInfo _literalInfo;
+        private readonly TypeDescriptor _literalInfo;
         private readonly INodeAST _literalNode;
         public LiteralValue(object literal, INodeAST literalNode, Context context)
             : base(context)
@@ -124,7 +124,7 @@ namespace AssemblyProviders.CSharp.Compiling
             E.Return(GetStorage());
         }
 
-        public override InstanceInfo GetResultInfo()
+        public override TypeDescriptor GetResultInfo()
         {
             return _literalInfo;
         }
@@ -167,9 +167,9 @@ namespace AssemblyProviders.CSharp.Compiling
             E.Return(_variable.Name);
         }
 
-        public override InstanceInfo GetResultInfo()
+        public override TypeDescriptor GetResultInfo()
         {
-            return E.VariableInfo(_variable.Name);
+            return E.VariableInfo(_variable.Name) as TypeDescriptor;
         }
 
         public override string GetStorage()
@@ -186,9 +186,9 @@ namespace AssemblyProviders.CSharp.Compiling
     class DefaultArgValue : RValueProvider
     {
         private readonly object _defaultValue;
-        private readonly InstanceInfo _resultType;
+        private readonly TypeDescriptor _resultType;
 
-        internal DefaultArgValue(object defaultValue, InstanceInfo resultType, Context context)
+        internal DefaultArgValue(object defaultValue, TypeDescriptor resultType, Context context)
             : base(context)
         {
             _defaultValue = defaultValue;
@@ -205,9 +205,9 @@ namespace AssemblyProviders.CSharp.Compiling
             throw new NotImplementedException();
         }
 
-        public override InstanceInfo GetResultInfo()
+        public override TypeDescriptor GetResultInfo()
         {
-            throw new NotImplementedException();
+            return _resultType;
         }
 
         public override string GetStorage()
@@ -225,10 +225,10 @@ namespace AssemblyProviders.CSharp.Compiling
 
     class ParamArgValue : RValueProvider
     {
-        private readonly InstanceInfo _arrayType;
+        private readonly TypeDescriptor _arrayType;
         private readonly RValueProvider[] _args;
 
-        public ParamArgValue(InstanceInfo arrayType, RValueProvider[] args, Context context)
+        public ParamArgValue(TypeDescriptor arrayType, RValueProvider[] args, Context context)
             : base(context)
         {
             _arrayType = arrayType;
@@ -245,9 +245,9 @@ namespace AssemblyProviders.CSharp.Compiling
             throw new NotImplementedException();
         }
 
-        public override InstanceInfo GetResultInfo()
+        public override TypeDescriptor GetResultInfo()
         {
-            throw new NotImplementedException();
+            return _arrayType;
         }
 
         public override string GetStorage()
@@ -327,7 +327,7 @@ namespace AssemblyProviders.CSharp.Compiling
             }
         }
 
-        public override InstanceInfo GetResultInfo()
+        public override TypeDescriptor GetResultInfo()
         {
             return MethodInfo.ReturnType;
         }
@@ -374,9 +374,9 @@ namespace AssemblyProviders.CSharp.Compiling
             E.Return(_storage);
         }
 
-        public override InstanceInfo GetResultInfo()
+        public override TypeDescriptor GetResultInfo()
         {
-            return E.VariableInfo(_storage);
+            return E.VariableInfo(_storage) as TypeDescriptor;
         }
 
         public override string GetStorage()

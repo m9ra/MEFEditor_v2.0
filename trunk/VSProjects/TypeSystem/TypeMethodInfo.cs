@@ -19,8 +19,8 @@ namespace TypeSystem
         /// </summary>
         public readonly bool IsAbstract;
         public readonly ParameterTypeInfo[] Parameters;
-        public readonly InstanceInfo DeclaringType;
-        public readonly InstanceInfo ReturnType;
+        public readonly TypeDescriptor DeclaringType;
+        public readonly TypeDescriptor ReturnType;
         public readonly MethodID MethodID;
         public readonly bool HasGenericParameters;
 
@@ -29,7 +29,7 @@ namespace TypeSystem
 
         public readonly PathInfo Path;
 
-        public TypeMethodInfo(InstanceInfo declaringType, string methodName, InstanceInfo returnType, ParameterTypeInfo[] parameters, bool isStatic, bool hasGenericParams = false, bool isAbstract = false)
+        public TypeMethodInfo(TypeDescriptor declaringType, string methodName, TypeDescriptor returnType, ParameterTypeInfo[] parameters, bool isStatic, bool hasGenericParams = false, bool isAbstract = false)
         {
             if (declaringType == null)
                 throw new ArgumentNullException("thisType");
@@ -122,8 +122,6 @@ namespace TypeSystem
 
             return generic;
         }
-
-
 
         private TypeDescriptor translate(InstanceInfo info, Dictionary<string, string> translations)
         {

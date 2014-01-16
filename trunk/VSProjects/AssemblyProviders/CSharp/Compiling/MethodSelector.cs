@@ -76,7 +76,9 @@ namespace AssemblyProviders.CSharp.Compiling
     class ArgumentIterator
     {
         private readonly Dictionary<string, ParameterTypeInfo> _unresolvedParameters = new Dictionary<string, ParameterTypeInfo>();
+
         private readonly MultiDictionary<ParameterTypeInfo, RValueProvider> _argBindings = new MultiDictionary<ParameterTypeInfo, RValueProvider>();
+        private readonly MultiDictionary<ParameterTypeInfo, TypeDescriptor> _genericBindings = new MultiDictionary<ParameterTypeInfo, TypeDescriptor>();
 
         private readonly TypeMethodInfo _overload;
 
@@ -148,16 +150,17 @@ namespace AssemblyProviders.CSharp.Compiling
             //TODO resolve score, inheritance,..
             if (param.Type.IsParameter)
             {
-                throw new NotImplementedException("Add generic binding");
+                _genericBindings.Add(param, arg.Value.GetResultInfo());
             }
             _argBindings.Add(param, arg.Value);
         }
 
         internal CallActivation CreateCallActivation()
         {
-            var activation = new CallActivation(_overload);
+            var overload = resolveGenericBinding(_overload);
+            var activation = new CallActivation(overload);
 
-            foreach (var param in _overload.Parameters)
+            foreach (var param in overload.Parameters)
             {
                 RValueProvider arg;
 
@@ -202,6 +205,46 @@ namespace AssemblyProviders.CSharp.Compiling
 
 
             return activation;
+        }
+
+        private TypeMethodInfo resolveGenericBinding(TypeMethodInfo methodDefinition)
+        {
+            if (!_genericBindings.Keys.Any())
+            {
+                //there are no bindings available
+                return methodDefinition;
+            }
+
+            var translations = new Dictionary<string, string>();
+
+            foreach (var param in _genericBindings.Keys)
+            {
+                var translatedName=param.Type.TypeName;
+                if(translations.ContainsKey(translatedName))
+                    //we already have translation
+                    continue;
+
+                var bindings = _genericBindings.Get(param).ToArray();
+                if (bindings.Length > 1)
+                {
+                    throw new NotImplementedException("Determine binding for parametric parameters");
+                }
+
+                translations.Add(translatedName, bindings[0].TypeName);
+            }
+
+            //remap argument bindings from definitions parameters to current method parameters
+            var genericMethod = methodDefinition.MakeGenericMethod(translations);
+            for (var i = 0; i < genericMethod.Parameters.Length; ++i)
+            {
+                var currentParameter = genericMethod.Parameters[i];
+                var oldParameter = methodDefinition.Parameters[i];
+
+                var args = _argBindings.Get(oldParameter);
+                _argBindings.Set(currentParameter, args);
+            }
+            
+            return genericMethod;
         }
 
         private bool isUnresolved(ParameterTypeInfo param)

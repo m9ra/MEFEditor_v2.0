@@ -181,7 +181,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return _methods.AccordingGenericId(method, searchPath);
         }
 
-        public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
             return _methods.GetImplementation(method, dynamicInfo);
         }

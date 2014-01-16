@@ -52,7 +52,7 @@ namespace TypeSystem
 
         public abstract SearchIterator CreateRootIterator();
 
-        public abstract MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo);
+        public abstract MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo);
 
         public abstract MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath);
 
@@ -78,12 +78,12 @@ namespace TypeSystem
 
         protected void StartTransaction()
         {
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
 
         protected void CommitTransaction()
         {
-          //  throw new NotImplementedException();
+            //  throw new NotImplementedException();
         }
 
         internal void HookChange(ChangeEvent changeEvent)

@@ -11,7 +11,7 @@ namespace TypeSystem.Runtime
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class ReturnTypeAttribute : Attribute
     {
-        public InstanceInfo ReturnInfo { get; private set; }
+        public TypeDescriptor ReturnInfo { get; private set; }
 
         public ReturnTypeAttribute(Type returnType)
         {

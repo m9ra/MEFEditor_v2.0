@@ -191,7 +191,7 @@ namespace TypeSystem.Runtime
             return _runtimeMethods.AccordingId(method);
         }
 
-        public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
             return _runtimeMethods.GetImplementation(method, dynamicInfo);
         }

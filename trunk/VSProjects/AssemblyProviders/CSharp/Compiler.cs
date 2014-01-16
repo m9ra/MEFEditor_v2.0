@@ -527,7 +527,7 @@ namespace AssemblyProviders.CSharp
             return false;
         }
 
-        private InstanceInfo resolveCtorType(INodeAST ctorCall, out INodeAST callNode)
+        private TypeDescriptor resolveCtorType(INodeAST ctorCall, out INodeAST callNode)
         {
             var name = new StringBuilder();
 

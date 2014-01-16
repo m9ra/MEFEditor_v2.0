@@ -75,7 +75,7 @@ namespace AssemblyProviders.CIL.Providing
             CommitTransaction();
         }
 
-        private void addAutoProperty(ComponentInfoBuilder builder, InstanceInfo declaringType, FieldDefinition field)
+        private void addAutoProperty(ComponentInfoBuilder builder, TypeDescriptor declaringType, FieldDefinition field)
         {
             var fieldName = field.Name;
             var isStatic = field.IsStatic;
@@ -191,7 +191,7 @@ namespace AssemblyProviders.CIL.Providing
             return _methods.AccordingGenericId(method, searchPath);
         }
 
-        public override MethodID GetImplementation(MethodID method, InstanceInfo dynamicInfo)
+        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
             return _methods.GetImplementation(method, dynamicInfo);
         }
