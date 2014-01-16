@@ -83,9 +83,6 @@ namespace TypeSystem
 
         public TypeMethodInfo MakeGenericMethod(PathInfo searchPath)
         {
-            if (searchPath.Signature != Path.Signature)
-                throw new NotSupportedException("Cannot make generic method from incompatible path info");
-
             var translations = new Dictionary<string, string>();
             for (int i = 0; i < searchPath.GenericArgs.Count; ++i)
             {
@@ -93,6 +90,20 @@ namespace TypeSystem
                 var genericArg = searchPath.GenericArgs[i];
 
                 translations.Add(genericParam, genericArg);
+            }
+
+            return MakeGenericMethod(translations, searchPath);
+        }
+
+        public TypeMethodInfo MakeGenericMethod(Dictionary<string, string> translations, PathInfo searchPath = null)
+        {
+            var translatedName = MethodName;
+
+            if (searchPath != null)
+            {
+                translatedName = searchPath.Name.Split('.').Last();
+                if (searchPath.Signature != Path.Signature)
+                    throw new NotSupportedException("Cannot make generic method from incompatible path info");
             }
 
             var translatedParams = new List<ParameterTypeInfo>();
@@ -103,18 +114,18 @@ namespace TypeSystem
                 translatedParams.Add(translatedParam);
             }
 
-            var translatedName=searchPath.Name.Split('.').Last();
-
             //TODO translate parameters, return type,..
             var generic = new TypeMethodInfo(
-                translate(DeclaringType, translations),translatedName ,
+                translate(DeclaringType, translations), translatedName,
                 translate(ReturnType, translations), translatedParams.ToArray(),
                 IsStatic, false, IsAbstract);
 
             return generic;
         }
 
-        private InstanceInfo translate(InstanceInfo info, Dictionary<string, string> translations)
+
+
+        private TypeDescriptor translate(InstanceInfo info, Dictionary<string, string> translations)
         {
             //TODO
             var name = info.TypeName;

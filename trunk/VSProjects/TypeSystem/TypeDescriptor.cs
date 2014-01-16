@@ -37,6 +37,15 @@ namespace TypeSystem
             }
         }
 
+        public bool IsParameter
+        {
+            get
+            {
+                //TODO refactor
+                return TypeName.StartsWith("@");
+            }
+        }
+
         internal TypeDescriptor(string typeName, Dictionary<string, TypeDescriptor> typeArguments = null)
             : base(typeName)
         {
@@ -62,6 +71,12 @@ namespace TypeSystem
         {
             //TODO parse given name
             return new TypeDescriptor(typeName);
+        }
+
+        public static TypeDescriptor GetParameter(int parameterIndex)
+        {
+            //TODO refactor!!
+            return new TypeDescriptor("@" + parameterIndex);
         }
 
         /// <summary>
@@ -204,5 +219,6 @@ namespace TypeSystem
             builder.Append(type.Namespace);
             builder.Append(name);
         }
+
     }
 }

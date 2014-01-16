@@ -18,7 +18,7 @@ namespace TypeSystem
 
         private readonly List<CompositionPoint> _explicitCompositionPoints = new List<CompositionPoint>();
 
-        private readonly InstanceInfo _componentType;
+        private readonly TypeDescriptor _componentType;
 
         private MethodID _importingCtor;
 
@@ -35,24 +35,24 @@ namespace TypeSystem
             }
         }
 
-        public ComponentInfoBuilder(InstanceInfo componentType)
+        public ComponentInfoBuilder(TypeDescriptor componentType)
         {
             _componentType = componentType;
         }
 
-        public void AddExport(InstanceInfo exportType, string getterName)
+        public void AddExport(TypeDescriptor exportType, string getterName)
         {
             var getterID = Naming.Method(_componentType, "get_" + getterName, false, new ParameterTypeInfo[0]);
             _exports.Add(new Export(exportType, getterID));
         }
 
-        public void AddImport(InstanceInfo importType, string setterName)
+        public void AddImport(TypeDescriptor importType, string setterName)
         {
             var setterID = getSetterID(importType, setterName);
             _imports.Add(new Import(importType, setterID));
         }
 
-        public void SetImportingCtor(params InstanceInfo[] importingParameters)
+        public void SetImportingCtor(params TypeDescriptor[] importingParameters)
         {
             var parameters = new ParameterTypeInfo[importingParameters.Length];
 
@@ -72,14 +72,14 @@ namespace TypeSystem
             _explicitCompositionPoints.Add(new CompositionPoint(method, true));
         }
 
-        private MethodID getSetterID(InstanceInfo importType, string setterName)
+        private MethodID getSetterID(TypeDescriptor importType, string setterName)
         {
             var parameters = new ParameterTypeInfo[] { ParameterTypeInfo.Create("value", importType) };
             var setterID = Naming.Method(_componentType, "set_" + setterName, false, parameters);
             return setterID;
         }
 
-        public void AddManyImport(InstanceInfo importType, InstanceInfo itemType, string setterName)
+        public void AddManyImport(TypeDescriptor importType, TypeDescriptor itemType, string setterName)
         {
             var setterID = getSetterID(importType, setterName);
             _imports.Add(new Import(importType, itemType, setterID, true));

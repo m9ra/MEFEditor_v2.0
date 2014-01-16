@@ -26,6 +26,8 @@ namespace TypeSystem.Runtime.Building
         public TypeDescriptor GetTypeDescriptor(MethodInfo context, MethodTypeProvider typeProvider)
         {
             var type = typeProvider(context);
+            var isMethodGeneric = type.IsGenericParameter;
+
             if (typeof(InstanceWrap).IsAssignableFrom(type))
             {
                 //TODO determine that parameter comes from type or method
@@ -36,14 +38,17 @@ namespace TypeSystem.Runtime.Building
             if (type.IsGenericParameter)
             {
                 //TODO mark descriptor as parameter
+                var absPosition = type.GenericParameterPosition;
+                if (isMethodGeneric)
+                    absPosition += _arguments.Length;
 
-                if (_arguments.Length > type.GenericParameterPosition)
+                if (_arguments.Length > absPosition)
                 {
-                    return TypeDescriptor.Create(_arguments[type.GenericParameterPosition]);
+                    return TypeDescriptor.Create(_arguments[absPosition]);
                 }
                 else
                 {
-                    type = typeProvider(context);
+                    return TypeDescriptor.GetParameter(absPosition);
                 }
             }
 

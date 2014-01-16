@@ -118,9 +118,9 @@ namespace TypeSystem
         /// <summary>
         /// Type of exported value.
         /// </summary>
-        public readonly InstanceInfo ExportType;
-        
-        public Export(InstanceInfo exportType, MethodID getter)
+        public readonly TypeDescriptor ExportType;
+
+        public Export(TypeDescriptor exportType, MethodID getter)
         {
             ExportType = exportType;
             Contract = exportType.TypeName;
@@ -141,17 +141,17 @@ namespace TypeSystem
         /// Type of one item, without lazy, collection,... 
         /// Should be used as default Contract.
         /// </summary>
-        public readonly InstanceInfo ItemType;
+        public readonly TypeDescriptor ItemType;
         /// <summary>
         /// Type of meta info, null if not available.
         /// </summary>
-        public readonly InstanceInfo MetaDataType;
+        public readonly TypeDescriptor MetaDataType;
         /// <summary>
         /// Type for Importing setter/parameter.
         /// </summary>
-        public readonly InstanceInfo ImportType;
+        public readonly TypeDescriptor ImportType;
 
-        public ImportTypeInfo(InstanceInfo importType, InstanceInfo itemType = null)
+        public ImportTypeInfo(TypeDescriptor importType, TypeDescriptor itemType = null)
         {
             if (itemType == null)
                 itemType = importType;
@@ -193,7 +193,7 @@ namespace TypeSystem
         /// </summary>
         public readonly bool AllowMany;
 
-        public Import(InstanceInfo importType, MethodID setter, bool allowMany = false)
+        public Import(TypeDescriptor importType, MethodID setter, bool allowMany = false)
         {
             ImportTypeInfo = new ImportTypeInfo(importType);
             Contract = ImportTypeInfo.ItemType.TypeName;
@@ -201,7 +201,7 @@ namespace TypeSystem
             AllowMany = allowMany;
         }
 
-        public Import(InstanceInfo importType, InstanceInfo itemType, MethodID setter, bool allowMany = false)
+        public Import(TypeDescriptor importType, TypeDescriptor itemType, MethodID setter, bool allowMany = false)
         {
             ImportTypeInfo = new ImportTypeInfo(importType, itemType);
             Contract = ImportTypeInfo.ItemType.TypeName;

@@ -69,11 +69,11 @@ namespace MEFAnalyzers.CompositionEngine
         /// <summary>
         /// Type of Imported/Exported value.
         /// </summary>
-        public readonly InstanceInfo ContractType;
+        public readonly TypeDescriptor ContractType;
         /// <summary>
         /// Type of imported item value. (Is different from <see cref="ContractType"/> for ImportMany/Lazy imports)
         /// </summary>
-        public readonly InstanceInfo ImportManyItemType;
+        public readonly TypeDescriptor ImportManyItemType;
 
 
 

@@ -146,6 +146,10 @@ namespace AssemblyProviders.CSharp.Compiling
         private void bind(ParameterTypeInfo param, Argument arg)
         {
             //TODO resolve score, inheritance,..
+            if (param.Type.IsParameter)
+            {
+                throw new NotImplementedException("Add generic binding");
+            }
             _argBindings.Add(param, arg.Value);
         }
 

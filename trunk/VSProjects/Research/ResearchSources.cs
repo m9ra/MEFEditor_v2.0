@@ -390,6 +390,19 @@ namespace Research
             ;
         }
 
+        static internal TestingAssembly GenericMethodTesting()
+        {
+            return AssemblyUtils.Run(@"                
+                   var cls=new GenericClass<System.Int32>();     
+                   var result = cls.GenericMethod(""aa"");
+               ")
+
+            .AddWrappedGenericToRuntime(typeof(GenericClass<>))
+
+            ;
+        }
+
+
         static internal TestingAssembly ExplicitGenericTesting()
         {
             return AssemblyUtils.Run(@"                

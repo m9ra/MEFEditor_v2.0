@@ -84,6 +84,7 @@ namespace TypeSystem.Runtime
 
         protected virtual void draw(InstanceDrawer drawer)
         {
+            //by default there is nothing to do
         }
 
         internal void Initialize(RuntimeAssembly containingAssembly, TypeServices typeServices)

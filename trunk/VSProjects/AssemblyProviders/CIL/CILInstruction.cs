@@ -53,7 +53,7 @@ namespace AssemblyProviders.CIL
             OpCode = OpCodesTable[instruction.OpCode.Name];
 
             //TODO resolve ctors
-            MethodOperand = getMethodInfo(Data as MethodInfo); 
+            MethodOperand = getMethodInfo(Data as MethodInfo);
             BranchOperandAddress = getBranchOffset(instruction);
             Setter = getSetter(Data as FieldInfo);
             Getter = getGetter(Data as FieldInfo);
@@ -173,7 +173,7 @@ namespace AssemblyProviders.CIL
         {
             if (field == null)
                 return null;
-            
+
             var name = "set_" + field.Name;
             var declaringType = GetInfo(field.DeclaringType);
             var fieldType = GetInfo(field.FieldType);
@@ -194,7 +194,7 @@ namespace AssemblyProviders.CIL
             return instruction.Offset;
         }
 
-        internal static InstanceInfo GetInfo(TypeReference type)
+        internal static TypeDescriptor GetInfo(TypeReference type)
         {
             return TypeDescriptor.Create(type.FullName);
         }

@@ -13,14 +13,14 @@ namespace TypeSystem
     public class ParameterTypeInfo
     {
         public readonly string Name;
-        public readonly InstanceInfo Type;
+        public readonly TypeDescriptor Type;
         public readonly object DefaultValue;
         public readonly bool HasDefaultValue;
         public readonly bool HasParam;
 
         public static readonly ParameterTypeInfo[] NoParams = new ParameterTypeInfo[0];
 
-        private ParameterTypeInfo(string name, InstanceInfo type, object defaultValue, bool hasDefaultValue, bool hasParam)
+        private ParameterTypeInfo(string name, TypeDescriptor type, object defaultValue, bool hasDefaultValue, bool hasParam)
         {
             Name = name;
             Type = type;
@@ -29,17 +29,17 @@ namespace TypeSystem
             HasParam = hasParam;
         }
 
-        public static ParameterTypeInfo Create(string name, InstanceInfo type)
+        public static ParameterTypeInfo Create(string name, TypeDescriptor type)
         {
             return new ParameterTypeInfo(name, type, null, false, false);
         }
 
-        public ParameterTypeInfo MakeGeneric(InstanceInfo substitutedType)
+        public ParameterTypeInfo MakeGeneric(TypeDescriptor substitutedType)
         {
             return new ParameterTypeInfo(Name, substitutedType, DefaultValue, HasDefaultValue, HasParam);
         }
 
-        public static ParameterTypeInfo From(ParameterInfo param, InstanceInfo paramType = null)
+        public static ParameterTypeInfo From(ParameterInfo param, TypeDescriptor paramType = null)
         {
             var name = param.Name;
             if (name == null)

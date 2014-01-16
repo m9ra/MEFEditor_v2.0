@@ -103,7 +103,7 @@ namespace MEFAnalyzers.CompositionEngine
             return IsOfType(testedtype, type.TypeName);
         }
 
-        internal InstanceRef CreateArray(InstanceInfo itemType, IEnumerable<InstanceRef> instances)
+        internal InstanceRef CreateArray(TypeDescriptor itemType, IEnumerable<InstanceRef> instances)
         {
             var instArray = instances.ToArray();
 

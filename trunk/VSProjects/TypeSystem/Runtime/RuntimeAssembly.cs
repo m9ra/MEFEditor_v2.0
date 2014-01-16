@@ -160,6 +160,7 @@ namespace TypeSystem.Runtime
         internal bool IsInDirectCover(Type type)
         {
             return
+                type.IsGenericParameter ||
                 type == typeof(void) ||
                 type.IsArray ||
                 typeof(Instance).IsAssignableFrom(type) ||

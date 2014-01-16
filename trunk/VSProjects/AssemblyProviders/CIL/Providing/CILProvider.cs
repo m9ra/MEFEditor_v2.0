@@ -115,7 +115,7 @@ namespace AssemblyProviders.CIL.Providing
             }
         }
 
-        private InstanceInfo getInfo(TypeReference type)
+        private TypeDescriptor getInfo(TypeReference type)
         {
             return TypeDescriptor.Create(type.FullName);
         }
