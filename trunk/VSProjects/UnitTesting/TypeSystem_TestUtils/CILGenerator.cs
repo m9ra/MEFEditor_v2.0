@@ -39,7 +39,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             Compiler.GenerateInstructions(Source,Info,emitter,_services);
         }
 
-        public GenericMethodProvider GetProvider()
+        public MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition)
         {
             throw new NotImplementedException();
         }

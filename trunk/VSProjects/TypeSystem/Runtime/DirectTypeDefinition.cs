@@ -70,7 +70,7 @@ namespace TypeSystem.Runtime
                     return ForcedInfo;
 
                 var definingType = DirectType;
-                if (IsGeneric)
+                if (DirectType.ContainsGenericParameters)
                 {
                     definingType = DirectType.GetGenericTypeDefinition();
                 }
@@ -141,9 +141,9 @@ namespace TypeSystem.Runtime
 
                 var returnInfo = TypeDescriptor.Void;
                 var info = new TypeMethodInfo(
-                    TypeInfo, "#ctor",
-                    returnInfo, paramsInfo.ToArray(),
-                    false, IsGeneric);
+                    TypeInfo, Naming.CtorName,
+                    returnInfo, paramsInfo,
+                    false, TypeDescriptor.NoDescriptors);
                 yield return new RuntimeMethodGenerator(directMethod, info, new Type[0]);
             }
         }
@@ -234,7 +234,7 @@ namespace TypeSystem.Runtime
         /// </summary>
         /// <param name="method">Base method which parameters will be created</param>
         /// <returns>Created parameters info</returns>
-        private static IEnumerable<ParameterTypeInfo> getParametersInfo(MethodBase method)
+        private static ParameterTypeInfo[] getParametersInfo(MethodBase method)
         {
             var paramsInfo = new List<ParameterTypeInfo>();
             foreach (var param in method.GetParameters())
@@ -242,7 +242,7 @@ namespace TypeSystem.Runtime
                 var paramInfo = ParameterTypeInfo.From(param);
                 paramsInfo.Add(paramInfo);
             }
-            return paramsInfo;
+            return paramsInfo.ToArray();
         }
 
         /// <summary>

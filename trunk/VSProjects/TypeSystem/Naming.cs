@@ -38,6 +38,17 @@ namespace TypeSystem
             return method(path, paramDescription(parameters), needsDynamicResolution);
         }
 
+        public static MethodID GenericMethod(InstanceInfo declaringType, string methodName, bool needsDynamicResolution, TypeDescriptor[] methodTypeArguments, params ParameterTypeInfo[] parameters)
+        {
+            var typeNames = from argument in methodTypeArguments select argument.TypeName;
+            var genericMethodName =  methodName + "<" + string.Join(",", typeNames.ToArray()) + ">";
+
+            var useGenericMethodName = methodTypeArguments.Length > 0;
+            methodName = useGenericMethodName ? genericMethodName : methodName;
+
+            return Method(declaringType, methodName, needsDynamicResolution, parameters);
+        }
+
         private static MethodID method(string methodPath, string paramDescription, bool needsDynamicResolution)
         {
             return new MethodID(string.Format("{0}{1}{2}", methodPath, PathSplit, paramDescription), needsDynamicResolution);

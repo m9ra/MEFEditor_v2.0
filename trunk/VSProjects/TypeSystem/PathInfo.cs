@@ -14,6 +14,8 @@ namespace TypeSystem
 
         public readonly string Signature;
 
+        public readonly string ShortSignature;
+
         public bool HasGenericArguments { get { return GenericArgs.Count > 0; } }
 
         public readonly List<string> GenericArgs = new List<string>();
@@ -22,6 +24,7 @@ namespace TypeSystem
         {
             Name = name;
             Signature = parseSignature(Name);
+            ShortSignature = getShortSignature(Signature);
         }
 
         public PathInfo(Type type)
@@ -41,6 +44,17 @@ namespace TypeSystem
             }
 
             Signature = parseSignature(Name);
+            ShortSignature = getShortSignature(Signature);
+        }
+
+        private string getShortSignature(string signature)
+        {
+            if (!signature.EndsWith(">"))
+                return signature;
+
+            var methodTypeArgsStart= signature.LastIndexOf('<');
+
+            return signature.Substring(0, methodTypeArgsStart);
         }
 
         private string parseSignature(string extendingName)
@@ -105,7 +119,7 @@ namespace TypeSystem
         /// Creates name according to current generic arguments
         /// </summary>
         /// <returns>Created name</returns>
-        internal string CreateName()
+        public string CreateName()
         {
             var result = new StringBuilder();
 

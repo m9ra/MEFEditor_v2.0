@@ -8,13 +8,28 @@ using Analyzing;
 
 namespace TypeSystem.Runtime.Building
 {
-    class RuntimeMethodGenerator : GeneratorBase
+    class RuntimeMethodGenerator : GeneratorBase, GenericMethodGenerator
     {
         internal readonly TypeMethodInfo MethodInfo;
 
         internal readonly IEnumerable<Type> ImplementTypes;
 
         private readonly DirectMethod _method;
+
+
+        internal IEnumerable<InstanceInfo> Implemented
+        {
+            get
+            {
+                var implementedTypes = new List<InstanceInfo>();
+                foreach (var implemented in ImplementTypes)
+                {
+                    implementedTypes.Add(TypeDescriptor.Create(implemented));
+                }
+                return implementedTypes;
+            }
+
+        }
 
         /// <summary>
         /// Initialize method generator for methods defined in runtime type definitions
@@ -28,31 +43,16 @@ namespace TypeSystem.Runtime.Building
             _method = method;
         }
 
-        internal IEnumerable<InstanceInfo> Implemented()
+        public MethodItem Make(PathInfo searchPath, TypeMethodInfo methodDefinition)
         {
-            var implementedTypes = new List<InstanceInfo>();
-            foreach (var implemented in ImplementTypes)
-            {
-                implementedTypes.Add(TypeDescriptor.Create(implemented));
-            }
-            return implementedTypes;
+            var genericMethod = methodDefinition.MakeGenericMethod(searchPath);
+            var generator = new RuntimeMethodGenerator(_method, genericMethod, ImplementTypes);
+            return new MethodItem(generator, genericMethod);
         }
 
         protected override void generate(EmitterBase emitter)
         {
             emitter.DirectInvoke(_method);
         }
-
-        internal GenericMethodProvider GetProvider()
-        {
-            return (searchPath, info) =>
-            {
-                var genericMethod = info.MakeGenericMethod(searchPath);
-                var generator = new RuntimeMethodGenerator(_method, genericMethod, ImplementTypes);
-                return new MethodItem(generator, genericMethod);
-            };
-        }
-
-
     }
 }

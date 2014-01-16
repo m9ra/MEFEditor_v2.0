@@ -83,7 +83,7 @@ namespace AssemblyProviders.CIL.Providing
 
             var getter = new TypeMethodInfo(declaringType,
                 "get_" + fieldName, fieldType,
-                new ParameterTypeInfo[0], isStatic
+                new ParameterTypeInfo[0], isStatic, TypeDescriptor.NoDescriptors
                 );
 
             //TODO generate field load method
@@ -94,7 +94,7 @@ namespace AssemblyProviders.CIL.Providing
                 "set_" + fieldName, TypeDescriptor.Void,
                 new ParameterTypeInfo[]{
                     ParameterTypeInfo.Create("value",fieldType)
-                    }, isStatic
+                    }, isStatic, TypeDescriptor.NoDescriptors
                 );
 
             //TODO generate field set method
@@ -138,7 +138,7 @@ namespace AssemblyProviders.CIL.Providing
                 //add default implementation
                 var methodInfo = new TypeMethodInfo(
                     info, Naming.GetMethodName(initializerId), TypeDescriptor.Void,
-                    new ParameterTypeInfo[0], false, false, false
+                    new ParameterTypeInfo[0], false, TypeDescriptor.NoDescriptors, false
                     );
                 var item = new MethodItem(new CILGenerator(null, methodInfo, TypeServices), methodInfo);
                 addItem(item);

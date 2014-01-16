@@ -103,14 +103,15 @@ namespace TypeSystem.Runtime.Building
         internal void AdapterFor(MethodInfo method)
         {
             var paramsInfo = getParametersInfo(method);
+            var methodTypeArguments = getTypeArguments(method);
 
             var returnInfo = getReturnType(method);
 
             var isAbstract = method.IsAbstract || _declaringDefinition.IsInterface;
             BuildedMethodInfo = new TypeMethodInfo(
                 _declaringDefinition.TypeInfo, _methodName,
-                returnInfo, paramsInfo.ToArray(),
-                method.IsStatic, _declaringDefinition.IsGeneric, isAbstract);
+                returnInfo, paramsInfo,
+                method.IsStatic, methodTypeArguments, isAbstract);
 
             Adapter = generateAdapter(method);
         }
@@ -137,7 +138,7 @@ namespace TypeSystem.Runtime.Building
         /// </summary>
         /// <param name="method">Base method which parameters will be created</param>
         /// <returns>Created parameters info</returns>
-        private IEnumerable<ParameterTypeInfo> getParametersInfo(MethodBase method)
+        private ParameterTypeInfo[] getParametersInfo(MethodBase method)
         {
             var paramsInfo = new List<ParameterTypeInfo>();
             var parameters = method.GetParameters();
@@ -150,8 +151,31 @@ namespace TypeSystem.Runtime.Building
                 var paramInfo = ParameterTypeInfo.From(param, paramType);
                 paramsInfo.Add(paramInfo);
             }
-            return paramsInfo;
+            return paramsInfo.ToArray();
         }
+
+        /// <summary>
+        /// Get parameters info for given method base
+        /// </summary>
+        /// <param name="method">Base method which parameters will be created</param>
+        /// <returns>Created parameters info</returns>
+        private TypeDescriptor[] getTypeArguments(MethodInfo method)
+        {
+            if (method == null)
+                return TypeDescriptor.NoDescriptors;
+
+            var result = new List<TypeDescriptor>();
+            var genericArguments = method.GetGenericArguments();
+
+            for (var i = 0; i < genericArguments.Length; ++i)
+            {
+                var arguments = Translator.GetTypeDescriptorFromBase(method, (m) => m.GetGenericArguments()[i]);
+                result.Add(arguments);
+            }
+
+            return result.ToArray();
+        }
+
 
         private TypeDescriptor getReturnType(MethodInfo method)
         {

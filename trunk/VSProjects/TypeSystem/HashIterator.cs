@@ -8,30 +8,38 @@ using Analyzing;
 
 namespace TypeSystem
 {
-    public delegate MethodItem GenericMethodProvider(PathInfo searchedPath, TypeMethodInfo genericMethod);
+    public interface GenericMethodGenerator
+    {
+        MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition);
+    }
+
 
     public class MethodItem
     {
-        public readonly GenericMethodProvider MethodProvider;
+        private readonly GenericMethodGenerator _genericGenerator;
         public readonly GeneratorBase Generator;
-        public readonly TypeMethodInfo Info;        
+        public readonly TypeMethodInfo Info;
 
         public MethodItem(GeneratorBase generator, TypeMethodInfo info)
         {
-            if (info.HasGenericParameters)
-                throw new NotSupportedException("Cannot create generic method item without GenericMethodProvider");
-
             Info = info;
-            Generator = Info.IsAbstract ? null : generator;
+            if (info.HasGenericParameters)
+            {
+                _genericGenerator = generator as GenericMethodGenerator;
+                if (_genericGenerator == null)
+                    throw new NotSupportedException("Cannot create method item for generic method without generic generator");
+            }
+            else
+            {
+                Generator = Info.IsAbstract ? null : generator;
+            }
         }
 
-        public MethodItem(GenericMethodProvider methodProvider, TypeMethodInfo genericInfo)
+        public MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition)
         {
-            MethodProvider = methodProvider;
-            Info = genericInfo;
+            return _genericGenerator.Make(methodPath, methodDefinition);
         }
     }
-
 
 
     public class HashIterator : SearchIterator

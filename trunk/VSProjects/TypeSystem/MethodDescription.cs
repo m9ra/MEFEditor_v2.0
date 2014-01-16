@@ -20,7 +20,7 @@ namespace TypeSystem
             ReturnType = returnType;
             IsStatic = isStatic;
             Parameters = parameters;
-            Implemented = new TypeDescriptor[0];
+            Implemented = TypeDescriptor.NoDescriptors;
         }
 
         public MethodDescription(TypeDescriptor returnType, bool isStatic, IEnumerable<TypeDescriptor> implemented, params ParameterTypeInfo[] parameters)
@@ -33,19 +33,37 @@ namespace TypeSystem
 
         public TypeMethodInfo CreateInfo(string methodPath)
         {
-            var methodName = nameFrom(methodPath);
-            var typeName = typeFrom(methodPath);
+            var parsedPath = new PathInfo(methodPath);
+
+            var typeArguments = new List<TypeDescriptor>();
+            for (int i = 0; i < parsedPath.GenericArgs.Count; ++i)
+            {
+                var parameterType = TypeDescriptor.GetParameter(i);
+                parsedPath.GenericArgs[i] = parameterType.TypeName;
+                typeArguments.Add(parameterType);
+            }
+
+            var parametrizedPath = parsedPath.CreateName();
+
+            var methodName = nameFrom(parametrizedPath);
+            var typeName = typeFrom(parametrizedPath);
+
 
             var declaringType = TypeDescriptor.Create(typeName);
 
-            var isGeneric = methodPath.Contains('<');
-
-            return new TypeMethodInfo(declaringType, methodName, ReturnType, Parameters, IsStatic, isGeneric);
+            return new TypeMethodInfo(declaringType, methodName, ReturnType, Parameters, IsStatic, typeArguments.ToArray());
         }
 
         private string nameFrom(string path)
         {
-            return path.Split('.').Last();
+            var lastToken = path.Split('.').Last();
+
+            var genericArgListInddex = lastToken.IndexOf('<');
+
+            if(genericArgListInddex>0)
+                lastToken=lastToken.Substring(0, genericArgListInddex);
+
+            return lastToken;
         }
 
         private string typeFrom(string path)

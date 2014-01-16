@@ -44,7 +44,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             var op1 = ParameterTypeInfo.Create("op1", thisInfo);
             var op2 = ParameterTypeInfo.Create("op2", thisInfo);
 
-            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new ParameterTypeInfo[] { op2 }, false);
+            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new ParameterTypeInfo[] { op2 }, false, TypeDescriptor.NoDescriptors);
             return methodInfo;
         }
 

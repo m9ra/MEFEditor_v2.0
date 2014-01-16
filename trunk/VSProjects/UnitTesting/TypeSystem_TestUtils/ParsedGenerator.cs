@@ -11,11 +11,6 @@ using AssemblyProviders.CSharp.Compiling;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
-    interface GenericMethodGenerator
-    {
-        GenericMethodProvider GetProvider();
-    }
-
     class ParsedGenerator : GeneratorBase, GenericMethodGenerator
     {
         static readonly SyntaxParser Parser = new SyntaxParser();
@@ -46,12 +41,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             Compiler.GenerateInstructions(method, Info, emitter, _services);
         }
 
-        public GenericMethodProvider GetProvider()
-        {
-            return genericMethodProvider;
-        }
-
-        private MethodItem genericMethodProvider(PathInfo searchPath, TypeMethodInfo genericMethod)
+        public MethodItem Make(PathInfo searchPath, TypeMethodInfo genericMethod)
         {
             var newMethod = genericMethod.MakeGenericMethod(searchPath);
             var newGenerator = new ParsedGenerator(newMethod, Source, _services);

@@ -23,7 +23,7 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// TODO: Correct generic typing for array
         /// </summary>
-        public static readonly TypeDescriptor ArrayInfo = TypeDescriptor.Create("Array<ItemType,Dimension>");
+        public static readonly TypeDescriptor ArrayInfo = TypeDescriptor.Create("Array<@0,@1>");
 
         /// <summary>
         /// Static edits that are available without instance context
@@ -70,8 +70,8 @@ namespace TypeSystem.Runtime
             var chain = new InheritanceChain(TypeDescriptor.Create<object>(), new InheritanceChain[0]);
             _inheritanceChains.Add(chain.Path.Signature, chain);
 
+            //TODO refactor array support
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
-            arrayDefinition.IsGeneric = true;
             arrayDefinition.ForcedInfo = ArrayInfo;
             AddDirectDefinition(arrayDefinition);
         }
@@ -233,16 +233,8 @@ namespace TypeSystem.Runtime
             var methodGenerators = definition.GetMethods();
             foreach (var generator in methodGenerators)
             {
-                MethodItem item;
-                if (generator.MethodInfo.HasGenericParameters)
-                {
-                    item = new MethodItem(generator.GetProvider(), generator.MethodInfo);
-                }
-                else
-                {
-                    item = new MethodItem(generator, generator.MethodInfo);
-                }
-                _runtimeMethods.AddItem(item, generator.Implemented());
+                var item = new MethodItem(generator, generator.MethodInfo);
+                _runtimeMethods.AddItem(item, generator.Implemented);
             }
         }
 

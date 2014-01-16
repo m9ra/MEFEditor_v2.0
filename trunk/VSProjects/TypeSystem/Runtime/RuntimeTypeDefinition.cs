@@ -29,11 +29,6 @@ namespace TypeSystem.Runtime
     public abstract class RuntimeTypeDefinition
     {
         /// <summary>
-        /// Determine that defined type is generic
-        /// </summary>
-        public bool IsGeneric;
-
-        /// <summary>
         /// Determine that defined type is interface
         /// </summary>
         public bool IsInterface;

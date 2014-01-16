@@ -78,10 +78,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         public static void AddDirectType(RuntimeAssembly runtime, Type directType)
         {
-            var isGeneric = directType.ContainsGenericParameters;
-
             var typeDefinition = new DirectTypeDefinition(directType);
-            typeDefinition.IsGeneric = isGeneric;
             runtime.AddDirectDefinition(typeDefinition);
         }
 

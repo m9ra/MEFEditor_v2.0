@@ -160,7 +160,7 @@ namespace UnitTesting
             var result = parser.Parse(new Source(@"{
                 var test=System.String.test;
                 var test2=System.String.test();
-            }", Method.EntryInfo));
+            }", Method.EntryMethodPath, Method.EntryInfo));
         }
 
 
@@ -307,7 +307,7 @@ namespace UnitTesting
                 var result=test.Generic<Test2>(""GenericCallArg"");
             ")
 
-            .AddMethod("Test.#ctor", @"
+            .AddMethod("Test." + Naming.CtorName, @"
                 
             ", Method.Ctor_NoParam)
 
@@ -316,7 +316,7 @@ namespace UnitTesting
                 return x.GetValue();
             ", Method.Void_StringParam)
 
-            .AddMethod("Test2.#ctor", (c) =>
+            .AddMethod("Test2." + Naming.CtorName, (c) =>
             {
                 var thisObj = c.CurrentArguments[0];
                 var arg = c.CurrentArguments[1];
@@ -350,7 +350,7 @@ namespace UnitTesting
                 c.Return(c.CurrentArguments[1]);
             }, Method.StringICollection_StringICollectionParam)
 
-            .AddMethod("Test.#ctor", (c) => { }, Method.Ctor_NoParam)
+            .AddMethod("Test." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
 
             .AddMethod("Test.Add", (c) =>
             {

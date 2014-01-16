@@ -57,10 +57,12 @@ namespace AssemblyProviders.CSharp
             E = emitter;
             _context = new Context(emitter, services);
 
-            var genericArgs = methodInfo.Path.GenericArgs;
-            var genericParams = method.Source.OriginalMethod.Path.GenericArgs;
+            var originalPath = new PathInfo(_method.Source.OriginalMethodPath);
 
-            for (int i = 0; i < methodInfo.Path.GenericArgs.Count; ++i)
+            var genericArgs = methodInfo.Path.GenericArgs;
+            var genericParams = originalPath.GenericArgs;
+
+            for (int i = 0; i < originalPath.GenericArgs.Count; ++i)
             {
                 var genericArg = genericArgs[i];
                 var genericParam = genericParams[i];
@@ -321,7 +323,7 @@ namespace AssemblyProviders.CSharp
 
             var searcher = _context.CreateSearcher();
             searcher.SetCalledObject(objectType);
-            searcher.Dispatch("#ctor");
+            searcher.Dispatch(Naming.CtorName);
             var activation = findMatchingActivation(nObject, callNode, searcher.FoundResult);
             if (activation == null)
             {
@@ -667,7 +669,6 @@ namespace AssemblyProviders.CSharp
 
                 callActivation.CalledObject = calledObject;
             }
-
 
             return callActivation;
         }

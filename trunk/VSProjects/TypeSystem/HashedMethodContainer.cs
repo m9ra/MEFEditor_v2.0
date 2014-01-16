@@ -22,11 +22,13 @@ namespace TypeSystem
         {
             registerImplementedMethods(item, implementedTypes);
 
-            //TODO better id's to avoid loosing methods
-            if (!_methodIds.ContainsKey(item.Info.MethodID))
-                _methodIds.Add(item.Info.MethodID, item);
+            var itemInfo = item.Info;
+            var itemPath = itemInfo.Path;
 
-            _methodPaths.Add(item.Info.Path.Signature, item);
+            if (!_methodIds.ContainsKey(itemInfo.MethodID))
+                _methodIds.Add(itemInfo.MethodID, item);
+
+            _methodPaths.Add(itemPath.ShortSignature, item);
         }
 
         private void registerImplementedMethods(MethodItem item, IEnumerable<InstanceInfo> implementedTypes)
@@ -36,22 +38,21 @@ namespace TypeSystem
                 var implementingType = item.Info.DeclaringType;
                 var implementingMethodID = item.Info.MethodID;
 
-                if (!item.Info.HasGenericParameters)
+                if (item.Info.HasGenericParameters)
+                {
+                    //TODO parse out only real generic parameters
+                    var implementingPath = new PathInfo(implementingType.TypeName);
+                    var genericImplementedMethod = Naming.ChangeDeclaringType(implementedType.TypeName, implementingMethodID, true);
+                    var implementedMethodPath = Naming.GetMethodPath(genericImplementedMethod);
+
+                    var genericImplementsEntry = Tuple.Create(implementingPath.Signature, implementedMethodPath.Signature);
+                    _genericImplementations.Add(genericImplementsEntry, item);
+                }
+                else
                 {
                     var implementedMethod = Naming.ChangeDeclaringType(implementedType.TypeName, implementingMethodID, true);
                     var implementsEntry = Tuple.Create(implementingType, implementedMethod);
                     _explicitImplementations.Add(implementsEntry, implementingMethodID);
-                }
-                else
-                {
-                    //TODO parse out only real generic parameters
-                    var implementingPath = new PathInfo(implementingType.TypeName);                    
-                    var genericImplementedMethod = Naming.ChangeDeclaringType(implementedType.TypeName, implementingMethodID, true);
-                    var implementedMethodPath = Naming.GetMethodPath(genericImplementedMethod);
-
-
-                    var genericImplementsEntry = Tuple.Create(implementingPath.Signature, implementedMethodPath.Signature);
-                    _genericImplementations.Add(genericImplementsEntry, item);
                 }
             }
         }
@@ -69,7 +70,7 @@ namespace TypeSystem
             {
                 if (item.Info.HasGenericParameters)
                 {
-                    throw new NotSupportedException("Cannot get method with generic parameters");
+                    throw new NotSupportedException("Cannot get method with generic parameters " + method);
                 }
 
                 return item.Generator;
@@ -113,21 +114,21 @@ namespace TypeSystem
                 //implementation not found
                 return null;
 
-            var implementingMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID,false);
+            var implementingMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID, false);
             var implementingMethodPath = Naming.GetMethodPath(implementingMethod);
-            var genericImplementation = implementation.MethodProvider(implementingMethodPath, implementation.Info);
+            var genericImplementation = implementation.Make(implementingMethodPath, implementation.Info);
 
             return genericImplementation.Info.MethodID;
         }
 
         private IEnumerable<MethodItem> accordingPath(PathInfo path)
         {
-            var methods = _methodPaths.Get(path.Signature);
+            var methods = _methodPaths.Get(path.ShortSignature);
             foreach (var methodItem in methods)
             {
                 if (methodItem.Info.HasGenericParameters)
                 {
-                    yield return methodItem.MethodProvider(path, methodItem.Info);
+                    yield return methodItem.Make(path, methodItem.Info);
                 }
                 else
                 {

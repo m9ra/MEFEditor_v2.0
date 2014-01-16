@@ -108,7 +108,7 @@ namespace AssemblyProviders.CIL
             //TODO resolve if it is static
             return new TypeMethodInfo(declaringType,
                 name, fieldType, ParameterTypeInfo.NoParams,
-                true);
+                true, TypeDescriptor.NoDescriptors);
         }
 
         private TypeMethodInfo getSetter(FieldInfo field)
@@ -125,7 +125,7 @@ namespace AssemblyProviders.CIL
                 name, TypeDescriptor.Void, new ParameterTypeInfo[]{
                     ParameterTypeInfo.Create("value",fieldType)
                 },
-                true);
+                true, TypeDescriptor.NoDescriptors);
         }
 
         private int getBranchOffset(ILInstruction instruction)
@@ -166,7 +166,7 @@ namespace AssemblyProviders.CIL
             //TODO resolve if it is static
             return new TypeMethodInfo(declaringType,
                 name, fieldType, ParameterTypeInfo.NoParams,
-                true);
+                true, TypeDescriptor.NoDescriptors);
         }
 
         private TypeMethodInfo getSetter(FieldReference field)
@@ -183,7 +183,7 @@ namespace AssemblyProviders.CIL
                 name, TypeDescriptor.Void, new ParameterTypeInfo[]{
                     ParameterTypeInfo.Create("value",fieldType)
                 },
-                true);
+                true, TypeDescriptor.NoDescriptors);
         }
 
         private int getBranchOffset(Instruction instruction)
@@ -229,7 +229,7 @@ namespace AssemblyProviders.CIL
                    GetInfo(method.ReturnType),
                    paramInfos.ToArray(),
                    true, //TODO
-                   method.HasGenericParameters,
+                   TypeDescriptor.NoDescriptors,
                    false //TODO
                    );
         }

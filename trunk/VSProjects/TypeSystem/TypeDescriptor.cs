@@ -21,6 +21,12 @@ namespace TypeSystem
         public static readonly TypeDescriptor Void = Create(typeof(void));
 
         /// <summary>
+        /// Shortcut for empty argument arrays
+        /// </summary>
+        public static readonly TypeDescriptor[] NoDescriptors = new TypeDescriptor[0];
+
+
+        /// <summary>
         /// Type arguments of current type descriptor
         /// </summary>
         private readonly Dictionary<string, TypeDescriptor> _typeArguments;
@@ -46,6 +52,22 @@ namespace TypeSystem
             }
         }
 
+        public bool HasParameters
+        {
+            get
+            {
+                foreach (var typeArg in _typeArguments)
+                {
+                    if (typeArg.Value == null || typeArg.Value.IsParameter)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+
+
         internal TypeDescriptor(string typeName, Dictionary<string, TypeDescriptor> typeArguments = null)
             : base(typeName)
         {
@@ -69,8 +91,21 @@ namespace TypeSystem
         /// <returns>Created type descriptor</returns>
         public static TypeDescriptor Create(string typeName)
         {
-            //TODO parse given name
-            return new TypeDescriptor(typeName);
+            //TODO improve type parsing
+            var path = new PathInfo(typeName);
+            var args = path.GenericArgs.ToArray();
+
+            var typeArguments = new Dictionary<string, TypeDescriptor>();
+            for (int i = 0; i < path.GenericArgs.Count; ++i)
+            {
+                var argKey= "@" + i;
+
+                path.GenericArgs[i] =argKey;
+                var typeArgument = TypeDescriptor.Create(args[i]);
+                typeArguments.Add(argKey, typeArgument);
+            }
+
+            return new TypeDescriptor(typeName, typeArguments);
         }
 
         public static TypeDescriptor GetParameter(int parameterIndex)
@@ -219,6 +254,7 @@ namespace TypeSystem
             builder.Append(type.Namespace);
             builder.Append(name);
         }
+
 
     }
 }

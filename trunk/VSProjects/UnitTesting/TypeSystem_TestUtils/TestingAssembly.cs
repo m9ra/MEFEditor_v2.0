@@ -62,7 +62,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             var methodInfo = buildDescription(description, methodPath);
 
-            var source = new Source("{" + code + "}", methodInfo);
+            var source = new Source("{" + code + "}", methodPath, methodInfo);
             var method = new ParsedGenerator(methodInfo, source, TypeServices);
             addMethod(method, methodInfo, description.Implemented);
 
@@ -161,7 +161,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public void SetSource(MethodID method, string source)
         {
             var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
-            parsedGenerator.Source = new Source(source, parsedGenerator.Info);
+            parsedGenerator.Source = new Source(source, parsedGenerator.Source.OriginalMethodPath, parsedGenerator.Info);
         }
 
         #region Assembly provider implementatation
@@ -209,15 +209,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         private void addMethod(GeneratorBase method, TypeMethodInfo info, IEnumerable<InstanceInfo> implementedTypes)
         {
             var implemented = implementedTypes.ToArray();
-            if (info.HasGenericParameters)
-            {
-                var genericMethod = method as GenericMethodGenerator;
-                _methods.AddItem(new MethodItem(genericMethod.GetProvider(), info), implemented);
-            }
-            else
-            {
-                _methods.AddItem(new MethodItem(method, info), implemented);
-            }
+            _methods.AddItem(new MethodItem(method, info), implemented);
         }
 
         #endregion

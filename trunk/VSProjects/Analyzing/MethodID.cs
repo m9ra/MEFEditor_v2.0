@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Analyzing
 {
+    /// <summary>
+    /// MethodID exactly describes concrete method (description can exists without described method existence)
+    /// </summary>
     public class MethodID
     {
         /// <summary>
