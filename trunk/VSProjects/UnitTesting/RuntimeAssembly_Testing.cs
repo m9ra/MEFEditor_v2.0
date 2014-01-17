@@ -100,6 +100,19 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void RuntimeType_DirectWrappedGenericMethod()
+        {
+            AssemblyUtils.Run(@"                
+                   var cls=new GenericClass<System.Int32>();     
+                   var result = cls.GenericMethod(""Result"");
+               ")
+
+            .AddWrappedGenericToRuntime(typeof(GenericClass<>))
+
+            .AssertVariable("result").HasValue("Result");
+        }
+
+        [TestMethod]
         public void RuntimeType_ArrayReturnValueSupport()
         {
             AssemblyUtils.Run(@"                

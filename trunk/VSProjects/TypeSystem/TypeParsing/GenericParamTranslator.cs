@@ -35,7 +35,7 @@ namespace TypeSystem.TypeParsing
         /// <summary>
         /// Type arguments availabe in declaring type
         /// </summary>
-        private readonly string[] _typeArguments;
+        private readonly TypeDescriptor[] _typeArguments;
 
         public GenericParamTranslator(TypeDescriptor declaringType)
         {
@@ -52,33 +52,15 @@ namespace TypeSystem.TypeParsing
         public TypeDescriptor GetTypeDescriptor(MethodInfo context, MethodTypeProvider typeProvider)
         {
             var type = typeProvider(context);
-            //determine that parameter comes from method
-            var isGenericMethodParameter = type.IsGenericParameter;
 
-            if (typeof(InstanceWrap).IsAssignableFrom(type))
-            {
-                var genericDefContext = getGenericDefinition(context);
-                type = typeProvider(genericDefContext);
-            }
+            var genericDefContext = getGenericDefinition(context);
+            var genericType = typeProvider(genericDefContext);
 
-            if (type.IsGenericParameter)
-            {
-                var absPosition = type.GenericParameterPosition;
-                if (isGenericMethodParameter)
-                    absPosition += _typeArguments.Length;
+            var methodParameters = context.GetGenericArguments();
+            var genericParameters = genericDefContext.GetGenericArguments();
 
-                if (_typeArguments.Length > absPosition)
-                {
-                    return TypeDescriptor.Create(_typeArguments[absPosition]);
-                }
-                else
-                {
-                    return TypeDescriptor.GetParameter(absPosition);
-                }
-            }
-
-            var descriptor = getDescriptor(type);
-            return descriptor;
+            var genericDescriptor = TypeDescriptor.Create(genericType, (t) => translateParameter(t, genericParameters, methodParameters));
+            return genericDescriptor;
         }
 
         /// <summary>
@@ -107,6 +89,31 @@ namespace TypeSystem.TypeParsing
         private TypeDescriptor getDescriptor(Type type)
         {
             return TypeDescriptor.Create(type);
+        }
+
+        private TypeDescriptor translateParameter(Type parameter, Type[] methodParameters, Type[] methodSubstitutions)
+        {
+            var parameterPosition = parameter.GenericParameterPosition;
+
+            var isMethodParameter = findType(parameter, methodParameters);
+            if (!isMethodParameter)
+            {
+                //there are no other translations
+                return _typeArguments[parameterPosition];
+            }
+
+            //parameter is method parameter
+            var substitution = methodSubstitutions[parameterPosition];
+
+            var isParametricSubstitution = substitution.IsGenericParameter || typeof(InstanceWrap).IsAssignableFrom(substitution);
+            if (isParametricSubstitution)
+            {
+                //parameter definition
+                var absolutePosition = parameterPosition + _typeArguments.Length;
+                return TypeDescriptor.GetParameter(absolutePosition);
+            }
+
+            return TypeDescriptor.Create(substitution);
         }
 
         /// <summary>
@@ -151,6 +158,24 @@ namespace TypeSystem.TypeParsing
                 throw new NotSupportedException("Cannot find generic definition for method: " + method.Name);
 
             return methods.First();
+        }
+
+        /// <summary>
+        /// Determine that searched type can be find within types
+        /// </summary>
+        /// <param name="searched">Type that is searched</param>
+        /// <param name="types">Types where searched is searched</param>
+        /// <returns>True if searched is present within types</returns>
+        private static bool findType(Type searched, Type[] types)
+        {
+            foreach (var type in types)
+            {
+                if (type.Equals(searched))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         #endregion

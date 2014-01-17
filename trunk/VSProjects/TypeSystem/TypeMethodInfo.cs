@@ -170,7 +170,6 @@ namespace TypeSystem
                 methodTypeArguments.Add(translatedType);
             }
 
-            //TODO translate parameters, return type,..
             var generic = new TypeMethodInfo(
                 translate(DeclaringType, translations), translatedName,
                 translate(ReturnType, translations), translatedParams.ToArray(),

@@ -17,6 +17,11 @@ namespace TypeSystem.TypeParsing
         private readonly Stack<TypeBuildContext> _buildStack = new Stack<TypeBuildContext>();
 
         /// <summary>
+        /// Define ordering number of parameter according to its name
+        /// </summary>
+        private readonly Dictionary<string, int> _parametersNumbering = new Dictionary<string, int>();
+
+        /// <summary>
         /// Current peek of context stack
         /// </summary>
         internal TypeBuildContext CurrentContext { get { return _buildStack.Peek(); } }
@@ -69,10 +74,9 @@ namespace TypeSystem.TypeParsing
         /// <summary>
         /// Set current context as parameter of given name
         /// </summary>
-        /// <param name="parameterName">Name of parameter</param>
-        internal void SetParameter(string parameterName)
+        internal void SetDescriptor(TypeDescriptor description)
         {
-            CurrentContext.ParameterName = parameterName;
+            CurrentContext.SetDescriptor(description);
         }
 
         /// <summary>

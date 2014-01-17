@@ -64,6 +64,20 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void TypeDescriptor_IndependentParameters()
+        {
+            TestClass.IndependentParamsInfo.ReturnType
+            .AssertFullname("System.Collections.Generic.Dictionary<@0,@1>");
+        }
+
+        [TestMethod]
+        public void TypeDescriptor_DependentParameters()
+        {
+            TestClass.DependentParamsInfo.ReturnType
+            .AssertFullname("System.Collections.Generic.Dictionary<@0,@0>");
+        }
+
+        [TestMethod]
         public void TypeDescriptor_GenericNamespaceDefinition()
         {
             typeof(NamespaceClass<>.InnerClass<>)

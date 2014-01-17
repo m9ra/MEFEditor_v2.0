@@ -32,9 +32,9 @@ namespace TypeSystem.TypeParsing
         internal IEnumerable<TypeBuildContext> Arguments { get { return _arguments; } }
 
         /// <summary>
-        /// Name of parameter - if not null context belongs to unresolved type parameter
+        /// Determine descriptor, that overrides context content
         /// </summary>
-        internal string ParameterName;
+        private TypeDescriptor _overridingDescriptor;
 
         /// <summary>
         /// Determine number that is used for first index of type parameter if any
@@ -57,8 +57,8 @@ namespace TypeSystem.TypeParsing
         {
             get
             {
-                if (ParameterName != null)
-                    return null;
+                if (_overridingDescriptor != null)
+                    return _overridingDescriptor.TypeName;
 
                 var fullName = new StringBuilder();
                 appendName(fullName);
@@ -87,6 +87,15 @@ namespace TypeSystem.TypeParsing
         {
             //TODO keep parameter name
             _arguments.Add(null);
+        }
+
+        /// <summary>
+        /// Set current context 
+        /// </summary>
+        /// <param name="descriptor"></param>
+        internal void SetDescriptor(TypeDescriptor descriptor)
+        {
+            _overridingDescriptor = descriptor;
         }
 
         /// <summary>
@@ -121,19 +130,22 @@ namespace TypeSystem.TypeParsing
         /// <returns>Builded descriptor</returns>
         internal TypeDescriptor BuildDescriptor()
         {
+            if (_overridingDescriptor != null)
+            {
+                return _overridingDescriptor;
+            }
+
             var arguments = new Dictionary<string, TypeDescriptor>();
 
             for (int i = 0; i < _arguments.Count; ++i)
             {
-                var arg = _arguments[i];
+                var arg = _arguments[i].BuildDescriptor();
                 var key = i.ToString();
 
-                var isParam = arg.FullName == null;
-                if (isParam)
+                if (arg.IsParameter)
                     key = "@" + key;
 
-                var descriptor = isParam ? null : arg.BuildDescriptor();
-                arguments.Add(key, descriptor);
+                arguments.Add(key, arg);
             }
 
             return new TypeDescriptor(FullName, arguments);
@@ -159,12 +171,8 @@ namespace TypeSystem.TypeParsing
                 if (i > 0)
                     builder.Append(',');
 
-                var arg = _arguments[i].FullName;
-
-                var isParam = arg == null;
-                var name = isParam ? "@" + (ParameterOffset + i) : arg;
-
-                builder.Append(name);
+                var argName = _arguments[i].FullName;
+                builder.Append(argName);
             }
 
             if (addBrackets)
@@ -186,6 +194,7 @@ namespace TypeSystem.TypeParsing
             builder.Append(_typeName.ToString());
         }
 
-        #endregion 
+        #endregion
+
     }
 }
