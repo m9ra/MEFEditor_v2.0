@@ -68,6 +68,7 @@
     <Compile Include="Execution\CallContext.cs" />
     <Compile Include="Execution\CallEmitter.cs" />
     <Compile Include="Execution\DataInstance.cs" />
+    <Compile Include="Execution\DynamicCallEntry.cs" />
     <Compile Include="Execution\ExecutedBlock.cs" />
     <Compile Include="Execution\DirectInstance.cs" />
     <Compile Include="Execution\InstructionBase.cs" />

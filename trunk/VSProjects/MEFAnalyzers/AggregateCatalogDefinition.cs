@@ -45,7 +45,30 @@ namespace MEFAnalyzers
 
         public Instance[] _get_Parts()
         {
-            throw new NotImplementedException();
+            AsyncCall<Instance[]>(Catalogs.Get(), "ToArray",
+                returnParts
+                );
+
+            //result will be overriden
+            return new Instance[0];
+        }
+
+        private void returnParts(Instance[] catalogs)
+        {
+            var collectedParts = new HashSet<Instance>();
+            foreach (var catalog in catalogs)
+            {
+                AsyncCall<Instance[]>(catalog, "get_Parts", (parts) =>
+                {
+                    collectedParts.UnionWith(parts);
+                });
+            }
+
+            ContinuationCall((context) =>
+            {
+                var array = Wrap(context, collectedParts.ToArray());
+                context.Return(array);
+            });
         }
 
         private CallEditInfo acceptCatalog(ExecutionView view)

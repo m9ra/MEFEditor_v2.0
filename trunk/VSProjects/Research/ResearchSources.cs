@@ -101,12 +101,34 @@ namespace Research
 
         static internal TestingAssembly MEF_AggregateCatalog()
         {
+            var testAssembly = new RuntimeAssembly();
+            testAssembly.AddDefinition(new StringImport());
+
+            var testAssembly2 = new RuntimeAssembly();
+            testAssembly2.AddDefinition(new SimpleStringExport());
+
             return AssemblyUtils.Run(@"                        
                 var aggrCat=new System.ComponentModel.Composition.Hosting.AggregateCatalog();       
                 var aggrCat2=new System.ComponentModel.Composition.Hosting.AggregateCatalog(); 
+                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test.exe"");      
+                var dirCat2=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test2.exe"");    
+
+                aggrCat.Catalogs.Add(aggrCat2);
+                aggrCat.Catalogs.Add(dirCat);
+                
+                aggrCat2.Catalogs.Add(dirCat2);
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(aggrCat);
+                compCont.ComposeParts();
             ")
             .AddToRuntime<AggregateCatalogDefinition>()
+            .AddToRuntime<DirectoryCatalogDefinition>()
+            .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+            .AddToRuntime<StringImport>()
+            .AddToRuntime<SimpleStringExport>()
+
+            .RegisterAssembly("test.exe", testAssembly)
+            .RegisterAssembly("test2.exe", testAssembly2)
             ;
         }
 

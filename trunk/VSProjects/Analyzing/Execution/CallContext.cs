@@ -18,6 +18,18 @@ namespace Analyzing.Execution
         private readonly AnalyzingContext _context;
 
         /// <summary>
+        /// Is used by analyzing context. All chained dynamic calls are executed after current call is popped.
+        /// Nested dynamic calls are chained separately
+        /// </summary>
+        internal DynamicCallEntry ContextsDynamicCalls;
+
+        /// <summary>
+        /// Dynamic calls that are not chained via this call. They are executed after current call is popped.
+        /// Is used for context calls chaining separation.
+        /// </summary>
+        internal DynamicCallEntry FollowingDynamicCalls;
+
+        /// <summary>
         /// Determine that call doesn't have next instructions to proceed
         /// </summary>
         internal bool IsCallEnd { get { return _instructionPointer >= Program.Instructions.Length; } }

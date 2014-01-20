@@ -40,5 +40,10 @@ namespace MEFAnalyzers
             Catalogs.Get().Add(partCatalog);
             ReportChildAdd(Parent.Get(), 1, "Part catalog");
         }
+
+        public Instance[] _method_ToArray()
+        {
+            return Catalogs.Get().ToArray();
+        }
     }
 }
