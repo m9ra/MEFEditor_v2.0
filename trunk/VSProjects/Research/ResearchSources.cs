@@ -242,6 +242,25 @@ namespace Research
            ;
         }
 
+        static internal TestingAssembly DrawingTester_BoundsCheck()
+        {
+            return AssemblyUtils.Run(@"        
+                var partImport=new StringImport();       
+                                             
+                var test=new CompositionTester();   
+                test.Add(partImport);
+                test.Compose();
+            ")
+
+           .AddToRuntime<CompositionTesterDefinition>()
+           .AddToRuntime<StringImport>()
+           .AddToRuntime<StringExport>()
+           .AddToRuntime<SimpleType>()
+           .AddDirectToRuntime<List<string>>()
+           .AddDirectToRuntime<ICollection<string>>()
+           ;
+        }
+
         static internal TestingAssembly DrawingTester_SingleComponent()
         {
             return AssemblyUtils.Run(@"        

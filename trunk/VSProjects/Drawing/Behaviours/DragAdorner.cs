@@ -34,7 +34,7 @@ namespace Drawing.Behaviours
         private DiagramCanvas _dragScope;
 
         private AdornerLayer _dragLayer;
-        
+
         private Point _startPosition;
 
         internal readonly DiagramItem Item;
@@ -93,26 +93,26 @@ namespace Drawing.Behaviours
         /// <param name="e">Drag events.</param>
         private void _updatePosition(object sender, DragEventArgs e)
         {
-            var globalPos = e.GetPosition(_dragScope);
-            _hint.UpdateCursor(globalPos);
+            var globalPosition = e.GetPosition(_dragScope);
+            _hint.UpdateCursor(globalPosition);
             _hint.HintText = Hint;
 
-            globalPos = getScaledPosition(globalPos);
+            globalPosition = getScaledPosition(globalPosition);
 
-            globalPos.X -= _center.X;
-            globalPos.Y -= _center.Y;
-            var oldPos = globalPos;
+            globalPosition.X -= _center.X;
+            globalPosition.Y -= _center.Y;
+            var oldPos = globalPosition;
 
-            if (Item.OutOfBounds(ref globalPos))
+            if (Item.OutOfBounds(ref globalPosition))
             {
                 if (Item.CanExcludeFromParent)
                 {
                     //don't need to be bounded
-                    globalPos = oldPos;
+                    globalPosition = oldPos;
                 }
             }
 
-            GlobalPosition = globalPos;
+            GlobalPosition = globalPosition;
             _dragLayer.Update(this.AdornedElement);
         }
 
@@ -122,7 +122,7 @@ namespace Drawing.Behaviours
 
             return new Point(rawPoint.X / scaleFactor, rawPoint.Y / scaleFactor);
         }
-        
+
         internal void DragEnd()
         {
             _dragScope.PreviewDragOver -= _updatePosition;
@@ -135,7 +135,7 @@ namespace Drawing.Behaviours
             var offset = GlobalPosition - _startPosition;
 
             var pos = new Point(offset.X, offset.Y);
-            drawingContext.DrawRectangle(_visualBrush, _visualPen, new Rect(pos, new Size(Item.ActualWidth, Item.ActualHeight)));
+            drawingContext.DrawRectangle(_visualBrush, _visualPen, new Rect(pos, new Size(Item.DesiredSize.Width, Item.DesiredSize.Height)));
         }
 
         protected override Size MeasureOverride(Size finalSize)

@@ -71,19 +71,37 @@ namespace TypeSystem
                 OnComponentAdded(component);
         }
 
+        protected void AddReference(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected void RemoveReference(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
         protected void RemoveComponent()
         {
             throw new NotImplementedException();
         }
 
-        protected void StartTransaction()
+        protected void StartTransaction(string transactionDescription)
         {
             // throw new NotImplementedException();
         }
-
+        
         protected void CommitTransaction()
         {
             //  throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Report progress of transaction
+        /// </summary>
+        /// <param name="progressDescription">Description of transaction progress that can be displayed to user</param>
+        protected void ReportProgress(string progressDescription)
+        {
         }
 
         internal void HookChange(ChangeEvent changeEvent)

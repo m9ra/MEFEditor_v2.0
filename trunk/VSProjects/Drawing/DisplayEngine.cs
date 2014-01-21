@@ -90,7 +90,7 @@ namespace Drawing
 
             setInitialPosition(item);
         }
-            
+
         internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
         {
             var from = fromItem.GetConnector(join.Definition.From);
@@ -142,7 +142,7 @@ namespace Drawing
         }
 
         #endregion
-        
+
         /// <summary>
         /// Arrange children of given owner according to Arrange algorithm
         /// </summary>
@@ -206,8 +206,11 @@ namespace Drawing
             var position = GetPosition(element);
             var update = false;
 
-            var containerHeight = container.DesiredSize.Height;
-            var containerWidth = container.DesiredSize.Width;
+
+            var contMargin = container.Margin;
+
+            var containerHeight = container.DesiredSize.Height - contMargin.Bottom - contMargin.Top;
+            var containerWidth = container.DesiredSize.Width - contMargin.Left - contMargin.Right;
 
             var elHeight = element.DesiredSize.Height;
             var elWidth = element.DesiredSize.Width;
@@ -258,7 +261,7 @@ namespace Drawing
                 }
             }
         }
-        
+
         #region Positioning routines
 
         /// <summary>

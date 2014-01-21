@@ -85,7 +85,7 @@ namespace Drawing
             var localPos = DiagramCanvas.GetPosition(this);
             localPos.X -= diff.X;
             localPos.Y -= diff.Y;
-
+       
             return localPos;
         }
 
@@ -126,7 +126,6 @@ namespace Drawing
         internal void Attach(ConnectorDrawing connector)
         {
             _connectors.Add(connector.Definition, connector);
-
 
             StackPanel connectors;
             switch (connector.Align)
@@ -241,11 +240,16 @@ namespace Drawing
 
             //compute boundaries on containing slot
             var minPos = ContainingDiagramCanvas.GlobalPosition;
-            var maxX = minPos.X + ContainingDiagramCanvas.ActualWidth - ActualWidth;
-            var maxY = minPos.Y + ContainingDiagramCanvas.ActualHeight - ActualHeight;
+
+            var boundsSize = ContainingDiagramCanvas.DesiredSize;
+            var boundMargins = ContainingDiagramCanvas.Margin;
+
+            var maxX = minPos.X + boundsSize.Width - DesiredSize.Width - boundMargins.Left - boundMargins.Right;
+            var maxY = minPos.Y + boundsSize.Height - DesiredSize.Height - boundMargins.Top - boundMargins.Bottom;
 
             //compute bounded position
             var outOfBounds = false;
+
 
             if (globalPosition.X > maxX)
             {

@@ -28,12 +28,14 @@ namespace TypeSystem
         public void ExtendName(params string[] suffixes)
         {
             var currentIterator = _activeIteartors.First;
-            
+
             while (currentIterator != null)
-            {                
-                foreach(var suffix in suffixes){
-                    var newIt=currentIterator.Value.ExtendName(suffix);
-                    _activeIteartors.AddFirst(newIt);                    
+            {
+                foreach (var suffix in suffixes)
+                {
+                    var newIt = currentIterator.Value.ExtendName(suffix);
+                    if (newIt != null)
+                        _activeIteartors.AddFirst(newIt);
                 }
 
                 var lastIt = currentIterator;
@@ -46,7 +48,7 @@ namespace TypeSystem
         {
             foreach (var iterator in _activeIteartors)
             {
-                var methods=iterator.FindMethods(searchedMethod);
+                var methods = iterator.FindMethods(searchedMethod);
                 _foundMethods.AddRange(methods);
             }
         }

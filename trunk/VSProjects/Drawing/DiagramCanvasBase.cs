@@ -100,14 +100,7 @@ namespace Drawing
             foreach (FrameworkElement child in Children)
             {
                 var position = GetPosition(child);
-
                 child.Arrange(new Rect(position, child.DesiredSize));
-
-                var item = child as DiagramItem;
-                if (item == null)
-                    continue;
-
-                //item.RefreshGlobal();
             }
             return arrangeSize;
         }

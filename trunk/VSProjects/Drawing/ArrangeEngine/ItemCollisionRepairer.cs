@@ -65,18 +65,10 @@ namespace Drawing.ArrangeEngine
             }
         }
 
-        private Rect GetSpan(DiagramItem item)
-        {
-            var position = getPosition(item);
-            var rect = new Rect(position.X, position.Y, item.DesiredSize.Width, item.DesiredSize.Height);
-
-            return rect;
-        }
-
         private ItemMoveability computeNeeds(DiagramItem movedItem, DiagramItem currItem)
         {
-            var movedSpan = GetSpan(movedItem);
-            var currSpan = GetSpan(currItem);
+            var movedSpan = SceneNavigator.GetSpan(movedItem);
+            var currSpan = SceneNavigator.GetSpan(currItem);
 
             var intersection = Rect.Intersect(movedSpan, currSpan);
 
@@ -137,11 +129,12 @@ namespace Drawing.ArrangeEngine
                 return new ItemMoveability(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
             }
 
-            var span = GetSpan(movedItem);
+            var span = SceneNavigator.GetSpan(movedItem);
 
+            var contMargin = container.Margin;
             var upPossib = span.Top;
-            var downPossib = container.DesiredSize.Height - span.Bottom;
-            var rightPossib = container.DesiredSize.Width - span.Right;
+            var downPossib = container.DesiredSize.Height - span.Bottom - contMargin.Bottom - contMargin.Top;
+            var rightPossib = container.DesiredSize.Width - span.Right - contMargin.Right - contMargin.Left;
             var leftPossib = span.Left;
 
             return new ItemMoveability(

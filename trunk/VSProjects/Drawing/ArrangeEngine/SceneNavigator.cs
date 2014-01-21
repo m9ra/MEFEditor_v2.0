@@ -25,6 +25,8 @@ namespace Drawing.ArrangeEngine
 
     public class SceneNavigator
     {
+        private static readonly int Margin = 20;
+
         private readonly Planes _topBottom = new Planes(false, true);
         private readonly Planes _bottomUp = new Planes(false, false);
         private readonly Planes _leftRight = new Planes(true, true);
@@ -34,7 +36,7 @@ namespace Drawing.ArrangeEngine
         {
             foreach (var item in items)
             {
-                var span = getSpan(item);
+                var span = GetSpan(item);
                 _topBottom.AddSegment(item, span.TopLeft, span.TopRight);
                 _bottomUp.AddSegment(item, span.BottomLeft, span.BottomRight);
                 _leftRight.AddSegment(item, span.TopLeft, span.BottomLeft);
@@ -42,6 +44,17 @@ namespace Drawing.ArrangeEngine
             }
         }
 
+        /// <summary>
+        /// Get span surrounding given diagram item
+        /// </summary>
+        /// <param name="item">Diagram item for span</param>
+        /// <returns>Surrounding span for item</returns>
+        public static Rect GetSpan(DiagramItem item)
+        {
+            return new Rect(
+                item.GlobalPosition.X - Margin, item.GlobalPosition.Y - Margin,
+                item.DesiredSize.Width + 2 * Margin, item.DesiredSize.Height + 2 * Margin);
+        }
 
         /// <summary>
         /// Get coordinate distance between given points
@@ -119,7 +132,7 @@ namespace Drawing.ArrangeEngine
         {
             if (obstacle != null)
             {
-                var span = getSpan(obstacle);
+                var span = GetSpan(obstacle);
                 var position = GetRelativePosition(point, span);
 
                 #region Corners definitions for obstacle positions
@@ -295,11 +308,6 @@ namespace Drawing.ArrangeEngine
                     return;
             }
             categorized[category] = inserted;
-        }
-
-        private Rect getSpan(DiagramItem item)
-        {
-            return new Rect(item.GlobalPosition, new Size(item.ActualWidth, item.ActualHeight));
         }
 
         private int getCategory(Point from, Point relative)

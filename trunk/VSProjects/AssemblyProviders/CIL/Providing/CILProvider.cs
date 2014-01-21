@@ -40,7 +40,7 @@ namespace AssemblyProviders.CIL.Providing
                 path = refAssembly.MainModule.FullyQualifiedName;
             }*/
 
-            StartTransaction();
+            StartTransaction("Loading types from assembly");
 
             foreach (var type in cecilAssembly.MainModule.Types)
             {
