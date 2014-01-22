@@ -174,7 +174,7 @@ namespace Research
                 new ContentDrawer("System.ComponentModel.Composition.Hosting.AssemblyCatalog", (item) => new AssemblyCatalogDrawing(item))
                 );
 
-            _drawingProvider = new DrawingProvider(form.Output, factory);
+            _drawingProvider = new DrawingProvider(form.GUI.Workspace, factory);
             _drawingProvider.Display(_diagramDefinition);
 
             form.Show();

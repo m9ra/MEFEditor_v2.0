@@ -8,9 +8,12 @@
     mc:Ignorable="d" 
     
     xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
+    
+    xmlns:m="clr-namespace:MEFEditor;assembly=MEFEditor"
     >
 
-    <dr:DiagramCanvas Name="Output" Background="White" />
+    <m:EditorGUI Name="GUI"></m:EditorGUI>
+
 
 </Window>
 
