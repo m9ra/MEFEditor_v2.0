@@ -109,12 +109,9 @@ namespace UnitTesting.TypeSystem_TestUtils
             return assembly;
         }
 
-        public static TestResult GetResult(this TestingAssembly assembly)
+        public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod = null)
         {
-            var entryLoader = new EntryPointLoader(
-                Method.EntryInfo.MethodID
-                , assembly.Loader);
-
+            var entryLoader = new EntryPointLoader(entryMethod, assembly.Loader);
 
             assembly.Runtime.BuildAssembly();
 

@@ -12,10 +12,6 @@ namespace TypeSystem.Core
 {
     class AssembliesManager
     {
-        readonly AssemblyCollection _assembliesCollection;
-
-        readonly MachineSettings _settings;
-
         /// <summary>
         /// In these assemblies are searched generators
         /// <remarks>May differ from method searcher providing assemblies - that are based on assembly references</remarks>
@@ -28,23 +24,27 @@ namespace TypeSystem.Core
 
         readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
 
-
-
         /// <summary>
         /// asssemblies loaded from files
         /// </summary>
         readonly Dictionary<string, AssemblyProvider> _loadedAssemblies = new Dictionary<string, AssemblyProvider>();
 
+        internal readonly AssemblyCollection Assemblies;
+
+        internal readonly MachineSettings Settings;
+
+        internal IEnumerable<ComponentInfo> Components { get { return _components.Values; } }
+
         internal AssembliesManager(AssemblyCollection assemblies, MachineSettings settings)
         {
             _services = new TypeServices(this);
-            _settings = settings;
+            Settings = settings;
 
-            _assembliesCollection = assemblies;
-            _assembliesCollection.OnAdd += _onAssemblyAdd;
-            _assembliesCollection.OnRemove += _onAssemblyRemove;
+            Assemblies = assemblies;
+            Assemblies.OnAdd += _onAssemblyAdd;
+            Assemblies.OnRemove += _onAssemblyRemove;
 
-            foreach (var assembly in _assembliesCollection)
+            foreach (var assembly in Assemblies)
             {
                 _onAssemblyAdd(assembly);
             }
@@ -155,12 +155,12 @@ namespace TypeSystem.Core
         /// <returns>Created method searcher</returns>
         internal MethodSearcher CreateSearcher()
         {
-            return new MethodSearcher(_assembliesCollection);
+            return new MethodSearcher(Assemblies);
         }
 
         internal MethodID GetStaticInitializer(InstanceInfo info)
         {
-            return _settings.GetSharedInitializer(info);
+            return Settings.GetSharedInitializer(info);
         }
         #endregion
 

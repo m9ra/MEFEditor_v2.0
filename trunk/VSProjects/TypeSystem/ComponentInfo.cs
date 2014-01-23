@@ -66,13 +66,14 @@ namespace TypeSystem
         /// </summary>
         public TypeAssembly DefiningAssembly {get;internal set;}
 
-        public ComponentInfo(InstanceInfo thisType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports)
+        public ComponentInfo(InstanceInfo thisType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports,CompositionPoint[] compositionPoints)
         {
             ComponentType = thisType;
             SelfExports = selfExports;
             Exports = exports;
             Imports = imports;
             ImportingConstructor = importingCtor;
+            CompositionPoints = compositionPoints;
         }
     }
 

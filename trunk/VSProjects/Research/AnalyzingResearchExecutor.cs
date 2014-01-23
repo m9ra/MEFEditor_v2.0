@@ -49,11 +49,19 @@ namespace Research
         private CallContext _entryContext;
 
         /// <summary>
+        /// ID of method that will be used as entry one (can be changed via GUI)
+        /// </summary>
+        private MethodID _entryMethod = Method.EntryInfo.MethodID;
+
+        /// <summary>
         /// Stopwatch used for measuring execution time
         /// </summary>
         private Stopwatch _watch = new Stopwatch();
 
-        private DrawingProvider _drawingProvider;
+        /// <summary>
+        /// Manager of GUI, that is displayed for methods containing composition
+        /// </summary>
+        private GUIManager _guiManager;
 
         internal AnalyzingResearchExecutor(TestingAssembly assembly)
         {
@@ -84,8 +92,15 @@ namespace Research
         {
             _watch.Reset();
             _watch.Start();
-            _result = _assembly.GetResult();
+            _result = _assembly.GetResult(_entryMethod);
             _watch.Stop();
+        }
+
+        private void refreshDrawing()
+        {
+            refreshResult();
+            analyzeResult();
+            TryShowDrawings();
         }
 
 
@@ -94,20 +109,19 @@ namespace Research
         /// </summary>
         internal void TryShowDrawings()
         {
-            if (_diagramDefinition.Count == 0)
+            if (_diagramDefinition.Count == 0 && _guiManager==null)
+                //there are no drawings and gui manager is not displayed
                 return;
 
             _result.Execution.OnViewCommit += (view) =>
             {
-                var entryID = Method.EntryInfo.MethodID;
-                var source = _assembly.GetSource(entryID, view);
-                _assembly.SetSource(entryID, source);
-                refreshResult();
-                analyzeResult();
-                TryShowDrawings();
+                var source = _assembly.GetSource(_entryMethod, view);
+                _assembly.SetSource(_entryMethod, source);
+
+                refreshDrawing();
             };
 
-            if (_drawingProvider == null)
+            if (_guiManager == null)
             {
                 var thread = new Thread(showDrawings);
 
@@ -116,7 +130,7 @@ namespace Research
             }
             else
             {
-                _drawingProvider.Display(_diagramDefinition);
+                _guiManager.Display(_diagramDefinition);
             }
         }
 
@@ -174,11 +188,26 @@ namespace Research
                 new ContentDrawer("System.ComponentModel.Composition.Hosting.AssemblyCatalog", (item) => new AssemblyCatalogDrawing(item))
                 );
 
-            _drawingProvider = new DrawingProvider(form.GUI.Workspace, factory);
-            _drawingProvider.Display(_diagramDefinition);
+            _guiManager = new GUIManager(_assembly.AppDomain, form.GUI, factory);
+            _guiManager.CompositionPointSelected += onCompositionPointSelected;
+            _guiManager.Display(_diagramDefinition);
 
             form.Show();
             Dispatcher.Run();
+        }
+
+        private void onCompositionPointSelected()
+        {
+            if (_guiManager.SelectedCompositionPoint == null)
+            {
+                _entryMethod = Method.EntryInfo.MethodID;
+            }
+            else
+            {
+                _entryMethod = _guiManager.SelectedCompositionPoint.EntryMethod;
+            }
+
+            refreshDrawing();
         }
 
         /// <summary>
@@ -261,7 +290,7 @@ namespace Research
 
             PrintLines(2);
             Println(ConsoleColor.Yellow, "Entry source result:");
-            Println(ConsoleColor.Gray, "{0}", formatSource(_assembly.GetEntrySource(_result.View)));
+            Println(ConsoleColor.Gray, "{0}", formatSource(_assembly.GetSource(_entryMethod,_result.View)));
         }
 
 

@@ -93,8 +93,9 @@ namespace TypeSystem
                 _importingCtor = Naming.Method(_componentType, Naming.CtorName, false);
             }
 
+            var compositionPoints = new List<CompositionPoint>(_explicitCompositionPoints);
 
-            return new ComponentInfo(_componentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray());
+            return new ComponentInfo(_componentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray(),compositionPoints.ToArray());
         }
 
 

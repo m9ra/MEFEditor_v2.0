@@ -9,7 +9,7 @@
     <DockPanel LastChildFill="True">
         <DockPanel DockPanel.Dock="Top" LastChildFill="False">
             <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
-                <ComboBox Name="_CompositionPoints" ToolTip="Composition point to display" Margin="0 0 0 5" Width="150" SelectedIndex="0" >
+                <ComboBox Name="_CompositionPoints" ToolTip="Displayed composition point" Margin="0 0 0 5" Width="150" SelectedIndex="0" >
                     <ComboBoxItem>
                         none
                     </ComboBoxItem>

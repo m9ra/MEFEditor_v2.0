@@ -40,6 +40,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public readonly RuntimeAssembly Runtime;
 
         public readonly MachineSettings Settings;
+        public AppDomainServices AppDomain { get { return Loader.AppDomain; } }
 
         /// <summary>
         /// Simulate actions from user

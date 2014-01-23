@@ -21,7 +21,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
             builder.AddExport(TypeDescriptor.Create<string>(), "Export");
-            builder.SetImportingCtor(TypeDescriptor.Create<string>());
+            builder.SetImportingCtor(TypeDescriptor.Create<string>());            
             ComponentInfo = builder.BuildInfo();
         }
 

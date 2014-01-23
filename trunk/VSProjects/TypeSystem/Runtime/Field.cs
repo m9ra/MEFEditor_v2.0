@@ -76,7 +76,8 @@ namespace TypeSystem.Runtime
         /// <param name="value">Value that will be set to property</param>
         public void Set(FieldType value)
         {
-            thisObj.SetField(Storage, value);
+            if (thisObj != null)
+                thisObj.SetField(Storage, value);
         }
 
         /// <summary>

@@ -15,9 +15,12 @@ namespace TypeSystem
     {
         readonly AssembliesManager _assemblies;
 
+        public readonly AppDomainServices AppDomain;
+
         public AssemblyLoader(AssemblyCollection assemblies, MachineSettings settings)
         {
             _assemblies = new AssembliesManager(assemblies, settings);
+            AppDomain = new AppDomainServices(_assemblies);
         }
 
         public override MethodID EntryPoint

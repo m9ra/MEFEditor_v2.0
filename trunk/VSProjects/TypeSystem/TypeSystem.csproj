@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppDomainServices.cs" />
     <Compile Include="AssemblyCollection.cs" />
     <Compile Include="AssemblyProvider.cs" />
     <Compile Include="ComponentInfo.cs" />

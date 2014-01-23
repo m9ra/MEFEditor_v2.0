@@ -12,15 +12,13 @@ namespace TypeSystem
 {
     internal delegate void ChangeEvent(MethodID name);
 
-    internal delegate void ComponentAdded(ComponentInfo component);
-
     public abstract class AssemblyProvider
     {
         private TypeServices _services;
 
         protected event Action OnInitialized;
 
-        internal event ComponentAdded OnComponentAdded;
+        internal event ComponentEvent OnComponentAdded;
 
 
         internal protected TypeServices TypeServices

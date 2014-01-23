@@ -56,7 +56,6 @@ namespace Drawing
             }
         }
 
-
         protected override Size ArrangeOverride(Size arrangeSize)
         {
             if (DiagramContext != null)
@@ -70,10 +69,12 @@ namespace Drawing
 
                 child.RenderTransform = _scale;
 
-                var scaledPosition = _scale.Transform(position);
-                var shiftedPosition = new Point(scaledPosition.X + Shift.X, scaledPosition.Y + Shift.Y);
+                position = _scale.Transform(position);
 
-                child.Arrange(new Rect(shiftedPosition, child.DesiredSize));
+                position.X += Shift.X;
+                position.Y += Shift.Y;
+
+                child.Arrange(new Rect(position, child.DesiredSize));
             }
             return arrangeSize;
         }

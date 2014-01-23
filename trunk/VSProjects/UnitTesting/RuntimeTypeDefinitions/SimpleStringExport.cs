@@ -20,6 +20,8 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
             builder.AddExport(TypeDescriptor.Create<string>(), "Export");
+            builder.AddExplicitCompositionPoint(Naming.Method(TypeInfo, Naming.CtorName, false));
+
             ComponentInfo = builder.BuildInfo();
         }
 
