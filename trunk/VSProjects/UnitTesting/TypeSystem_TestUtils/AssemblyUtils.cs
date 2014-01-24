@@ -109,7 +109,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return assembly;
         }
 
-        public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod = null)
+        public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod)
         {
             var entryLoader = new EntryPointLoader(entryMethod, assembly.Loader);
 
@@ -133,7 +133,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// <param name="source">Expected source</param>
         public static void AssertSourceEquivalence(this TestingAssembly assembly, string source)
         {
-            var result = assembly.GetResult();
+            var result = assembly.GetResult(Method.EntryInfo.MethodID);
             var editedSource = assembly.GetEntrySource(result.View);
 
             var nSource = normalizeCode("{" + source + "}");
@@ -156,7 +156,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         internal static TestCase AssertVariable(this TestingAssembly assembly, string variableName)
         {
-            var result = assembly.GetResult();
+            var result = assembly.GetResult(Method.EntryInfo.MethodID);
 
             return new TestCase(result, variableName);
         }

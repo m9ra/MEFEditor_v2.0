@@ -65,10 +65,9 @@ namespace Drawing
 
             foreach (FrameworkElement child in Children)
             {
-                var position = GetPosition(child);
-
                 child.RenderTransform = _scale;
 
+                var position = GetPosition(child);
                 position = _scale.Transform(position);
 
                 position.X += Shift.X;
