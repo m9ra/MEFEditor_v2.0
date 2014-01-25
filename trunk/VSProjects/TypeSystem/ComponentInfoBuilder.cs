@@ -18,9 +18,9 @@ namespace TypeSystem
 
         private readonly List<CompositionPoint> _explicitCompositionPoints = new List<CompositionPoint>();
 
-        private readonly TypeDescriptor _componentType;
-
         private MethodID _importingCtor;
+
+        public readonly TypeDescriptor ComponentType;
 
         public bool IsEmpty
         {
@@ -37,12 +37,12 @@ namespace TypeSystem
 
         public ComponentInfoBuilder(TypeDescriptor componentType)
         {
-            _componentType = componentType;
+            ComponentType = componentType;
         }
 
         public void AddExport(TypeDescriptor exportType, string getterName)
         {
-            var getterID = Naming.Method(_componentType, "get_" + getterName, false, new ParameterTypeInfo[0]);
+            var getterID = Naming.Method(ComponentType, "get_" + getterName, false, new ParameterTypeInfo[0]);
             _exports.Add(new Export(exportType, getterID));
         }
 
@@ -64,7 +64,7 @@ namespace TypeSystem
                 _imports.Add(preImport);
             }
 
-            _importingCtor = Naming.Method(_componentType, Naming.CtorName, false, parameters);
+            _importingCtor = Naming.Method(ComponentType, Naming.CtorName, false, parameters);
         }
 
         public void AddExplicitCompositionPoint(MethodID method)
@@ -75,7 +75,7 @@ namespace TypeSystem
         private MethodID getSetterID(TypeDescriptor importType, string setterName)
         {
             var parameters = new ParameterTypeInfo[] { ParameterTypeInfo.Create("value", importType) };
-            var setterID = Naming.Method(_componentType, "set_" + setterName, false, parameters);
+            var setterID = Naming.Method(ComponentType, "set_" + setterName, false, parameters);
             return setterID;
         }
 
@@ -90,12 +90,12 @@ namespace TypeSystem
             if (_importingCtor == null)
             {
                 //default importin constructor
-                _importingCtor = Naming.Method(_componentType, Naming.CtorName, false);
+                _importingCtor = Naming.Method(ComponentType, Naming.CtorName, false);
             }
 
             var compositionPoints = new List<CompositionPoint>(_explicitCompositionPoints);
 
-            return new ComponentInfo(_componentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray(),compositionPoints.ToArray());
+            return new ComponentInfo(ComponentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray(),compositionPoints.ToArray());
         }
 
 

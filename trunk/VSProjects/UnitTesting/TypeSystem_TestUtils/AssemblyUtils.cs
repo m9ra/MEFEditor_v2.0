@@ -86,6 +86,12 @@ namespace UnitTesting.TypeSystem_TestUtils
             return assembly;
         }
 
+        public static TestingAssembly RunCurrentCECIL(string methodPath)
+        {
+            var assemblyFile = Assembly.GetEntryAssembly().Location;
+            return RunCECIL(assemblyFile, methodPath);
+        }
+
         public static TestingAssembly RunCIL(Func<object> sourceMethod)
         {
             var assembly = SettingsProvider.CreateTestingAssembly();
@@ -146,9 +152,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             return assembly.GetSource(Method.EntryInfo.MethodID, view);
         }
-
-
-
+        
         private static string normalizeCode(string code)
         {
             return code.Replace("\n", "").Replace("\r", "").Replace(" ", "");

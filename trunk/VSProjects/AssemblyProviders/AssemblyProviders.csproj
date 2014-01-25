@@ -43,6 +43,7 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -60,10 +61,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CILAssembly\CILAssembly.cs" />
+    <Compile Include="CILAssembly\TypeModuleIterator.cs" />
     <Compile Include="CIL\CILInstruction.cs" />
     <Compile Include="CIL\CILMethod.cs" />
     <Compile Include="CIL\Providing\CILGenerator.cs" />
-    <Compile Include="CIL\Providing\CILProvider.cs" />
     <Compile Include="CIL\Providing\GetterGenerator.cs" />
     <Compile Include="CIL\Providing\SetterGenerator.cs" />
     <Compile Include="CIL\VMStack.cs" />

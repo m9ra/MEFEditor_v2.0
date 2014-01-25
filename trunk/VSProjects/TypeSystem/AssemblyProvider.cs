@@ -16,7 +16,7 @@ namespace TypeSystem
     {
         private TypeServices _services;
 
-        protected event Action OnInitialized;
+        protected event Action OnTypeSystemInitialized;
 
         internal event ComponentEvent OnComponentAdded;
 
@@ -37,8 +37,8 @@ namespace TypeSystem
 
                 _services = value;
 
-                if (OnInitialized != null)
-                    OnInitialized();
+                if (OnTypeSystemInitialized != null)
+                    OnTypeSystemInitialized();
             }
         }
 
@@ -84,6 +84,12 @@ namespace TypeSystem
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Start transaction with given description. Transaction can be reported about progress.
+        /// Transaction should end with CommitTransaction. If explicit CommitTransaction is 
+        /// not placed, auto commit is processed with parent transactions commit.
+        /// </summary>
+        /// <param name="transactionDescription">Description of started transaction</param>
         protected void StartTransaction(string transactionDescription)
         {
             // throw new NotImplementedException();

@@ -19,12 +19,26 @@ using Analyzing.Editing;
 using MEFEditor;
 using MEFAnalyzers;
 
+using AssemblyProviders.CILAssembly;
 using AssemblyProviders.CIL.Providing;
 
 namespace Research
 {
     static class ResearchSources
     {
+
+        static internal TestingAssembly CECIL_CompositionPoint()
+        {
+            var assembly = new CILAssembly("Research.exe");
+
+
+            return AssemblyUtils.Run(@"
+                CecilTestSources.ForLoop();
+            ")
+             .AddReference(assembly)
+
+             ;
+        }
 
         static internal TestingAssembly MEF_AssemblyCatalog()
         {
@@ -165,7 +179,7 @@ namespace Research
 
         static internal TestingAssembly CECIL_AssemblyProviding()
         {
-            var cilAssembly = new CILProvider("Research.exe");
+            var cilAssembly = new CILAssembly("Research.exe");
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.CrossStart")
                 .RegisterAssembly(cilAssembly.Path, cilAssembly);
         }

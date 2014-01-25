@@ -12,11 +12,11 @@ namespace TypeSystem
 {
     public static class Naming
     {
-        public static readonly char PathSplit = ';';
+        public static readonly char PathDelimiter = ';';
 
-        public static readonly string CtorName = "#ctor";
+        public const string CtorName = "#ctor";
 
-        public static readonly string ClassCtorName = "#cctor";
+        public const string ClassCtorName = "#cctor";
 
         public static MethodID Method<CalledType>(string methodName, params Type[] paramTypes)
         {
@@ -41,7 +41,7 @@ namespace TypeSystem
         public static MethodID GenericMethod(InstanceInfo declaringType, string methodName, bool needsDynamicResolution, TypeDescriptor[] methodTypeArguments, params ParameterTypeInfo[] parameters)
         {
             var typeNames = from argument in methodTypeArguments select argument.TypeName;
-            var genericMethodName =  methodName + "<" + string.Join(",", typeNames.ToArray()) + ">";
+            var genericMethodName = methodName + "<" + string.Join(",", typeNames.ToArray()) + ">";
 
             var useGenericMethodName = methodTypeArguments.Length > 0;
             methodName = useGenericMethodName ? genericMethodName : methodName;
@@ -51,7 +51,7 @@ namespace TypeSystem
 
         private static MethodID method(string methodPath, string paramDescription, bool needsDynamicResolution)
         {
-            return new MethodID(string.Format("{0}{1}{2}", methodPath, PathSplit, paramDescription), needsDynamicResolution);
+            return new MethodID(string.Format("{0}{1}{2}", methodPath, PathDelimiter, paramDescription), needsDynamicResolution);
         }
 
         private static string paramDescription(params object[] parameters)
@@ -60,9 +60,9 @@ namespace TypeSystem
             return parCount.ToString();
         }
 
-        internal static void GetParts(MethodID method, out string path, out string paramDescription)
+        public static void GetParts(MethodID method, out string path, out string paramDescription)
         {
-            var parts = method.MethodString.Split(new char[] { PathSplit }, 2);
+            var parts = method.MethodString.Split(new char[] { PathDelimiter }, 2);
 
             path = parts[0];
             paramDescription = parts[1];
@@ -91,8 +91,30 @@ namespace TypeSystem
             return methodPath.Substring(nameStart + 1);
         }
 
+        public static string GetDeclaringType(MethodID method)
+        {
+            if (method == null)
+                return null;
 
-        internal static PathInfo GetMethodPath(MethodID method)
+            string path, description;
+            GetParts(method, out path, out description);
+
+            return GetDeclaringType(path);
+        }
+
+        public static string GetDeclaringType(string methodPath)
+        {
+            if (methodPath == null)
+                return null;
+
+            var nameStart = methodPath.LastIndexOf('.');
+            if (nameStart < 0)
+                return null;
+
+            return methodPath.Substring(0, nameStart);
+        }
+
+        public static PathInfo GetMethodPath(MethodID method)
         {
             string path, paramDescr;
             Naming.GetParts(method, out path, out paramDescr);

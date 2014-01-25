@@ -225,9 +225,18 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
+
+        public TestingAssembly AddReference(AssemblyProvider assembly)
+        {
+            Assemblies.Add(assembly);
+
+            return this;
+        }
+
         public void Rebuild()
         {
             throw new NotImplementedException();
         }
+
     }
 }

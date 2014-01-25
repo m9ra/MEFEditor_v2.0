@@ -29,6 +29,8 @@ namespace AssemblyProviders.ProjectAssembly
         public VsProjectAssembly(VSProject2 assemblyProject)
         {
             _assemblyProject = assemblyProject;
+
+            OnTypeSystemInitialized += initializeAssembly;
         }
 
         /// <summary>
@@ -55,15 +57,8 @@ namespace AssemblyProviders.ProjectAssembly
         private void initializeReferences()
         {
             StartTransaction("Collecting references");
-
-            try
-            {
-                addReferences();
-            }
-            finally
-            {
-                CommitTransaction();
-            }
+            addReferences();
+            CommitTransaction();
         }
 
         /// <summary>
@@ -96,24 +91,19 @@ namespace AssemblyProviders.ProjectAssembly
         {
             StartTransaction("Searching components");
 
-            try
-            {
-                var searcher = new ComponentSearcher();
-                searcher.OnNamespaceEntered += reportSearchProgress;
+            var searcher = new ComponentSearcher();
+            searcher.OnNamespaceEntered += reportSearchProgress;
 
-                //search components in whole project
-                searcher.VisitProject(Project);
+            //search components in whole project
+            searcher.VisitProject(Project);
 
-                //report added components
-                foreach (var component in searcher.Result)
-                {
-                    AddComponent(component);
-                }
-            }
-            finally
+            //report added components
+            foreach (var component in searcher.Result)
             {
-                CommitTransaction();
+                AddComponent(component);
             }
+
+            CommitTransaction();
         }
 
         /// <summary>

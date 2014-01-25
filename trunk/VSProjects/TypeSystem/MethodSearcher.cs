@@ -49,7 +49,8 @@ namespace TypeSystem
             foreach (var iterator in _activeIteartors)
             {
                 var methods = iterator.FindMethods(searchedMethod);
-                _foundMethods.AddRange(methods);
+                if (methods != null)
+                    _foundMethods.AddRange(methods);
             }
         }
 
@@ -68,8 +69,16 @@ namespace TypeSystem
         }
     }
 
+    /// <summary>
+    /// Immutable iterator
+    /// </summary>
     public abstract class SearchIterator
     {
+        /// <summary>
+        /// Create iterator that is extended by given suffix
+        /// </summary>
+        /// <param name="suffix">Extending suffix</param>
+        /// <returns>Extended search iterator</returns>
         public abstract SearchIterator ExtendName(string suffix);
 
         public abstract IEnumerable<TypeMethodInfo> FindMethods(string searchedName);
