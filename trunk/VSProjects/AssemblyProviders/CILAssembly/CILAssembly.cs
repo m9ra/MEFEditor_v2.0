@@ -315,6 +315,24 @@ namespace AssemblyProviders.CILAssembly
         }
 
         /// <summary>
+        /// Build constructor methods for given type
+        /// </summary>
+        /// <param name="type">Type which constructors are builded</param>
+        /// <returns>Builded methods</returns>
+        private IEnumerable<MethodItem> buildConstructors(TypeDefinition type)
+        {
+            var info = TypeDescriptor.Create(type.FullName);
+
+            foreach (var method in type.Methods)
+            {
+                if (method.Name == ".ctor")
+                {
+                    yield return createItem(info, method);
+                }
+            }
+        }
+
+        /// <summary>
         /// Build method for static initializer for given type
         /// </summary>
         /// <param name="type">Type which initializer is builded</param>
@@ -323,10 +341,13 @@ namespace AssemblyProviders.CILAssembly
         {
             var info = TypeDescriptor.Create(type.FullName);
 
-            foreach (var method in type.Methods) {
+            foreach (var method in type.Methods)
+            {
                 if (method.Name == ".cctor")
                     return createItem(info, method);
             }
+
+            //if no explicit cctor is found default one is created
 
             var initializerId = TypeServices.GetStaticInitializerID(info);
 
@@ -366,7 +387,11 @@ namespace AssemblyProviders.CILAssembly
                 switch (searchedName)
                 {
                     case Naming.CtorName:
-                        throw new NotImplementedException();
+                        foreach (var ctor in buildConstructors(foundType))
+                        {
+                            yield return ctor;
+                        }
+                        break;
 
                     case Naming.ClassCtorName:
                         yield return buildStaticInitilizer(foundType);

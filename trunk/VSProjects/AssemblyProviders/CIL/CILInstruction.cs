@@ -222,13 +222,14 @@ namespace AssemblyProviders.CIL
                     break;
             }
 
+            var isStatic = !method.HasThis;
 
             return new TypeMethodInfo(
                    GetInfo(method.DeclaringType),
                    name,
                    GetInfo(method.ReturnType),
                    paramInfos.ToArray(),
-                   true, //TODO
+                    isStatic, //TODO
                    TypeDescriptor.NoDescriptors,
                    false //TODO
                    );

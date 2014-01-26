@@ -49,12 +49,14 @@ namespace UnitTesting.TypeSystem_TestUtils
         public IEnumerable<EditAction> EditActions { get { return _editActions; } }
 
 
+        public readonly Machine Machine;
 
         public TestingAssembly(MachineSettings settings)
         {
             Settings = settings;
             Runtime = settings.Runtime;
             Assemblies = new TestAssemblyCollection(Runtime, this);
+            Machine = SettingsProvider.CreateMachine(Settings);
 
             Loader = new AssemblyLoader(Assemblies, Settings);
         }

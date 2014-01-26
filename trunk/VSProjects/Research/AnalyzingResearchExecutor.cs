@@ -24,6 +24,8 @@ using UnitTesting.TypeSystem_TestUtils;
 
 namespace Research
 {
+    delegate IEnumerable<Instance> EntryArgumentsProvider(Machine machine);
+
     /// <summary>
     /// Executor for running tasks on testing assembly
     /// </summary>
@@ -55,6 +57,11 @@ namespace Research
         private MethodID _entryMethod = Method.EntryInfo.MethodID;
 
         /// <summary>
+        /// Arguments that are used for entry method call
+        /// </summary>
+        private EntryArgumentsProvider _entryArgumentsProvider;
+
+        /// <summary>
         /// Stopwatch used for measuring execution time
         /// </summary>
         private Stopwatch _watch = new Stopwatch();
@@ -67,6 +74,7 @@ namespace Research
         internal AnalyzingResearchExecutor(TestingAssembly assembly)
         {
             _assembly = assembly;
+            setDefaultCompositionPoint();
         }
 
         /// <summary>
@@ -93,7 +101,9 @@ namespace Research
         {
             _watch.Reset();
             _watch.Start();
-            _result = _assembly.GetResult(_entryMethod);
+
+            var entryArguments = _entryArgumentsProvider(_assembly.Machine).ToArray();
+            _result = _assembly.GetResult(_entryMethod, entryArguments);
             _watch.Stop();
         }
 
@@ -110,7 +120,7 @@ namespace Research
         /// </summary>
         internal void TryShowDrawings()
         {
-            if (_diagramDefinition.Count == 0 && _guiManager==null)
+            if (_diagramDefinition.Count == 0 && _guiManager == null)
                 //there are no drawings and gui manager is not displayed
                 return;
 
@@ -199,16 +209,36 @@ namespace Research
 
         private void onCompositionPointSelected()
         {
-            if (_guiManager.SelectedCompositionPoint == null)
+            var compositionPoint = _guiManager.SelectedCompositionPoint;
+
+            if (compositionPoint == null)
             {
-                _entryMethod = Method.EntryInfo.MethodID;
+                setDefaultCompositionPoint();
             }
             else
             {
                 _entryMethod = _guiManager.SelectedCompositionPoint.EntryMethod;
+                _entryArgumentsProvider = (m) =>
+                {
+                    var thisObj = m.CreateInstance(compositionPoint.DeclaringComponent);
+                    return new[]{
+                        thisObj
+                    };
+                };
             }
 
             refreshDrawing();
+        }
+
+        private void setDefaultCompositionPoint()
+        {
+            _entryMethod = Method.EntryInfo.MethodID;
+            _entryArgumentsProvider = getDefaultArguments;
+        }
+
+        private IEnumerable<Instance> getDefaultArguments(Machine m)
+        {
+            yield return m.CreateDirectInstance("Default object");
         }
 
         /// <summary>
@@ -237,6 +267,7 @@ namespace Research
                 if (addToQueue)
                 {
                     pipeline.AddToDrawQueue(instance);
+                    pipeline.ForceDisplay(instance);
                 }
             }
 
@@ -291,7 +322,7 @@ namespace Research
 
             PrintLines(2);
             Println(ConsoleColor.Yellow, "Entry source result:");
-            Println(ConsoleColor.Gray, "{0}", formatSource(_assembly.GetSource(_entryMethod,_result.View)));
+            Println(ConsoleColor.Gray, "{0}", formatSource(_assembly.GetSource(_entryMethod, _result.View)));
         }
 
 

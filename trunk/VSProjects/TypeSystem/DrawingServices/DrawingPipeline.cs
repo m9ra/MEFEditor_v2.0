@@ -70,6 +70,11 @@ namespace TypeSystem.DrawingServices
             getDrawing(instance);
         }
 
+        public void ForceDisplay(Instance instance)
+        {
+            getDrawing(instance).CommitDrawing();
+        }
+
         public DiagramDefinition GetOutput()
         {
             processPipeline();
@@ -139,6 +144,5 @@ namespace TypeSystem.DrawingServices
         {
             return view.Apply(edit.Transformation);
         }
-
     }
 }

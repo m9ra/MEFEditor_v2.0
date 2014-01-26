@@ -117,13 +117,17 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod)
         {
+            var entryObj = assembly.Machine.CreateDirectInstance("EntryObject", TypeDescriptor.Create(typeof(string)));
+            
+            return GetResult(assembly, entryMethod, entryObj);
+        }
+
+        public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod, params Instance[] entryArguments)
+        {
             var entryLoader = new EntryPointLoader(entryMethod, assembly.Loader);
 
             assembly.Runtime.BuildAssembly();
-
-            var machine = SettingsProvider.CreateMachine(assembly.Settings);
-            var entryObj = machine.CreateDirectInstance("EntryObject", TypeDescriptor.Create(typeof(string)));
-            var result = machine.Run(entryLoader, entryObj);
+            var result = assembly.Machine.Run(entryLoader, entryArguments);
 
             foreach (var action in assembly.UserActions)
                 action(result);
@@ -132,6 +136,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
             return new TestResult(view, result);
         }
+
 
         /// <summary>
         /// Test that entry source is equivalent to given source after edit actions
@@ -152,7 +157,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             return assembly.GetSource(Method.EntryInfo.MethodID, view);
         }
-        
+
         private static string normalizeCode(string code)
         {
             return code.Replace("\n", "").Replace("\r", "").Replace(" ", "");

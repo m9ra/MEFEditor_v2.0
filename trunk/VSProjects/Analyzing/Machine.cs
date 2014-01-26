@@ -113,6 +113,11 @@ namespace Analyzing
             _createdInstances.Clear();
             var context = new Execution.AnalyzingContext(this, loader);
 
+            foreach (var argument in arguments)
+            {
+                _createdInstances.Add(argument.ID, argument);
+            }
+
             context.FetchCall(loader.EntryPoint, arguments);
             //context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);
 

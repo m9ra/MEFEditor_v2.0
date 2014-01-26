@@ -33,8 +33,11 @@ namespace Research
 
 
             return AssemblyUtils.Run(@"
-                CecilTestSources.ForLoop();
+                var c=new CecilComponent();
             ")
+
+             .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+             .AddToRuntime<DirectoryCatalogDefinition>()
              .AddReference(assembly)
 
              ;

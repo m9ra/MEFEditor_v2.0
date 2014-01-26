@@ -34,7 +34,13 @@ namespace MEFAnalyzers
 
         #region Type members implementation
 
-        public void _method_ctor(string path, string pattern = "*.dll")
+
+        public void _method_ctor(string path)
+        {
+            _method_ctor(path, "*.dll");
+        }
+
+        public void _method_ctor(string path, string pattern)
         {
             Path.Set(path);
             FullPath.Set(resolveFullPath(path));

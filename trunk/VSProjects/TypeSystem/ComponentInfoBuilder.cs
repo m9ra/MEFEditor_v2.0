@@ -69,7 +69,7 @@ namespace TypeSystem
 
         public void AddExplicitCompositionPoint(MethodID method)
         {
-            _explicitCompositionPoints.Add(new CompositionPoint(method, true));
+            _explicitCompositionPoints.Add(new CompositionPoint(ComponentType, method, true));
         }
 
         private MethodID getSetterID(TypeDescriptor importType, string setterName)
@@ -95,7 +95,7 @@ namespace TypeSystem
 
             var compositionPoints = new List<CompositionPoint>(_explicitCompositionPoints);
 
-            return new ComponentInfo(ComponentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray(),compositionPoints.ToArray());
+            return new ComponentInfo(ComponentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray(), compositionPoints.ToArray());
         }
 
 

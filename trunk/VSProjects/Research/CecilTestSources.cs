@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.ComponentModel.Composition.Hosting;
+
+using MEFEditor;
+
 /// <summary>
 /// Is used for loading via Mono.Cecil
 /// </summary>
@@ -39,3 +43,12 @@ static class CecilTestSources
     }
 }
 
+class CecilComponent
+{
+    [CompositionPoint]
+    public CecilComponent()
+    {
+        var cat = new DirectoryCatalog("TestPath.exe");
+
+    }
+}

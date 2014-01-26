@@ -278,8 +278,8 @@ namespace TypeSystem.Core
         {
             var typeAssembly = new TypeAssembly(this, assembly);
             _assemblies.Add(assembly, typeAssembly);
-            assembly.TypeServices = _services;
             assembly.OnComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
+            assembly.TypeServices = _services;
         }
 
         private void _onAssemblyRemove(AssemblyProvider assembly)

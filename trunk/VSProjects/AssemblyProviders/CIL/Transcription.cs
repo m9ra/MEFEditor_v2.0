@@ -222,21 +222,35 @@ namespace AssemblyProviders.CIL
             emitPushFrom(getLocalVar(Name));
         }
 
+        static void _ldarg()
+        {
+            var argNumber = getArgNumber(Name);
+
+            emitPushArg(argNumber);
+            //getArgVar(Name);
+            //throw new NotImplementedException();
+        }
+
+        static void _newobj()
+        {
+            emitCtor(Instruction.MethodOperand);
+        }
+
         static void _call()
         {
             var info = Instruction.MethodOperand;
             var staticCall = info.IsStatic;
-            createCall(info, staticCall);
+            emitCall(info, staticCall);
         }
 
         static void _stsfld()
         {
-            createCall(Instruction.Setter, true);
+            emitCall(Instruction.Setter, true);
         }
 
         static void _ldsfld()
         {
-            createCall(Instruction.Getter, true);
+            emitCall(Instruction.Getter, true);
         }
 
         static void _box()
@@ -365,6 +379,16 @@ namespace AssemblyProviders.CIL
             return instructionName.Substring(2);
         }
 
+        /// <summary>
+        /// Get number of argument loaded by ldarg instruction
+        /// </summary>
+        /// <param name="instructionName"></param>
+        /// <returns></returns>
+        static int getArgNumber(string instructionName)
+        {
+            return int.Parse(instructionName.Substring(6));
+        }
+
         static Label getTargetLabel()
         {
             var targetOffset = Instruction.BranchOperandAddress;
@@ -373,14 +397,20 @@ namespace AssemblyProviders.CIL
             return targetLabel;
         }
 
-        private static void createCall(TypeMethodInfo info, bool staticCall)
+        private static void emitCtor(TypeMethodInfo ctor)
+        {
+            var arguments = emitPopArguments(ctor);
+
+            E.AssignNewObject(LocalTmpVar, ctor.DeclaringType);
+            E.Call(ctor.MethodID, LocalTmpVar, arguments);
+            emitPushFrom(LocalTmpVar);
+        }
+
+        private static void emitCall(TypeMethodInfo info, bool staticCall)
         {
             var methodID = info.MethodID;
 
-            var argumentVariables = from param in info.Parameters select emitPopTmp(param.Type);
-            argumentVariables = argumentVariables.Reverse();
-
-            var arguments = Arguments.Values(argumentVariables.ToArray());
+            var arguments = emitPopArguments(info);
 
             if (staticCall)
             {
@@ -396,6 +426,14 @@ namespace AssemblyProviders.CIL
             {
                 emitPushReturn(info.ReturnType);
             }
+        }
+
+        private static Arguments emitPopArguments(TypeMethodInfo info)
+        {
+            var argumentVariables = from param in info.Parameters select emitPopTmp(param.Type);
+            argumentVariables = argumentVariables.Reverse();
+            var arguments = Arguments.Values(argumentVariables.ToArray());
+            return arguments;
         }
 
 
@@ -443,6 +481,13 @@ namespace AssemblyProviders.CIL
         private static void emitPushFrom(string source)
         {
             E.Call(Stack_push, StackStorage, Arguments.Values(source));
+        }
+
+        private static void emitPushArg(int argIndex)
+        {
+            var tmp = LocalTmpVar;
+            E.AssignArgument(tmp, Object_info, (uint)argIndex);
+            emitPushFrom(tmp);
         }
 
         #endregion

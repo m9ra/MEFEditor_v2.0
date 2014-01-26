@@ -277,5 +277,7 @@ namespace Drawing
 
             return outOfBounds;
         }
+
+        internal ArrangeEngine.PositionCursor PositionCursor { get; set; }
     }
 }

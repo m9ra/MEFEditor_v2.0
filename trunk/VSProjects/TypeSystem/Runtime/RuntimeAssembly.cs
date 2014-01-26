@@ -350,7 +350,10 @@ namespace TypeSystem.Runtime
         internal RuntimeTypeDefinition GetTypeDefinition(Instance instance)
         {
             //TODO: what about direct types ?
-            return _dataTypes[instance.Info.TypeName];
+            DataTypeDefinition typeDefinition;
+            _dataTypes.TryGetValue(instance.Info.TypeName,out typeDefinition);
+
+            return typeDefinition;
         }
 
         public DrawingPipeline CreateDrawingPipeline(GeneralDrawer drawer, AnalyzingResult result)

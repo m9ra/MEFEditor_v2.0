@@ -27,14 +27,15 @@ namespace Drawing
 
         private readonly Dictionary<string, Dictionary<string, Point>> _oldPositions = new Dictionary<string, Dictionary<string, Point>>();
 
-
         private readonly List<DiagramItem> _rootItems = new List<DiagramItem>();
 
         private readonly List<JoinDrawing> _joins = new List<JoinDrawing>();
 
-        internal readonly DiagramCanvas Output;
+        private ElementGroup _orderingGroup = new ElementGroup();
 
-        ElementGroup _orderingGroup = new ElementGroup();
+        private PositionCursor _rootCursor;
+
+        internal readonly DiagramCanvas Output;
 
         internal IEnumerable<DiagramItem> Items { get { return _items.Values; } }
 
@@ -50,6 +51,8 @@ namespace Drawing
 
         public void Display()
         {
+            _rootCursor = null;
+
             foreach (var item in _rootItems)
             {
                 Output.Children.Add(item);
@@ -87,8 +90,6 @@ namespace Drawing
 
             if (item.IsRootItem)
                 _rootItems.Add(item);
-
-            setInitialPosition(item);
         }
 
         internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
@@ -154,6 +155,28 @@ namespace Drawing
 
             var isRoot = owner == null;
             var children = isRoot ? _rootItems : owner.Children;
+            var lastCursor = isRoot ? _rootCursor : owner.PositionCursor;
+
+            var needsInitialPositions = lastCursor == null;
+
+            if (needsInitialPositions)
+            {
+                var cursor = new PositionCursor();
+                if (isRoot)
+                {
+                    _rootCursor = cursor;
+                }
+                else
+                {
+                    owner.PositionCursor = cursor;
+                }
+
+                foreach (var item in children)
+                {
+                    setInitialPosition(cursor, item);
+                }
+            }
+
             foreach (var child in children)
             {
                 if (!isRoot)
@@ -269,29 +292,32 @@ namespace Drawing
         /// Accordingly old positions, default positions,..
         /// </summary>
         /// <param name="item">Item which position will be set</param>
-        private void setInitialPosition(DiagramItem item)
+        private void setInitialPosition(PositionCursor cursor, DiagramItem item)
         {
             if (!_oldPositions.ContainsKey(item.ParentID))
             {
-                setDefaultPosition(item);
+                setDefaultPosition(cursor, item);
                 return;
             }
 
             var parentPositions = _oldPositions[item.ParentID];
             if (!parentPositions.ContainsKey(item.ID))
             {
-                setDefaultPosition(item);
+                setDefaultPosition(cursor, item);
                 return;
             }
 
-            SetPosition(item, parentPositions[item.ID]);
+            //keep position from previous display
+            var oldPosition = parentPositions[item.ID];
+            cursor.RegisterPosition(oldPosition, item.DesiredSize);
+            SetPosition(item, oldPosition);
         }
 
         /// <summary>
         /// Set default position for given item
         /// </summary>
         /// <param name="item">Item which position will be set</param>
-        private void setDefaultPosition(DiagramItem item)
+        private void setDefaultPosition(PositionCursor cursor, DiagramItem item)
         {
             //TODO refactor
             if (item.IsRootItem)
@@ -301,7 +327,8 @@ namespace Drawing
 
                 if (currentPos.X == 0 && currentPos.Y == 0)
                 {
-                    SetPosition(item, new Point(50, 50));
+                    var position = cursor.CreateNextPosition(item.DesiredSize);
+                    SetPosition(item, position);
                 }
                 else
                 {

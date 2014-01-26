@@ -24,10 +24,16 @@ namespace TypeSystem
         /// </summary>
         public readonly MethodID EntryMethod;
 
-        public CompositionPoint(MethodID entryMethod, bool isExplicit)
+        /// <summary>
+        /// Component where composition point is declared
+        /// </summary>
+        public readonly TypeDescriptor DeclaringComponent;
+
+        public CompositionPoint(TypeDescriptor declaringComponent, MethodID entryMethod, bool isExplicit)
         {
             IsExplicit = isExplicit;
             EntryMethod = entryMethod;
+            DeclaringComponent = declaringComponent;
         }
     }
 
@@ -64,9 +70,9 @@ namespace TypeSystem
         /// <summary>
         /// Assembly where current component was defined
         /// </summary>
-        public TypeAssembly DefiningAssembly {get;internal set;}
+        public TypeAssembly DefiningAssembly { get; internal set; }
 
-        public ComponentInfo(InstanceInfo thisType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports,CompositionPoint[] compositionPoints)
+        public ComponentInfo(InstanceInfo thisType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports, CompositionPoint[] compositionPoints)
         {
             ComponentType = thisType;
             SelfExports = selfExports;
