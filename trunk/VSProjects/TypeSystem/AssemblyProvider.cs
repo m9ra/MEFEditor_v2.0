@@ -42,7 +42,15 @@ namespace TypeSystem
             }
         }
 
+        public string Name { get { return getAssemblyName(); } }
+
+        public string FullPath { get { return getAssemblyFullPath(); } }
+
         #region Template method API
+
+        protected abstract string getAssemblyFullPath();
+
+        protected abstract string getAssemblyName();
 
         public abstract GeneratorBase GetMethodGenerator(MethodID method);
 
@@ -94,7 +102,7 @@ namespace TypeSystem
         {
             // throw new NotImplementedException();
         }
-        
+
         protected void CommitTransaction()
         {
             //  throw new NotImplementedException();
@@ -115,7 +123,7 @@ namespace TypeSystem
 
         internal void UnloadServices()
         {
-            TypeServices = null;
+            //TODO what unload
         }
     }
 }

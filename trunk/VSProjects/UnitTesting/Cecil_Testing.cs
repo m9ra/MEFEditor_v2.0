@@ -81,7 +81,7 @@ namespace UnitTesting
         #region Testing utilities
 
         private TestingAssembly run(string methodName)
-        { 
+        {
             var assemblyFile = GetType().Assembly.Location;
             return AssemblyUtils.RunCECIL(assemblyFile, typeof(Cecil_Testing).FullName + "." + methodName);
         }
@@ -90,7 +90,7 @@ namespace UnitTesting
         {
             var assembly = new CILAssembly(GetType().Assembly.Location);
             return AssemblyUtils.RunCIL(entryMethod)
-                .RegisterAssembly(assembly.Path, assembly);
+                .RegisterAssembly(assembly.Name, assembly);
         }
 
         #endregion

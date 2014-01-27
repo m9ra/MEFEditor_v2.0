@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Windows;
 using System.Windows.Controls;
 
 using Drawing;
@@ -12,8 +13,11 @@ using MEFEditor;
 using TypeSystem;
 using TypeSystem.Runtime;
 
-namespace Research
+using AssemblyProviders.CILAssembly;
+
+namespace Research.GUI
 {
+
     /// <summary>
     /// Manager class used for handling GUI behaviour
     /// </summary>
@@ -27,7 +31,10 @@ namespace Research
 
         private readonly Dictionary<CompositionPoint, ComboBoxItem> _compositionPoints = new Dictionary<CompositionPoint, ComboBoxItem>();
 
-        private DrawingProvider _drawingProvider;
+        private readonly DrawingProvider _drawingProvider;
+
+        private AssemblyProvider _hostAssembly;
+
 
         /// <summary>
         /// Event fired whenever composition point is selected
@@ -35,15 +42,29 @@ namespace Research
         public event Action CompositionPointSelected;
 
         /// <summary>
+        /// Event fired whenever new cross assembly is loaded
+        /// </summary>
+        public event AssemblyAction HostAssemblyLoaded;
+
+        /// <summary>
+        /// Event fired whenever previously loaded cross assembly is unloaded
+        /// </summary>
+        public event AssemblyAction HostAssemblyUnLoaded;
+
+        /// <summary>
         /// Composition point that is currently selected
         /// </summary>
         public CompositionPoint SelectedCompositionPoint { get; private set; }
+
+
 
         public GUIManager(AppDomainServices appDomain, EditorGUI gui, AbstractDiagramFactory diagramFactory)
         {
             _appDomain = appDomain;
             _gui = gui;
             _diagramFactory = diagramFactory;
+
+            _drawingProvider = new DrawingProvider(_gui.Workspace, _diagramFactory);
 
             hookEvents();
             initialize();
@@ -54,8 +75,7 @@ namespace Research
         /// </summary>
         /// <param name="diagram">Displayed diagram</param>
         public void Display(DiagramDefinition diagram)
-        {
-            _drawingProvider = new DrawingProvider(_gui.Workspace, _diagramFactory);
+        {            
             _drawingProvider.Display(diagram);
         }
 
@@ -68,14 +88,25 @@ namespace Research
         {
             _appDomain.ComponentAdded += onComponentAdded;
             _appDomain.ComponentRemoved += onComponentRemoved;
+
+            _appDomain.Assemblies.OnAdd += onAssemblyAdded;
+            _appDomain.Assemblies.OnRemove += onAssemblyRemoved;
+
+            _gui.OnHostPathChanged += onHostPathChanged;
         }
+
 
         /// <summary>
         /// Initialize GUI according to current environment state
         /// </summary>
         private void initialize()
         {
-            var emptyItem=createNoCompositionPointItem();
+            foreach (var assembly in _appDomain.Assemblies)
+            {
+                onAssemblyAdded(assembly);
+            }
+
+            var emptyItem = createNoCompositionPointItem();
             _gui.CompositionPoints.Items.Clear();
             _gui.CompositionPoints.Items.Add(emptyItem);
             _gui.CompositionPoints.SelectedItem = emptyItem;
@@ -83,6 +114,55 @@ namespace Research
             foreach (var component in _appDomain.Components)
             {
                 onComponentAdded(component);
+            }
+        }
+
+        #endregion
+
+
+        #region Assembly settings handling
+
+        private void onAssemblyRemoved(AssemblyProvider provider)
+        {
+            _gui.Assemblies.RemoveItem(provider);
+        }
+
+        private void onAssemblyAdded(AssemblyProvider provider)
+        {
+            var assemblyItem = createAssemblyItem(provider);
+            _gui.Assemblies.AddItem(provider, assemblyItem);
+        }
+
+        private FrameworkElement createAssemblyItem(AssemblyProvider assembly)
+        {
+            return new AssemblyItem(assembly);
+        }
+
+        #endregion
+
+        #region Cross interpreting handling
+
+        void onHostPathChanged(string path)
+        {
+            if (_hostAssembly != null)
+            {
+                if (HostAssemblyUnLoaded != null)
+                    HostAssemblyUnLoaded(_hostAssembly);
+
+                _hostAssembly = null;
+            }
+
+            if (path == null)
+            {
+                //there is nothing to do
+                return;
+            }
+            else
+            {
+                //TODO refactor - assembly loading algorithm - this is responsibily of managers user
+                _hostAssembly = new CILAssembly(path);
+                if (HostAssemblyLoaded != null)
+                    HostAssemblyLoaded(_hostAssembly);
             }
         }
 
@@ -120,6 +200,11 @@ namespace Research
             _compositionPoints.Remove(compositionPoint);
 
             _gui.CompositionPoints.Items.Remove(item);
+
+            if (compositionPoint == SelectedCompositionPoint)
+            {
+                _gui.CompositionPoints.SelectedIndex = 0;
+            }
         }
 
         private ComboBoxItem createCompositionPointItem(CompositionPoint compositionPoint)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO;
 using System.ComponentModel.Composition;
 
 using Mono.Cecil;
@@ -18,20 +19,21 @@ namespace AssemblyProviders.CILAssembly
 {
     public class CILAssembly : AssemblyProvider
     {
-        public readonly string Path;
+        public readonly string _fullPath;
 
         private readonly AssemblyDefinition _assembly;
 
         public CILAssembly(string assemblyPath)
         {
-            Path = assemblyPath;
+            _fullPath = Path.GetFullPath(assemblyPath);
+
 
             //TODO use correct resolvers
             var pars = new ReaderParameters();
             var resolver = new DefaultAssemblyResolver();
             pars.AssemblyResolver = resolver;
 
-            _assembly = AssemblyDefinition.ReadAssembly(assemblyPath, pars);
+            _assembly = AssemblyDefinition.ReadAssembly(_fullPath, pars);
 
             OnTypeSystemInitialized += initializeAssembly;
         }
@@ -451,6 +453,16 @@ namespace AssemblyProviders.CILAssembly
         #endregion
 
         #region Assembly provider implementation
+
+        protected override string getAssemblyFullPath()
+        {
+            return _fullPath;
+        }
+
+        protected override string getAssemblyName()
+        {
+            return _assembly.Name.Name;
+        }
 
         public override GeneratorBase GetMethodGenerator(MethodID method)
         {

@@ -21,5 +21,10 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             addAssembly(assembly);
         }
+
+        internal void Remove(AssemblyProvider assembly)
+        {
+            removeAssembly(assembly);
+        }
     }
 }

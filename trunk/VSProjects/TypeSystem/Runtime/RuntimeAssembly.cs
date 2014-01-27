@@ -58,6 +58,17 @@ namespace TypeSystem.Runtime
 
         private readonly Dictionary<string, InheritanceChain> _inheritanceChains = new Dictionary<string, InheritanceChain>();
 
+
+        protected override string getAssemblyFullPath()
+        {
+            return "//Runtime";
+        }
+
+        protected override string getAssemblyName()
+        {
+            return "Runtime";
+        }
+
         public RuntimeAssembly()
         {
             _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
@@ -351,7 +362,7 @@ namespace TypeSystem.Runtime
         {
             //TODO: what about direct types ?
             DataTypeDefinition typeDefinition;
-            _dataTypes.TryGetValue(instance.Info.TypeName,out typeDefinition);
+            _dataTypes.TryGetValue(instance.Info.TypeName, out typeDefinition);
 
             return typeDefinition;
         }

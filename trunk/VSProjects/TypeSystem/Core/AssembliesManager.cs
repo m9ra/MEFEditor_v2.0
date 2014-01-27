@@ -33,6 +33,10 @@ namespace TypeSystem.Core
 
         internal readonly MachineSettings Settings;
 
+        internal event ComponentEvent ComponentAdded;
+
+        internal event ComponentEvent ComponentRemoved;
+
         internal IEnumerable<ComponentInfo> Components { get { return _components.Values; } }
 
         internal AssembliesManager(AssemblyCollection assemblies, MachineSettings settings)
@@ -284,6 +288,13 @@ namespace TypeSystem.Core
 
         private void _onAssemblyRemove(AssemblyProvider assembly)
         {
+            var componentsCopy = GetComponents(assembly).ToArray();
+            foreach (var component in componentsCopy)
+            {
+                _onComponentRemoved(assembly, component);
+            }
+
+            _assemblies.Remove(assembly);
             assembly.UnloadServices();
         }
 
@@ -297,7 +308,21 @@ namespace TypeSystem.Core
                 //TODO how to handle same components
                 return;
             _components.Add(componentInfo.ComponentType, componentInfo);
+
+
+            if (ComponentAdded != null)
+                ComponentAdded(componentInfo);
         }
+
+        private void _onComponentRemoved(AssemblyProvider assembly, ComponentInfo removedComponent)
+        {
+            _assemblyComponents.Remove(assembly, removedComponent);
+            _components.Remove(removedComponent.ComponentType);
+
+            if (ComponentRemoved != null)
+                ComponentRemoved(removedComponent);
+        }
+
 
         #endregion
     }

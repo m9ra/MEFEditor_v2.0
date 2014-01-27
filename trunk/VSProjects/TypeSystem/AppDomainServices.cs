@@ -33,6 +33,16 @@ namespace TypeSystem
         internal AppDomainServices(AssembliesManager manager)
         {
             _manager = manager;
+
+            _manager.ComponentAdded += (c) =>
+            {
+                if (ComponentAdded != null) ComponentAdded(c);
+            };
+
+            _manager.ComponentRemoved += (c) =>
+            {
+                if (ComponentRemoved != null) ComponentRemoved(c);
+            };
         }
     }
 }

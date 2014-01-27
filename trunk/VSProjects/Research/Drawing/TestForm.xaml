@@ -8,11 +8,10 @@
     mc:Ignorable="d" 
     
     xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
-    
-    xmlns:m="clr-namespace:MEFEditor;assembly=MEFEditor"
+    xmlns:m="clr-namespace:Research.GUI"
     >
 
-    <m:EditorGUI Name="GUI"></m:EditorGUI>
+    <m:EditorGUI x:Name="GUI"></m:EditorGUI>
 
 
 </Window>

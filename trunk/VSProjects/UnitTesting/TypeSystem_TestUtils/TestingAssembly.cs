@@ -169,6 +169,17 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         #region Assembly provider implementatation
 
+
+        protected override string getAssemblyFullPath()
+        {
+            return "//TestingAssembly";
+        }
+
+        protected override string getAssemblyName()
+        {
+            return "TestingAssembly";
+        }
+
         public override SearchIterator CreateRootIterator()
         {
             return new HashIterator(_methods);
@@ -235,10 +246,16 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
+        public TestingAssembly RemoveReference(AssemblyProvider assembly)
+        {
+            Assemblies.Remove(assembly);
+
+            return this;
+        }
+
         public void Rebuild()
         {
             throw new NotImplementedException();
         }
-
     }
 }

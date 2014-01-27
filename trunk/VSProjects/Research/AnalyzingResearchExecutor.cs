@@ -17,6 +17,7 @@ using Analyzing.Execution;
 using MEFAnalyzers.Drawings;
 
 using Research.Drawings;
+using Research.GUI;
 
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
@@ -201,6 +202,8 @@ namespace Research
 
             _guiManager = new GUIManager(_assembly.AppDomain, form.GUI, factory);
             _guiManager.CompositionPointSelected += onCompositionPointSelected;
+            _guiManager.HostAssemblyLoaded += (a) => _assembly.AddReference(a);
+            _guiManager.HostAssemblyUnLoaded += (a) => { _assembly.RemoveReference(a); };
             _guiManager.Display(_diagramDefinition);
 
             form.Show();

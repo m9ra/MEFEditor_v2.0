@@ -27,6 +27,16 @@ namespace Research
     static class ResearchSources
     {
 
+        static internal TestingAssembly CrossInterpreting_Simple()
+        {
+            return AssemblyUtils.Run(@"
+                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test.exe"");   
+            ")
+
+             .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+             .AddToRuntime<DirectoryCatalogDefinition>();
+        }
+
         static internal TestingAssembly CECIL_CompositionPoint()
         {
             var assembly = new CILAssembly("Research.exe");
@@ -184,7 +194,7 @@ namespace Research
         {
             var cilAssembly = new CILAssembly("Research.exe");
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.CrossStart")
-                .RegisterAssembly(cilAssembly.Path, cilAssembly);
+                .RegisterAssembly(cilAssembly.Name, cilAssembly);
         }
 
         [CompositionPoint]

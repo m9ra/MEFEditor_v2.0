@@ -45,16 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompositionPointAttribute.cs" />
-    <Compile Include="EditorGUI.xaml.cs">
-      <DependentUpon>EditorGUI.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="EditorGUI.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Drawing\Drawing.csproj">

@@ -1,0 +1,93 @@
+﻿<UserControl x:Class="Research.GUI.EditorGUI"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
+             xmlns:m="clr-namespace:Research.GUI"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="SettingSectionForeground" Color="#F6F6F6"/>
+        <SolidColorBrush x:Key="SettingSectionBackground" Color="#EFEFF2"/>
+
+    </UserControl.Resources>
+
+    <DockPanel LastChildFill="True">
+        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
+                <ComboBox Name="_CompositionPoints" ToolTip="Displayed composition point" Margin="0 0 0 5" Width="150" SelectedIndex="0" >
+                    <ComboBoxItem>
+                        none
+                    </ComboBoxItem>
+                </ComboBox>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition SharedSizeGroup="Button"/>
+                        <ColumnDefinition SharedSizeGroup="Button"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.Children>
+                        <Button Name="RefreshButton" Grid.Column="0" ToolTip="Refresh drawing on the workspace" Content="Refresh" Click="refresh_Click"/>
+                        <Button Name="ScreenSwitchButton" Grid.Column="1" ToolTip="Display dialog with editor settings" Content="Settings" Click="switch_Click"/>
+                    </Grid.Children>
+                </Grid>
+            </StackPanel>
+            <Expander Margin="5 0 0 0" DockPanel.Dock="Bottom" Name="logsExpander" IsExpanded="False" MaxHeight="200">
+                <Expander.Header>
+                    <TextBlock TextAlignment="Right" HorizontalAlignment="Stretch">Show logs</TextBlock>
+                </Expander.Header>
+
+                <ScrollViewer MaxHeight="200">
+                    <StackPanel Name="_Log"></StackPanel>
+                </ScrollViewer>
+            </Expander>
+        </DockPanel>
+        <Grid>
+            <dr:DiagramCanvas Name="_Workspace" Background="White"></dr:DiagramCanvas>
+            <TabControl Name="_Settings" Margin="0 10 0 0">
+                <TabItem  Header="Runtime">
+                    <ScrollViewer>
+                        <DockPanel LastChildFill="True">
+                            <TextBlock FontSize="25" DockPanel.Dock="Top">Runtime settings</TextBlock>
+                            <StackPanel Name="_RuntimeSettings" Orientation="Vertical">
+
+                                <m:SettingsSection Title="Cross-interpreting">
+                                    <m:SettingsSection.Children>
+
+                                        <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                            <DockPanel Margin="5">
+                                                <TextBlock Width="170" DockPanel.Dock="Left">Enable cross interpreting:</TextBlock>
+                                                <CheckBox Name="_CrossInterpretationValue" VerticalAlignment="Center" Checked="interpretingEnabled_Checked" Unchecked="interpretingEnabled_Unchecked"></CheckBox>
+                                            </DockPanel>
+                                        </DockPanel>
+
+                                        <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                            <DockPanel Margin="5">
+                                                <TextBlock Width="170" DockPanel.Dock="Left">Host application:</TextBlock>
+                                                <TextBox Name="_HostPath" IsReadOnly="True" PreviewMouseDown="hostPath_PreviewMouseDown"></TextBox>
+                                            </DockPanel>
+                                        </DockPanel>
+
+
+                                    </m:SettingsSection.Children>
+                                </m:SettingsSection>
+
+                                <m:SettingsSection x:Name="_Assemblies" Title="Assemblies">
+
+                                </m:SettingsSection>
+                            </StackPanel>
+                        </DockPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="Appearence">
+                    <StackPanel>
+                        <TextBlock FontSize="25">Appearance settings</TextBlock>
+                        <Grid Name="_AppearanceSettings">
+
+                        </Grid>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </DockPanel>
+</UserControl>

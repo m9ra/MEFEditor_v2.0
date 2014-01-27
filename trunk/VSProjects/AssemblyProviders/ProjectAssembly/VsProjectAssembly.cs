@@ -24,8 +24,6 @@ namespace AssemblyProviders.ProjectAssembly
 
         internal Project Project { get { return _assemblyProject.Project; } }
 
-        public string Name { get { return _assemblyProject.Project.Name; } }
-
         public VsProjectAssembly(VSProject2 assemblyProject)
         {
             _assemblyProject = assemblyProject;
@@ -117,6 +115,17 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         #region Assembly provider implementation
+
+        protected override string getAssemblyName()
+        {
+            return _assemblyProject.Project.Name;
+        }
+
+        protected override string getAssemblyFullPath()
+        {
+            //TODO correct fullpath
+            return _assemblyProject.Project.FullName;
+        }
 
         public override GeneratorBase GetMethodGenerator(MethodID method)
         {

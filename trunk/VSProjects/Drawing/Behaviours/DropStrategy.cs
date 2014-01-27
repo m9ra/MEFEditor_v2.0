@@ -12,6 +12,9 @@ namespace Drawing.Behaviours
     {
         protected override void onDrop()
         {
+            if (E.Effects == DragDropEffects.None)
+                return;
+
             DragItem.GlobalPosition = DragAdorner.GlobalPosition;
         }
 
