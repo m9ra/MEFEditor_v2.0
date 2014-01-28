@@ -57,7 +57,6 @@ namespace Drawing
             {
                 Output.Children.Add(item);
             }
-            _oldPositions.Clear();
         }
 
         public void Clear()

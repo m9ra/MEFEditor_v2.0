@@ -40,9 +40,6 @@ namespace Research.GUI
 
         public ComboBox CompositionPoints { get { return _CompositionPoints; } }
 
-        public Panel RuntimeSettings { get { return _RuntimeSettings; } }
-
-        public Grid AppearanceSettings { get { return _AppearanceSettings; } }
 
         /// <summary>
         /// Event for handling changes in host application path

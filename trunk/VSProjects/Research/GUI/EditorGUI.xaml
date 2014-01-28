@@ -9,7 +9,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
         <SolidColorBrush x:Key="SettingSectionForeground" Color="#F6F6F6"/>
-        <SolidColorBrush x:Key="SettingSectionBackground" Color="#EFEFF2"/>
+        <SolidColorBrush x:Key="SettingSectionBackground" Color="#EBEBEE"/>
 
     </UserControl.Resources>
 
@@ -47,7 +47,7 @@
             <TabControl Name="_Settings" Margin="0 10 0 0">
                 <TabItem  Header="Runtime">
                     <ScrollViewer>
-                        <DockPanel LastChildFill="True">
+                        <DockPanel>
                             <TextBlock FontSize="25" DockPanel.Dock="Top">Runtime settings</TextBlock>
                             <StackPanel Name="_RuntimeSettings" Orientation="Vertical">
 
@@ -82,9 +82,42 @@
                 <TabItem Header="Appearence">
                     <StackPanel>
                         <TextBlock FontSize="25">Appearance settings</TextBlock>
-                        <Grid Name="_AppearanceSettings">
+                        <DockPanel>
+                            <m:SettingsSection Title="Diagram behaviour">
+                                <m:SettingsSection.Children>
 
-                        </Grid>
+                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                        <DockPanel Margin="5">
+                                            <TextBlock Width="170" DockPanel.Dock="Left">Auto-refresh enabled :</TextBlock>
+                                            <CheckBox VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                    </DockPanel>
+
+
+                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                        <DockPanel Margin="5">
+                                            <TextBlock Width="170" DockPanel.Dock="Left">Use item collision avoidance :</TextBlock>
+                                            <CheckBox VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                    </DockPanel>
+
+                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                        <DockPanel Margin="5">
+                                            <TextBlock Width="170" DockPanel.Dock="Left">Use join collision avoidance :</TextBlock>
+                                            <CheckBox VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                    </DockPanel>
+
+                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                        <DockPanel Margin="5">
+                                            <TextBlock Width="170" DockPanel.Dock="Left">Show join lines:</TextBlock>
+                                            <CheckBox VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                    </DockPanel>
+
+                                </m:SettingsSection.Children>
+                            </m:SettingsSection>
+                        </DockPanel>
                     </StackPanel>
                 </TabItem>
             </TabControl>

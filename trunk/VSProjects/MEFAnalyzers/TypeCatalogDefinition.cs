@@ -24,6 +24,7 @@ namespace MEFAnalyzers
 
         public TypeCatalogDefinition()
         {
+            AddCreationEdit("Add TypeCatalog", Dialogs.VariableName.GetName);
             Simulate<TypeCatalog>();
         }
 

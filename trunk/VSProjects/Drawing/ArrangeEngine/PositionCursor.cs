@@ -16,7 +16,7 @@ namespace Drawing.ArrangeEngine
 
         internal void RegisterPosition(Point oldPosition, Size size)
         {
-            throw new NotImplementedException();
+            _lineOffset = Math.Max(_lineOffset, oldPosition.X + size.Width);
         }
 
         internal Point CreateNextPosition(Size size)

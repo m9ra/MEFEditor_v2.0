@@ -270,7 +270,8 @@ namespace Research
                 if (addToQueue)
                 {
                     pipeline.AddToDrawQueue(instance);
-                    pipeline.ForceDisplay(instance);
+                    if (hasComponentInfo)
+                        pipeline.ForceDisplay(instance);
                 }
             }
 

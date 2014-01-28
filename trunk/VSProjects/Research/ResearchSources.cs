@@ -26,6 +26,36 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly MEF_Demo()
+        {
+            var testAssembly = new RuntimeAssembly();
+            testAssembly.AddDefinition(new StringImport());
+
+            return AssemblyUtils.Run(@"        
+                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test.exe"");       
+                var assemCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""test.exe"");
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+            
+                var export=new SimpleStringExport();
+                
+                compCont.ComposeParts();
+   
+            ")
+
+            .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<DirectoryCatalogDefinition>()
+            .AddToRuntime<AggregateCatalogDefinition>()
+            .AddToRuntime<TypeCatalogDefinition>()
+            .AddToRuntime<AssemblyCatalogDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+            .AddToRuntime<SimpleStringExport>()
+            .AddToRuntime<StringImport>()
+
+            .RegisterAssembly("test.exe", testAssembly)
+            ;
+        }
 
         static internal TestingAssembly CrossInterpreting_Simple()
         {

@@ -12,7 +12,7 @@ namespace Research.GUI
 {
     static class GUIColors
     {
-        public static readonly Brush SectionBackground = new SolidColorBrush(Color.FromRgb(239, 239, 242));
+        public static readonly Brush SectionBackground = new SolidColorBrush(Color.FromRgb(235, 235, 238));
 
         public static readonly Brush SectionForeground = new SolidColorBrush(Color.FromRgb(246, 246, 246));
     }

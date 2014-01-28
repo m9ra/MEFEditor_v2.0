@@ -18,7 +18,7 @@ namespace MEFAnalyzers
 {
     public class ComposablePartCatalogCollectionDefinition : DataTypeDefinition
     {
-        public const string TypeFullname = "System.ComponentModel.Composition.Hosting";
+        public const string TypeFullname = "System.ComponentModel.Composition.Hosting.ComposablePartCatalogCollection";
 
         protected Field<Instance> Parent;
 
