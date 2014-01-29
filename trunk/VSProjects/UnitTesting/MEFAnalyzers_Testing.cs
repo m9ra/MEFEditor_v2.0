@@ -80,7 +80,7 @@ namespace UnitTesting
         [TestMethod]
         public void Compose_PrerequisityImport_LoadedAssembly()
         {
-            var testAssembly = new RuntimeAssembly();
+            var testAssembly = new RuntimeAssembly("test.exe");
             testAssembly.AddDefinition(new StringExport());
 
             AssemblyUtils.Run(@"        
@@ -102,7 +102,7 @@ namespace UnitTesting
             .AddToRuntime<ICollectionStringImport>()
             .AddDirectToRuntime<List<string>>()
             .AddDirectToRuntime<ICollection<string>>()
-            .RegisterAssembly("test.exe", testAssembly)
+            .RegisterAssembly(testAssembly)
 
             
             

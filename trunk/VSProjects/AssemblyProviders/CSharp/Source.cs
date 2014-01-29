@@ -256,7 +256,7 @@ namespace AssemblyProviders.CSharp
 
             if (value is string)
             {
-                value = string.Format("\"{0}\"", value);
+                value = string.Format("\"{0}\"", (value as string).Replace("\\","\\\\"));
             }
 
             if (value is InstanceInfo)

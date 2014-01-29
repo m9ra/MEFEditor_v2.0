@@ -90,7 +90,7 @@ namespace UnitTesting
         {
             var assembly = new CILAssembly(GetType().Assembly.Location);
             return AssemblyUtils.RunCIL(entryMethod)
-                .RegisterAssembly(assembly.Name, assembly);
+                .RegisterAssembly(assembly);
         }
 
         #endregion

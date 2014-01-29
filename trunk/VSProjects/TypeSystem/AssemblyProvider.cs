@@ -10,16 +10,25 @@ using TypeSystem.Core;
 
 namespace TypeSystem
 {
-    internal delegate void ChangeEvent(MethodID name);
+
+    /// <summary>
+    /// Event fired for assembly action
+    /// </summary>
+    /// <param name="assembly">Assembly causing event firing</param>
+    public delegate void AssemblyEvent(AssemblyProvider assembly);
+
+    internal delegate void MethodEvent(MethodID name);
+
 
     public abstract class AssemblyProvider
     {
         private TypeServices _services;
 
+        private string _fullPathMapping;
+
         protected event Action OnTypeSystemInitialized;
 
-        internal event ComponentEvent OnComponentAdded;
-
+        internal event ComponentEvent ComponentAdded;
 
         internal protected TypeServices TypeServices
         {
@@ -37,14 +46,37 @@ namespace TypeSystem
 
                 _services = value;
 
+                //default path mapping
+                FullPathMapping = FullPath;
+
                 if (OnTypeSystemInitialized != null)
                     OnTypeSystemInitialized();
             }
         }
 
+        public AssemblyEvent MappingChanged;
+
         public string Name { get { return getAssemblyName(); } }
 
         public string FullPath { get { return getAssemblyFullPath(); } }
+
+        public string FullPathMapping
+        {
+            get
+            {
+                return _fullPathMapping;
+            }
+            set
+            {
+                if (_fullPathMapping == value)
+                    return;
+
+                _fullPathMapping = value;
+
+                if (MappingChanged != null)
+                    MappingChanged(this);
+            }
+        }
 
         #region Template method API
 
@@ -73,8 +105,8 @@ namespace TypeSystem
 
         protected void AddComponent(ComponentInfo component)
         {
-            if (OnComponentAdded != null)
-                OnComponentAdded(component);
+            if (ComponentAdded != null)
+                ComponentAdded(component);
         }
 
         protected void AddReference(object obj)
@@ -116,7 +148,7 @@ namespace TypeSystem
         {
         }
 
-        internal void HookChange(ChangeEvent changeEvent)
+        internal void HookChange(MethodEvent changeEvent)
         {
             throw new NotImplementedException();
         }

@@ -58,10 +58,11 @@ namespace TypeSystem.Runtime
 
         private readonly Dictionary<string, InheritanceChain> _inheritanceChains = new Dictionary<string, InheritanceChain>();
 
+        private readonly string _fullPath = "//Runtime";
 
         protected override string getAssemblyFullPath()
         {
-            return "//Runtime";
+            return _fullPath;
         }
 
         protected override string getAssemblyName()
@@ -69,8 +70,11 @@ namespace TypeSystem.Runtime
             return "Runtime";
         }
 
-        public RuntimeAssembly()
+        public RuntimeAssembly(string fullPath = null)
         {
+            if (fullPath != null)
+                _fullPath = fullPath;
+
             _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
             {
                 {"_method_",_createMethod},

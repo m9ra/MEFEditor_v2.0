@@ -28,11 +28,11 @@ namespace Research
     {
         static internal TestingAssembly MEF_Demo()
         {
-            var testAssembly = new RuntimeAssembly();
+            var testAssembly = new RuntimeAssembly("test.exe");
             testAssembly.AddDefinition(new StringImport());
 
             return AssemblyUtils.Run(@"        
-                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""test.exe"");       
+                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""."");       
                 var assemCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""test.exe"");
                 var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
             
@@ -53,7 +53,7 @@ namespace Research
             .AddToRuntime<SimpleStringExport>()
             .AddToRuntime<StringImport>()
 
-            .RegisterAssembly("test.exe", testAssembly)
+            .RegisterAssembly(testAssembly)
             ;
         }
 
@@ -85,7 +85,7 @@ namespace Research
 
         static internal TestingAssembly MEF_AssemblyCatalog()
         {
-            var testAssembly = new RuntimeAssembly();
+            var testAssembly = new RuntimeAssembly("test.exe");
             testAssembly.AddDefinition(new SimpleStringExport());
             testAssembly.AddDefinition(new ICollectionStringImport());
 
@@ -105,7 +105,7 @@ namespace Research
             .AddDirectToRuntime<ICollection<string>>()
             .AddDirectToRuntime<List<string>>()
 
-            .RegisterAssembly("test.exe", testAssembly)
+            .RegisterAssembly(testAssembly)
             ;
         }
 
@@ -127,7 +127,7 @@ namespace Research
 
         static internal TestingAssembly MEF_CompositionErrors()
         {
-            var testAssembly = new RuntimeAssembly();
+            var testAssembly = new RuntimeAssembly("test.exe");
             testAssembly.AddDefinition(new StringImport());
 
             return AssemblyUtils.Run(@"        
@@ -145,7 +145,7 @@ namespace Research
             .AddToRuntime<SimpleStringExport>()
             .AddToRuntime<StringImport>()
 
-            .RegisterAssembly("test.exe", testAssembly)
+            .RegisterAssembly(testAssembly)
             ;
         }
 
@@ -158,10 +158,10 @@ namespace Research
 
         static internal TestingAssembly MEF_AggregateCatalog()
         {
-            var testAssembly = new RuntimeAssembly();
+            var testAssembly = new RuntimeAssembly("test.exe");
             testAssembly.AddDefinition(new StringImport());
 
-            var testAssembly2 = new RuntimeAssembly();
+            var testAssembly2 = new RuntimeAssembly("test2.exe");
             testAssembly2.AddDefinition(new SimpleStringExport());
 
             return AssemblyUtils.Run(@"                        
@@ -184,14 +184,14 @@ namespace Research
             .AddToRuntime<StringImport>()
             .AddToRuntime<SimpleStringExport>()
 
-            .RegisterAssembly("test.exe", testAssembly)
-            .RegisterAssembly("test2.exe", testAssembly2)
+            .RegisterAssembly(testAssembly)
+            .RegisterAssembly(testAssembly2)
             ;
         }
 
         static internal TestingAssembly MEF_DirectoryCatalog()
         {
-            var testAssembly = new RuntimeAssembly();
+            var testAssembly = new RuntimeAssembly("test.exe");
             testAssembly.AddDefinition(new SimpleStringExport());
             testAssembly.AddDefinition(new ICollectionStringImport());
 
@@ -214,7 +214,7 @@ namespace Research
             .AddDirectToRuntime<ICollection<string>>()
             .AddDirectToRuntime<List<string>>()
 
-            .RegisterAssembly("test.exe", testAssembly)
+            .RegisterAssembly(testAssembly)
             ;
 
 
@@ -224,7 +224,7 @@ namespace Research
         {
             var cilAssembly = new CILAssembly("Research.exe");
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.CrossStart")
-                .RegisterAssembly(cilAssembly.Name, cilAssembly);
+                .RegisterAssembly(cilAssembly);
         }
 
         [CompositionPoint]
@@ -358,7 +358,7 @@ namespace Research
 
         static internal TestingAssembly CompositionTester_LoadAssembly()
         {
-            var testAssembly = new RuntimeAssembly();
+            var testAssembly = new RuntimeAssembly("test.exe");
             testAssembly.AddDefinition(new StringExport());
 
             return AssemblyUtils.Run(@"        
@@ -380,7 +380,7 @@ namespace Research
             .AddToRuntime<ICollectionStringImport>()
             .AddDirectToRuntime<List<string>>()
             .AddDirectToRuntime<ICollection<string>>()
-            .RegisterAssembly("test.exe", testAssembly)
+            .RegisterAssembly(testAssembly)
             ;
         }
 

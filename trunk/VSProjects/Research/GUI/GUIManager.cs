@@ -75,7 +75,7 @@ namespace Research.GUI
         /// </summary>
         /// <param name="diagram">Displayed diagram</param>
         public void Display(DiagramDefinition diagram)
-        {            
+        {
             _drawingProvider.Display(diagram);
         }
 
@@ -92,7 +92,8 @@ namespace Research.GUI
             _appDomain.Assemblies.OnAdd += onAssemblyAdded;
             _appDomain.Assemblies.OnRemove += onAssemblyRemoved;
 
-            _gui.OnHostPathChanged += onHostPathChanged;
+            _gui.HostPathChanged += onHostPathChanged;
+            _gui.RefreshClicked += forceRefresh;
         }
 
 
@@ -124,18 +125,25 @@ namespace Research.GUI
 
         private void onAssemblyRemoved(AssemblyProvider provider)
         {
+            //TODO remove mapping changed handler
             _gui.Assemblies.RemoveItem(provider);
         }
 
         private void onAssemblyAdded(AssemblyProvider provider)
         {
             var assemblyItem = createAssemblyItem(provider);
+            assemblyItem.MappingChanged += onAssemblyMappingChanged;
             _gui.Assemblies.AddItem(provider, assemblyItem);
         }
 
-        private FrameworkElement createAssemblyItem(AssemblyProvider assembly)
+        private AssemblyItem createAssemblyItem(AssemblyProvider assembly)
         {
             return new AssemblyItem(assembly);
+        }
+
+        private void onAssemblyMappingChanged(AssemblyProvider assembly)
+        {
+            forceRefresh();
         }
 
         #endregion
@@ -169,6 +177,11 @@ namespace Research.GUI
         #endregion
 
         #region Composition point list handling
+
+        private void forceRefresh()
+        {
+            onCompositionPointSelected(SelectedCompositionPoint);
+        }
 
         private void onComponentAdded(ComponentInfo component)
         {

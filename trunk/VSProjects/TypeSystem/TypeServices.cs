@@ -63,9 +63,9 @@ namespace TypeSystem
             return _manager.LoadAssembly(assemblyPath);
         }
 
-        public void RegisterAssembly(string assemblyPath, AssemblyProvider assembly)
+        public void RegisterAssembly(AssemblyProvider assembly)
         {
-            _manager.RegisterAssembly(assemblyPath, assembly);
+            _manager.RegisterAssembly(assembly);
         }
 
         public MethodID GetStaticInitializerID(InstanceInfo info)
@@ -81,6 +81,16 @@ namespace TypeSystem
         public IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
         {
             return _manager.GetComponents(assembly);
+        }
+
+        /// <summary>
+        /// Get files that are present in given directory
+        /// </summary>
+        /// <param name="directoryFullPath"></param>
+        /// <returns></returns>
+        public IEnumerable<string> GetFiles(string directoryFullPath)
+        {
+            return _manager.GetFiles(directoryFullPath);
         }
     }
 }

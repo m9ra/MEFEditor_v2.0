@@ -44,7 +44,12 @@ namespace Research.GUI
         /// <summary>
         /// Event for handling changes in host application path
         /// </summary>
-        public event PathChange OnHostPathChanged;
+        public event PathChange HostPathChanged;
+
+        /// <summary>
+        /// Event for handling requests for workspace refresh
+        /// </summary>
+        public event Action RefreshClicked;
 
         public string HostPath
         {
@@ -71,8 +76,8 @@ namespace Research.GUI
                 _crossInterpretingEnabled = hasValue;
                 _CrossInterpretationValue.IsChecked = hasValue;
 
-                if (OnHostPathChanged != null)
-                    OnHostPathChanged(value);
+                if (HostPathChanged != null)
+                    HostPathChanged(value);
             }
 
             get
@@ -106,7 +111,8 @@ namespace Research.GUI
                 settingsVisibility(false);
             }
 
-            throw new NotImplementedException();
+            if (RefreshClicked != null)
+                RefreshClicked();
         }
 
         private void interpretingEnabled_Checked(object sender, RoutedEventArgs e)
@@ -125,8 +131,7 @@ namespace Research.GUI
 
             dialog.DefaultExt = ".exe";
             dialog.Filter = "Assembly files (*.dll;*.exe)|*.exe;*.dll|All files (*.*)|*.*";
-
-
+            
             var initialDirectory = _HostPath.Text;
             if (initialDirectory != null && initialDirectory != "")
             {

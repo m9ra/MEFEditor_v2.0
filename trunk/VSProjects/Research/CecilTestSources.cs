@@ -48,7 +48,7 @@ class CecilComponent
     [CompositionPoint]
     public CecilComponent()
     {
-        var cat = new DirectoryCatalog("TestPath.exe");
+        var cat = new AssemblyCatalog("TestPath.exe");
 
     }
 }

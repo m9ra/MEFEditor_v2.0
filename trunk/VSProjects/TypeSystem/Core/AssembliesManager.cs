@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using System.IO;
 
 using Utilities;
+using Analyzing;
+
 
 namespace TypeSystem.Core
 {
@@ -18,16 +20,16 @@ namespace TypeSystem.Core
         /// </summary>
         readonly Dictionary<AssemblyProvider, TypeAssembly> _assemblies = new Dictionary<AssemblyProvider, TypeAssembly>();
 
+        /// <summary>
+        /// Assembly providers indexed by their full paths
+        /// </summary>
+        readonly Dictionary<string, AssemblyProvider> _assemblyPathIndex = new Dictionary<string, AssemblyProvider>();
+
         readonly TypeServices _services;
 
         readonly MultiDictionary<AssemblyProvider, ComponentInfo> _assemblyComponents = new MultiDictionary<AssemblyProvider, ComponentInfo>();
 
         readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
-
-        /// <summary>
-        /// asssemblies loaded from files
-        /// </summary>
-        readonly Dictionary<string, AssemblyProvider> _loadedAssemblies = new Dictionary<string, AssemblyProvider>();
 
         internal readonly AssemblyCollection Assemblies;
 
@@ -62,22 +64,23 @@ namespace TypeSystem.Core
             return _assemblyComponents.Get(assembly);
         }
 
-        internal void RegisterAssembly(string assemblyPath, AssemblyProvider assembly)
+        internal void RegisterAssembly(AssemblyProvider assembly)
         {
             _onAssemblyAdd(assembly);
-
-            _loadedAssemblies[assemblyPath] = assembly;
         }
 
         internal TypeAssembly LoadAssembly(string assemblyPath)
         {
-            AssemblyProvider assembly;
-            if (!_loadedAssemblies.TryGetValue(assemblyPath, out assembly))
-                return null;
+            //TODO performance improvement
+            //TODO loading of not registered assemblies (because of directory catalogs)
 
-            TypeAssembly result;
-            _assemblies.TryGetValue(assembly, out result);
-            return result;
+            foreach (var assemblyPair in _assemblies)
+            {
+                if (assemblyPair.Key.FullPathMapping == assemblyPath)
+                    return assemblyPair.Value;
+            }
+
+            return null;
         }
 
         internal TypeAssembly DefiningAssembly(MethodID callerId)
@@ -166,6 +169,32 @@ namespace TypeSystem.Core
         {
             return Settings.GetSharedInitializer(info);
         }
+
+        internal IEnumerable<string> GetFiles(string directoryFullPath)
+        {
+            var realFiles = Directory.GetFiles(directoryFullPath);
+            foreach (var realFile in realFiles)
+            {
+                if (_assemblyPathIndex.ContainsKey(realFile))
+                    //assemblies are added according to their mapping
+                    continue;
+
+                yield return realFile;
+            }
+
+
+            foreach (var assembly in _assemblies.Keys)
+            {
+                if (!assembly.FullPathMapping.StartsWith(directoryFullPath))
+                    //directory has to match begining of path
+                    continue;
+
+                var mappedDirectory = Path.GetDirectoryName(assembly.FullPathMapping);
+                if (mappedDirectory == directoryFullPath)
+                    yield return assembly.FullPathMapping;
+            }
+        }
+
         #endregion
 
         #region Private utility methods
@@ -280,9 +309,11 @@ namespace TypeSystem.Core
 
         private void _onAssemblyAdd(AssemblyProvider assembly)
         {
+            _assemblyPathIndex[assembly.FullPath] = assembly;
+
             var typeAssembly = new TypeAssembly(this, assembly);
             _assemblies.Add(assembly, typeAssembly);
-            assembly.OnComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
+            assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
             assembly.TypeServices = _services;
         }
 
@@ -294,6 +325,7 @@ namespace TypeSystem.Core
                 _onComponentRemoved(assembly, component);
             }
 
+            _assemblyPathIndex.Remove(assembly.FullPath);
             _assemblies.Remove(assembly);
             assembly.UnloadServices();
         }
@@ -325,5 +357,6 @@ namespace TypeSystem.Core
 
 
         #endregion
+
     }
 }
