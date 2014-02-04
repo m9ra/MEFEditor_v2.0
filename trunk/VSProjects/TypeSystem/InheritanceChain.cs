@@ -24,7 +24,7 @@ namespace TypeSystem
             SubTypes = filtered.ToArray();
         }
 
-        internal bool HasSubType(string targetTypeName)
+        public bool HasSubType(string targetTypeName)
         {
             if (targetTypeName == Type.TypeName)
             {

@@ -248,6 +248,16 @@ namespace AssemblyProviders.CILAssembly
 
         #region Method building
 
+        /// <summary>
+        /// Create complete method info for given method definition
+        /// </summary>
+        /// <param name="declaringType">Type where method is declared</param>
+        /// <param name="method">Method which info is retrieved</param>
+        /// <returns>Created method info</returns>
+        internal TypeMethodInfo CreateMethodInfo(TypeDescriptor declaringType, MethodDefinition method)
+        {
+            return CILInstruction.CreateMethodInfo(method, method.IsAbstract);
+        }
 
         /// <summary>
         /// Creates method item from given method definition.
@@ -255,11 +265,11 @@ namespace AssemblyProviders.CILAssembly
         /// </summary>
         /// <param name="method">Method definition</param>
         /// <returns>Created method item</returns>
-        private MethodItem createItem(InstanceInfo declaringType, MethodDefinition method)
+        private MethodItem createItem(TypeDescriptor declaringType, MethodDefinition method)
         {
             //TODO cache results
 
-            var methodInfo = CILMethod.CreateInfo(TypeServices, declaringType, method);
+            var methodInfo = CreateMethodInfo(declaringType, method);
 
             if (methodInfo.HasGenericParameters)
                 //TODO resolve generics
@@ -383,7 +393,7 @@ namespace AssemblyProviders.CILAssembly
 
         internal IEnumerable<MethodItem> GetMethods(string typeFullName, string searchedName)
         {
-            var foundType = _assembly.MainModule.GetType(typeFullName);
+            var foundType = getType(typeFullName);
             if (foundType != null)
             {
                 switch (searchedName)
@@ -441,6 +451,13 @@ namespace AssemblyProviders.CILAssembly
             return null;
         }
 
+        internal MethodItem GetGenericMethod(MethodID methodID, PathInfo info)
+        {
+            //TODO caching
+
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Private utilities
@@ -449,6 +466,42 @@ namespace AssemblyProviders.CILAssembly
         {
             return TypeDescriptor.Create(type.FullName);
         }
+
+        private TypeDefinition getType(PathInfo typePath)
+        {
+            return getType(typePath.Name);
+        }
+
+        private TypeDefinition getType(string fullname)
+        {
+            return _assembly.MainModule.GetType(fullname);
+        }
+
+        private TypeDefinition getType(TypeDescriptor descriptor)
+        {
+            return getType(descriptor.TypeName);
+        }
+
+        private InheritanceChain getChain(TypeDefinition type)
+        {
+            //caching is provided outside assembly
+
+            var subChains = new List<InheritanceChain>();
+            foreach (var iface in type.Interfaces)
+            {
+                var descriptor = getDescriptor(iface);
+                var subChain = TypeServices.GetChain(descriptor);
+
+                subChains.Add(subChain);
+            }
+
+            var subTypeDescriptor = getDescriptor(type.BaseType);
+            var subTypeChain = TypeServices.GetChain(subTypeDescriptor);
+
+            var typeDescriptor = getDescriptor(type);
+            return TypeServices.CreateChain(typeDescriptor, subChains);
+        }
+
 
         #endregion
 
@@ -476,7 +529,12 @@ namespace AssemblyProviders.CILAssembly
 
         public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
         {
-            throw new NotImplementedException();
+            var methodItem = GetMethod(method);
+
+            if (methodItem == null)
+                return null;
+
+            return methodItem.Generator;
         }
 
         public override SearchIterator CreateRootIterator()
@@ -486,7 +544,15 @@ namespace AssemblyProviders.CILAssembly
 
         public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
-            throw new NotImplementedException();
+            var searchedName = Naming.GetMethodName(method);
+            var possibleId = Naming.ChangeDeclaringType(dynamicInfo.TypeName, method, false);
+            foreach (var methodItem in GetMethods(dynamicInfo.TypeName, searchedName))
+            {
+                if (methodItem.Info.MethodID.Equals(possibleId))
+                    return possibleId;
+            }
+
+            return null;
         }
 
         public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
@@ -496,9 +562,15 @@ namespace AssemblyProviders.CILAssembly
 
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
-            throw new NotImplementedException();
-        }
+            var type = getType(typePath);
 
+            if (type == null)
+                return null;
+
+            var chain = getChain(type);
+            return chain;
+        }
         #endregion
+
     }
 }

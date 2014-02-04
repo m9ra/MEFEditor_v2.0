@@ -41,6 +41,17 @@ static class CecilTestSources
     {
         return "Cross";
     }
+
+    static string IFaceTest(SimpleIface iface)
+    {
+        return iface.Test();
+    }
+
+    static void RunIfaceTest()
+    {
+        var iface = new IfaceImplementation();
+        var result = IFaceTest(iface);
+    }
 }
 
 class CecilComponent
@@ -49,6 +60,19 @@ class CecilComponent
     public CecilComponent()
     {
         var cat = new AssemblyCatalog("TestPath.exe");
-
     }
 }
+
+interface SimpleIface
+{
+    string Test();
+}
+
+class IfaceImplementation : SimpleIface
+{
+    public string Test()
+    {
+        return "IfaceImplementation.Test";
+    }
+}
+

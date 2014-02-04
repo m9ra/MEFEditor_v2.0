@@ -65,7 +65,7 @@ namespace AssemblyProviders.CIL
             Data = instruction.Operand;
 
             OpCode = instruction.OpCode;
-            MethodOperand = CreateMethodInfo(Data as MethodReference);
+            MethodOperand = CreateMethodInfo(Data as MethodReference, needsDynamicResolution(OpCode));
             BranchOperandAddress = getBranchOffset(Data as Instruction);
 
             Setter = getSetter(Data as FieldReference);
@@ -154,6 +154,17 @@ namespace AssemblyProviders.CIL
 
         #region Mono Cecil instructions
 
+        private bool needsDynamicResolution(OpCode opcode)
+        {
+            switch (opcode.Name) { 
+            
+                case "callvirt":
+                    return true;
+                default:
+                    return false;   
+            }
+        }
+
         private TypeMethodInfo getGetter(FieldReference field)
         {
             if (field == null)
@@ -199,10 +210,12 @@ namespace AssemblyProviders.CIL
             return TypeDescriptor.Create(type.FullName);
         }
 
-        internal static TypeMethodInfo CreateMethodInfo(MethodReference method)
+        internal static TypeMethodInfo CreateMethodInfo(MethodReference method, bool needsDynamicResolution)
         {
             if (method == null)
                 return null;
+
+            var type = method.DeclaringType;
 
             var paramInfos = new List<ParameterTypeInfo>();
             foreach (var param in method.Parameters)
@@ -210,7 +223,7 @@ namespace AssemblyProviders.CIL
                 var paramInfo = ParameterTypeInfo.Create(param.Name, GetInfo(param.ParameterType));
                 paramInfos.Add(paramInfo);
             }
-
+            
             var name = method.Name;
             switch (name)
             {
@@ -223,15 +236,16 @@ namespace AssemblyProviders.CIL
             }
 
             var isStatic = !method.HasThis;
+            
 
             return new TypeMethodInfo(
                    GetInfo(method.DeclaringType),
                    name,
                    GetInfo(method.ReturnType),
                    paramInfos.ToArray(),
-                    isStatic, //TODO
+                   isStatic,
                    TypeDescriptor.NoDescriptors,
-                   false //TODO
+                   needsDynamicResolution
                    );
         }
 

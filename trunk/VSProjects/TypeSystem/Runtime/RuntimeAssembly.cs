@@ -26,6 +26,11 @@ namespace TypeSystem.Runtime
         public static readonly TypeDescriptor ArrayInfo = TypeDescriptor.Create("Array<@0,@1>");
 
         /// <summary>
+        /// Type descriptor for object
+        /// </summary>
+        public static readonly TypeDescriptor ObjectInfo = TypeDescriptor.Create<object>();
+
+        /// <summary>
         /// Static edits that are available without instance context
         /// </summary>
         public IEnumerable<Edit> StaticEdits { get { return _staticEdits; } }
@@ -89,6 +94,10 @@ namespace TypeSystem.Runtime
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
             arrayDefinition.ForcedInfo = ArrayInfo;
             AddDirectDefinition(arrayDefinition);
+
+         /*   var objDefinition = new DirectTypeDefinition<ObjectDefinition>();
+            objDefinition.ForcedInfo = ObjectInfo;
+            AddDirectDefinition(objDefinition);*/
         }
 
         /// <summary>

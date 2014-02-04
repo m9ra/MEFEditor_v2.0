@@ -92,5 +92,15 @@ namespace TypeSystem
         {
             return _manager.GetFiles(directoryFullPath);
         }
+
+        public InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
+        {
+            return _manager.CreateChain(type, subChains);
+        }
+
+        public InheritanceChain GetChain(TypeDescriptor type)
+        {
+            return _manager.GetChain(type);
+        }
     }
 }

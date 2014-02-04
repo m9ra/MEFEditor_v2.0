@@ -51,6 +51,7 @@
     <Compile Include="DrawingServices\InstanceDrawer.cs" />
     <Compile Include="EditView.cs" />
     <Compile Include="Runtime\Attributes.cs" />
+    <Compile Include="Runtime\ObjectDefinition.cs" />
     <Compile Include="TypeParsing\GenericParamTranslator.cs" />
     <Compile Include="TypeDescriptor.cs" />
     <Compile Include="TypeParsing\TypeBuildContext.cs" />

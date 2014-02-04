@@ -46,14 +46,7 @@ namespace AssemblyProviders.CIL
                 Instructions = from instruction in method.Body.Instructions select new CILInstruction(instruction);
             }
         }
-
-        internal static TypeMethodInfo CreateInfo(TypeServices services, InstanceInfo declaringType, MethodDefinition method)
-        {
-            //TODO use given declaring type and services
-            //TODO check for static initialiazers
-            //TODO refactor
-            return CILInstruction.CreateMethodInfo(method);
-        }
+           
 
         public override string ToString()
         {

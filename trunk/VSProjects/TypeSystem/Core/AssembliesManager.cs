@@ -194,6 +194,16 @@ namespace TypeSystem.Core
                     yield return assembly.FullPathMapping;
             }
         }
+        
+        internal InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal InheritanceChain GetChain(TypeDescriptor type)
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
 

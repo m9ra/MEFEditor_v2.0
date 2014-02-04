@@ -386,7 +386,8 @@ namespace AssemblyProviders.CIL
         /// <returns></returns>
         static int getArgNumber(string instructionName)
         {
-            return int.Parse(instructionName.Substring(6));
+            var argOffset = Method.HasThis ? 0 : 1;
+            return int.Parse(instructionName.Substring(6)) + argOffset;
         }
 
         static Label getTargetLabel()
