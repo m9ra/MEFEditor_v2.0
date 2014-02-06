@@ -84,11 +84,40 @@ namespace TypeSystem
             if (methodPath == null)
                 return null;
 
-            var nameStart = methodPath.LastIndexOf('.');
+
+            var nameStart = GetLastNonNestedPartDelimiter(methodPath);
             if (nameStart < 0)
                 return null;
 
             return methodPath.Substring(nameStart + 1);
+        }
+
+        public static int GetLastNonNestedPartDelimiter(string methodPath)
+        {
+            var nesting = 0;
+            for (var i = methodPath.Length - 1; i > 0; --i)
+            {
+                var ch = methodPath[i];
+                switch (ch)
+                {
+                    //note that we are walking backward
+                    case '<':
+                        --nesting;
+                        continue;
+                    case '>':
+                        ++nesting;
+                        continue;
+                    case '.':
+                        if (nesting == 0)
+                        {
+                            return i;
+                        }
+
+                        continue;
+                }
+            }
+
+            return -1;
         }
 
         public static string GetDeclaringType(MethodID method)
@@ -107,7 +136,7 @@ namespace TypeSystem
             if (methodPath == null)
                 return null;
 
-            var nameStart = methodPath.LastIndexOf('.');
+            var nameStart = GetLastNonNestedPartDelimiter(methodPath);
             if (nameStart < 0)
                 return null;
 

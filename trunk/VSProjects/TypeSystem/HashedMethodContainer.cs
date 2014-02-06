@@ -116,7 +116,7 @@ namespace TypeSystem
 
             var implementingMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID, false);
             var implementingMethodPath = Naming.GetMethodPath(implementingMethod);
-            var genericImplementation = implementation.Make(implementingMethodPath, implementation.Info);
+            var genericImplementation = implementation.Make(implementingMethodPath);
 
             return genericImplementation.Info.MethodID;
         }
@@ -128,7 +128,7 @@ namespace TypeSystem
             {
                 if (methodItem.Info.HasGenericParameters)
                 {
-                    yield return methodItem.Make(path, methodItem.Info);
+                    yield return methodItem.Make(path);
                 }
                 else
                 {

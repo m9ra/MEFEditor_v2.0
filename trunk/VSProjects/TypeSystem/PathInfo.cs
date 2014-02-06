@@ -20,6 +20,16 @@ namespace TypeSystem
 
         public readonly List<string> GenericArgs = new List<string>();
 
+        public string PrePath
+        {
+            get
+            {
+                var lastPart = ShortSignature.Split('.').Last();
+
+                return ShortSignature.Substring(0, ShortSignature.Length - lastPart.Length);
+            }
+        }
+
         public PathInfo(string name)
         {
             Name = name;
@@ -52,7 +62,7 @@ namespace TypeSystem
             if (!signature.EndsWith(">"))
                 return signature;
 
-            var methodTypeArgsStart= signature.LastIndexOf('<');
+            var methodTypeArgsStart = signature.LastIndexOf('<');
 
             return signature.Substring(0, methodTypeArgsStart);
         }

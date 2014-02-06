@@ -9,7 +9,7 @@ namespace TypeSystem.TypeParsing
     /// <summary>
     /// Builder used for TypeDescriptors building
     /// </summary>
-    class TypeDescriptorBuilder
+    public class TypeDescriptorBuilder
     {
         /// <summary>
         /// Build context stack used for handling type arguments level
@@ -26,7 +26,7 @@ namespace TypeSystem.TypeParsing
         /// </summary>
         internal TypeBuildContext CurrentContext { get { return _buildStack.Peek(); } }
 
-        internal TypeDescriptorBuilder()
+        public TypeDescriptorBuilder()
         {
             Push();
         }
@@ -34,7 +34,7 @@ namespace TypeSystem.TypeParsing
         /// <summary>
         /// Push new context on type build context
         /// </summary>
-        internal void Push()
+        public void Push()
         {
             _buildStack.Push(new TypeBuildContext());
         }
@@ -43,7 +43,7 @@ namespace TypeSystem.TypeParsing
         /// Pop context from stack and add it as argument
         /// to parent context
         /// </summary>
-        internal void Pop()
+        public void Pop()
         {
             var popped = _buildStack.Pop();
             CurrentContext.AddArgument(popped);
@@ -52,7 +52,7 @@ namespace TypeSystem.TypeParsing
         /// <summary>
         /// Pop 2 contexts from stack and connect them
         /// </summary>
-        internal void ConnectPop()
+        public void ConnectPop()
         {
             var popped = _buildStack.Pop();
             var popped2 = _buildStack.Pop();
@@ -64,7 +64,7 @@ namespace TypeSystem.TypeParsing
         /// Insert argument into current context
         /// </summary>
         /// <param name="typeName">Inserted argument</param>
-        internal void InsertArgument(string typeName)
+        public void InsertArgument(string typeName)
         {
             Push();
             Append(typeName);
@@ -74,7 +74,7 @@ namespace TypeSystem.TypeParsing
         /// <summary>
         /// Set current context as parameter of given name
         /// </summary>
-        internal void SetDescriptor(TypeDescriptor description)
+        public void SetDescriptor(TypeDescriptor description)
         {
             CurrentContext.SetDescriptor(description);
         }
@@ -83,7 +83,7 @@ namespace TypeSystem.TypeParsing
         /// Append part of type to name in current context
         /// </summary>
         /// <param name="typePart"></param>
-        internal void Append(string typePart)
+        public void Append(string typePart)
         {
             CurrentContext.Append(typePart);
         }
@@ -92,7 +92,7 @@ namespace TypeSystem.TypeParsing
         /// Build type descriptor from current context
         /// </summary>
         /// <returns>Builded descriptor</returns>
-        internal TypeDescriptor BuildDescriptor()
+        public TypeDescriptor BuildDescriptor()
         {
             return CurrentContext.BuildDescriptor();
         }

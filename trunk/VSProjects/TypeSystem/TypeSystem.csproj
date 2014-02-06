@@ -56,7 +56,6 @@
     <Compile Include="TypeDescriptor.cs" />
     <Compile Include="TypeParsing\TypeBuildContext.cs" />
     <Compile Include="TypeParsing\TypeDescriptorBuilder.cs" />
-    <Compile Include="TypeParsing\TypeMethodInfoBuilder.cs" />
     <Compile Include="UserInteraction.cs" />
     <Compile Include="HashedMethodContainer.cs" />
     <Compile Include="InheritanceChain.cs" />

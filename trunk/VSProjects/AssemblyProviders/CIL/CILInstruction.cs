@@ -12,6 +12,7 @@ using Mono.Cecil.Cil;
 
 using Analyzing;
 using TypeSystem;
+using TypeSystem.TypeParsing;
 
 using AssemblyProviders.CIL.ILAnalyzer;
 
@@ -215,38 +216,10 @@ namespace AssemblyProviders.CIL
             if (method == null)
                 return null;
 
-            var type = method.DeclaringType;
+            var builder = new MethodInfoBuilder(method);
+            builder.NeedsDynamicResolving = needsDynamicResolution;
 
-            var paramInfos = new List<ParameterTypeInfo>();
-            foreach (var param in method.Parameters)
-            {
-                var paramInfo = ParameterTypeInfo.Create(param.Name, GetInfo(param.ParameterType));
-                paramInfos.Add(paramInfo);
-            }
-            
-            var name = method.Name;
-            switch (name)
-            {
-                case ".ctor":
-                    name = Naming.CtorName;
-                    break;
-                case ".cctor":
-                    name = Naming.ClassCtorName;
-                    break;
-            }
-
-            var isStatic = !method.HasThis;
-            
-
-            return new TypeMethodInfo(
-                   GetInfo(method.DeclaringType),
-                   name,
-                   GetInfo(method.ReturnType),
-                   paramInfos.ToArray(),
-                   isStatic,
-                   TypeDescriptor.NoDescriptors,
-                   needsDynamicResolution
-                   );
+            return builder.Build();
         }
 
         #endregion

@@ -35,9 +35,9 @@ namespace TypeSystem
             }
         }
 
-        public MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition)
+        public MethodItem Make(PathInfo methodPath)
         {
-            return _genericGenerator.Make(methodPath, methodDefinition);
+            return _genericGenerator.Make(methodPath, Info);
         }
     }
 

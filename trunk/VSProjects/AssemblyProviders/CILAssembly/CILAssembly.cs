@@ -21,6 +21,8 @@ namespace AssemblyProviders.CILAssembly
     {
         public readonly string _fullPath;
 
+        private readonly TypeReferenceDirector _typeBuilder = new TypeReferenceDirector();
+
         private readonly AssemblyDefinition _assembly;
 
         public CILAssembly(string assemblyPath)
@@ -271,10 +273,7 @@ namespace AssemblyProviders.CILAssembly
 
             var methodInfo = CreateMethodInfo(declaringType, method);
 
-            if (methodInfo.HasGenericParameters)
-                //TODO resolve generics
-                return null;
-
+            //Generics is resolved via correct naming conventions and universal CILGenerator
             var item = new MethodItem(new CILGenerator(method, methodInfo, TypeServices), methodInfo);
 
             return item;
@@ -333,7 +332,7 @@ namespace AssemblyProviders.CILAssembly
         /// <returns>Builded methods</returns>
         private IEnumerable<MethodItem> buildConstructors(TypeDefinition type)
         {
-            var info = TypeDescriptor.Create(type.FullName);
+            var info = getDescriptor(type);
 
             foreach (var method in type.Methods)
             {
@@ -351,7 +350,7 @@ namespace AssemblyProviders.CILAssembly
         /// <returns>Builded method</returns>
         private MethodItem buildStaticInitilizer(TypeDefinition type)
         {
-            var info = TypeDescriptor.Create(type.FullName);
+            var info = getDescriptor(type);
 
             foreach (var method in type.Methods)
             {
@@ -455,7 +454,32 @@ namespace AssemblyProviders.CILAssembly
         {
             //TODO caching
 
-            throw new NotImplementedException();
+            var type = Naming.GetDeclaringType(methodID);
+            var typePath = new PathInfo(type);
+
+            var name = Naming.GetMethodName(methodID);
+            var namePath = new PathInfo(name);
+
+            if (typePath.HasGenericArguments)
+                type = string.Format("{0}`{1}", typePath.ShortSignature, typePath.GenericArgs.Count);
+
+            if (namePath.HasGenericArguments)
+                name = namePath.ShortSignature;
+
+            var methods = GetMethods(type, name);
+            if (methods == null)
+                return null;
+
+            foreach (var method in methods)
+            {
+                var generic = method.Make(info);
+
+                if (generic.Info.MethodID.Equals(methodID))
+                    return generic;
+            }
+
+            return null;
+
         }
 
         #endregion
@@ -464,7 +488,7 @@ namespace AssemblyProviders.CILAssembly
 
         private TypeDescriptor getDescriptor(TypeReference type)
         {
-            return TypeDescriptor.Create(type.FullName);
+            return _typeBuilder.Build(type);
         }
 
         private TypeDefinition getType(PathInfo typePath)
@@ -529,7 +553,7 @@ namespace AssemblyProviders.CILAssembly
 
         public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
         {
-            var methodItem = GetMethod(method);
+            var methodItem = GetGenericMethod(method, searchPath);
 
             if (methodItem == null)
                 return null;

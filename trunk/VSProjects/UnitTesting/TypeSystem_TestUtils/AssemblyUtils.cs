@@ -61,9 +61,11 @@ namespace UnitTesting.TypeSystem_TestUtils
                 if (!methodPath.StartsWith(type.FullName))
                     continue;
 
+                var name = methodPath.Split('.').Last();
+
                 foreach (var method in type.Methods)
                 {
-                    if (!methodPath.EndsWith(method.Name))
+                    if (name != method.Name)
                         continue;
 
                     return method;
@@ -118,7 +120,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod)
         {
             var entryObj = assembly.Machine.CreateDirectInstance("EntryObject", TypeDescriptor.Create(typeof(string)));
-            
+
             return GetResult(assembly, entryMethod, entryObj);
         }
 

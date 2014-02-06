@@ -52,6 +52,27 @@ static class CecilTestSources
         var iface = new IfaceImplementation();
         var result = IFaceTest(iface);
     }
+
+    static string GenericIfaceTest<T>(T a, GenericIface<T> t)
+    {
+        return t.Test<string>(a, "abc");
+    }
+
+    static void RunGenericIfaceTest()
+    {
+        var iface = new GenericIfaceImplementation<int>();
+        var result = GenericIfaceTest<int>(5, iface);
+    }
+
+    static T SimpleGenericTest<T>(T input)
+    {
+        return input;
+    }
+
+    static void RunSimpleGenericTest()
+    {
+        var result = SimpleGenericTest<string>("abcd");
+    }
 }
 
 class CecilComponent
@@ -76,3 +97,16 @@ class IfaceImplementation : SimpleIface
     }
 }
 
+
+interface GenericIface<TIface>
+{
+    string Test<TMethod>(TIface a, TMethod b);
+}
+
+class GenericIfaceImplementation<TImpl> : GenericIface<TImpl>
+{
+    public string Test<TMethod>(TImpl a, TMethod b)
+    {
+        return "GenericIfaceImplementation.Test";
+    }
+}

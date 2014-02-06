@@ -65,9 +65,11 @@
     <Compile Include="CILAssembly\TypeModuleIterator.cs" />
     <Compile Include="CIL\CILInstruction.cs" />
     <Compile Include="CIL\CILMethod.cs" />
+    <Compile Include="CIL\MethodInfoBuilder.cs" />
     <Compile Include="CIL\Providing\CILGenerator.cs" />
     <Compile Include="CIL\Providing\GetterGenerator.cs" />
     <Compile Include="CIL\Providing\SetterGenerator.cs" />
+    <Compile Include="CIL\TypeReferenceDirector.cs" />
     <Compile Include="CIL\VMStack.cs" />
     <Compile Include="CIL\Compiler.cs" />
     <Compile Include="CIL\ILAnalyzer\DynamicILReaderProvider.cs" />

@@ -11,7 +11,7 @@ using TypeSystem;
 
 namespace AssemblyProviders.CIL.Providing
 {
-    class CILGenerator : GeneratorBase
+    class CILGenerator : GeneratorBase, GenericMethodGenerator
     {
         private readonly MethodDefinition _method;
 
@@ -33,6 +33,12 @@ namespace AssemblyProviders.CIL.Providing
         {
             var method = new CILMethod(_method);
             Compiler.GenerateInstructions(method, _info, emitter, _services);
+        }
+
+        public MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition)
+        {
+            var makedDefinition = methodDefinition.MakeGenericMethod(methodPath);
+            return new MethodItem(this, makedDefinition);
         }
     }
 }

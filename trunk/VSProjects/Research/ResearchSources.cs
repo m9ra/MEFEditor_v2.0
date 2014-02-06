@@ -27,6 +27,15 @@ namespace Research
     static class ResearchSources
     {
 
+        static internal TestingAssembly CECIL_GeneriInterfaceResolving()
+        {
+            var cilAssembly = new CILAssembly("Research.exe");
+            return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunSimpleGenericTest")
+            //return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunGenericIfaceTest")
+                .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+                .RegisterAssembly(cilAssembly);
+        }
+
         static internal TestingAssembly CECIL_InterfaceResolving()
         {
             var cilAssembly = new CILAssembly("Research.exe");

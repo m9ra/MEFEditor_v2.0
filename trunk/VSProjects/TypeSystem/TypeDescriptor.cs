@@ -173,7 +173,6 @@ namespace TypeSystem
             {
                 var parameter = resolver(type);
                 builder.SetDescriptor(parameter);
-                return;
             }
             else
             {
