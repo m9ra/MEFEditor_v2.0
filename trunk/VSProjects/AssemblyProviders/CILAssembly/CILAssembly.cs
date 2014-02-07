@@ -17,22 +17,40 @@ using AssemblyProviders.CIL.Providing;
 
 namespace AssemblyProviders.CILAssembly
 {
+    /// <summary>
+    /// Assembly provider implementation for CIL assemblies loaded from files.
+    /// </summary>
     public class CILAssembly : AssemblyProvider
     {
-        public readonly string _fullPath;
+        /// <summary>
+        /// Full path of represented assembly
+        /// </summary>
+        private readonly string _fullPath;
 
+        /// <summary>
+        /// Type builder used for translating TypeReferences into TypeDescriptors at assembly scope (no substitutions)
+        /// </summary>
         private readonly TypeReferenceDirector _typeBuilder = new TypeReferenceDirector();
 
+        /// <summary>
+        /// Represented assembly
+        /// </summary>
         private readonly AssemblyDefinition _assembly;
 
+        /// <summary>
+        /// Create CIL assembly provider from file loaded from given file. If loading fails, appropriate exception is thrown.
+        /// </summary>
+        /// <param name="assemblyPath"></param>
         public CILAssembly(string assemblyPath)
         {
             _fullPath = Path.GetFullPath(assemblyPath);
-
-
+            
             //TODO use correct resolvers
+            //probably resolvers are not needed and all desired functionality will be
+            //gained via using TypeSystems resolving
             var pars = new ReaderParameters();
             var resolver = new DefaultAssemblyResolver();
+
             pars.AssemblyResolver = resolver;
 
             _assembly = AssemblyDefinition.ReadAssembly(_fullPath, pars);
@@ -390,39 +408,61 @@ namespace AssemblyProviders.CILAssembly
 
         #region Method searching
 
-        internal IEnumerable<MethodItem> GetMethods(string typeFullName, string searchedName)
+        /// <summary>
+        /// Get methods defined on type with given typeFullName
+        /// </summary>
+        /// <param name="typeFullName">FullName of type where method is searched (In Mono.Cecil notation)</param>
+        /// <param name="searchedMethodName">Name of method that is searched</param>
+        /// <returns>All methods defined on given type with corresponding name</returns>
+        internal IEnumerable<MethodItem> GetMethods(string typeFullName, string searchedMethodName)
         {
             var foundType = getType(typeFullName);
-            if (foundType != null)
+
+            return GetMethods(foundType, searchedMethodName);
+        }
+
+        /// <summary>
+        /// Get methods defined on type with given typeFullName
+        /// </summary>
+        /// <param name="typeFullName">FullName of type where method is searched (In Mono.Cecil notation)</param>
+        /// <param name="searchedMethodName">Name of method that is searched</param>
+        /// <returns>All methods defined on given type with corresponding name</returns>
+        internal IEnumerable<MethodItem> GetMethods(TypeDefinition type, string searchedMethodName)
+        {
+            if (type != null)
             {
-                switch (searchedName)
+                switch (searchedMethodName)
                 {
                     case Naming.CtorName:
-                        foreach (var ctor in buildConstructors(foundType))
+                        //usual type constructors
+                        foreach (var ctor in buildConstructors(type))
                         {
                             yield return ctor;
                         }
                         break;
 
                     case Naming.ClassCtorName:
-                        yield return buildStaticInitilizer(foundType);
+                        //static type constructors
+                        yield return buildStaticInitilizer(type);
                         break;
 
                     default:
-                        var typeDescriptor = getDescriptor(foundType);
+                        //usual method defined on type
+                        var typeDescriptor = getDescriptor(type);
 
-                        foreach (var method in foundType.Methods)
+                        foreach (var method in type.Methods)
                         {
-                            if (method.Name == searchedName)
+                            if (method.Name == searchedMethodName)
                                 yield return createItem(typeDescriptor, method);
                         }
 
-                        foreach (var field in foundType.Fields)
+                        //wrapping fields into properties
+                        foreach (var field in type.Fields)
                         {
-                            if ("get_" + field.Name == searchedName)
+                            if ("get_" + field.Name == searchedMethodName)
                                 yield return buildAutoGetter(typeDescriptor, field);
 
-                            if ("set_" + field.Name == searchedName)
+                            if ("set_" + field.Name == searchedMethodName)
                                 yield return buildAutoSetter(typeDescriptor, field);
                         }
                         break;
@@ -430,17 +470,21 @@ namespace AssemblyProviders.CILAssembly
             }
         }
 
+        /// <summary>
+        /// Get method according to given ID. Works only for non-generic methods.
+        /// </summary>
+        /// <param name="methodID">ID of method that is searched</param>
+        /// <returns>Found method, or null if desired method isn't found</returns>
         internal MethodItem GetMethod(MethodID methodID)
         {
-            //TODO caching
+            //TODO caching here will have great performance benefit 
 
-            var type = Naming.GetDeclaringType(methodID);
-            var name = Naming.GetMethodName(methodID);
+            var typeFullname = Naming.GetDeclaringType(methodID);
+            var methodName = Naming.GetMethodName(methodID);
 
-            var methods = GetMethods(type, name);
-            if (methods == null)
-                return null;
-
+            //typeFullname doesn't contain generic's - it doesn't
+            //have to be translated
+            var methods = GetMethods(typeFullname, methodName);
             foreach (var method in methods)
             {
                 if (method.Info.MethodID.Equals(methodID))
@@ -450,66 +494,95 @@ namespace AssemblyProviders.CILAssembly
             return null;
         }
 
-        internal MethodItem GetGenericMethod(MethodID methodID, PathInfo info)
+        /// <summary>
+        /// Get substituted method according to given ID. Works only for generic methods.
+        /// </summary>
+        /// <param name="methodID">ID of method that is searched</param>
+        /// <param name="substitutionInfo">Path info that is used for subtitution of generic arguments.</param>
+        /// <returns>Found method, or null if desired method isn't found</returns>
+        internal MethodItem GetGenericMethod(MethodID methodID, PathInfo substitutionInfo)
         {
-            //TODO caching
+            //find declaring type and method name
+            var typeName = Naming.GetDeclaringType(methodID);
+            var typePath = new PathInfo(typeName);
 
-            var type = Naming.GetDeclaringType(methodID);
-            var typePath = new PathInfo(type);
-
-            var name = Naming.GetMethodName(methodID);
-            var namePath = new PathInfo(name);
-
-            if (typePath.HasGenericArguments)
-                type = string.Format("{0}`{1}", typePath.ShortSignature, typePath.GenericArgs.Count);
-
+            var methodName = Naming.GetMethodName(methodID);
+            var namePath = new PathInfo(methodName);
+            
             if (namePath.HasGenericArguments)
-                name = namePath.ShortSignature;
-
-            var methods = GetMethods(type, name);
-            if (methods == null)
-                return null;
-
+                //TODO proper generic translation
+                methodName = namePath.ShortSignature;
+            
+            //name of type is translated before search
+            var type = getType(typePath);
+            var methods = GetMethods(type, methodName);
             foreach (var method in methods)
             {
-                var generic = method.Make(info);
+                //make generic method according to substitution info
+                var generic = method.Make(substitutionInfo);
 
                 if (generic.Info.MethodID.Equals(methodID))
                     return generic;
             }
 
             return null;
-
         }
 
         #endregion
 
-        #region Private utilities
+        #region Type translation methods
 
+        /// <summary>
+        /// Build type descriptor from given type reference. No substitutions are resolved.
+        /// </summary>
+        /// <param name="type">Type reference which descriptor is builded</param>
+        /// <returns>Builded type descriptor</returns>
         private TypeDescriptor getDescriptor(TypeReference type)
         {
             return _typeBuilder.Build(type);
         }
 
+        /// <summary>
+        /// Find type definition in represented assembly according to typePath.
+        /// Translation into mono cecil format is provided
+        /// </summary>
+        /// <param name="typePath">Path where to search for definition</param>
+        /// <returns>Found type definition or null if type doesn't exists</returns>
         private TypeDefinition getType(PathInfo typePath)
         {
-            return getType(typePath.Name);
+            var typeFullname = typePath.Name;
+
+            if (typePath.HasGenericArguments)
+                //translate type into mono cecil format
+                typeFullname = string.Format("{0}`{1}", typePath.ShortSignature, typePath.GenericArgs.Count);
+
+            return getType(typeFullname);
         }
 
+        /// <summary>
+        /// Find type according to type fullname.
+        /// </summary>
+        /// <param name="fullname">Fullname in Mono.Cecil notation</param>
+        /// <returns>Found type or null if type doesn't exists</returns>
         private TypeDefinition getType(string fullname)
         {
             return _assembly.MainModule.GetType(fullname);
         }
+        
+        #endregion
 
-        private TypeDefinition getType(TypeDescriptor descriptor)
-        {
-            return getType(descriptor.TypeName);
-        }
+        #region Type operations
 
-        private InheritanceChain getChain(TypeDefinition type)
+        /// <summary>
+        /// Creates inheritance chain for given type.
+        /// </summary>
+        /// <param name="type">Type of desired inheritnace chain</param>
+        /// <returns>Created inheritnace chain</returns>
+        private InheritanceChain createChain(TypeDefinition type)
         {
             //caching is provided outside assembly
 
+            //firstly we will collect all sub chains from interfaces
             var subChains = new List<InheritanceChain>();
             foreach (var iface in type.Interfaces)
             {
@@ -519,6 +592,7 @@ namespace AssemblyProviders.CILAssembly
                 subChains.Add(subChain);
             }
 
+            //subchain from base class
             var subTypeDescriptor = getDescriptor(type.BaseType);
             var subTypeChain = TypeServices.GetChain(subTypeDescriptor);
 
@@ -526,72 +600,95 @@ namespace AssemblyProviders.CILAssembly
             return TypeServices.CreateChain(typeDescriptor, subChains);
         }
 
-
         #endregion
 
         #region Assembly provider implementation
 
+        ///<inheritdoc />
         protected override string getAssemblyFullPath()
         {
             return _fullPath;
         }
 
+        ///<inheritdoc />
         protected override string getAssemblyName()
         {
+            //assembly name is determined by name found in compiled assembly
             return _assembly.Name.Name;
         }
 
+        ///<inheritdoc />
         public override GeneratorBase GetMethodGenerator(MethodID method)
         {
+            //Try to find given method
             var methodItem = GetMethod(method);
 
             if (methodItem == null)
+                //method hasn't been found
                 return null;
 
             return methodItem.Generator;
         }
 
+        ///<inheritdoc />
         public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
         {
+            //Try to find given generic method
             var methodItem = GetGenericMethod(method, searchPath);
 
             if (methodItem == null)
+                //method hasn't been found
                 return null;
 
             return methodItem.Generator;
         }
 
+        ///<inheritdoc />
         public override SearchIterator CreateRootIterator()
         {
             return new TypeModuleIterator(this);
         }
 
+        ///<inheritdoc />
         public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
-            var searchedName = Naming.GetMethodName(method);
-            var possibleId = Naming.ChangeDeclaringType(dynamicInfo.TypeName, method, false);
-            foreach (var methodItem in GetMethods(dynamicInfo.TypeName, searchedName))
-            {
-                if (methodItem.Info.MethodID.Equals(possibleId))
-                    return possibleId;
-            }
+            //we have info about type, where desired method is implemented
+            var implementedMethod = Naming.ChangeDeclaringType(dynamicInfo.TypeName, method, false);
 
-            return null;
+            var result = GetMethod(implementedMethod);
+            if (result == null)
+                //implementation hasn't been found
+                return null;
+
+            return result.Info.MethodID;
         }
 
+        ///<inheritdoc />
         public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
-            throw new NotImplementedException();
+            //we have info about type, where desired method is implemented
+            var implementedMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID, false);
+            var path = Naming.GetMethodPath(implementedMethod);
+
+            var result = GetGenericMethod(implementedMethod, path);
+            if (result == null)
+                //implementation hasn't been found
+                return null;
+
+            return result.Info.MethodID;
         }
 
+        ///<inheritdoc />
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
             var type = getType(typePath);
 
             if (type == null)
+                //searched wasn't found in assembly
                 return null;
 
-            var chain = getChain(type);
+            //caching is provided outside of assembly
+            var chain = createChain(type);
             return chain;
         }
         #endregion
