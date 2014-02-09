@@ -54,8 +54,11 @@
     <Compile Include="Runtime\ObjectDefinition.cs" />
     <Compile Include="TypeParsing\GenericParamTranslator.cs" />
     <Compile Include="TypeDescriptor.cs" />
+    <Compile Include="TypeParsing\TypeAdapter.cs" />
     <Compile Include="TypeParsing\TypeBuildContext.cs" />
     <Compile Include="TypeParsing\TypeDescriptorBuilder.cs" />
+    <Compile Include="TypeParsing\TypeAdapterBase.cs" />
+    <Compile Include="TypeParsing\TypeHierarchyDirector.cs" />
     <Compile Include="UserInteraction.cs" />
     <Compile Include="HashedMethodContainer.cs" />
     <Compile Include="InheritanceChain.cs" />

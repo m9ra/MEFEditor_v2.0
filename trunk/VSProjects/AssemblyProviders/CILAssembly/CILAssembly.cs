@@ -30,7 +30,7 @@ namespace AssemblyProviders.CILAssembly
         /// <summary>
         /// Type builder used for translating TypeReferences into TypeDescriptors at assembly scope (no substitutions)
         /// </summary>
-        private readonly TypeReferenceDirector _typeBuilder = new TypeReferenceDirector();
+        private readonly TypeReferenceHelper _typeBuilder = new TypeReferenceHelper();
 
         /// <summary>
         /// Represented assembly
@@ -539,7 +539,7 @@ namespace AssemblyProviders.CILAssembly
         /// <returns>Builded type descriptor</returns>
         private TypeDescriptor getDescriptor(TypeReference type)
         {
-            return _typeBuilder.Build(type);
+            return _typeBuilder.BuildDescriptor(type);
         }
 
         /// <summary>
@@ -692,6 +692,5 @@ namespace AssemblyProviders.CILAssembly
             return chain;
         }
         #endregion
-
     }
 }

@@ -245,12 +245,12 @@ namespace AssemblyProviders.CIL
 
         static void _stsfld()
         {
-            emitCall(Instruction.Setter, true);
+            emitCall(Instruction.SetterOperand, true);
         }
 
         static void _ldsfld()
         {
-            emitCall(Instruction.Getter, true);
+            emitCall(Instruction.GetterOperand, true);
         }
 
         static void _box()
@@ -392,7 +392,7 @@ namespace AssemblyProviders.CIL
 
         static Label getTargetLabel()
         {
-            var targetOffset = Instruction.BranchOperandAddress;
+            var targetOffset = Instruction.BranchAddressOperand;
             var targetLabel = Labels[targetOffset];
 
             return targetLabel;

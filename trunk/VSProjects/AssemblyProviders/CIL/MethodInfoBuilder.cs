@@ -19,7 +19,7 @@ namespace AssemblyProviders.CIL
         /// <summary>
         /// Available substitutions for generic parameters
         /// </summary>
-        internal TypeReferenceDirector TypeBuilder = new TypeReferenceDirector();
+        internal TypeReferenceHelper TypeBuilder = new TypeReferenceHelper();
 
         /// <summary>
         /// Type descriptor that is used as declaring type of builded TypeMethodInfo.
@@ -85,7 +85,7 @@ namespace AssemblyProviders.CIL
         /// <returns>Created type descriptor</returns>
         internal TypeDescriptor GetDescriptor(TypeReference type)
         {
-            var result = TypeBuilder.Build(type);
+            var result = TypeBuilder.BuildDescriptor(type);
             return result;
         }
 
@@ -110,11 +110,19 @@ namespace AssemblyProviders.CIL
 
         #region Build handlers
 
-        private void applyDeclaringType(TypeReference type)
+        /// <summary>
+        /// Apply information available in declaring type reference
+        /// </summary>
+        /// <param name="typeReference">Type reference of declaring type</param>
+        private void applyDeclaringType(TypeReference typeReference)
         {
-            DeclaringType = GetDescriptor(type);
+            DeclaringType = GetDescriptor(typeReference);
         }
 
+        /// <summary>
+        /// Apply information available in declaring generic type
+        /// </summary>
+        /// <param name="genericType">Generic type instance of declaring type</param>
         private void applyGenericDeclaringType(GenericInstanceType genericType)
         {
             if (genericType == null)
@@ -127,16 +135,20 @@ namespace AssemblyProviders.CIL
             applySubstitutions(arguments, parameters);
         }
 
-        private void applyMethod(MethodReference method)
+        /// <summary>
+        /// Apply information available in method reference
+        /// </summary>
+        /// <param name="methodReference">Method reference of builded method info</param>
+        private void applyMethod(MethodReference methodReference)
         {
             //set default parameters
-            foreach (var param in method.Parameters)
+            foreach (var param in methodReference.Parameters)
             {
                 var paramInfo = ParameterTypeInfo.Create(param.Name, GetDescriptor(param.ParameterType));
                 Parameters.Add(paramInfo);
             }
 
-            var name = method.Name;
+            var name = methodReference.Name;
             switch (name)
             {
                 case ".ctor":
@@ -151,40 +163,49 @@ namespace AssemblyProviders.CIL
             MethodName = name;
 
             //set default IsStatic
-            IsStatic = !method.HasThis;
+            IsStatic = !methodReference.HasThis;
 
             //set default ReturnType
-            ReturnType = GetDescriptor(method.ReturnType);
+            ReturnType = GetDescriptor(methodReference.ReturnType);
 
             //set method generic parameters if available
-            var parameters = method.GenericParameters;
+            var parameters = methodReference.GenericParameters;
             //TODO ensure that this doesnt colide with GenericInstanceMethods handling
             // in applyGenericMethod
             foreach (var par in parameters)
             {
-                var parType = TypeBuilder.Build(par);
+                var parType = TypeBuilder.BuildDescriptor(par);
                 TypeArguments.Add(parType);
             }
         }
 
-        private void applyGenericMethod(GenericInstanceMethod method)
+        /// <summary>
+        /// Apply information available in generic instance method
+        /// </summary>
+        /// <param name="genericMethod">Generic instance method of builded method info</param>
+        private void applyGenericMethod(GenericInstanceMethod genericMethod)
         {
-            if (method == null)
+            if (genericMethod == null)
                 //there is no information on generic arguments available
                 return;
 
-            var arguments = method.GenericArguments;
-            var parameters = method.ElementMethod.GenericParameters;
+            var arguments = genericMethod.GenericArguments;
+            var parameters = genericMethod.ElementMethod.GenericParameters;
 
             applySubstitutions(arguments, parameters);
 
             foreach (var par in parameters)
             {
-                var parType = TypeBuilder.Build(par);
+                var parType = TypeBuilder.BuildDescriptor(par);
                 TypeArguments.Add(parType);
             }
         }
 
+
+        /// <summary>
+        /// Apply information available in method definition
+        /// </summary>
+        /// <param name="genericMethod">Method definition of builded method info</param>
         private void applyMethodDefinition(MethodDefinition method)
         {
             if (method == null)
@@ -194,6 +215,11 @@ namespace AssemblyProviders.CIL
             NeedsDynamicResolving = method.IsAbstract;
         }
 
+        /// <summary>
+        /// Apply type parameters substitutions
+        /// </summary>
+        /// <param name="arguments">Type arguments</param>
+        /// <param name="parameters"></param>
         private void applySubstitutions(IEnumerable<TypeReference> arguments, IEnumerable<GenericParameter> parameters)
         {
             var args = arguments.ToArray();

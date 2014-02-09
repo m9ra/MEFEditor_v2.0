@@ -18,6 +18,10 @@ namespace TypeSystem
 
         public const string ClassCtorName = "#cctor";
 
+        public const string GetterPrefix = "get_";
+
+        public const string SetterPrefix = "set_";
+
         public static MethodID Method<CalledType>(string methodName, params Type[] paramTypes)
         {
             var path = typeof(CalledType).FullName + "." + methodName;

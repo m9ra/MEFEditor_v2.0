@@ -10,7 +10,12 @@ using TypeSystem.TypeParsing;
 
 namespace TypeSystem
 {
-
+    /// <summary>
+    /// Resolver for type parameters. Is used for translating type parameters
+    /// into TypeDescriptor.
+    /// </summary>
+    /// <param name="type">Translated type.</param>
+    /// <returns>Resolved TypeDescriptor.</returns>
     public delegate TypeDescriptor ParameterResolver(Type type);
 
     /// <summary>
@@ -27,7 +32,6 @@ namespace TypeSystem
         /// Shortcut for empty argument arrays
         /// </summary>
         public static readonly TypeDescriptor[] NoDescriptors = new TypeDescriptor[0];
-
 
         /// <summary>
         /// Type arguments of current type descriptor
@@ -46,7 +50,9 @@ namespace TypeSystem
             }
         }
 
-
+        /// <summary>
+        /// Determine that descriptor belongs to type parameter
+        /// </summary>
         public bool IsParameter
         {
             get
@@ -56,6 +62,10 @@ namespace TypeSystem
             }
         }
 
+        /// <summary>
+        /// Determine that current descriptor has argument that is
+        /// marked as parameter. Is searched recursively within parameters.
+        /// </summary>
         public bool HasParameters
         {
             get
@@ -70,6 +80,11 @@ namespace TypeSystem
             }
         }
 
+        /// <summary>
+        /// Create type descriptor of given name and arguments.
+        /// </summary>
+        /// <param name="typeName">Name of described type.</param>
+        /// <param name="typeArguments">Type arguments for described type.</param>
         internal TypeDescriptor(string typeName, Dictionary<string, TypeDescriptor> typeArguments = null)
             : base(typeName)
         {
@@ -110,6 +125,11 @@ namespace TypeSystem
             return new TypeDescriptor(typeName, typeArguments);
         }
 
+        /// <summary>
+        /// Get descriptor marked as parameter with given index.
+        /// </summary>
+        /// <param name="parameterIndex">Index of parameter.</param>
+        /// <returns>Parameter descritor.</returns>
         public static TypeDescriptor GetParameter(int parameterIndex)
         {
             //TODO refactor!!
@@ -142,8 +162,10 @@ namespace TypeSystem
                 };
             }
 
-            buildType(type, builder, resolver);
-            return builder.BuildDescriptor();
+            var adapter = new TypeAdapter(type);
+            var result = TypeHierarchyDirector.BuildDescriptor(adapter, (a) => resolver((a as TypeAdapterBase<Type>).AdaptedType));
+
+            return result;
         }
 
         /// <summary>
@@ -157,123 +179,5 @@ namespace TypeSystem
         }
 
         #endregion
-
-        /// <summary>
-        /// Director for building given type with builder
-        /// </summary>
-        /// <param name="type">Builded type</param>
-        /// <param name="builder">Builder used by director</param>
-        private static void buildType(Type type, TypeDescriptorBuilder builder, ParameterResolver resolver)
-        {
-            if (type.IsArray)
-            {
-                buildArray(type, builder, resolver);
-            }
-            else if (type.IsGenericParameter)
-            {
-                var parameter = resolver(type);
-                builder.SetDescriptor(parameter);
-            }
-            else
-            {
-                var genericArgs = new Queue<Type>(type.GetGenericArguments());
-                buildTypeChain(type, builder, genericArgs, resolver);
-            }
-        }
-
-        /// <summary>
-        /// Director for building given arrayType with builder
-        /// </summary>
-        /// <param name="arrayType">Builded type</param>
-        /// <param name="builder">Builder used by director</param>
-        private static void buildArray(Type arrayType, TypeDescriptorBuilder builder, ParameterResolver resolver)
-        {
-            builder.Append("Array");
-            builder.Push();
-            buildType(arrayType.GetElementType(), builder, resolver);
-            builder.Pop();
-
-            //TODO refactor dimension argument handling
-            builder.InsertArgument("1");
-        }
-
-        /// <summary>
-        /// Director for building given type arguments with builder
-        /// </summary>
-        /// <param name="type">Type which arguments are builded</param>
-        /// <param name="builder">Builder used by director</param>
-        /// <param name="typeArguments">Builded type arguments</param>
-        private static void buildArguments(Type type, TypeDescriptorBuilder builder, Queue<Type> typeArguments, ParameterResolver resolver)
-        {
-            var typeParams = type.GetGenericArguments();
-
-            for (int i = 0; i < typeParams.Length; ++i)
-            {
-                if (typeArguments.Count == 0)
-                {
-                    //all arguments has already been substituted
-                    return;
-                }
-
-                //take only fist params  that will be substituted
-                var substitution = typeArguments.Dequeue();
-
-                builder.Push();
-                buildType(substitution, builder, resolver);
-                builder.Pop();
-            }
-        }
-
-        /// <summary>
-        /// Director for building given type chain (DeclaringType chain) with builder
-        /// </summary>
-        /// <param name="type">Type available for builded subchain</param>
-        /// <param name="builder">Builder used by director</param>
-        /// <param name="typeArguments">Builded type arguments</param>
-        private static void buildTypeChain(Type type, TypeDescriptorBuilder builder, Queue<Type> typeArguments, ParameterResolver resolver)
-        {
-            var declaringType = type.DeclaringType;
-            var hasConnectedType = declaringType != null;
-
-            //take as much arguments, as connected types needs + (mine types)
-            var parameters = type.GetGenericArguments();
-            var availableArguments = new Queue<Type>();
-            for (int i = 0; i < parameters.Length; ++i)
-            {
-                availableArguments.Enqueue(typeArguments.Dequeue());
-            }
-
-            if (hasConnectedType)
-            {
-                buildTypeChain(declaringType, builder, availableArguments, resolver);
-                builder.Push();
-            }
-
-            buildName(type, builder);
-            buildArguments(type, builder, availableArguments, resolver);
-
-            if (hasConnectedType)
-            {
-                builder.ConnectPop();
-            }
-        }
-
-        /// <summary>
-        /// Director for building given type name with builder
-        /// </summary>
-        /// <param name="type">Type which name is builded</param>
-        /// <param name="builder">Builder used by director</param>
-        private static void buildName(Type type, TypeDescriptorBuilder builder)
-        {
-            var name = type.Name;
-            var endName = name.IndexOf('`');
-            if (endName > 0)
-                name = name.Substring(0, endName);
-
-            builder.Append(type.Namespace);
-            builder.Append(name);
-        }
-
-
     }
 }
