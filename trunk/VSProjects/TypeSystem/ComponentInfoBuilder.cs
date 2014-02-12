@@ -43,13 +43,25 @@ namespace TypeSystem
         public void AddExport(TypeDescriptor exportType, string getterName)
         {
             var getterID = Naming.Method(ComponentType, "get_" + getterName, false, new ParameterTypeInfo[0]);
-            _exports.Add(new Export(exportType, getterID));
+            var export = new Export(exportType, getterID);
+            AddExport(export);
+        }
+
+        public void AddExport(Export export)
+        {
+            _exports.Add(export);
         }
 
         public void AddImport(TypeDescriptor importType, string setterName)
         {
             var setterID = getSetterID(importType, setterName);
-            _imports.Add(new Import(importType, setterID));
+            var import = new Import(importType, setterID);
+            AddImport(import);
+        }
+
+        public void AddImport(Import import)
+        {
+            _imports.Add(import);
         }
 
         public void SetImportingCtor(params TypeDescriptor[] importingParameters)

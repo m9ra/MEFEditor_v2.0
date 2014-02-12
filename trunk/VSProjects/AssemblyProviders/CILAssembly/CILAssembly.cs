@@ -44,7 +44,7 @@ namespace AssemblyProviders.CILAssembly
         public CILAssembly(string assemblyPath)
         {
             _fullPath = Path.GetFullPath(assemblyPath);
-            
+
             //TODO use correct resolvers
             //probably resolvers are not needed and all desired functionality will be
             //gained via using TypeSystems resolving
@@ -189,39 +189,63 @@ namespace AssemblyProviders.CILAssembly
         private ComponentInfo createComponentInfo(TypeDefinition componentType)
         {
             var componentDescriptor = getDescriptor(componentType);
-
             var infoBuilder = new ComponentInfoBuilder(componentDescriptor);
 
-            foreach (var attribute in componentType.CustomAttributes)
-            {
-                if (isComponentAttribute(attribute))
-                {
-                    //self export defined
-                    throw new NotImplementedException();
-                }
-            }
-
+            reportSelfExports(componentType, infoBuilder);
             reportComponentMethods(componentType, infoBuilder);
-
-            foreach (var field in componentType.Fields)
-            {
-                //importing/exporting field
-                foreach (var attribute in field.CustomAttributes)
-                {
-                    if (isComponentAttribute(attribute))
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-            }
+            reportComponentFields(componentType, infoBuilder);
 
             return infoBuilder.BuildInfo();
         }
 
         /// <summary>
-        /// Report methods defined by component type into infoBuilder
+        /// Report self exports defined on componentType
         /// </summary>
-        /// <param name="componentType">Type definint component</param>
+        /// <param name="componentType">Type of component which self exports are reported</param>
+        /// <param name="infoBuilder">Builder where self exports will be added</param>
+        private static void reportSelfExports(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
+        {
+            foreach (var attribute in componentType.CustomAttributes)
+            {
+                var fullname = attribute.AttributeType.FullName;
+
+                if (fullname == Naming.ExportAttribute)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Report composition related fields defined by component type into infoBuilder
+        /// </summary>
+        /// <param name="componentType">Type defining component</param>
+        /// <param name="infoBuilder">Builder where methods are reported</param>
+        private void reportComponentFields(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
+        {
+            foreach (var field in componentType.Fields)
+            {
+                //importing/exporting field
+                foreach (var attribute in field.CustomAttributes)
+                {
+                    var fullname = attribute.AttributeType.FullName;
+
+                    if (fullname == Naming.ExportAttribute)
+                    {
+                        addImport(infoBuilder, field, attribute);
+                    }
+                    else if (fullname == Naming.ImportAttribute)
+                    {
+                        addExport(infoBuilder, field, attribute);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Report composition related methods defined by component type into infoBuilder
+        /// </summary>
+        /// <param name="componentType">Type defining component</param>
         /// <param name="infoBuilder">Builder where methods are reported</param>
         private void reportComponentMethods(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
@@ -232,21 +256,106 @@ namespace AssemblyProviders.CILAssembly
                 foreach (var attribute in method.CustomAttributes)
                 {
                     var fullname = attribute.AttributeType.FullName;
+                    var methodId = getMethodId(infoBuilder.ComponentType, method);
 
                     //importing constructor  
-                    if (fullname == typeof(MEFEditor.CompositionPointAttribute).FullName)
+                    if (fullname == Naming.CompositionPointAttribute)
                     {
-                        //TODO add composition point arguments
-                        var methodId = getMethodId(infoBuilder.ComponentType, method);
-                        infoBuilder.AddExplicitCompositionPoint(methodId);
+                        //composition point
+                        addCompositionPoint(infoBuilder, methodId, attribute);
                     }
-                    //property import/export
-                    else if (isComponentAttribute(attribute))
+                    else if (fullname == Naming.ExportAttribute)
                     {
-                        throw new NotImplementedException();
+                        //export property
+                        addExport(infoBuilder, method, methodId, attribute);
+                    }
+                    else if (fullname == Naming.ImportAttribute)
+                    {
+                        //import property
+                        addImport(infoBuilder, method, methodId, attribute);
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Add composition point into infoBuilder
+        /// </summary>
+        /// <param name="infoBuilder">Info builder where export will be added</param>
+        /// <param name="methodId">MethodID of composition point</param>
+        /// <param name="attribute">Attribute defining composition point</param>
+        private void addCompositionPoint(ComponentInfoBuilder infoBuilder, MethodID methodId, CustomAttribute attribute)
+        {
+            //TODO add composition point arguments
+            infoBuilder.AddExplicitCompositionPoint(methodId);
+        }
+
+        /// <summary>
+        /// Add export method into infoBuilder
+        /// </summary>
+        /// <param name="infoBuilder">Info builder where export will be added</param>
+        /// <param name="field">Exported field</param>
+        /// <param name="attribute">Attribute defining export</param>
+        private void addExport(ComponentInfoBuilder infoBuilder, FieldDefinition field, CustomAttribute attribute)
+        {
+            //TODO resolve Contract
+
+            var getter = buildAutoGetter(infoBuilder.ComponentType, field);
+
+            var exportType = getter.Info.Parameters[0].Type;
+            var export = new Export(exportType, getter.Info.MethodID);
+
+            infoBuilder.AddExport(export);
+        }
+
+        /// <summary>
+        /// Add export method into infoBuilder
+        /// </summary>
+        /// <param name="infoBuilder">Info builder where export will be added</param>
+        /// <param name="method">Export method</param>
+        /// <param name="methodId">Id of export method</param>
+        /// <param name="attribute">Attribute defining export</param>
+        private void addExport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute)
+        {
+            //TODO resolve Contract
+
+            var exportType = getDescriptor(method.ReturnType);
+            var export = new Export(exportType, methodId);
+
+            infoBuilder.AddExport(export);
+        }
+
+        /// <summary>
+        /// Add import method into infoBuilder
+        /// </summary>
+        /// <param name="infoBuilder">Info builder where import will be added</param>
+        /// <param name="field">Imported field</param>
+        /// <param name="attribute">Attribute defining import</param>
+        private void addImport(ComponentInfoBuilder infoBuilder, FieldDefinition field, CustomAttribute attribute)
+        {
+            //TODO resolve Contract and AllowMany
+            var setter = buildAutoSetter(infoBuilder.ComponentType, field);
+
+            var importType = setter.Info.Parameters[0].Type;
+            var import = new Import(importType, setter.Info.MethodID);
+            infoBuilder.AddImport(import);
+        }
+
+        /// <summary>
+        /// Add import method into infoBuilder
+        /// </summary>
+        /// <param name="infoBuilder">Info builder where import will be added</param>
+        /// <param name="method">Import method</param>
+        /// <param name="methodId">Id of import method</param>
+        /// <param name="attribute">Attribute defining import</param>
+        private void addImport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute)
+        {
+            //TODO resolve Contract
+
+            var importType = getDescriptor(method.Parameters[0].ParameterType);
+            var import= new Import(importType, methodId);
+
+            infoBuilder.AddImport(import);
         }
 
         /// <summary>
@@ -259,9 +368,9 @@ namespace AssemblyProviders.CILAssembly
             var fullname = attribute.AttributeType.FullName;
 
             return
-                fullname == typeof(ExportAttribute).FullName ||
-                fullname == typeof(ImportAttribute).FullName ||
-                fullname == typeof(MEFEditor.CompositionPointAttribute).FullName;
+                fullname == Naming.ExportAttribute ||
+                fullname == Naming.ImportAttribute ||
+                fullname == Naming.CompositionPointAttribute;
         }
 
         #endregion
@@ -305,6 +414,8 @@ namespace AssemblyProviders.CILAssembly
         /// <returns>Builded method</returns>
         private MethodItem buildAutoGetter(TypeDescriptor declaringType, FieldDefinition field)
         {
+            //TODO caching is needed because of components
+
             var fieldName = field.Name;
             var isStatic = field.IsStatic;
             var fieldType = getDescriptor(field.FieldType);
@@ -327,6 +438,8 @@ namespace AssemblyProviders.CILAssembly
         /// <returns>Builded method</returns>
         private MethodItem buildAutoSetter(TypeDescriptor declaringType, FieldDefinition field)
         {
+            //TODO caching is needed because of components
+
             var fieldName = field.Name;
             var isStatic = field.IsStatic;
             var fieldType = getDescriptor(field.FieldType);
@@ -508,11 +621,11 @@ namespace AssemblyProviders.CILAssembly
 
             var methodName = Naming.GetMethodName(methodID);
             var namePath = new PathInfo(methodName);
-            
+
             if (namePath.HasGenericArguments)
                 //TODO proper generic translation
                 methodName = namePath.ShortSignature;
-            
+
             //name of type is translated before search
             var type = getType(typePath);
             var methods = GetMethods(type, methodName);
@@ -568,7 +681,7 @@ namespace AssemblyProviders.CILAssembly
         {
             return _assembly.MainModule.GetType(fullname);
         }
-        
+
         #endregion
 
         #region Type operations
