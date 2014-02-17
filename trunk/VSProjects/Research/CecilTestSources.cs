@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 
 using MEFEditor;
@@ -109,4 +110,17 @@ class GenericIfaceImplementation<TImpl> : GenericIface<TImpl>
     {
         return "GenericIfaceImplementation.Test";
     }
+}
+
+[Export("SelfExport")]
+class CECILComponent2
+{
+    [Export("Contract1")]
+    public string ExportProperty { get; private set; }
+
+    [Import("Contract1")]
+    public string ImportProperty { get; private set; }
+
+   // [ImportMany("Contract1")]
+    public IEnumerable<string> ImportManyProperty { get; private set; }
 }

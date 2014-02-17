@@ -158,7 +158,19 @@ namespace AssemblyProviders.CILAssembly
             {
                 foreach (var attribute in method.CustomAttributes)
                 {
-                    //importing constructor or property import/export
+                    //importing constructor
+                    if (isComponentAttribute(attribute))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            foreach (var property in type.Properties)
+            {
+                foreach (var attribute in property.CustomAttributes)
+                {
+                    //importing/exporting property
                     if (isComponentAttribute(attribute))
                     {
                         return true;
@@ -194,6 +206,7 @@ namespace AssemblyProviders.CILAssembly
             reportSelfExports(componentType, infoBuilder);
             reportComponentMethods(componentType, infoBuilder);
             reportComponentFields(componentType, infoBuilder);
+            reportComponentProperties(componentType, infoBuilder);
 
             return infoBuilder.BuildInfo();
         }
@@ -203,7 +216,7 @@ namespace AssemblyProviders.CILAssembly
         /// </summary>
         /// <param name="componentType">Type of component which self exports are reported</param>
         /// <param name="infoBuilder">Builder where self exports will be added</param>
-        private static void reportSelfExports(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
+        private void reportSelfExports(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
             foreach (var attribute in componentType.CustomAttributes)
             {
@@ -211,7 +224,8 @@ namespace AssemblyProviders.CILAssembly
 
                 if (fullname == Naming.ExportAttribute)
                 {
-                    throw new NotImplementedException();
+                    var contract = getExportContract(attribute, infoBuilder.ComponentType);
+                    infoBuilder.AddSelfExport(contract);
                 }
             }
         }
@@ -220,7 +234,7 @@ namespace AssemblyProviders.CILAssembly
         /// Report composition related fields defined by component type into infoBuilder
         /// </summary>
         /// <param name="componentType">Type defining component</param>
-        /// <param name="infoBuilder">Builder where methods are reported</param>
+        /// <param name="infoBuilder">Builder where imports/exports are reported</param>
         private void reportComponentFields(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
             foreach (var field in componentType.Fields)
@@ -232,11 +246,47 @@ namespace AssemblyProviders.CILAssembly
 
                     if (fullname == Naming.ExportAttribute)
                     {
-                        addImport(infoBuilder, field, attribute);
+                        addExport(infoBuilder, field, attribute);
                     }
                     else if (fullname == Naming.ImportAttribute)
                     {
-                        addExport(infoBuilder, field, attribute);
+                        addImport(infoBuilder, field, attribute, false);
+                    }
+                    else if (fullname == Naming.ImportManyAttribute)
+                    {
+                        addImport(infoBuilder, field, attribute, true);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Report composition related properties defined by component type into infoBuilder
+        /// </summary>
+        /// <param name="componentType">Type defining component</param>
+        /// <param name="infoBuilder">Builder where imports/exports are reported</param>
+        private void reportComponentProperties(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
+        {
+            foreach (var property in componentType.Properties)
+            {
+                //importing/exporting property
+                foreach (var attribute in property.CustomAttributes)
+                {
+                    var fullname = attribute.AttributeType.FullName;
+                    var setterId = getMethodId(infoBuilder.ComponentType, property.SetMethod);
+
+                    if (fullname == Naming.ExportAttribute)
+                    {
+                        var getterId = getMethodId(infoBuilder.ComponentType, property.GetMethod);
+                        addExport(infoBuilder, property.GetMethod, getterId, attribute);
+                    }
+                    else if (fullname == Naming.ImportAttribute)
+                    {
+                        addImport(infoBuilder, property.SetMethod, setterId, attribute, false);
+                    }
+                    else if (fullname == Naming.ImportManyAttribute)
+                    {
+                        addImport(infoBuilder, property.SetMethod, setterId, attribute, true);
                     }
                 }
             }
@@ -264,16 +314,6 @@ namespace AssemblyProviders.CILAssembly
                         //composition point
                         addCompositionPoint(infoBuilder, methodId, attribute);
                     }
-                    else if (fullname == Naming.ExportAttribute)
-                    {
-                        //export property
-                        addExport(infoBuilder, method, methodId, attribute);
-                    }
-                    else if (fullname == Naming.ImportAttribute)
-                    {
-                        //import property
-                        addImport(infoBuilder, method, methodId, attribute);
-                    }
                 }
             }
         }
@@ -298,12 +338,12 @@ namespace AssemblyProviders.CILAssembly
         /// <param name="attribute">Attribute defining export</param>
         private void addExport(ComponentInfoBuilder infoBuilder, FieldDefinition field, CustomAttribute attribute)
         {
-            //TODO resolve Contract
-
             var getter = buildAutoGetter(infoBuilder.ComponentType, field);
 
             var exportType = getter.Info.Parameters[0].Type;
-            var export = new Export(exportType, getter.Info.MethodID);
+            var contract = getExportContract(attribute, exportType);
+
+            var export = new Export(exportType, getter.Info.MethodID, contract);
 
             infoBuilder.AddExport(export);
         }
@@ -317,10 +357,10 @@ namespace AssemblyProviders.CILAssembly
         /// <param name="attribute">Attribute defining export</param>
         private void addExport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute)
         {
-            //TODO resolve Contract
-
             var exportType = getDescriptor(method.ReturnType);
-            var export = new Export(exportType, methodId);
+            var contract = getExportContract(attribute, exportType);
+
+            var export = new Export(exportType, methodId, contract);
 
             infoBuilder.AddExport(export);
         }
@@ -331,13 +371,15 @@ namespace AssemblyProviders.CILAssembly
         /// <param name="infoBuilder">Info builder where import will be added</param>
         /// <param name="field">Imported field</param>
         /// <param name="attribute">Attribute defining import</param>
-        private void addImport(ComponentInfoBuilder infoBuilder, FieldDefinition field, CustomAttribute attribute)
+        private void addImport(ComponentInfoBuilder infoBuilder, FieldDefinition field, CustomAttribute attribute, bool isManyImport)
         {
-            //TODO resolve Contract and AllowMany
             var setter = buildAutoSetter(infoBuilder.ComponentType, field);
 
             var importType = setter.Info.Parameters[0].Type;
-            var import = new Import(importType, setter.Info.MethodID);
+            var importTypeInfo = getImportTypeInfo(importType, isManyImport);
+            var contract = getImportContract(attribute, importType);
+
+            var import = new Import(importTypeInfo, setter.Info.MethodID, contract, isManyImport);
             infoBuilder.AddImport(import);
         }
 
@@ -348,12 +390,13 @@ namespace AssemblyProviders.CILAssembly
         /// <param name="method">Import method</param>
         /// <param name="methodId">Id of import method</param>
         /// <param name="attribute">Attribute defining import</param>
-        private void addImport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute)
+        private void addImport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute, bool isManyImport)
         {
-            //TODO resolve Contract
-
             var importType = getDescriptor(method.Parameters[0].ParameterType);
-            var import= new Import(importType, methodId);
+            var importTypeInfo = getImportTypeInfo(importType, isManyImport);
+            var contract = getImportContract(attribute, importType);
+
+            var import = new Import(importTypeInfo, methodId, contract, isManyImport);
 
             infoBuilder.AddImport(import);
         }
@@ -370,7 +413,91 @@ namespace AssemblyProviders.CILAssembly
             return
                 fullname == Naming.ExportAttribute ||
                 fullname == Naming.ImportAttribute ||
+                fullname == Naming.ImportManyAttribute ||
                 fullname == Naming.CompositionPointAttribute;
+        }
+
+        /// <summary>
+        /// Creates type info for given import type
+        /// </summary>
+        /// <param name="importType">Type of import</param>
+        /// <param name="isManyImport">Determine that import allows importing multiple items</param>
+        /// <returns>Created ImportTypeInfo</returns>
+        private ImportTypeInfo getImportTypeInfo(TypeDescriptor importType, bool isManyImport)
+        {
+            if (isManyImport)
+            {
+                return ImportTypeInfo.ParseFromMany(importType, TypeServices);
+            }
+            else
+            {
+                return ImportTypeInfo.Parse(importType);
+            }
+        }
+
+        /// <summary>
+        /// Get contract defined by given exportAttribute
+        /// </summary>
+        /// <param name="exportAttribute">Attribute where export contract is defined</param>
+        /// <param name="defaultContract">Describe type which is used as default contract</param>
+        /// <returns>Contract for given export attribute</returns>
+        private string getExportContract(CustomAttribute exportAttribute, TypeDescriptor defaultContract)
+        {
+            //syntactically same as getImportContract, but semantically different
+            switch (exportAttribute.ConstructorArguments.Count)
+            {
+                case 0:
+                    return defaultContract.TypeName;
+                case 2:
+                //TODO what is ContractType good for ?
+                case 1:
+                    return resolveContract(exportAttribute.ConstructorArguments[0]);
+
+                default:
+                    throw new NotSupportedException("Unknown export attribute constructor with argument count: " + exportAttribute.ConstructorArguments.Count);
+            }
+        }
+
+        /// <summary>
+        /// Get contract defined by given importAttribute
+        /// </summary>
+        /// <param name="importAttribute">Attribute where import contract is defined</param>
+        /// <param name="defaultContract">Describe type which is used as default contract</param>
+        /// <returns>Contract for given import attribute</returns>
+        private string getImportContract(CustomAttribute importAttribute, TypeDescriptor defaultContract)
+        {
+            //syntactically same as getExportContract, but semantically different
+            switch (importAttribute.ConstructorArguments.Count)
+            {
+                case 0:
+                    return defaultContract.TypeName;
+                case 2:
+                //TODO what is ContractType good for ?
+                case 1:
+                    return resolveContract(importAttribute.ConstructorArguments[0]);
+
+                default:
+                    throw new NotSupportedException("Unknown import attribute constructor with argument count: " + importAttribute.ConstructorArguments.Count);
+            }
+        }
+
+
+        /// <summary>
+        /// Resolve contract from given attribute argument
+        /// </summary>
+        /// <param name="contractArgument">Attribute defining contract</param>
+        /// <returns>Resolved contract</returns>
+        private string resolveContract(CustomAttributeArgument contractArgument)
+        {
+            var argumentType = contractArgument.Type.FullName;
+            switch (argumentType)
+            {
+                case "System.String":
+                    return contractArgument.Value as string;
+                default:
+                    //TODO add type argument support
+                    throw new NotImplementedException("Missing support for contract argument of type: " + argumentType);
+            }
         }
 
         #endregion

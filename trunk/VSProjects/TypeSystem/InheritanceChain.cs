@@ -12,11 +12,11 @@ namespace TypeSystem
     {
         public readonly PathInfo Path;
 
-        public readonly InstanceInfo Type;
+        public readonly TypeDescriptor Type;
 
         public readonly IEnumerable<InheritanceChain> SubTypes;
 
-        internal InheritanceChain(InstanceInfo type, IEnumerable<InheritanceChain> subChains)
+        internal InheritanceChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
             Type = type;
             Path = new PathInfo(type.TypeName);

@@ -58,7 +58,7 @@ namespace MEFAnalyzers.Drawings
                 if (property == null || property.Value == null)
                     continue;
 
-                propertiesText.AppendFormat("{0}: {1}\n", map.Key, property.Value);
+                propertiesText.AppendFormat("{0}: {1}\n", map.Value , property.Value);
             }
 
             var tooltip= DrawingTools.GetHeadingText(heading, propertiesText.ToString());

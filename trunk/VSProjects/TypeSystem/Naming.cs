@@ -25,13 +25,18 @@ namespace TypeSystem
         /// <summary>
         /// Fullname of ExportAttributeType
         /// </summary>
-        public static readonly string ExportAttribute = typeof(Export).FullName;
+        public static readonly string ExportAttribute = typeof(ExportAttribute).FullName;
 
         /// <summary>
         /// Fullname of ImportAttributeType
         /// </summary>
-        public static readonly string ImportAttribute = typeof(Import).FullName;
+        public static readonly string ImportAttribute = typeof(ImportAttribute).FullName;
 
+        /// <summary>
+        /// Fullname of ImportAttributeType
+        /// </summary>
+        public static readonly string ImportManyAttribute = typeof(ImportManyAttribute).FullName;
+        
         /// <summary>
         /// Fullname of CompositionPointattribute
         /// </summary>

@@ -209,6 +209,12 @@ namespace Research.GUI
 
         private void removeCompositionPoint(CompositionPoint compositionPoint)
         {
+            if (!_compositionPoints.ContainsKey(compositionPoint))
+            {
+                //nothing to remove
+                return;
+            }
+
             var item = _compositionPoints[compositionPoint];
             _compositionPoints.Remove(compositionPoint);
 

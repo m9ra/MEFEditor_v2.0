@@ -27,6 +27,28 @@ namespace Research
     static class ResearchSources
     {
 
+        static internal TestingAssembly CECIL_Components()
+        {
+            var cilAssembly = new CILAssembly("Research.exe");
+
+            return AssemblyUtils.Run(@"        
+                var assemCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""" + cilAssembly.FullPath + @""");                  
+            ")
+
+           .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+
+           .AddToRuntime<CompositionContainerDefinition>()
+           .AddToRuntime<DirectoryCatalogDefinition>()
+           .AddToRuntime<AggregateCatalogDefinition>()
+           .AddToRuntime<TypeCatalogDefinition>()
+           .AddToRuntime<AssemblyCatalogDefinition>()
+           .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+           .AddToRuntime<SimpleStringExport>()
+           .AddToRuntime<StringImport>()
+
+           .AddReference(cilAssembly);
+        }
+
         static internal TestingAssembly CECIL_GeneriInterfaceResolving()
         {
             var cilAssembly = new CILAssembly("Research.exe");
@@ -96,6 +118,7 @@ namespace Research
 
              .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
              .AddToRuntime<DirectoryCatalogDefinition>()
+             .AddToRuntime<AssemblyCatalogDefinition>()
              .AddReference(assembly)
 
              ;

@@ -25,9 +25,10 @@ namespace MEFAnalyzers.Drawings
         private static readonly Dictionary<string, string> ImportProperties = new Dictionary<string, string>()
         {
              {"ContractType","Contract type"},
-             {"AllowMany","Allow importing many exports"},
-             {"AllowDefault","Allow default value of import"},
-             {"IsPrerequisity","Is import prerequisity"}
+             {"ContractItemType","Item type"},
+             {"AllowMany","Allow many"},
+             {"AllowDefault","Allow default"},
+             {"IsPrerequisity","Is prerequisity"}
         };
 
         public ImportConnector(ConnectorDefinition definition, DiagramItem owningItem)

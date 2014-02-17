@@ -46,22 +46,27 @@ namespace TypeSystem
         /// Type of component
         /// </summary>
         public readonly InstanceInfo ComponentType;
+
         /// <summary>
         /// Exports defined on whole class.
         /// </summary>
         public readonly Export[] SelfExports;
+
         /// <summary>
         /// Exports defined on class members.
         /// </summary>
         public readonly Export[] Exports;
+
         /// <summary>
         /// Imports defined on component.
         /// </summary>
         public readonly Import[] Imports;
+
         /// <summary>
         /// Composition points in component.
         /// </summary>
         public readonly CompositionPoint[] CompositionPoints;
+
         /// <summary>
         /// Constructor marked as importing constructor, or paramless constructor.
         /// </summary>
@@ -114,23 +119,26 @@ namespace TypeSystem
         /// Exported metadata for this export.
         /// </summary>
         public readonly MetaExport Meta;
+
         /// <summary>
         /// Contract specified in Export attribute, or default contract according to ExportType.
         /// </summary>
         public readonly string Contract;
+
         /// <summary>
         /// Getter, which retrieves exported instance.
         /// </summary>
         public readonly MethodID Getter;
+
         /// <summary>
         /// Type of exported value.
         /// </summary>
         public readonly TypeDescriptor ExportType;
 
-        public Export(TypeDescriptor exportType, MethodID getter)
+        public Export(TypeDescriptor exportType, MethodID getter, string contract)
         {
             ExportType = exportType;
-            Contract = exportType.TypeName;
+            Contract = contract;
             Getter = getter;
         }
     }
@@ -144,27 +152,68 @@ namespace TypeSystem
         /// True, if ItemType is wrapped in lazy object
         /// </summary>
         public readonly bool IsItemLazy;
+
+        /// <summary>
+        /// True if ImportType is wrapped in lazy object
+        /// </summary>
+        public readonly bool IsLazy;
+
         /// <summary>
         /// Type of one item, without lazy, collection,... 
         /// Should be used as default Contract.
         /// </summary>
         public readonly TypeDescriptor ItemType;
+
         /// <summary>
         /// Type of meta info, null if not available.
         /// </summary>
         public readonly TypeDescriptor MetaDataType;
+
         /// <summary>
         /// Type for Importing setter/parameter.
         /// </summary>
         public readonly TypeDescriptor ImportType;
 
-        public ImportTypeInfo(TypeDescriptor importType, TypeDescriptor itemType = null)
+        private ImportTypeInfo(TypeDescriptor importType, TypeDescriptor itemType)
         {
-            if (itemType == null)
-                itemType = importType;
-
             ImportType = importType;
             ItemType = itemType;
+
+            //TODO check if items are lazy
+        }
+
+        public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeServices services)
+        {
+            var currentChain = services.GetChain(importManyType);
+            var itemType = findManyDescriptor(currentChain);
+
+            return new ImportTypeInfo(importManyType, itemType);
+        }
+
+        private static TypeDescriptor findManyDescriptor(InheritanceChain chain)
+        {
+            var signature = chain.Path.Signature;
+            if (signature == typeof(IEnumerable<>).FullName)
+            {
+                return chain.Type.Arguments.First();
+            }
+
+            if (signature == typeof(object).FullName)
+            {
+                return null;
+            }
+
+            throw new NotImplementedException("search in subchains");
+        }
+
+        public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeDescriptor itemType)
+        {
+            return new ImportTypeInfo(importManyType, itemType);
+        }
+
+        public static ImportTypeInfo Parse(TypeDescriptor importType)
+        {
+            return new ImportTypeInfo(importType, importType);
         }
     }
 
@@ -177,10 +226,12 @@ namespace TypeSystem
         /// Contract specified in Import attribute, or default contract according to import type
         /// </summary>
         public readonly string Contract;
+
         /// <summary>
         /// Info about importing type, IsLazy,ItemType,...
         /// </summary>
         public readonly ImportTypeInfo ImportTypeInfo;
+
         /// <summary>
         /// Setter, which set instance to requested target        
         /// is null, if import was obtained from importing constructor
@@ -191,31 +242,23 @@ namespace TypeSystem
         /// Determine if this import has to be satisfied before instance constructing
         /// </summary>
         public bool IsPrerequisity { get { return Setter == null; } }
+
         /// <summary>
         /// Determine if value can be default (no export needed)
         /// </summary>
         public readonly bool AllowDefault;
+
         /// <summary>
         /// Determine if import can accept more than one export
         /// </summary>
         public readonly bool AllowMany;
 
-        public Import(TypeDescriptor importType, MethodID setter, bool allowMany = false)
+        public Import(ImportTypeInfo importTypeInfo, MethodID setter, string contract, bool allowMany = false)
         {
-            ImportTypeInfo = new ImportTypeInfo(importType);
-            Contract = ImportTypeInfo.ItemType.TypeName;
+            ImportTypeInfo = importTypeInfo;
+            Contract = contract;
             Setter = setter;
             AllowMany = allowMany;
         }
-
-        public Import(TypeDescriptor importType, TypeDescriptor itemType, MethodID setter, bool allowMany = false)
-        {
-            ImportTypeInfo = new ImportTypeInfo(importType, itemType);
-            Contract = ImportTypeInfo.ItemType.TypeName;
-            Setter = setter;
-            AllowMany = allowMany;
-        }
-
-
     }
 }
