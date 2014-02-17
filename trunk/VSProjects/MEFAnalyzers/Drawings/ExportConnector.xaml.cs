@@ -24,7 +24,7 @@ namespace MEFAnalyzers.Drawings
     {
         private static readonly Dictionary<string, string> ExportProperties = new Dictionary<string, string>()
         {
-             {"ExportType","Contract type"},
+             {"ContractType","Contract type"},
              {"ItemType","Item type"}
         };
 

@@ -343,9 +343,7 @@ namespace AssemblyProviders.CILAssembly
             var exportType = getter.Info.Parameters[0].Type;
             var contract = getExportContract(attribute, exportType);
 
-            var export = new Export(exportType, getter.Info.MethodID, contract);
-
-            infoBuilder.AddExport(export);
+            infoBuilder.AddExport(exportType, getter.Info.MethodID, contract);
         }
 
         /// <summary>
@@ -360,9 +358,7 @@ namespace AssemblyProviders.CILAssembly
             var exportType = getDescriptor(method.ReturnType);
             var contract = getExportContract(attribute, exportType);
 
-            var export = new Export(exportType, methodId, contract);
-
-            infoBuilder.AddExport(export);
+            infoBuilder.AddExport(exportType, methodId, contract);
         }
 
         /// <summary>
@@ -379,8 +375,7 @@ namespace AssemblyProviders.CILAssembly
             var importTypeInfo = getImportTypeInfo(importType, isManyImport);
             var contract = getImportContract(attribute, importType);
 
-            var import = new Import(importTypeInfo, setter.Info.MethodID, contract, isManyImport);
-            infoBuilder.AddImport(import);
+            infoBuilder.AddImport(importTypeInfo, setter.Info.MethodID, contract, isManyImport);
         }
 
         /// <summary>
@@ -396,9 +391,7 @@ namespace AssemblyProviders.CILAssembly
             var importTypeInfo = getImportTypeInfo(importType, isManyImport);
             var contract = getImportContract(attribute, importType);
 
-            var import = new Import(importTypeInfo, methodId, contract, isManyImport);
-
-            infoBuilder.AddImport(import);
+            infoBuilder.AddImport(importTypeInfo, methodId, contract, isManyImport);
         }
 
         /// <summary>

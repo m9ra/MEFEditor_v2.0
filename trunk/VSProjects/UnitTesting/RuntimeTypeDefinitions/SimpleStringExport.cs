@@ -19,7 +19,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             FullName = "SimpleStringExport";
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
-            builder.AddExport(TypeDescriptor.Create<string>(), "Export");
+            builder.AddPropertyExport(TypeDescriptor.Create<string>(), "Export");
             builder.AddExplicitCompositionPoint(Naming.Method(TypeInfo, Naming.CtorName, false));
 
             ComponentInfo = builder.BuildInfo();
