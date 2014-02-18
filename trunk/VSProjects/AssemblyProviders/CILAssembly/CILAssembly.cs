@@ -374,8 +374,9 @@ namespace AssemblyProviders.CILAssembly
             var importType = setter.Info.Parameters[0].Type;
             var importTypeInfo = getImportTypeInfo(importType, isManyImport);
             var contract = getImportContract(attribute, importType);
+            var allowDefault = getAllowDefault(attribute);
 
-            infoBuilder.AddImport(importTypeInfo, setter.Info.MethodID, contract, isManyImport);
+            infoBuilder.AddImport(importTypeInfo, setter.Info.MethodID, contract, isManyImport, allowDefault);
         }
 
         /// <summary>
@@ -390,8 +391,9 @@ namespace AssemblyProviders.CILAssembly
             var importType = getDescriptor(method.Parameters[0].ParameterType);
             var importTypeInfo = getImportTypeInfo(importType, isManyImport);
             var contract = getImportContract(attribute, importType);
+            var allowDefault = getAllowDefault(attribute);
 
-            infoBuilder.AddImport(importTypeInfo, methodId, contract, isManyImport);
+            infoBuilder.AddImport(importTypeInfo, methodId, contract, isManyImport, allowDefault);
         }
 
         /// <summary>
@@ -472,6 +474,24 @@ namespace AssemblyProviders.CILAssembly
                 default:
                     throw new NotSupportedException("Unknown import attribute constructor with argument count: " + importAttribute.ConstructorArguments.Count);
             }
+        }
+
+        /// <summary>
+        /// Get indicator that import allow default value
+        /// </summary>
+        /// <param name="importAttribute">Attribute where allow default is defined</param>
+        /// <returns>AllowDefault indicator for given import attribute</returns>
+        private bool getAllowDefault(CustomAttribute importAttribute)
+        {
+            foreach (var property in importAttribute.Properties)
+            {
+                if (property.Name == "AllowDefault")
+                {
+                    return (bool)property.Argument.Value;
+                }
+            }
+
+            return false;
         }
 
 
@@ -922,6 +942,9 @@ namespace AssemblyProviders.CILAssembly
 
             //caching is provided outside of assembly
             var chain = createChain(type);
+            if (chain.Type.HasParameters)
+                chain = chain.MakeGeneric(typePath.GenericArgs);
+
             return chain;
         }
         #endregion

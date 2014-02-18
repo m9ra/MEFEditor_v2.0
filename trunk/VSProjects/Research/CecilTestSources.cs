@@ -118,9 +118,68 @@ class CECILComponent2
     [Export("Contract1")]
     public string ExportProperty { get; private set; }
 
-    [Import("Contract1")]
+    [Import("Contract2", AllowDefault = true)]
     public string ImportProperty { get; private set; }
 
-   // [ImportMany("Contract1")]
-    public IEnumerable<string> ImportManyProperty { get; private set; }
+    [ImportMany("Contract3")]
+    public List<string> ImportManyPropertyCollection { get; private set; }
+
+    [ImportMany("Contract4")]
+    public IEnumerable<int> ImportManyPropertyEnumerable { get; private set; }
+
+    [ImportMany("Contract5")]
+    public string[] ImportManyPropertyArray { get; private set; }
+
+    [ImportMany("Contract6")]
+    public CustomCollection<string> ImportManyPropertyCustom { get; private set; }
+}
+
+class CustomCollection<T> : ICollection<T>
+{
+    private List<T> _storage = new List<T>();
+
+    public void Add(T item)
+    {
+        _storage.Add(item);
+    }
+
+    public void Clear()
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Contains(T item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    public int Count
+    {
+        get { throw new NotImplementedException(); }
+    }
+
+    public bool IsReadOnly
+    {
+        get { throw new NotImplementedException(); }
+    }
+
+    public bool Remove(T item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
+
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
 }

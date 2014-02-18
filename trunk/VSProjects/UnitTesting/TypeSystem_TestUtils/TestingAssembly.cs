@@ -29,6 +29,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         HashedMethodContainer _methods = new HashedMethodContainer();
         List<EditAction> _editActions = new List<EditAction>();
         List<ResultAction> _userActions = new List<ResultAction>();
+        List<AssemblyProvider> _testAssemblies = new List<AssemblyProvider>();
 
         internal readonly TestAssemblyCollection Assemblies;
 
@@ -207,7 +208,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
-            throw new NotImplementedException();
+            //for testing we dont need to handle inheritance chain
+            return null;
         }
 
         #endregion
@@ -238,9 +240,9 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
-
         public TestingAssembly AddReference(AssemblyProvider assembly)
         {
+            Runtime.BuildAssembly();
             Assemblies.Add(assembly);
 
             return this;

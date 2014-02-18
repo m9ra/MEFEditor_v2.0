@@ -8,14 +8,31 @@ using Analyzing;
 
 namespace TypeSystem
 {
+    /// <summary>
+    /// Represents inheritance chain of types - is used for determining type relations
+    /// </summary>
     public class InheritanceChain
     {
-        public readonly PathInfo Path;
-
+        /// <summary>
+        /// Type to which current chain belongs
+        /// </summary>
         public readonly TypeDescriptor Type;
 
+        /// <summary>
+        /// Path of Type name
+        /// </summary>
+        public readonly PathInfo Path;
+
+        /// <summary>
+        /// Inheritance chains of sub types of current inheritenc's Type
+        /// </summary>
         public readonly IEnumerable<InheritanceChain> SubChains;
 
+        /// <summary>
+        /// Create inheritance chain for given type
+        /// </summary>
+        /// <param name="type">Type which chain is created</param>
+        /// <param name="subChains">Chains from subtypes of type</param>
         internal InheritanceChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
             Type = type;
@@ -24,6 +41,11 @@ namespace TypeSystem
             SubChains = filtered.ToArray();
         }
 
+        /// <summary>
+        /// Determine that given targetTypeName is listed in current Type or sub types
+        /// </summary>
+        /// <param name="targetTypeName">Searched type name</param>
+        /// <returns>True if targetTypeName is found, false otherwise</returns>
         public bool HasSubChain(string targetTypeName)
         {
             if (targetTypeName == Type.TypeName)
@@ -41,7 +63,12 @@ namespace TypeSystem
             return false;
         }
 
-        internal InheritanceChain MakeGeneric(IEnumerable<string> arguments)
+        /// <summary>
+        /// Make generic specialization of current chain according to given arguments.
+        /// </summary>
+        /// <param name="arguments">Substitution arguments</param>
+        /// <returns>Created generic specialization</returns>
+        public InheritanceChain MakeGeneric(IEnumerable<string> arguments)
         {
             var substitutions = new Dictionary<string, string>();
 
@@ -61,7 +88,19 @@ namespace TypeSystem
                 return this;
 
             var genericType = Type.MakeGeneric(substitutions);
-            var genericSubChains=new List<InheritanceChain>();
+            var genericSubChains = makeGenericSubchains(substitutions);
+
+            return new InheritanceChain(genericType, genericSubChains);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="substitutions"></param>
+        /// <returns></returns>
+        private IEnumerable<InheritanceChain> makeGenericSubchains(Dictionary<string, string> substitutions)
+        {
+            var genericSubChains = new List<InheritanceChain>();
 
             foreach (var subChain in SubChains)
             {
@@ -84,8 +123,13 @@ namespace TypeSystem
                 var genericSubChain = subChain.MakeGeneric(childArguments);
                 genericSubChains.Add(genericSubChain);
             }
+            return genericSubChains;
+        }
 
-            return new InheritanceChain(genericType, genericSubChains);
+        ///</inheritdoc>
+        public override string ToString()
+        {
+            return string.Format("[Inheritance]{0}", Type.TypeName);
         }
     }
 }

@@ -130,18 +130,8 @@ namespace TypeSystem.Core
             if (targetTypeName == assignedTypeName)
                 return true;
 
-            var typePath = new PathInfo(assignedTypeName);
-            foreach (var assembly in _assemblies.Keys)
-            {
-                var inheritanceChain = assembly.GetInheritanceChain(typePath);
-
-                if (inheritanceChain != null)
-                {
-                    return inheritanceChain.HasSubChain(targetTypeName);
-                }
-            }
-
-            throw new NotSupportedException("For type: " + targetTypeName + " there is no inheritance chain");
+            var chain = getChain(assignedTypeName);
+            return chain.HasSubChain(targetTypeName);
         }
 
         internal ComponentInfo GetComponentInfo(InstanceInfo info)
@@ -197,12 +187,30 @@ namespace TypeSystem.Core
 
         internal InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
-            throw new NotImplementedException();
+            //TODO caching
+
+            return new InheritanceChain(type, subChains);
         }
 
         internal InheritanceChain GetChain(TypeDescriptor type)
         {
-            throw new NotImplementedException();
+            return getChain(type.TypeName);
+        }
+
+        private InheritanceChain getChain(string typeName)
+        {
+            var typePath = new PathInfo(typeName);
+            foreach (var assembly in _assemblies.Keys)
+            {
+                var inheritanceChain = assembly.GetInheritanceChain(typePath);
+
+                if (inheritanceChain != null)
+                {
+                    return inheritanceChain;
+                }
+            }
+
+            throw new NotSupportedException("For type: " + typeName + " there is no inheritance chain");
         }
 
         #endregion

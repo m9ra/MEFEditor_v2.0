@@ -33,7 +33,7 @@ namespace TypeSystem
         public PathInfo(string name)
         {
             Name = name;
-            Signature = parseSignature(Name);
+            Signature = parseSignature(Name, GenericArgs);
             ShortSignature = getShortSignature(Signature);
         }
 
@@ -53,8 +53,15 @@ namespace TypeSystem
                 Name = string.Format("{0}.{1}", path.Name, extendingName);
             }
 
-            Signature = parseSignature(Name);
+            Signature = parseSignature(Name, GenericArgs);
             ShortSignature = getShortSignature(Signature);
+        }
+
+
+        public static string GetSignature(TypeDescriptor typeDescriptor)
+        {
+            var list = new List<string>();
+            return parseSignature(typeDescriptor.TypeName, list);
         }
 
         private string getShortSignature(string signature)
@@ -67,7 +74,7 @@ namespace TypeSystem
             return signature.Substring(0, methodTypeArgsStart);
         }
 
-        private string parseSignature(string extendingName)
+        private static string parseSignature(string extendingName, List<string> genericArgs)
         {
             var argument = new StringBuilder();
             var parsedName = new StringBuilder();
@@ -110,7 +117,7 @@ namespace TypeSystem
                     if (argumentEnd)
                     {
                         //add argument to collected ones
-                        GenericArgs.Add(argument.ToString());
+                        genericArgs.Add(argument.ToString());
                         argument.Clear();
                         argumentEnd = false;
                     }
@@ -148,5 +155,6 @@ namespace TypeSystem
 
             return result.ToString();
         }
+
     }
 }

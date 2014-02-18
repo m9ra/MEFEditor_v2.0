@@ -182,28 +182,18 @@ namespace TypeSystem
             //TODO check if items are lazy
         }
 
+        /// <summary>
+        /// In ManyImport there can be Array{}, IEnumerable{} or anything derived from ICollection{}
+        /// </summary>
+        /// <param name="importManyType"></param>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeServices services)
         {
             var currentChain = services.GetChain(importManyType);
-            var itemType = findManyDescriptor(currentChain);
+            var itemType = findManyItemDescriptor(currentChain);
 
             return new ImportTypeInfo(importManyType, itemType);
-        }
-
-        private static TypeDescriptor findManyDescriptor(InheritanceChain chain)
-        {
-            var signature = chain.Path.Signature;
-            if (signature == typeof(IEnumerable<>).FullName)
-            {
-                return chain.Type.Arguments.First();
-            }
-
-            if (signature == typeof(object).FullName)
-            {
-                return null;
-            }
-
-            throw new NotImplementedException("search in subchains");
         }
 
         public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeDescriptor itemType)
@@ -215,6 +205,57 @@ namespace TypeSystem
         {
             return new ImportTypeInfo(importType, importType);
         }
+
+        #region ImportMany ItemType parsing
+
+        /// <summary>
+        /// Find ItemType from given type representing many imports
+        /// </summary>
+        /// <param name="manyType">Many imports representation</param>
+        /// <returns>ItemType if found according to MEF rules, null otherwise</returns>
+        private static TypeDescriptor findManyItemDescriptor(InheritanceChain manyType)
+        {
+            var signature = manyType.Path.Signature;
+            if (signature == TypeDescriptor.IEnumerableSignature)
+            {
+                //type is IEnumerable
+                return manyType.Type.Arguments.First();
+            }
+
+            if (signature == TypeDescriptor.ArraySignature)
+            {
+                //type is Array
+                return manyType.Type.Arguments.First();
+            }
+
+            return findICollectionItemDescriptor(manyType);
+        }
+
+        /// <summary>
+        /// Find ItemType from given type representing many imports in ICollection{}
+        /// </summary>
+        /// <param name="manyType">Many imports representation</param>
+        /// <returns>ItemType if found within ICollection according to MEF rules, null otherwise</returns>
+        private static TypeDescriptor findICollectionItemDescriptor(InheritanceChain manyType)
+        {
+            var signature = manyType.Path.Signature;
+            if (signature == TypeDescriptor.ICollectionSignature)
+            {
+                //type is ICollection
+                return manyType.Type.Arguments.First();
+            }
+
+            foreach (var subchain in manyType.SubChains)
+            {
+                var descriptor = findICollectionItemDescriptor(subchain);
+                if (descriptor != null)
+                    return descriptor;
+            }
+
+            return null;
+        }
+
+        #endregion
     }
 
     /// <summary>
@@ -253,12 +294,13 @@ namespace TypeSystem
         /// </summary>
         public readonly bool AllowMany;
 
-        public Import(ImportTypeInfo importTypeInfo, MethodID setter, string contract, bool allowMany = false)
+        public Import(ImportTypeInfo importTypeInfo, MethodID setter, string contract, bool allowMany = false, bool allowDefault = false)
         {
             ImportTypeInfo = importTypeInfo;
             Contract = contract;
             Setter = setter;
             AllowMany = allowMany;
+            AllowDefault = allowDefault;
         }
     }
 }

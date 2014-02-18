@@ -736,11 +736,11 @@ namespace MEFAnalyzers.CompositionEngine
 
             var setter = imp.Setter;
             var setterName = Naming.GetMethodName(setter);
-            if (setterName == null || !setterName.StartsWith("set_"))
+            if (setterName == null || !setterName.StartsWith(Naming.SetterPrefix))
                 //cannot find setter -> cannot get getter
                 return null;
 
-            var getterName = "get_" + setterName.Substring(4);
+            var getterName = Naming.GetterPrefix + setterName.Substring(Naming.SetterPrefix.Length);
             var instType = import.Instance.Type;
 
             var getter = _context.TryGetMethod(instType, getterName);

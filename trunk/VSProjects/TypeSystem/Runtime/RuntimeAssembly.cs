@@ -20,15 +20,6 @@ namespace TypeSystem.Runtime
 
     public class RuntimeAssembly : AssemblyProvider
     {
-        /// <summary>
-        /// TODO: Correct generic typing for array
-        /// </summary>
-        public static readonly TypeDescriptor ArrayInfo = TypeDescriptor.Create("Array<@0,@1>");
-
-        /// <summary>
-        /// Type descriptor for object
-        /// </summary>
-        public static readonly TypeDescriptor ObjectInfo = TypeDescriptor.Create<object>();
 
         /// <summary>
         /// Static edits that are available without instance context
@@ -89,9 +80,10 @@ namespace TypeSystem.Runtime
 
             var chain = new InheritanceChain(TypeDescriptor.Create<object>(), new InheritanceChain[0]);
             _inheritanceChains.Add(chain.Path.Signature, chain);
+
             //TODO refactor array support
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
-            arrayDefinition.ForcedInfo = ArrayInfo;
+            arrayDefinition.ForcedInfo = TypeDescriptor.ArrayInfo;
             arrayDefinition.ForcedSubTypes = new[]{
                 typeof(IEnumerable<>),
                 typeof(System.Collections.IEnumerable),
@@ -235,7 +227,7 @@ namespace TypeSystem.Runtime
             _inheritanceChains.TryGetValue(typePath.Signature, out chain);
 
 
-            if (chain.Type.HasParameters)
+            if (chain != null && chain.Type.HasParameters)
             {
                 chain = chain.MakeGeneric(typePath.GenericArgs);
             }
@@ -260,7 +252,7 @@ namespace TypeSystem.Runtime
             _staticEdits.AddRange(definition.StaticEdits);
 
             //efery definition needs to register its chain
-            registerChain(definition);
+            createChain(definition);
 
             //get all methods defined by definition
             var methodGenerators = definition.GetMethods();
@@ -272,15 +264,29 @@ namespace TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Register inheritance chain for given definition
+        /// Create inheritance chain for given definition
         /// </summary>
         /// <param name="definition">Definition which chain is registered</param>
-        private void registerChain(RuntimeTypeDefinition definition)
+        private void createChain(RuntimeTypeDefinition definition)
         {
             var subChains = definition.GetSubChains();
-
             var chain = new InheritanceChain(definition.TypeInfo, subChains);
+
+            registerChain(chain);
+        }
+
+        /// <summary>
+        /// Register inheritance chain and all its subchains
+        /// </summary>
+        /// <param name="chain">Registered chain</param>
+        private void registerChain(InheritanceChain chain)
+        {
             _inheritanceChains[chain.Path.Signature] = chain;
+
+            foreach (var subchain in chain.SubChains)
+            {
+                registerChain(subchain);
+            }
         }
 
         /// <summary>

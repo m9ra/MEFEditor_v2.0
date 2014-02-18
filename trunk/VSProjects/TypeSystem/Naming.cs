@@ -21,7 +21,7 @@ namespace TypeSystem
     ///     MethodIdentifier: MethodPath {PartDelimiter} ParametersDescription
     /// </summary>
     public static class Naming
-    {
+    {       
         /// <summary>
         /// Fullname of ExportAttributeType
         /// </summary>

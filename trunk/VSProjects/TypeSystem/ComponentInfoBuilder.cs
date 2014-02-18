@@ -144,14 +144,14 @@ namespace TypeSystem
         /// <param name="setterID">Importing setter</param>
         /// <param name="contract">Contract of import</param>
         /// <param name="allowMany">Determine many values can be imported</param>
-        public void AddImport(ImportTypeInfo importTypeInfo, MethodID setterID, string contract = null, bool allowMany = false)
+        public void AddImport(ImportTypeInfo importTypeInfo, MethodID setterID, string contract = null, bool allowMany = false, bool allowDefault = false)
         {
             if (contract == null)
             {
                 contract = importTypeInfo.ItemType.TypeName;
             }
 
-            var import = new Import(importTypeInfo, setterID, contract, allowMany);
+            var import = new Import(importTypeInfo, setterID, contract, allowMany, allowDefault);
             AddImport(import);
         }
 

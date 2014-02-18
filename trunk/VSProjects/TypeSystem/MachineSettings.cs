@@ -33,7 +33,7 @@ namespace TypeSystem
         {
             if (literalType.IsAssignableFrom(typeof(Array<InstanceWrap>)))
             {
-                return RuntimeAssembly.ArrayInfo;
+                return TypeDescriptor.ArrayInfo;
             }
 
             return TypeDescriptor.Create(literalType);

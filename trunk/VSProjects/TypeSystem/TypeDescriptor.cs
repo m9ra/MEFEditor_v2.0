@@ -24,6 +24,41 @@ namespace TypeSystem
     public class TypeDescriptor : InstanceInfo
     {
         /// <summary>
+        /// TODO: Correct generic typing for array
+        /// </summary>
+        public static readonly TypeDescriptor ArrayInfo = TypeDescriptor.Create("Array<@0,@1>");
+
+        /// <summary>
+        /// Signature of Array{}
+        /// </summary>
+        public static readonly string ArraySignature = PathInfo.GetSignature(ArrayInfo);
+
+        /// <summary>
+        /// Type descriptor for object
+        /// </summary>
+        public static readonly TypeDescriptor ObjectInfo = TypeDescriptor.Create<object>();
+
+        /// <summary>
+        /// Type descriptor for IEnumerable{}
+        /// </summary>
+        public static readonly TypeDescriptor IEnumerableGenericInfo = TypeDescriptor.Create(typeof(IEnumerable<>));
+
+        /// <summary>
+        /// Signature of IEnumerable{}
+        /// </summary>
+        public static readonly string IEnumerableSignature = PathInfo.GetSignature(IEnumerableGenericInfo);
+
+        /// <summary>
+        /// Type descriptor for ICollection{}
+        /// </summary>
+        public static readonly TypeDescriptor ICollectionGenericInfo = TypeDescriptor.Create(typeof(ICollection<>));
+
+        /// <summary>
+        /// Signature of ICollection{}
+        /// </summary>
+        public static readonly string ICollectionSignature = PathInfo.GetSignature(ICollectionGenericInfo);
+
+        /// <summary>
         /// Shortcut for Void type descriptor
         /// </summary>
         public static readonly TypeDescriptor Void = Create(typeof(void));
@@ -98,7 +133,7 @@ namespace TypeSystem
                 _typeArguments = new Dictionary<string, TypeDescriptor>(typeArguments);
             }
         }
-        
+
         #region Factory methods for type descriptor creation
 
         /// <summary>
