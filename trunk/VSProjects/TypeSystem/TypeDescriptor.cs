@@ -98,8 +98,39 @@ namespace TypeSystem
                 _typeArguments = new Dictionary<string, TypeDescriptor>(typeArguments);
             }
         }
-
+        
         #region Factory methods for type descriptor creation
+
+        /// <summary>
+        /// Make generic version of type descriptor using given substitutions
+        /// </summary>
+        /// <param name="substitutions">Substitutions for making generic version</param>
+        /// <returns>Created generic version</returns>
+        public TypeDescriptor MakeGeneric(Dictionary<string, string> substitutions)
+        {
+            var name = TypeName;
+
+            name = TranslatePath(name, substitutions);
+
+            return TypeDescriptor.Create(name);
+        }
+
+        /// <summary>
+        /// Translate given path according to given substitutions
+        /// </summary>
+        /// <param name="path">Translated path</param>
+        /// <param name="substitutions">Substitutions used for translation</param>
+        /// <returns>Translated path</returns>
+        public static string TranslatePath(string path, Dictionary<string, string> substitutions)
+        {
+            foreach (var pair in substitutions)
+            {
+                //TODO parse with regexp
+                path = path.Replace(pair.Key, pair.Value);
+            }
+
+            return path;
+        }
 
         /// <summary>
         /// Creates type descriptor from given name
@@ -179,5 +210,8 @@ namespace TypeSystem
         }
 
         #endregion
+
+
+
     }
 }

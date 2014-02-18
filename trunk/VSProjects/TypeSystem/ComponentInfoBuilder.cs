@@ -151,7 +151,7 @@ namespace TypeSystem
                 contract = importTypeInfo.ItemType.TypeName;
             }
 
-            var import = new Import(importTypeInfo, setterID, contract);
+            var import = new Import(importTypeInfo, setterID, contract, allowMany);
             AddImport(import);
         }
 

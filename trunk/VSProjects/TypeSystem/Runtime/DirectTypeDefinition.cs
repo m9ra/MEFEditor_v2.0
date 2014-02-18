@@ -27,6 +27,7 @@ namespace TypeSystem.Runtime
             : base(typeof(DirectType))
         {
         }
+                
     }
 
     /// <summary>
@@ -46,7 +47,6 @@ namespace TypeSystem.Runtime
         internal readonly Type DirectType;
 
         public TypeDescriptor ForcedInfo;
-
 
         public DirectTypeDefinition(Type directType)
         {

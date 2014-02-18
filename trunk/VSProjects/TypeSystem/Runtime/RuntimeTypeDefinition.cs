@@ -33,6 +33,9 @@ namespace TypeSystem.Runtime
         /// </summary>
         public bool IsInterface;
 
+        public Type[] ForcedSubTypes { get; set; }
+
+
         internal IEnumerable<Edit> StaticEdits { get { return _staticEdits; } }
 
         /// <summary>
@@ -64,6 +67,7 @@ namespace TypeSystem.Runtime
 
         internal protected Instance This { get; private set; }
 
+
         abstract public  TypeDescriptor TypeInfo { get; }
 
         private List<Edit> _staticEdits = new List<Edit>();
@@ -76,6 +80,7 @@ namespace TypeSystem.Runtime
         {
             return TypeInfo;
         }
+
 
         protected virtual void draw(InstanceDrawer drawer)
         {
@@ -200,11 +205,21 @@ namespace TypeSystem.Runtime
 
         protected IEnumerable<InheritanceChain> GetSubChains(Type type)
         {
-            yield return ContainingAssembly.GetChain(type.BaseType);
-
-            foreach (var subType in type.GetInterfaces())
+            if (ForcedSubTypes == null)
             {
-                yield return ContainingAssembly.GetChain(subType);
+                yield return ContainingAssembly.GetChain(type.BaseType);
+
+                foreach (var subType in type.GetInterfaces())
+                {
+                    yield return ContainingAssembly.GetChain(subType);
+                }
+            }
+            else
+            {
+                foreach (var forcedSubType in ForcedSubTypes)
+                {
+                    yield return ContainingAssembly.GetChain(forcedSubType);
+                }
             }
         }
 

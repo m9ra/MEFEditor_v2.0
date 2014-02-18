@@ -89,15 +89,19 @@ namespace TypeSystem.Runtime
 
             var chain = new InheritanceChain(TypeDescriptor.Create<object>(), new InheritanceChain[0]);
             _inheritanceChains.Add(chain.Path.Signature, chain);
-
             //TODO refactor array support
             var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
             arrayDefinition.ForcedInfo = ArrayInfo;
+            arrayDefinition.ForcedSubTypes = new[]{
+                typeof(IEnumerable<>),
+                typeof(System.Collections.IEnumerable),
+            };
+
             AddDirectDefinition(arrayDefinition);
 
-         /*   var objDefinition = new DirectTypeDefinition<ObjectDefinition>();
-            objDefinition.ForcedInfo = ObjectInfo;
-            AddDirectDefinition(objDefinition);*/
+            /*   var objDefinition = new DirectTypeDefinition<ObjectDefinition>();
+               objDefinition.ForcedInfo = ObjectInfo;
+               AddDirectDefinition(objDefinition);*/
         }
 
         /// <summary>
@@ -228,8 +232,13 @@ namespace TypeSystem.Runtime
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
             InheritanceChain chain;
-            //TODO generic chains
             _inheritanceChains.TryGetValue(typePath.Signature, out chain);
+
+
+            if (chain.Type.HasParameters)
+            {
+                chain = chain.MakeGeneric(typePath.GenericArgs);
+            }
 
             return chain;
         }

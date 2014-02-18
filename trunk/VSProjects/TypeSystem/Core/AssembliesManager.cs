@@ -137,7 +137,7 @@ namespace TypeSystem.Core
 
                 if (inheritanceChain != null)
                 {
-                    return inheritanceChain.HasSubType(targetTypeName);
+                    return inheritanceChain.HasSubChain(targetTypeName);
                 }
             }
 
@@ -194,7 +194,7 @@ namespace TypeSystem.Core
                     yield return assembly.FullPathMapping;
             }
         }
-        
+
         internal InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
             throw new NotImplementedException();

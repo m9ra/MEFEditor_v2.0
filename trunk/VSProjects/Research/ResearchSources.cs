@@ -501,6 +501,25 @@ namespace Research
             ;
         }
 
+        static internal TestingAssembly CompositionTester_ManyStringImport()
+        {
+            return AssemblyUtils.Run(@"        
+                var partImport=new ManyStringImport();       
+                var partExport=new StringExport(""ExportedValue"");
+
+                var test=new System.ComponentModel.Composition.Hosting.CompositionContainer();
+                test.ComposeParts(partImport,partExport);   
+                var importValues=partImport.Import;                   
+                var result=importValues[0];
+            ")
+
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<ManyStringImport>()
+            .AddToRuntime<StringExport>()
+            .AddWrappedGenericToRuntime(typeof(ICollection<>)) //because composition engine needs it
+            ;
+        }
+
         static internal TestingAssembly ArrayTesting()
         {
             return AssemblyUtils.Run(@"                

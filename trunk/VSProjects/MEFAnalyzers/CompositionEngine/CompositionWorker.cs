@@ -352,7 +352,7 @@ namespace MEFAnalyzers.CompositionEngine
             var impType = imp.ContractType;
             var expType = exp.ContractType;
 
-            var importItem = imp.AllowMany ? imp.ImportManyItemType.TypeName : imp.Contract;
+            var importItem = imp.ImportItemType;
             var importId = imp.AllowMany ? "Import item" : "Import";
 
             if (!_context.IsOfType(expType, importItem))
@@ -699,7 +699,14 @@ namespace MEFAnalyzers.CompositionEngine
             else
             {
                 //import will be filled with an array
-                return _context.CreateArray(import.ImportManyItemType, exportValues);
+                var arr = _context.CreateArray(import.ImportItemType, exportValues);
+                if (!_context.IsOfType(import.ContractType, arr.Type))
+                {
+                    setError(import, "Import type cannot handle multiple exports");
+                    return null;
+                }
+
+                return arr;
             }
         }
 

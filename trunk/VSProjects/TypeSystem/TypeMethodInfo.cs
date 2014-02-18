@@ -94,7 +94,7 @@ namespace TypeSystem
             Path = Naming.GetMethodPath(MethodID);
 
             HasGenericParameters = DeclaringType.HasParameters;
-            HasGenericParameters |=  ReturnType.IsParameter;
+            HasGenericParameters |= ReturnType.IsParameter;
             foreach (var arg in methodTypeArguments)
             {
                 HasGenericParameters |= arg.IsParameter;
@@ -130,8 +130,8 @@ namespace TypeSystem
         /// <returns>Maked method info</returns>
         public TypeMethodInfo MakeGenericMethod(PathInfo path)
         {
-            if (path.ShortSignature!= Path.ShortSignature)
-                    throw new NotSupportedException("Cannot make generic method from incompatible path info");
+            if (path.ShortSignature != Path.ShortSignature)
+                throw new NotSupportedException("Cannot make generic method from incompatible path info");
 
 
             var translations = new Dictionary<string, string>();
@@ -153,12 +153,12 @@ namespace TypeSystem
         /// <returns>Maked method info</returns>
         public TypeMethodInfo MakeGenericMethod(Dictionary<string, string> translations)
         {
-            var translatedName=translateString(MethodName, translations);
+            var translatedName = TypeDescriptor.TranslatePath(MethodName, translations);
 
             var translatedParams = new List<ParameterTypeInfo>();
             foreach (var parameter in Parameters)
             {
-                var translatedType = translate(parameter.Type, translations);
+                var translatedType = parameter.Type.MakeGeneric(translations);
                 var translatedParam = parameter.MakeGeneric(translatedType);
                 translatedParams.Add(translatedParam);
             }
@@ -166,13 +166,13 @@ namespace TypeSystem
             var methodTypeArguments = new List<TypeDescriptor>(MethodTypeArguments.Length);
             foreach (var argument in MethodTypeArguments)
             {
-                var translatedType = translate(argument, translations);
+                var translatedType = argument.MakeGeneric(translations);
                 methodTypeArguments.Add(translatedType);
             }
 
             var generic = new TypeMethodInfo(
-                translate(DeclaringType, translations), translatedName,
-                translate(ReturnType, translations), translatedParams.ToArray(),
+                DeclaringType.MakeGeneric(translations), translatedName,
+                ReturnType.MakeGeneric(translations), translatedParams.ToArray(),
                 IsStatic, methodTypeArguments.ToArray(), IsAbstract);
 
             return generic;
@@ -208,40 +208,6 @@ namespace TypeSystem
             }
 
             return result.ToArray();
-        }
-
-
-        /// <summary>
-        /// Translates given info with available translations
-        /// </summary>
-        /// <param name="translatedDescriptor">Descriptor that will be translated</param>
-        /// <param name="translations">Available translations</param>
-        /// <returns>Translated type descriptor</returns>
-        private TypeDescriptor translate(TypeDescriptor translatedDescriptor, Dictionary<string, string> translations)
-        {
-            //TODO TypeDescriptor support for translations
-            var name = translatedDescriptor.TypeName;
-
-            name=translateString(name, translations);
-
-            return TypeDescriptor.Create(name);
-        }
-
-
-        /// <summary>
-        /// TODO refactor out
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="translations"></param>
-        /// <returns></returns>
-        private string translateString(string name, Dictionary<string, string> translations)
-        {
-            foreach (var pair in translations)
-            {
-                name = name.Replace(pair.Key, pair.Value);
-            }
-
-            return name;
         }
     }
 }

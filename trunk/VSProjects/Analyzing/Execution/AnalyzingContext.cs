@@ -306,6 +306,9 @@ namespace Analyzing.Execution
         {
             popContext();
             LastReturnValue = returnValue;
+            if (LastReturnValue == null)
+                //TODO resolve null values same as dirty instances
+                LastReturnValue = Machine.CreateDirectInstance("Null");
         }
 
         public bool Contains(VariableName targetVariable)

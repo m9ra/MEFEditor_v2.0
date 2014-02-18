@@ -133,6 +133,14 @@ namespace TypeSystem.Runtime.Building
             definition.Invoke(context, adapter);
         }
 
+        private static Instance unwrap(InstanceWrap wrap)
+        {
+            if (wrap == null)
+                return null;
+
+            return wrap.Wrapped;
+        }
+
         /// <summary>
         /// Get parameters info for given method base
         /// </summary>
@@ -229,7 +237,7 @@ namespace TypeSystem.Runtime.Building
             if (needReturnUnWrapping)
             {
                 //Wrapped instance has been returned - unwrap it
-                returnValue = Expression.PropertyOrField(returnValue, "Wrapped");
+                returnValue = Expression.Call(typeof(MethodBuilder).GetMethod("unwrap", BindingFlags.NonPublic | BindingFlags.Static), returnValue);
             }
             else
             {

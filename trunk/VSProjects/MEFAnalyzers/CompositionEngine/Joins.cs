@@ -73,7 +73,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <summary>
         /// Type of imported item value. (Is different from <see cref="ContractType"/> for ImportMany/Lazy imports)
         /// </summary>
-        public readonly TypeDescriptor ImportManyItemType;
+        public readonly TypeDescriptor ImportItemType;
 
 
 
@@ -123,7 +123,7 @@ namespace MEFAnalyzers.CompositionEngine
 
             var info = import.ImportTypeInfo;
             ContractType = info.ImportType;
-            if (AllowMany) ImportManyItemType = info.ItemType;
+            ImportItemType = info.ItemType;
 
             Instance = instance;
         }

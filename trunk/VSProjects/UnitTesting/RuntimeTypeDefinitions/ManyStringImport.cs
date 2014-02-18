@@ -20,7 +20,8 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
             var stringInfo = TypeDescriptor.Create<string>();
-            builder.AddManyImport(stringInfo, stringInfo, "Import");
+            var manyInfo = TypeDescriptor.Create<IEnumerable<string>>();
+            builder.AddManyImport(manyInfo, stringInfo, "Import");
             ComponentInfo = builder.BuildInfo();
         }
 
