@@ -155,7 +155,7 @@ namespace AssemblyProviders.ProjectAssembly
 
             return item.Generator;
         }
-        
+
         /// <inheritdoc />
         public override GeneratorBase GetGenericMethodGenerator(MethodID methodID, PathInfo searchPath)
         {
@@ -246,7 +246,7 @@ namespace AssemblyProviders.ProjectAssembly
 
             return null;
         }
-        
+
         /// <summary>
         /// Get <see cref="MethodItem"/> for generic method described by given methodID with specialization according to
         /// generic Path
@@ -287,7 +287,22 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns>Created <see cref="TypeDescriptor"/></returns>
         private TypeDescriptor createDescriptor(CodeClass typeNode)
         {
-            throw new NotImplementedException();
+            var fullname = typeNode.FullName;
+
+            var typeName = convertToTypeName(fullname);
+
+            var descriptor = TypeDescriptor.Create(typeName);
+            return descriptor;
+        }
+
+        /// <summary>
+        /// Converts fullnames between <see cref="CodeModel"/> representation and TypeSystem typeName
+        /// </summary>
+        /// <param name="fullname">Fullname of element from <see cref="CodeModel"/></param>
+        /// <returns></returns>
+        private string convertToTypeName(string fullname)
+        {
+            throw new NotImplementedException("TODO check fullname form especialy for generics");
         }
 
         /// <summary>
