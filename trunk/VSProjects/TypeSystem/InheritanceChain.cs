@@ -94,10 +94,10 @@ namespace TypeSystem
         }
 
         /// <summary>
-        /// 
+        /// Make generic specialization from current SubChains
         /// </summary>
-        /// <param name="substitutions"></param>
-        /// <returns></returns>
+        /// <param name="substitutions">Substitutions defined by generic arguments and Type parameters</param>
+        /// <returns>Generic specialzation</returns>
         private IEnumerable<InheritanceChain> makeGenericSubchains(Dictionary<string, string> substitutions)
         {
             var genericSubChains = new List<InheritanceChain>();

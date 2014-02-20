@@ -196,36 +196,41 @@ namespace TypeSystem.Runtime
 
         #region Assembly provider implementation
 
+        /// <inheritdoc />
         public override SearchIterator CreateRootIterator()
         {
             return new HashIterator(_runtimeMethods);
         }
 
+        /// <inheritdoc />
         public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
         {
             return _runtimeMethods.AccordingGenericId(method, searchPath);
         }
 
+        /// <inheritdoc />
         public override GeneratorBase GetMethodGenerator(MethodID method)
         {
             return _runtimeMethods.AccordingId(method);
         }
 
+        /// <inheritdoc />
         public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
             return _runtimeMethods.GetImplementation(method, dynamicInfo);
         }
 
+        /// <inheritdoc />
         public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
             return _runtimeMethods.GetGenericImplementation(methodID, methodSearchPath, implementingTypePath);
         }
 
+        /// <inheritdoc />
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
             InheritanceChain chain;
             _inheritanceChains.TryGetValue(typePath.Signature, out chain);
-
 
             if (chain != null && chain.Type.HasParameters)
             {
