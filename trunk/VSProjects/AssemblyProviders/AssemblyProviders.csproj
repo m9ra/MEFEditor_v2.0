@@ -81,7 +81,10 @@
     <Compile Include="CIL\ILAnalyzer\ILUtilities.cs" />
     <Compile Include="CIL\Transcription.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\MethodBuilder.cs" />
+    <Compile Include="ProjectAssembly\MethodBuilding\SourceMethodGenerator.cs" />
+    <Compile Include="ProjectAssembly\ParsingActivation.cs" />
     <Compile Include="ProjectAssembly\Traversing\CodeElementIterator.cs" />
+    <Compile Include="ProjectAssembly\Traversing\CodeElementSearcher.cs" />
     <Compile Include="ProjectAssembly\Traversing\ComponentSearcher.cs" />
     <Compile Include="ProjectAssembly\VsProjectAssembly.cs" />
     <Compile Include="ProjectAssembly\Traversing\CodeElementVisitor.cs" />

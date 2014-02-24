@@ -35,7 +35,7 @@ namespace UnitTesting.AssemblyProviders_TestUtils
 
         public static void AssertTokens(this string source, params string[] tokens)
         {
-            var lexer = new Lexer(new Source(source, Method.EntryMethodPath, Method.EntryInfo));
+            var lexer = new Lexer(new Source(source, Method.EntryInfo));
             var actualTokens = lexer.GetTokens();
             var actualStringValues = (from token in actualTokens select token.Value).ToArray();
 

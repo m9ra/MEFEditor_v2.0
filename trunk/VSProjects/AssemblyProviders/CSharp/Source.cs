@@ -23,7 +23,8 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         internal readonly TypeMethodInfo OriginalMethod;
 
-        public readonly string OriginalMethodPath;
+
+        public PathInfo OriginalMethodPath { get { return OriginalMethod.Path; } }
 
         public readonly CompilationInfo CompilationInfo = new CompilationInfo();
 
@@ -39,11 +40,10 @@ namespace AssemblyProviders.CSharp
             return view.Data(this, () => new EditContext(view, this, OriginalCode));
         }
 
-        public Source(string code, string methodPath, TypeMethodInfo methodInfo)
+        public Source(string code, TypeMethodInfo methodInfo)
         {
             OriginalCode = code;
             OriginalMethod = methodInfo;
-            OriginalMethodPath = methodPath;
         }
 
         internal void RemoveNode(ExecutionView view, INodeAST node, bool keepSideEffect)

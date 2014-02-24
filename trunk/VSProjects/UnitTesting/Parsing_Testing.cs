@@ -174,7 +174,7 @@ namespace UnitTesting
             var result = parser.Parse(new Source(@"{
                 var test=System.String.test;
                 var test2=System.String.test();
-            }", Method.EntryMethodPath, Method.EntryInfo));
+            }", Method.EntryInfo));
         }
 
 

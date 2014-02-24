@@ -18,10 +18,19 @@ using AssemblyProviders.ProjectAssembly.MethodBuilding;
 
 namespace AssemblyProviders.ProjectAssembly.Traversing
 {
+    /// <summary>
+    /// Search iterator implementation for iterating through CodeElements
+    /// </summary>
     class CodeElementIterator : SearchIterator
     {
+        /// <summary>
+        /// Owning assembly
+        /// </summary>
         private readonly VsProjectAssembly _assembly;
 
+        /// <summary>
+        /// Nodes, which are initial positions of current iterator
+        /// </summary>
         private readonly IEnumerable<CodeElement> _currentNodes;
 
         private CodeElementIterator(IEnumerable<CodeElement> currentNodes)
@@ -43,6 +52,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             _currentNodes = currentNodes;
         }
 
+        /// <inheritdoc />
         public override SearchIterator ExtendName(string suffix)
         {
             var actualNodes = new List<CodeElement>();
@@ -64,6 +74,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             return new CodeElementIterator(actualNodes);
         }
 
+        /// <inheritdoc />
         public override IEnumerable<TypeMethodInfo> FindMethods(string searchedName)
         {
             var methodItems = getMethodItems(searchedName);
@@ -77,13 +88,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         private IEnumerable<MethodItem> getMethodItems(string searchedName)
         {
             var methods = new List<MethodItem>();
-            var builder = new MethodBuilder();
 
             foreach (var currentNode in _currentNodes)
             {
                 foreach (CodeElement child in currentNode.Children)
                 {
-                    var method=builder.Build(child);
+                    var method = MethodBuilder.Build(child, _assembly);
                     methods.Add(method);
                 }
             }

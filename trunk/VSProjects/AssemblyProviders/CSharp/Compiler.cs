@@ -27,6 +27,7 @@ namespace AssemblyProviders.CSharp
         private readonly EmitterBase E;
         private readonly Context _context;
         private readonly TypeMethodInfo _methodInfo;
+        private readonly TypeMethodInfo _methodInfoDefinition;
         private readonly CompilationInfo _info;
 
         private readonly Dictionary<string, VariableInfo> _declaredVariables = new Dictionary<string, VariableInfo>();
@@ -42,22 +43,23 @@ namespace AssemblyProviders.CSharp
               {"==","Equals"}
         };
 
-        public static void GenerateInstructions(CodeNode method, TypeMethodInfo info, EmitterBase emitter, TypeServices services)
+        public static void GenerateInstructions(CodeNode method, TypeMethodInfo info, TypeMethodInfo infoDefinition, EmitterBase emitter, TypeServices services)
         {
-            var compiler = new Compiler(method, info, emitter, services);
+            var compiler = new Compiler(method, info, infoDefinition, emitter, services);
 
             compiler.generateInstructions();
         }
 
-        private Compiler(CodeNode method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)
+        private Compiler(CodeNode method, TypeMethodInfo methodInfo, TypeMethodInfo methodInfoDefinition, EmitterBase emitter, TypeServices services)
         {
             _method = method;
             _info = _method.SourceToken.Position.Source.CompilationInfo;
             _methodInfo = methodInfo;
+            _methodInfoDefinition = methodInfoDefinition;
             E = emitter;
             _context = new Context(emitter, services);
 
-            var originalPath = new PathInfo(_method.Source.OriginalMethodPath);
+            var originalPath = _methodInfoDefinition.Path;
 
             var genericArgs = methodInfo.Path.GenericArgs;
             var genericParams = originalPath.GenericArgs;

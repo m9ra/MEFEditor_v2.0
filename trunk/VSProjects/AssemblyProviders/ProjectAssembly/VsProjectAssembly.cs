@@ -13,6 +13,7 @@ using Analyzing;
 using TypeSystem;
 
 using AssemblyProviders.ProjectAssembly.Traversing;
+using AssemblyProviders.ProjectAssembly.MethodBuilding;
 
 
 namespace AssemblyProviders.ProjectAssembly
@@ -26,6 +27,11 @@ namespace AssemblyProviders.ProjectAssembly
         /// Represented VsProject assembly
         /// </summary>
         private readonly VSProject _assemblyProject;
+
+        /// <summary>
+        /// Searcher of <see cref="CodeElement"/> objects
+        /// </summary>
+        private readonly CodeElementSearcher _searcher;
 
         /// <summary>
         /// Code model represented by current assembly
@@ -44,8 +50,19 @@ namespace AssemblyProviders.ProjectAssembly
         public VsProjectAssembly(VSProject assemblyProject)
         {
             _assemblyProject = assemblyProject;
+            _searcher = new CodeElementSearcher(this);
 
             OnTypeSystemInitialized += initializeAssembly;
+        }
+
+        /// <summary>
+        /// Provider of method parsing for assembly
+        /// </summary>
+        /// <param name="activation">Activation for assembly parser</param>
+        /// <param name="emitter">Emitter where parsed instructions are emitted</param>
+        internal void ParsingProvider(ParsingActivation activation, EmitterBase emitter)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -260,7 +277,7 @@ namespace AssemblyProviders.ProjectAssembly
             foreach (var node in findMethodNodes(methodGenericPath.Signature))
             {
                 //create generic specialization 
-                var methodItem = buildGenericMethod(node, methodGenericPath.GenericArgs);
+                var methodItem = buildGenericMethod(node, methodGenericPath);
 
                 if (methodItem.Info.MethodID == methodID)
                     //we have found matching generic specialization
@@ -271,38 +288,38 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
+        /// Create <see cref="InheritanceChain"/> enumeration from given typeNodes
+        /// </summary>
+        private IEnumerable<InheritanceChain> createInheritanceChains(CodeElements typeNodes)
+        {
+            throw new NotImplementedException("TODO is needed to test form of references to other assemblies - because of naming");
+        }
+
+        /// <summary>
+        /// Find nodes of methods with given signature
+        /// </summary>
+        /// <param name="methodPathSignature">Path to method in signature form</param>
+        /// <returns>Found methods</returns>
+        private IEnumerable<CodeFunction> findMethodNodes(string methodPathSignature)
+        {
+            foreach (var element in _searcher.SearchAll(methodPathSignature))
+            {
+                var function = element as CodeFunction;
+                if (function == null)
+                    continue;
+
+                yield return function;
+            }
+        }
+
+        /// <summary>
         /// Find node of type specified by given typePathSignature
         /// </summary>
         /// <param name="typePathSignature">Path to type in signature form</param>
         /// <returns>Found node if any, <c>null</c> otherwise</returns>
         private CodeClass getTypeNode(string typePathSignature)
         {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Creates <see cref="TypeDescriptor"/> from given typeNode        
-        /// </summary>
-        /// <param name="typeNode">Type node which descriptor is created</param>
-        /// <returns>Created <see cref="TypeDescriptor"/></returns>
-        private TypeDescriptor createDescriptor(CodeClass typeNode)
-        {
-            var fullname = typeNode.FullName;
-
-            var typeName = convertToTypeName(fullname);
-
-            var descriptor = TypeDescriptor.Create(typeName);
-            return descriptor;
-        }
-
-        /// <summary>
-        /// Converts fullnames between <see cref="CodeModel"/> representation and TypeSystem typeName
-        /// </summary>
-        /// <param name="fullname">Fullname of element from <see cref="CodeModel"/></param>
-        /// <returns></returns>
-        private string convertToTypeName(string fullname)
-        {
-            throw new NotImplementedException("TODO check fullname form especialy for generics");
+            return _searcher.Search(typePathSignature) as CodeClass;
         }
 
         /// <summary>
@@ -320,26 +337,8 @@ namespace AssemblyProviders.ProjectAssembly
             var interfaceChains = createInheritanceChains(typeNode.ImplementedInterfaces);
             subChains.AddRange(interfaceChains);
 
-            var typeDescriptor = createDescriptor(typeNode);
+            var typeDescriptor = MethodBuilder.CreateDescriptor(typeNode);
             return TypeServices.CreateChain(typeDescriptor, subChains);
-        }
-
-        /// <summary>
-        /// Create <see cref="InheritanceChain"/> from given typeNode
-        /// </summary>
-        private IEnumerable<InheritanceChain> createInheritanceChains(CodeElements typeNodes)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Find nodes of methods with given signature
-        /// </summary>
-        /// <param name="methodPathSignature">Path to method in signature form</param>
-        /// <returns>Found methods</returns>
-        private IEnumerable<CodeFunction> findMethodNodes(string methodPathSignature)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -349,17 +348,25 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns>Builded <see cref="MethodItem"/></returns>
         private MethodItem buildMethod(CodeFunction methodNode)
         {
-            throw new NotImplementedException();
+            //building is same as with generic method without parameters
+            return buildGenericMethod(methodNode, null);
         }
 
         /// <summary>
         /// Build <see cref="MethodItem"/> from given generic methodNode
         /// </summary>
         /// <param name="methodNode">Node from which <see cref="MethodItem"/> is builded</param>
+        /// <param name="methodGenericPath">Arguments for generic method</param>
         /// <returns>Builded <see cref="MethodItem"/></returns>
-        private MethodItem buildGenericMethod(CodeFunction methodNode, IEnumerable<string> genericArguments)
+        private MethodItem buildGenericMethod(CodeFunction methodNode, PathInfo methodGenericPath)
         {
-            throw new NotImplementedException();
+            var methodItem = MethodBuilder.BuildFrom(methodNode, this);
+
+            if (methodGenericPath != null)
+                //make generic specialization
+                methodItem = methodItem.Make(methodGenericPath);
+
+            return methodItem;
         }
 
         #endregion
