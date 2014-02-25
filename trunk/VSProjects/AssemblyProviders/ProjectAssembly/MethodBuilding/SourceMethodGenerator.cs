@@ -23,7 +23,6 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
     /// </summary>
     public class SourceMethodGenerator : GeneratorBase, GenericMethodGenerator
     {
-
         /// <summary>
         /// Parser used for generating method instructions
         /// </summary>
@@ -35,40 +34,22 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         public readonly ParsingActivation Activation;
 
         /// <summary>
-        /// Initialize <see cref="SourceMethodGenerator"/> object from non-generic or non-specialized generic method definitions.
+        /// Initialize <see cref="SourceMethodGenerator"/> object from given activation.
         /// </summary>
-        /// <param name="sourceCode">Source code of generated method</param>
-        /// <param name="method">Method info of generated method</param>
-        internal SourceMethodGenerator(string sourceCode, TypeMethodInfo method, ParsingProvider parsingProvider)
-            : this(sourceCode, method, method, parsingProvider)
+        /// <param name="activation">Activation of parser for generated method</param>
+        /// <param name="parsingProvider">Provider of parsing service for method</param>
+        internal SourceMethodGenerator(ParsingActivation activation, ParsingProvider parsingProvider)
         {
-
-        }
-
-        /// <summary>
-        /// Initialize <see cref="SourceMethodGenerator"/> object from non-generic or non-specialized generic method definitions.
-        /// </summary>
-        /// <param name="sourceCode">Source code of generated method</param>
-        /// <param name="method">Method info of generated method</param>
-        /// <param name="method">Method info of generic definition of generated method</param>
-        private SourceMethodGenerator(string sourceCode, TypeMethodInfo method, TypeMethodInfo methodDefinition, ParsingProvider parsingProvider)
-        {
-            if (sourceCode == null)
-                throw new ArgumentNullException("sourceCode");
-
-            if (method == null)
-                throw new ArgumentNullException("method");
-
-            if (method == null)
-                throw new ArgumentNullException("methodDefinition");
-
             if (parsingProvider == null)
                 throw new ArgumentNullException("parsingProvider");
 
-            var activation = new ParsingActivation(sourceCode, method, method);
+            if (activation == null)
+                throw new ArgumentNullException("activation");
 
             _parsingProvider = parsingProvider;
+            Activation = activation;
         }
+
 
         /// <inheritdoc />
         protected override void generate(EmitterBase emitter)
@@ -80,7 +61,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         public MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition)
         {
             var specializedMethod = Activation.Method.MakeGenericMethod(methodPath);
-            var specializedGenerator = new SourceMethodGenerator(Activation.SourceCode, specializedMethod, methodDefinition, _parsingProvider);
+
+            var activation = new ParsingActivation(Activation.SourceCode, specializedMethod, Activation.GenericParameters);
+            var specializedGenerator = new SourceMethodGenerator(activation, _parsingProvider);
 
             return new MethodItem(specializedGenerator, specializedMethod);
         }

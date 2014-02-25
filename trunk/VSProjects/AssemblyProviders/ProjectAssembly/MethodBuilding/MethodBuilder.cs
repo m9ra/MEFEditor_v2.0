@@ -66,7 +66,12 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var sourceCode = GetSourceCode(element);
             var methodInfo = CreateMethodInfo(element);
-            var generator = new SourceMethodGenerator(sourceCode, methodInfo, declaringAssembly.ParsingProvider);
+
+            var fullname = element.FullName;
+            var genericPath = new PathInfo(fullname);
+            var activation = new ParsingActivation(sourceCode, methodInfo, genericPath.GenericArgs);
+
+            var generator = new SourceMethodGenerator(activation, declaringAssembly.ParsingProvider);
 
             var item = new MethodItem(generator, methodInfo);
             return item;

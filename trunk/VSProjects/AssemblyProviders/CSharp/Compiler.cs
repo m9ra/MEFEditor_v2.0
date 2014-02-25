@@ -10,6 +10,7 @@ using Analyzing;
 using TypeSystem;
 
 using AssemblyProviders.TypeDefinitions;
+using AssemblyProviders.ProjectAssembly;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
 using AssemblyProviders.CSharp.Compiling;
@@ -23,11 +24,20 @@ namespace AssemblyProviders.CSharp
     /// </summary>
     public class Compiler
     {
+        private readonly static SyntaxParser _parser = new SyntaxParser();
+
         private readonly CodeNode _method;
+
+        private readonly ParsingActivation _activation;
+
         private readonly EmitterBase E;
+
         private readonly Context _context;
-        private readonly TypeMethodInfo _methodInfo;
-        private readonly TypeMethodInfo _methodInfoDefinition;
+
+        private readonly Source _source;
+
+        private TypeMethodInfo MethodInfo { get { return _activation.Method; } }
+
         private readonly CompilationInfo _info;
 
         private readonly Dictionary<string, VariableInfo> _declaredVariables = new Dictionary<string, VariableInfo>();
@@ -43,28 +53,29 @@ namespace AssemblyProviders.CSharp
               {"==","Equals"}
         };
 
-        public static void GenerateInstructions(CodeNode method, TypeMethodInfo info, TypeMethodInfo infoDefinition, EmitterBase emitter, TypeServices services)
+        public static Source GenerateInstructions(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
-            var compiler = new Compiler(method, info, infoDefinition, emitter, services);
+            var compiler = new Compiler(activation, emitter, services);
 
             compiler.generateInstructions();
+
+            return compiler._source;
         }
 
-        private Compiler(CodeNode method, TypeMethodInfo methodInfo, TypeMethodInfo methodInfoDefinition, EmitterBase emitter, TypeServices services)
+        private Compiler(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
-            _method = method;
-            _info = _method.SourceToken.Position.Source.CompilationInfo;
-            _methodInfo = methodInfo;
-            _methodInfoDefinition = methodInfoDefinition;
+            _activation = activation;
             E = emitter;
             _context = new Context(emitter, services);
 
-            var originalPath = _methodInfoDefinition.Path;
+            _source = new Source(activation.SourceCode, activation.Method);
+            _method = _parser.Parse(_source);
+            _info = _method.SourceToken.Position.Source.CompilationInfo;
 
-            var genericArgs = methodInfo.Path.GenericArgs;
-            var genericParams = originalPath.GenericArgs;
+            var genericArgs = MethodInfo.Path.GenericArgs;
+            var genericParams = activation.GenericParameters.ToArray();
 
-            for (int i = 0; i < originalPath.GenericArgs.Count; ++i)
+            for (int i = 0; i < genericParams.Length; ++i)
             {
                 var genericArg = genericArgs[i];
                 var genericParam = genericParams[i];
@@ -93,15 +104,15 @@ namespace AssemblyProviders.CSharp
             entryBlock.Comment = "===Compiler initialization===";
             entryBlock.BlockTransformProvider = new Transformations.BlockProvider(getFirstLine(), _method.Source);
 
-            if (_methodInfo.HasThis)
+            if (MethodInfo.HasThis)
             {
-                E.AssignArgument("this", _methodInfo.DeclaringType, 0);
+                E.AssignArgument("this", MethodInfo.DeclaringType, 0);
             }
 
             //generate argument assigns
-            for (uint i = 0; i < _methodInfo.Parameters.Length; ++i)
+            for (uint i = 0; i < MethodInfo.Parameters.Length; ++i)
             {
-                var arg = _methodInfo.Parameters[i];
+                var arg = MethodInfo.Parameters[i];
                 E.AssignArgument(arg.Name, arg.Type, i + 1); //argument 0 is always this object
 
                 var variable = new VariableInfo(arg.Name);
@@ -573,7 +584,7 @@ namespace AssemblyProviders.CSharp
             if (calledObject == null)
             {
                 //TODO add namespaces
-                searcher.ExtendName("", _methodInfo.DeclaringType.TypeName);
+                searcher.ExtendName("", MethodInfo.DeclaringType.TypeName);
             }
             else
             {

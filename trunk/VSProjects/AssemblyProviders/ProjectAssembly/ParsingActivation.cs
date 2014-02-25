@@ -24,16 +24,28 @@ namespace AssemblyProviders.ProjectAssembly
         internal readonly TypeMethodInfo Method;
 
         /// <summary>
-        /// <see cref="TypeMethodInfo"/> describing generated method definition
+        /// Generic parameters of method path. They are used for translating source codes according to
+        /// generic parameters.
         /// </summary>
-        internal readonly TypeMethodInfo MethodDefinition;
+        internal readonly IEnumerable<string> GenericParameters;
 
 
-        internal ParsingActivation(string sourceCode, TypeMethodInfo method, TypeMethodInfo methodDefinition)
+        public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters)
         {
+            if (sourceCode == null)
+                throw new ArgumentNullException("sourceCode");
+
+            if (method == null)
+                throw new ArgumentNullException("method");
+
+            if (genericParameters == null)
+                throw new ArgumentNullException("genericParameterrs");
+
             SourceCode = sourceCode;
             Method = method;
-            MethodDefinition = methodDefinition;
+
+            //create defensive copy
+            GenericParameters = genericParameters.ToArray();
         }
     }
 }

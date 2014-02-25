@@ -131,9 +131,11 @@ namespace UnitTesting.TypeSystem_TestUtils
         public TestingAssembly AddMethod(string methodPath, string code, MethodDescription description)
         {
             var methodInfo = buildDescription(description, methodPath);
+            var genericParameters = new PathInfo(methodPath).GenericArgs;
 
-            var source = new Source("{" + code + "}", methodInfo);
-            var method = new ParsedGenerator(methodInfo, source, TypeServices);
+            var sourceCode = "{" + code + "}";
+            var method = new ParsedGenerator(methodInfo, sourceCode, genericParameters, TypeServices);
+
             addMethod(method, methodInfo, description.Implemented);
 
             return this;
@@ -284,10 +286,10 @@ namespace UnitTesting.TypeSystem_TestUtils
             return parsedGenerator.Source.Code(view);
         }
 
-        public void SetSource(MethodID method, string source)
+        public void SetSource(MethodID method, string sourceCode)
         {
             var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
-            parsedGenerator.Source = new Source(source, parsedGenerator.Info);
+            parsedGenerator.SourceCode = sourceCode;
         }
 
         #endregion

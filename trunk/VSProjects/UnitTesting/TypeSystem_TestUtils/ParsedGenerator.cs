@@ -8,6 +8,7 @@ using Analyzing;
 using TypeSystem;
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
+using AssemblyProviders.ProjectAssembly;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
@@ -15,42 +16,50 @@ namespace UnitTesting.TypeSystem_TestUtils
     {
         static readonly SyntaxParser Parser = new SyntaxParser();
 
-        public readonly TypeMethodInfo Info;
-
-        public readonly TypeMethodInfo InfoDefinition;
-
-        public Source Source { get; internal set; }
-
         private readonly TypeServices _services;
 
-        public ParsedGenerator(TypeMethodInfo info, Source source, TypeServices services)
-            : this(info, source, services, info)
-        { }
+        private readonly IEnumerable<string> _genericParameters;
 
-        private ParsedGenerator(TypeMethodInfo info, Source source, TypeServices services, TypeMethodInfo infoDefinition)
+        public readonly TypeMethodInfo Method;
+
+        public string SourceCode { get; internal set; }
+
+        /// <summary>
+        /// Source obtained from compiler after parsing is done
+        /// </summary>
+        public Source Source { get; private set; }
+
+
+        public ParsedGenerator(TypeMethodInfo info, string sourceCode, IEnumerable<string> genericParameters, TypeServices services)
         {
             if (info == null)
                 throw new ArgumentNullException("info");
 
-            if (source == null)
-                throw new ArgumentNullException("source");
+            if (sourceCode == null)
+                throw new ArgumentNullException("sourceCode");
 
-            Source = source;
-            Info = info;
-            InfoDefinition = infoDefinition;
+            if (genericParameters == null)
+                throw new ArgumentNullException("genericParameters");
+
+            if (services == null)
+                throw new ArgumentNullException("services");
+
+            SourceCode = sourceCode;
+            Method = info;
             _services = services;
+            _genericParameters = genericParameters;
         }
 
         protected override void generate(EmitterBase emitter)
         {
-            var method = Parser.Parse(Source);
-            Compiler.GenerateInstructions(method, Info, InfoDefinition, emitter, _services);
+            var activation = new ParsingActivation(SourceCode, Method, _genericParameters);
+            Source = Compiler.GenerateInstructions(activation, emitter, _services);
         }
 
         public MethodItem Make(PathInfo searchPath, TypeMethodInfo genericMethod)
         {
             var newMethod = genericMethod.MakeGenericMethod(searchPath);
-            var newGenerator = new ParsedGenerator(newMethod, Source, _services, InfoDefinition);
+            var newGenerator = new ParsedGenerator(newMethod, SourceCode, _genericParameters, _services);
             return new MethodItem(newGenerator, newMethod);
         }
     }
