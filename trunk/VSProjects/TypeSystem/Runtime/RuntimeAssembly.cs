@@ -29,7 +29,7 @@ namespace TypeSystem.Runtime
         /// <summary>
         /// Determine that assembly has been builded
         /// </summary>
-        private bool _isBuilded = false;
+        public bool IsBuilded { get; private set; }
 
         /// <summary>
         /// Registered runtime methods
@@ -116,7 +116,7 @@ namespace TypeSystem.Runtime
 
         public void BuildAssembly()
         {
-            if (_isBuilded)
+            if (IsBuilded)
                 //assembly has been already builded
                 return;
 
@@ -138,7 +138,7 @@ namespace TypeSystem.Runtime
                     AddComponent(dataType.ComponentInfo);
                 }
             }
-            _isBuilded = true;
+            IsBuilded = true;
         }
 
         internal InheritanceChain GetChain(Type type)

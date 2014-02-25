@@ -249,7 +249,6 @@ namespace Research
         /// </summary>
         private void runExecution()
         {
-            _assembly.Runtime.BuildAssembly();
             refreshResult();
         }
 

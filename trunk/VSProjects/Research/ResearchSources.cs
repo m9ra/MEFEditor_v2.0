@@ -56,6 +56,7 @@ namespace Research
             //return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunSimpleGenericTest")
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunGenericIfaceTest")
                 .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+                .AddWrappedGenericToRuntime(typeof(List<>))
                 .RegisterAssembly(cilAssembly);
         }
 

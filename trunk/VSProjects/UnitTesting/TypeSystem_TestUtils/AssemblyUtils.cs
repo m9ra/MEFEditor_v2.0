@@ -119,6 +119,9 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod)
         {
+            if (!assembly.IsBuilded)
+                assembly.Build();
+
             var entryObj = assembly.Machine.CreateDirectInstance("EntryObject", TypeDescriptor.Create(typeof(string)));
 
             return GetResult(assembly, entryMethod, entryObj);
@@ -127,8 +130,9 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod, params Instance[] entryArguments)
         {
             var entryLoader = new EntryPointLoader(entryMethod, assembly.Loader);
+            if (!assembly.IsBuilded)
+                assembly.Build();
 
-            assembly.Runtime.BuildAssembly();
             var result = assembly.Machine.Run(entryLoader, entryArguments);
 
             foreach (var action in assembly.UserActions)
