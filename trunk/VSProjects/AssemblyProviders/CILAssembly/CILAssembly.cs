@@ -420,14 +420,7 @@ namespace AssemblyProviders.CILAssembly
         /// <returns>Created ImportTypeInfo</returns>
         private ImportTypeInfo getImportTypeInfo(TypeDescriptor importType, bool isManyImport)
         {
-            if (isManyImport)
-            {
-                return ImportTypeInfo.ParseFromMany(importType, TypeServices);
-            }
-            else
-            {
-                return ImportTypeInfo.Parse(importType);
-            }
+            return ImportTypeInfo.ParseFromMany(importType, isManyImport, TypeServices);
         }
 
         /// <summary>

@@ -80,6 +80,7 @@
     <Compile Include="CIL\ILAnalyzer\ILReaderProvider.cs" />
     <Compile Include="CIL\ILAnalyzer\ILUtilities.cs" />
     <Compile Include="CIL\Transcription.cs" />
+    <Compile Include="ProjectAssembly\AttributeInfo.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\MethodBuilder.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\SourceMethodGenerator.cs" />
     <Compile Include="ProjectAssembly\ParsingActivation.cs" />

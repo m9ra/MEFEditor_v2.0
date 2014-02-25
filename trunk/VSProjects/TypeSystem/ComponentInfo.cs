@@ -188,22 +188,23 @@ namespace TypeSystem
         /// <param name="importManyType"></param>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeServices services)
+        public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, bool allowMany, TypeServices services)
         {
-            var currentChain = services.GetChain(importManyType);
-            var itemType = findManyItemDescriptor(currentChain);
-
-            return new ImportTypeInfo(importManyType, itemType);
+            if (allowMany)
+            {
+                var currentChain = services.GetChain(importManyType);
+                var itemType = findManyItemDescriptor(currentChain);
+                return new ImportTypeInfo(importManyType, itemType);
+            }
+            else
+            {
+                return new ImportTypeInfo(importManyType, importManyType);
+            }
         }
 
         public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeDescriptor itemType)
         {
             return new ImportTypeInfo(importManyType, itemType);
-        }
-
-        public static ImportTypeInfo Parse(TypeDescriptor importType)
-        {
-            return new ImportTypeInfo(importType, importType);
         }
 
         #region ImportMany ItemType parsing

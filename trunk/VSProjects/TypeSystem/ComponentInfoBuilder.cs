@@ -131,7 +131,7 @@ namespace TypeSystem
         public void AddPropertyImport(TypeDescriptor importType, string setterName)
         {
             var setterID = getSetterID(importType, setterName);
-            var importTypeInfo = ImportTypeInfo.Parse(importType);
+            var importTypeInfo = ImportTypeInfo.ParseFromMany(importType, false, null);
             var contract = importTypeInfo.ItemType.TypeName;
 
             AddImport(importTypeInfo, setterID, contract);
@@ -190,7 +190,7 @@ namespace TypeSystem
                 var importType = importingParameters[i];
                 parameters[i] = ParameterTypeInfo.Create("p", importType);
 
-                var importTypeInfo = ImportTypeInfo.Parse(importType);
+                var importTypeInfo = ImportTypeInfo.ParseFromMany(importType, false, null);
                 var contract = importTypeInfo.ItemType.TypeName;
                 var preImport = new Import(importTypeInfo, null, contract);
                 _imports.Add(preImport);

@@ -33,6 +33,9 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 case vsCMElement.vsCMElementFunction:
                     VisitFunction(e as CodeFunction2);
                     break;
+                case vsCMElement.vsCMElementAttribute:
+                    VisitAttribute(e as CodeAttribute2);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -52,6 +55,11 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             {
                 VisitElement(child);
             }
+        }
+
+        public virtual void VisitAttribute(CodeAttribute2 e)
+        {
+            //There is no default deeper traversing
         }
 
         public virtual void VisitInterface(CodeInterface2 e)

@@ -72,7 +72,7 @@ namespace AssemblyProviders.ProjectAssembly
         {
             hookChangesHandler();
             initializeReferences();
-            lookupComponents();
+            discoverComponents();
         }
 
         /// <summary>
@@ -119,21 +119,16 @@ namespace AssemblyProviders.ProjectAssembly
         /// <summary>
         /// Find components in VsProject
         /// </summary>
-        private void lookupComponents()
+        private void discoverComponents()
         {
             StartTransaction("Searching components");
 
-            var searcher = new ComponentSearcher();
+            var searcher = new ComponentSearcher(TypeServices);
             searcher.OnNamespaceEntered += reportSearchProgress;
+            searcher.OnComponentFound += AddComponent;
 
             //search components in whole project
             searcher.VisitProject(Project);
-
-            //report added components
-            foreach (var component in searcher.Result)
-            {
-                AddComponent(component);
-            }
 
             CommitTransaction();
         }
