@@ -21,6 +21,5 @@ namespace Analyzing
 
         MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo);
 
-        void InstanceCreated(Instance instance);
     }
 }

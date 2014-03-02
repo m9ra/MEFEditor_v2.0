@@ -76,6 +76,9 @@ namespace Analyzing
         }
 
         /// <summary>
+        /// 
+        /// TODO accept entry method ID
+        /// 
         /// Run analysis of program loaded via given loader. Execution starts from loader.EntryPoint
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
@@ -146,9 +149,6 @@ namespace Analyzing
             var defaultID = CreateID("$default");
             registeredInstance.SetDefaultID(defaultID);
             _createdInstances.Add(registeredInstance.ID, registeredInstance);
-            Settings.InstanceCreated(registeredInstance);
         }
-
-
     }
 }

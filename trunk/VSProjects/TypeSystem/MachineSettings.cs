@@ -15,19 +15,7 @@ namespace TypeSystem
 
     public class MachineSettings : IMachineSettings
     {
-        private readonly OnInstanceCreated _onInstanceCreated;
-
-        public readonly RuntimeAssembly Runtime;
-
-        public MachineSettings(OnInstanceCreated onInstanceCreated)
-        {
-            if (onInstanceCreated == null)
-                throw new ArgumentNullException("onInstanceCreated");
-
-            Runtime = new RuntimeAssembly();
-
-            _onInstanceCreated = onInstanceCreated;
-        }
+        public readonly RuntimeAssembly Runtime = new RuntimeAssembly();
 
         public InstanceInfo GetNativeInfo(Type literalType)
         {
@@ -67,11 +55,6 @@ namespace TypeSystem
                 return null;
 
             return Naming.Method(sharedInstanceInfo, Naming.ClassCtorName, false, new ParameterTypeInfo[] { });
-        }
-
-        public void InstanceCreated(Instance instance)
-        {
-            _onInstanceCreated(instance);
         }
 
         public bool IsDirect(InstanceInfo typeInfo)

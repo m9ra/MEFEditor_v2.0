@@ -33,10 +33,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             typeof(int),typeof(double)
         };
 
-        private static List<Instance> _instances = new List<Instance>();
-
-
-
+       
         static SettingsProvider()
         {
         }
@@ -48,7 +45,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         internal static TestingAssembly CreateTestingAssembly()
         {
-            var settings = new MachineSettings(onInstanceCreated);
+            var settings = new MachineSettings();
             InitializeRuntime(settings.Runtime);
 
             var assembly = new TestingAssembly(settings);
@@ -82,9 +79,5 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             runtime.AddDirectDefinition(typeDefinition);
         }
 
-        private static void onInstanceCreated(Instance instance)
-        {
-            _instances.Add(instance);
-        }
     }
 }
