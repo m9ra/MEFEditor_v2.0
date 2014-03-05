@@ -365,5 +365,7 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         #endregion
+
+        public Interoperability.VisualStudioServices VS { get; set; }
     }
 }
