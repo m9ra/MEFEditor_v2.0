@@ -24,7 +24,7 @@ namespace Analyzing.Execution.Instructions
 
         public override string ToString()
         {
-            return string.Format("mov {0}, {1}", _targetVariable, _literal);
+            return string.Format("mov_const {0}, {1}", _targetVariable, _literal);
         }
     }
 }
