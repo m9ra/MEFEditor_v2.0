@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Windows.Threading;
+
 using EnvDTE;
 using System.Runtime.InteropServices;
 
@@ -21,11 +23,47 @@ namespace Interoperability
         /// </summary>
         private readonly Dictionary<Project, ProjectManager> _watchedProjects = new Dictionary<Project, ProjectManager>();
 
+        /// <summary>
+        /// List of changes that is managed because of lazy changes handling
+        /// </summary>
+        private readonly List<LineChange> _changes = new List<LineChange>();
+
+        /// <summary>
+        /// Timer for lazy waiting on changes
+        /// </summary>
+        private readonly DispatcherTimer _changeWait = new DispatcherTimer();
+
         private readonly DTE _dte;
         private readonly Events _events;
         private readonly TextEditorEvents _textEditorEvents;
         private readonly SolutionEvents _solutionEvents;
         private readonly ProjectItemsEvents _projectItemEvents;
+
+        /// <summary>
+        /// Storage for <see cref="HasWaitingChanges"/>
+        /// </summary>        
+        private bool _hasWaitingChanges = false;
+
+        /// <summary>
+        /// Determine that change has been registered and not flushed yet
+        /// </summary>
+        public bool HasWaitingChanges
+        {
+            get { return _hasWaitingChanges; }
+            private set
+            {
+                if (value == _hasWaitingChanges)
+                    return;
+                _hasWaitingChanges = value;
+
+                //TODO fire events
+                _changeWait.Stop();
+                if (_hasWaitingChanges)
+                {
+                    _changeWait.Start();
+                }
+            }
+        }
 
         /// <summary>
         /// Logging service that can be used for displaying messages to user
@@ -61,6 +99,9 @@ namespace Interoperability
 
             _events = _dte.Events;
 
+            _changeWait.Interval = new TimeSpan(0, 0, 1);
+            _changeWait.Tick += flushChanges;
+
             _solutionEvents = _events.SolutionEvents;
             _solutionEvents.Opened += solutionOpened;
             _solutionEvents.AfterClosing += solutionClosed;
@@ -69,7 +110,6 @@ namespace Interoperability
             _projectItemEvents = _events.SolutionItemsEvents;
 
             _textEditorEvents.LineChanged += onLineChanged;
-
 
             _solutionEvents.ProjectAdded += (p) =>
             {
@@ -115,13 +155,59 @@ namespace Interoperability
                 ProjectRemoved(removedProject);
         }
 
-        private void onLineChanged(TextPoint StartPoint, TextPoint EndPoint, int Hint)
+        private void onLineChanged(TextPoint startPoint, TextPoint endPoint, int hint)
         {
-            throw new NotImplementedException();
+            //represent opened editor window
+            var textDocument = startPoint.Parent;
+            if (textDocument == null)
+                //there is no available editor window
+                return;
+
+            //document assigned to edited source code 
+            var changedDocument = textDocument.Parent;
+            if (changedDocument == null)
+                //there is no available document
+                return;
+
+            var changeStart = startPoint.AbsoluteCharOffset;
+            var changeEnd = endPoint.AbsoluteCharOffset;
+
+            //in debug mode is relativly slow
+            var documentLength = textDocument.EndPoint.AbsoluteCharOffset;
+
+            LogEntry entry = null;
+            try
+            {
+                if (_dte.Solution.SolutionBuild.BuildState == vsBuildState.vsBuildStateInProgress)
+                    //no changes can be done during building
+                    return;
+
+                if (changedDocument.FullName != "")
+                {
+                    var change = new LineChange(changedDocument, documentLength, changeStart, changeEnd);
+                    _changes.Add(change);
+                    HasWaitingChanges = true;
+                }
+
+                return;
+            }
+            catch (COMException ex)
+            {
+                entry = new LogEntry(LogLevels.Error, "Line change handler throws COMException", ex.ToString(), null);
+            }
+            catch (ArgumentException ex)
+            {
+                entry = new LogEntry(LogLevels.Notification, "Line change handler throws ArgumentException", ex.ToString(), null);
+            }
+
+            Log.Entry(entry);
         }
 
         private void solutionClosed()
         {
+            //changes can be omitted
+            _changes.Clear();
+
             //all projects are also closed
             var projectsCopy = SolutionProjects.ToArray();
 
@@ -147,6 +233,36 @@ namespace Interoperability
         #endregion
 
         /// <summary>
+        /// changes are applied with some delay, based on user activities
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Arguments of event</param>        
+        private void flushChanges(object sender, EventArgs e)
+        {
+            _changeWait.Stop();
+
+            var changes = _changes.ToArray();
+            _changes.Clear();
+
+            //apply collected line changes
+            foreach (var change in changes)
+            {
+                var project = change.Item.ContainingProject;
+
+                ProjectManager manager;
+                if (!_watchedProjects.TryGetValue(project, out manager))
+                {
+                    Log.Warning("Change in not registered project {0}", project.Name);
+                    continue;
+                }
+
+                throw new NotImplementedException();
+            }
+
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Determine if given project is used only for miscelanaeous files
         /// </summary>
         /// <param name="project">Tested project</param>
@@ -166,7 +282,6 @@ namespace Interoperability
 
             return false;
         }
-
 
         #region Exception tools
 
