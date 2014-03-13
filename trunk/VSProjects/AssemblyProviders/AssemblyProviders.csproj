@@ -82,15 +82,10 @@
     <Compile Include="CIL\ILAnalyzer\ILUtilities.cs" />
     <Compile Include="CIL\Transcription.cs" />
     <Compile Include="ProjectAssembly\AttributeInfo.cs" />
-    <Compile Include="ProjectAssembly\ChangesHandling\ChangePrimitives.cs" />
-    <Compile Include="ProjectAssembly\ChangesHandling\ElementNode.cs" />
-    <Compile Include="ProjectAssembly\ChangesHandling\FileItemManager.cs" />
-    <Compile Include="ProjectAssembly\ChangesHandling\FileSystemChanges.cs" />
     <Compile Include="ProjectAssembly\CodeElementExtensions.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\MethodBuilder.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\SourceMethodGenerator.cs" />
     <Compile Include="ProjectAssembly\ParsingActivation.cs" />
-    <Compile Include="ProjectAssembly\ChangesHandling\ProjectManager.cs" />
     <Compile Include="ProjectAssembly\Traversing\CodeElementIterator.cs" />
     <Compile Include="ProjectAssembly\Traversing\CodeElementSearcher.cs" />
     <Compile Include="ProjectAssembly\Traversing\ComponentSearcher.cs" />

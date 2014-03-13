@@ -5,9 +5,8 @@ using System.Text;
 
 using System.IO;
 
-using Utilities;
 
-namespace AssemblyProviders.ProjectAssembly.ChangesHandling
+namespace Interoperability
 {
 
     static class FileSystemChanges

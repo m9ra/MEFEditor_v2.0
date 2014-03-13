@@ -16,7 +16,10 @@ namespace Interoperability
     /// </summary>
     public class VisualStudioServices
     {
-        public readonly Log Log;
+        /// <summary>
+        /// Projects that are registered for watching
+        /// </summary>
+        private readonly Dictionary<Project, ProjectManager> _watchedProjects = new Dictionary<Project, ProjectManager>();
 
         private readonly DTE _dte;
         private readonly Events _events;
@@ -24,7 +27,25 @@ namespace Interoperability
         private readonly SolutionEvents _solutionEvents;
         private readonly ProjectItemsEvents _projectItemEvents;
 
+        /// <summary>
+        /// Logging service that can be used for displaying messages to user
+        /// </summary>
+        public readonly Log Log;
+
+        /// <summary>
+        /// Projects that are discovered in current solution
+        /// </summary>
+        public IEnumerable<Project> SolutionProjects { get { return _watchedProjects.Keys; } }
+
         #region Forwarded events
+
+        public event _dispSolutionEvents_ProjectAddedEventHandler ProjectAdded;
+
+        public event _dispSolutionEvents_ProjectRemovedEventHandler ProjectRemoved;
+
+        public event _dispSolutionEvents_OpenedEventHandler SolutionOpened;
+
+        public event _dispSolutionEvents_AfterClosingEventHandler SolutionClosed;
 
         public event _dispProjectItemsEvents_ItemAddedEventHandler ProjectItemAdded;
 
@@ -54,25 +75,45 @@ namespace Interoperability
             {
                 if (isMiscellanaeous(p))
                     return;
-                Reload("project has been added");
+                onProjectAdded(p);
             };
 
             _solutionEvents.ProjectRemoved += (p) =>
             {
                 if (isMiscellanaeous(p))
                     return;
-                Reload("project has been removed");
+                onProjectRemoved(p);
             };
 
             _projectItemEvents.ItemAdded += ProjectItemAdded;
             _projectItemEvents.ItemRemoved += ProjectItemRemoved;
         }
 
-        private void Reload(string p)
+        #region Visual Studio Event handlers
+
+        private void onProjectAdded(Project addedProject)
         {
-            throw new NotImplementedException();
+            var manager = new ProjectManager(addedProject, this);
+            _watchedProjects.Add(addedProject, manager);
+
+            if (ProjectAdded != null)
+                ProjectAdded(addedProject);
         }
 
+        private void onProjectRemoved(Project removedProject)
+        {
+            ProjectManager removedManager;
+            if (!_watchedProjects.TryGetValue(removedProject, out removedManager))
+            {
+                Log.Message("Removing not registered project: {0}", removedProject.Name);
+                return;
+            }
+
+            removedManager.UnHook();
+
+            if (ProjectRemoved != null)
+                ProjectRemoved(removedProject);
+        }
 
         private void onLineChanged(TextPoint StartPoint, TextPoint EndPoint, int Hint)
         {
@@ -81,13 +122,29 @@ namespace Interoperability
 
         private void solutionClosed()
         {
-            throw new NotImplementedException();
+            //all projects are also closed
+            var projectsCopy = SolutionProjects.ToArray();
+
+            foreach (var project in projectsCopy)
+            {
+                onProjectRemoved(project);
+            }
+
+            if (SolutionClosed != null)
+                SolutionClosed();
         }
 
         private void solutionOpened()
         {
-            throw new NotImplementedException();
+            //open all projects
+            foreach (Project project in _dte.Solution.Projects)
+                onProjectAdded(project);
+
+            if (SolutionOpened != null)
+                SolutionOpened();
         }
+
+        #endregion
 
         /// <summary>
         /// Determine if given project is used only for miscelanaeous files

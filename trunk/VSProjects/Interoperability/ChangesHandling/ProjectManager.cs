@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 using EnvDTE;
 
-using Utilities;
-
-namespace AssemblyProviders.ProjectAssembly.ChangesHandling
+namespace Interoperability
 {
     /// <summary>
-    /// Handle changes on <see cref="Project"/> represented by <see cref="VsProjectAssembly"/>
+    /// Handle changes on <see cref="Project"/>
     /// </summary>
     class ProjectManager
     {
         /// <summary>
         /// Assembly which <see cref="Project"/> will be watched after Hooking
         /// </summary>
-        private readonly VsProjectAssembly _assembly;
+        private readonly Project _project;
+
+        private readonly VisualStudioServices _vs;
 
         /// <summary>
         /// Items that has been registered for watching changes
@@ -28,10 +28,11 @@ namespace AssemblyProviders.ProjectAssembly.ChangesHandling
         /// <summary>
         /// Initialize manager
         /// </summary>
-        /// <param name="assembly">Assembly which <see cref="Project"/> will be watched after Hooking</param>
-        public ProjectManager(VsProjectAssembly assembly)
+        /// <param name="project"><see cref="Project"/> that will be watched after Hooking</param>
+        public ProjectManager(Project project, VisualStudioServices vs)
         {
-            _assembly = assembly;
+            _project = project;
+            _vs = vs;
         }
 
         /// <summary>
@@ -40,8 +41,16 @@ namespace AssemblyProviders.ProjectAssembly.ChangesHandling
         internal void Hook()
         {
             hookEvents();
-            foreach (ProjectItem item in _assembly.Project.ProjectItems)
+            foreach (ProjectItem item in _project.ProjectItems)
                 registerItem(item); //folder and its project items
+        }
+
+        /// <summary>
+        /// Close all hooks - project has been removed
+        /// </summary>
+        internal void UnHook()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -49,21 +58,21 @@ namespace AssemblyProviders.ProjectAssembly.ChangesHandling
         /// </summary>
         private void hookEvents()
         {
-            _assembly.VS.ProjectItemAdded += (i) =>
+            _vs.ProjectItemAdded += (i) =>
             {
-                if (i.ContainingProject == _assembly.Project)
+                if (i.ContainingProject == _project)
                     //listen only item adds for current project
                     registerItem(i);
             };
 
-            _assembly.VS.ProjectItemRemoved += (i) =>
+            _vs.ProjectItemRemoved += (i) =>
             {
                 FileItemManager removed;
                 if (!_registeredItems.TryGetValue(i, out removed))
                     return;
 
                 throw new NotImplementedException("Remove events has to be fired");
-            };            
+            };
         }
 
         private void registerItem(ProjectItem item)
@@ -84,7 +93,7 @@ namespace AssemblyProviders.ProjectAssembly.ChangesHandling
             else
             {
                 //item is source code file so it needs to be registered
-                var manager = new FileItemManager(_assembly, fileCodeModel);
+                var manager = new FileItemManager(_vs, fileCodeModel);
 
                 //register item
                 _registeredItems.Add(item, manager);

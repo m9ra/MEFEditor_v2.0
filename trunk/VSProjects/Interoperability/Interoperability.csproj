@@ -51,6 +51,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangesHandling\ChangePrimitives.cs" />
+    <Compile Include="ChangesHandling\ElementNode.cs" />
+    <Compile Include="ChangesHandling\FileItemManager.cs" />
+    <Compile Include="ChangesHandling\FileSystemChanges.cs" />
+    <Compile Include="ChangesHandling\ProjectManager.cs" />
+    <Compile Include="CodeElementExtensions.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VisualStudioServices.cs" />

@@ -9,17 +9,13 @@ using System.Runtime.InteropServices;
 using EnvDTE;
 using EnvDTE80;
 
-using Interoperability;
-
-namespace AssemblyProviders.ProjectAssembly.ChangesHandling
+namespace Interoperability
 {
     /// <summary>
     /// Provide element events in sourcecode - wrapper over LineChanged event
     /// </summary>
     class FileItemManager
     {
-        private readonly VsProjectAssembly _assembly;
-
         Document _doc;
         int _docLength;
 
@@ -37,12 +33,12 @@ namespace AssemblyProviders.ProjectAssembly.ChangesHandling
 
         HashSet<ElementChange> _queue = new HashSet<ElementChange>();
         HashSet<ElementChange> _removed = new HashSet<ElementChange>();
-        
-        internal VisualStudioServices VS { get { return _assembly.VS; } }
 
-        internal FileItemManager(VsProjectAssembly assembly, FileCodeModel file)
+        internal readonly VisualStudioServices VS;
+
+        internal FileItemManager(VisualStudioServices vs, FileCodeModel file)
         {
-            _assembly = assembly;
+            VS = vs;
             _doc = file.Parent.Document;
 
             /*   var fullpath = _doc.Path + _doc.Name;

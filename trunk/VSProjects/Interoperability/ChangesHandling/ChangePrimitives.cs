@@ -5,7 +5,7 @@ using System.Text;
 
 using EnvDTE;
 
-namespace AssemblyProviders.ProjectAssembly.ChangesHandling
+namespace Interoperability
 {
     /// <summary>
     /// Describes kind of change.

@@ -6,9 +6,7 @@ using System.Text;
 using EnvDTE;
 using EnvDTE80;
 
-using Utilities;
-
-namespace AssemblyProviders.ProjectAssembly.ChangesHandling
+namespace Interoperability
 {
 
     /// <summary>
