@@ -33,10 +33,29 @@ namespace Interoperability
         /// </summary>
         private readonly DispatcherTimer _changeWait = new DispatcherTimer();
 
+        /// <summary>
+        /// Visual studio object used for interoperability
+        /// </summary>
         private readonly DTE _dte;
+
+        /// <summary>
+        /// Visual studio events object which reference is needed because of unwanted garbage collection
+        /// </summary>
         private readonly Events _events;
+
+        /// <summary>
+        /// Events provided by text editor
+        /// </summary>
         private readonly TextEditorEvents _textEditorEvents;
+
+        /// <summary>
+        /// Events provided by active solution
+        /// </summary>
         private readonly SolutionEvents _solutionEvents;
+
+        /// <summary>
+        /// Events provided for <see cref="ProjectItems"/>
+        /// </summary>
         private readonly ProjectItemsEvents _projectItemEvents;
 
         /// <summary>
@@ -77,71 +96,87 @@ namespace Interoperability
 
         #region Forwarded events
 
+        /// <summary>
+        /// Event fired whenever new <see cref="Project"/> is added into active solution
+        /// </summary>
         public event _dispSolutionEvents_ProjectAddedEventHandler ProjectAdded;
 
+        /// <summary>
+        /// Event fired whenever <see cref="Project"/> is removed from active solution
+        /// </summary>
         public event _dispSolutionEvents_ProjectRemovedEventHandler ProjectRemoved;
 
+        /// <summary>
+        /// Event fired whenever active solution is opened - it is ensured that SoluctionClosed appears before opening new solution
+        /// </summary>
         public event _dispSolutionEvents_OpenedEventHandler SolutionOpened;
 
+        /// <summary>
+        /// Event fired whenever active solution is closed
+        /// </summary>
         public event _dispSolutionEvents_AfterClosingEventHandler SolutionClosed;
-
-        public event _dispProjectItemsEvents_ItemAddedEventHandler ProjectItemAdded;
-
-        public event _dispProjectItemsEvents_ItemRemovedEventHandler ProjectItemRemoved;
 
         #endregion
 
+        /// <summary>
+        /// Initialize services available from Visual Studio
+        /// </summary>
+        /// <param name="dte">Entry object for Visual Studio services</param>
         public VisualStudioServices(DTE dte)
         {
             Log = new Log();
 
-            _dte = dte;
-
-            _events = _dte.Events;
-
             _changeWait.Interval = new TimeSpan(0, 0, 1);
             _changeWait.Tick += flushChanges;
 
-            _solutionEvents = _events.SolutionEvents;
-            _solutionEvents.Opened += solutionOpened;
-            _solutionEvents.AfterClosing += solutionClosed;
-
+            _dte = dte;
+            _events = _dte.Events;
             _textEditorEvents = _events.TextEditorEvents;
+            _solutionEvents = _events.SolutionEvents;
             _projectItemEvents = _events.SolutionItemsEvents;
 
             _textEditorEvents.LineChanged += onLineChanged;
 
-            _solutionEvents.ProjectAdded += (p) =>
-            {
-                if (isMiscellanaeous(p))
-                    return;
-                onProjectAdded(p);
-            };
+            _solutionEvents.Opened += solutionOpened;
+            _solutionEvents.AfterClosing += solutionClosed;
+            _solutionEvents.ProjectAdded += onProjectAdded;
+            _solutionEvents.ProjectRemoved += onProjectRemoved;
 
-            _solutionEvents.ProjectRemoved += (p) =>
-            {
-                if (isMiscellanaeous(p))
-                    return;
-                onProjectRemoved(p);
-            };
-
-            _projectItemEvents.ItemAdded += ProjectItemAdded;
-            _projectItemEvents.ItemRemoved += ProjectItemRemoved;
+            _projectItemEvents.ItemAdded += onProjectItemAdded;
+            _projectItemEvents.ItemRemoved += onProjectItemRemoved;
         }
 
         #region Visual Studio Event handlers
 
+        /// <summary>
+        /// Handler called whenever <see cref="Project"/> is added into active solution
+        /// </summary>
+        /// <param name="addedProject">Project that has been added</param>
         private void onProjectAdded(Project addedProject)
         {
+            if (isMiscellanaeous(addedProject))
+                //we don't need to handle miscellanaeous projects
+                return;
+
             var manager = new ProjectManager(addedProject, this);
             _watchedProjects.Add(addedProject, manager);
 
             if (ProjectAdded != null)
                 ProjectAdded(addedProject);
+
+            manager.FlushChanges();
         }
 
+        /// <summary>
+        /// Handler called whenever <see cref="Project"/> is removed from active solution
+        /// </summary>
+        /// <param name="removedProject">Project that has been removed</param>
         private void onProjectRemoved(Project removedProject)
         {
+            if (isMiscellanaeous(removedProject))
+                //we don't need to handle miscellanaeous projects
+                return;
+
             ProjectManager removedManager;
             if (!_watchedProjects.TryGetValue(removedProject, out removedManager))
             {
@@ -149,12 +184,49 @@ namespace Interoperability
                 return;
             }
 
-            removedManager.UnHook();
-
             if (ProjectRemoved != null)
                 ProjectRemoved(removedProject);
+
+            removedManager.RemoveAll();
+            removedManager.FlushChanges();
         }
 
+        /// <summary>
+        /// Handler called whenever <see cref="ProjectItem"/> is removed
+        /// </summary>
+        /// <param name="item">Removed project item</param>
+        private void onProjectItemRemoved(ProjectItem item)
+        {
+            var manager = findManager(item);
+            if (manager == null)
+                //nothing to do
+                return;
+
+            manager.RegisterRemove(item);
+            manager.FlushChanges();
+        }
+
+        /// <summary>
+        /// Handler called whenever new <see cref="ProjectItem"/> is added
+        /// </summary>
+        /// <param name="item">Added project item</param>
+        private void onProjectItemAdded(ProjectItem item)
+        {
+            var manager = findManager(item);
+            if (manager == null)
+                //nothing to do
+                return;
+
+            manager.RegisterAdd(item);
+            manager.FlushChanges();
+        }
+
+        /// <summary>
+        /// Handler called whenever line of some file is changed.
+        /// </summary>
+        /// <param name="startPoint">Start point of change</param>
+        /// <param name="endPoint">End point of change</param>
+        /// <param name="hint">Hint determining type of change</param>
         private void onLineChanged(TextPoint startPoint, TextPoint endPoint, int hint)
         {
             //represent opened editor window
@@ -203,6 +275,9 @@ namespace Interoperability
             Log.Entry(entry);
         }
 
+        /// <summary>
+        /// Handler called whenever active solution is closed
+        /// </summary>
         private void solutionClosed()
         {
             //changes can be omitted
@@ -220,6 +295,9 @@ namespace Interoperability
                 SolutionClosed();
         }
 
+        /// <summary>
+        /// Handler called whenever active solution is opened
+        /// </summary>
         private void solutionOpened()
         {
             //open all projects
@@ -233,6 +311,29 @@ namespace Interoperability
         #endregion
 
         /// <summary>
+        /// Find <see cref="ProjectManager"/> according to given <see cref="ProjectItem"/>.
+        /// If manager cannot be found, log entries are emitted
+        /// </summary>
+        /// <param name="item">Item which manager has to be found</param>
+        /// <returns></returns>
+        private ProjectManager findManager(ProjectItem item)
+        {
+            var containingProject = item.ContainingProject;
+            if (containingProject == null)
+            {
+                Log.Warning("Project for item {0} is not known", item.Name);
+                return null;
+            }
+
+            ProjectManager manager;
+            if (!_watchedProjects.TryGetValue(containingProject, out manager))
+            {
+                Log.Message("Project for project item {0} is not known");
+            }
+            return manager;
+        }
+
+        /// <summary>
         /// changes are applied with some delay, based on user activities
         /// </summary>
         /// <param name="sender">Sender of event</param>
@@ -241,10 +342,13 @@ namespace Interoperability
         {
             _changeWait.Stop();
 
+            //TODO optimize
             var changes = _changes.ToArray();
             _changes.Clear();
 
-            //apply collected line changes
+            var changedManagers = new HashSet<ProjectManager>();
+
+            //apply collected line changes to affected managers
             foreach (var change in changes)
             {
                 var project = change.Item.ContainingProject;
@@ -256,10 +360,15 @@ namespace Interoperability
                     continue;
                 }
 
-                throw new NotImplementedException();
+                manager.RegisterChange(change);
+                changedManagers.Add(manager);
             }
 
-            throw new NotImplementedException();
+            //flush all changes in managers
+            foreach (var manager in changedManagers)
+            {
+                manager.FlushChanges();
+            }
         }
 
         /// <summary>

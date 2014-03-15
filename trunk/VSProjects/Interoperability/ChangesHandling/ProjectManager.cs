@@ -10,6 +10,7 @@ namespace Interoperability
 {
     /// <summary>
     /// Handle changes on <see cref="Project"/>
+    /// <remarks>All changes made are buffered until <see cref="FlushChanges"/> is called</remarks>
     /// </summary>
     class ProjectManager
     {
@@ -18,12 +19,20 @@ namespace Interoperability
         /// </summary>
         private readonly Project _project;
 
+        /// <summary>
+        /// Available services
+        /// </summary>
         private readonly VisualStudioServices _vs;
 
         /// <summary>
         /// Items that has been registered for watching changes
         /// </summary>
-        private readonly Dictionary<ProjectItem, FileItemManager> _registeredItems = new Dictionary<ProjectItem, FileItemManager>();
+        private readonly Dictionary<ProjectItem, FileItemManager> _watchedItems = new Dictionary<ProjectItem, FileItemManager>();
+
+        /// <summary>
+        /// File item managers that have recieved change
+        /// </summary>
+        private readonly HashSet<FileItemManager> _changedFileManagers = new HashSet<FileItemManager>();
 
         /// <summary>
         /// Initialize manager
@@ -36,46 +45,86 @@ namespace Interoperability
         }
 
         /// <summary>
-        /// Hook handlers that will be used for watching changes
+        /// Register all items that are contained within project
         /// </summary>
-        internal void Hook()
+        internal void RegisterAll()
         {
-            hookEvents();
             foreach (ProjectItem item in _project.ProjectItems)
                 registerItem(item); //folder and its project items
         }
 
         /// <summary>
-        /// Close all hooks - project has been removed
+        /// Remove all registered items
         /// </summary>
-        internal void UnHook()
+        internal void RemoveAll()
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Hook events for listening <see cref="ProjectItem"/> add-remove events
+        /// Register removing of given <see cref="ProjectItem"/>
         /// </summary>
-        private void hookEvents()
+        /// <param name="item">Project item that is removed</param>
+        internal void RegisterRemove(ProjectItem item)
         {
-            _vs.ProjectItemAdded += (i) =>
-            {
-                if (i.ContainingProject == _project)
-                    //listen only item adds for current project
-                    registerItem(i);
-            };
-
-            _vs.ProjectItemRemoved += (i) =>
-            {
-                FileItemManager removed;
-                if (!_registeredItems.TryGetValue(i, out removed))
-                    return;
-
-                throw new NotImplementedException("Remove events has to be fired");
-            };
+            throw new NotImplementedException();
         }
 
-        private void registerItem(ProjectItem item)
+        /// <summary>
+        /// Register adding of given <see cref="ProjectItem"/>
+        /// </summary>
+        /// <param name="item">Project item that is added</param>
+        internal void RegisterAdd(ProjectItem item)
+        { 
+            registerItem(item);
+        }
+
+        /// <summary>
+        /// Register <see cref="LineChange"/> that has been made within watched project
+        /// </summary>
+        /// <param name="change">Registered change</param>
+        internal void RegisterChange(LineChange change)
+        {
+            FileItemManager fileManager;
+            if (!_watchedItems.TryGetValue(change.Item, out fileManager))
+            {
+                //requested manager is not registered yet
+                fileManager = registerItem(change.Item);
+            }
+
+            if (fileManager == null)
+                //there is no availabe manager for requested change
+                return;
+
+            if (change.DocumentLength >= 0)
+                //force checking
+                fileManager.LineChanged(change);
+
+            //changes are fired lazily
+            _changedFileManagers.Add(fileManager);
+        }
+
+        /// <summary>
+        /// Flush all waiting changes
+        /// </summary>
+        internal void FlushChanges()
+        {
+            foreach (var file in _changedFileManagers)
+            {
+                file.FlushChanges();
+            }
+
+            _changedFileManagers.Clear();
+        }
+
+        #region Private utilities
+        
+        /// <summary>
+        /// Register given <see cref="ProjectItem"/>
+        /// </summary>
+        /// <param name="item">Project item that is registered</param>
+        /// <returns><see cref="FileItemManager"/> created for given item if any</returns>
+        private FileItemManager registerItem(ProjectItem item)
         {
             var fileCodeModel = item.FileCodeModel;
             if (fileCodeModel == null)
@@ -89,6 +138,7 @@ namespace Interoperability
                 }
 
                 //Note that we don't need to watch SubProjects in folders for now           
+                return null;
             }
             else
             {
@@ -96,8 +146,13 @@ namespace Interoperability
                 var manager = new FileItemManager(_vs, fileCodeModel);
 
                 //register item
-                _registeredItems.Add(item, manager);
+                _watchedItems.Add(item, manager);
+
+                return manager;
             }
         }
+
+        #endregion
+
     }
 }
