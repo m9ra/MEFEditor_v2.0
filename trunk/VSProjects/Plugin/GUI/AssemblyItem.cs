@@ -10,7 +10,7 @@ using System.Windows.Controls;
 
 using TypeSystem;
 
-namespace Research.GUI
+namespace Plugin.GUI
 {
     /// <summary>
     /// Visual item representing AssemblyProvider. Provide ability for setting assembly configuration properties.

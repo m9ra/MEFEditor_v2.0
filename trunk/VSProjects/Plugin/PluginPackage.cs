@@ -9,6 +9,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 
+using Plugin;
+
 namespace MEFEditor.Plugin
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace MEFEditor.Plugin
     // This attribute tells the PkgDef creation utility (CreatePkgDef.exe) that this class is
     // a package.
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    // This attribute is used to register the information needed to show this package
+    // This attribute is used to register the informations needed to show the this package
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     // This attribute is needed to let the shell know that this package exposes some menus.
@@ -43,7 +45,7 @@ namespace MEFEditor.Plugin
         /// </summary>
         public PluginPackage()
         {
-            Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
+            Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
 
         /// <summary>
@@ -67,16 +69,16 @@ namespace MEFEditor.Plugin
 
 
         /////////////////////////////////////////////////////////////////////////////
-        // Overridden Package Implementation
+        // Overriden Package Implementation
         #region Package Members
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
-        /// where you can put all the initialization code that rely on services provided by VisualStudio.
+        /// where you can put all the initilaization code that rely on services provided by VisualStudio.
         /// </summary>
         protected override void Initialize()
         {
-            Debug.WriteLine (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
+            Trace.WriteLine (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 
             // Add our command handlers for menu (commands must exist in the .vsct file)

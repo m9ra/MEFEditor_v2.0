@@ -17,7 +17,7 @@ using System.IO;
 
 using Drawing;
 
-namespace Research.GUI
+namespace Plugin.GUI
 {
     /// <summary>
     /// Delagate used for reporting changes in path

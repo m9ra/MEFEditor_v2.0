@@ -15,13 +15,13 @@ using TypeSystem.Runtime;
 
 using AssemblyProviders.CILAssembly;
 
-namespace Research.GUI
+namespace Plugin.GUI
 {
 
     /// <summary>
     /// Manager class used for handling GUI behaviour
     /// </summary>
-    class GUIManager
+    public class GUIManager
     {
         private readonly EditorGUI _gui;
 

@@ -15,10 +15,13 @@
         defining some of the constants that we will use inside the file. -->
 
   <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
-  <Extern href="stdidcmd.h"/>
+  <Extern href="stdidcmd.h" />
 
   <!--This header contains the command ids for the menus provided by the shell. -->
-  <Extern href="vsshlids.h"/>
+  <Extern href="vsshlids.h" />
+
+  <!--Definition of some VSCT specific constants. In this sample we use it for the IDs inside the guidOfficeIcon group. -->
+  <!--<Extern href="msobtnid.h" xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" />-->
 
 
 
@@ -54,14 +57,15 @@
           You can add more than one CommandFlag node e.g.:
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
-          If you do not want an image next to your command, remove the Icon node /> -->
+          If you do not want an image next to your command, remove the Icon node or set it to <Icon guid="guidOfficeIcon" id="msotcidNoIcon" /> -->
 
 
       <Button guid="guidPluginCmdSet" id="IDMEFEditorV2" priority="0x0100" type="Button">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
         <Icon guid="guidImages" id="bmpPic2" />
         <Strings>
-          <ButtonText>MEF Editor v2</ButtonText>
+          <CommandName>IDMEFEditorV2</CommandName>
+          <ButtonText>MEF Editor V2</ButtonText>
         </Strings>
       </Button>
 
@@ -75,8 +79,8 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used 
             inside a button definition. An important aspect of this declaration is that the element id 
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Resources\Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
-      
+      <Bitmap guid="guidImages" href="Resources\Images_32bit.bmp" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows" />
+
     </Bitmaps>
  
   </Commands>
@@ -87,10 +91,10 @@
 
   <Symbols>
     <!-- This is the package guid. -->
-    <GuidSymbol name="guidPluginPkg" value="{3c0d5fdb-865f-40a5-97f4-54b51a6b5c1d}" />
+    <GuidSymbol name="guidPluginPkg" value="{341ff64d-d713-4c3d-a92d-85ac434393fd}" />
     
     <!-- This is the guid used to group the menu commands together -->
-    <GuidSymbol name="guidPluginCmdSet" value="{24916ca4-7787-4681-9db4-aa9fe6403d0c}">
+    <GuidSymbol name="guidPluginCmdSet" value="{7fb0aafd-a86f-4bfe-b8ef-047fe0fa1c4e}">
 
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="IDMEFEditorV2" value="0x0101" />
@@ -98,13 +102,12 @@
     
     
     
-    <GuidSymbol name="guidImages" value="{036fa1d0-63ad-4a9e-95b2-5905524819ea}" >
+    <GuidSymbol name="guidImages" value="{6856d033-35dd-49ce-9b99-d9744953e79d}">
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />
       <IDSymbol name="bmpPicSearch" value="3" />
       <IDSymbol name="bmpPicX" value="4" />
       <IDSymbol name="bmpPicArrows" value="5" />
-      <IDSymbol name="bmpPicStrikethrough" value="6" />
     </GuidSymbol>
   </Symbols>
 

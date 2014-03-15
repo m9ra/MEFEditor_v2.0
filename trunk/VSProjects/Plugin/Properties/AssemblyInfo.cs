@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Plugin")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MEF Editor")]
+[assembly: AssemblyCompany("MEFEditor")]
 [assembly: AssemblyProduct("Plugin")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]

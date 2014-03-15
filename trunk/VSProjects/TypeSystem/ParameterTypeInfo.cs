@@ -54,7 +54,8 @@ namespace TypeSystem
             }
 
             var hasParam = param.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0;
-            return new ParameterTypeInfo(name, paramType, param.DefaultValue, param.HasDefaultValue, hasParam);
+            var hasDefault = param.DefaultValue != System.DBNull.Value;
+            return new ParameterTypeInfo(name, paramType, param.DefaultValue, hasDefault, hasParam);
         }
     }
 }

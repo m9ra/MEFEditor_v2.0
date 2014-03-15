@@ -8,7 +8,7 @@
     mc:Ignorable="d" 
     
     xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
-    xmlns:m="clr-namespace:Research.GUI"
+    xmlns:m="clr-namespace:Plugin.GUI;assembly=Plugin"
     >
 
     <m:EditorGUI x:Name="GUI"></m:EditorGUI>

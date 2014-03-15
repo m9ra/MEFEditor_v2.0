@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -129,7 +130,11 @@ namespace AssemblyProviders.CIL
                 //translate name according to transcriptors convention
                 var name = transcriptor.Name.Substring(1).Replace("_", ".");
 
-                var handler = (Action)transcriptor.CreateDelegate(typeof(Action));
+                //This requires .NET4.5
+                //var handler = (Action)transcriptor.CreateDelegate(typeof(Action));
+
+                var call=Expression.Call(null,transcriptor);
+                var handler = Expression.Lambda<Action>(call).Compile();
                 transcriptorNaming.Add(name, handler);
             }
 

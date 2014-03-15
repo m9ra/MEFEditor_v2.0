@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Controls;
 
-namespace Research.GUI
+namespace Plugin.GUI
 {
     static class GUIColors
     {

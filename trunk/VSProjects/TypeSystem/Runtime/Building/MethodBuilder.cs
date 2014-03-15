@@ -187,14 +187,20 @@ namespace TypeSystem.Runtime.Building
 
         private TypeDescriptor getReturnType(MethodInfo method)
         {
-            var attribute = method.GetCustomAttribute<ReturnTypeAttribute>();
+            var attributes = method.GetCustomAttributes(typeof(ReturnTypeAttribute), false);
+
+            ReturnTypeAttribute attribute = null;
+            if (attributes.Length > 1)
+                attribute = attributes[0] as ReturnTypeAttribute;
 
             if (attribute == null)
             {
+                //default return type
                 return Translator.GetTypeDescriptor(method, (m) => m.ReturnType);
             }
             else
             {
+                //forced return type
                 return attribute.ReturnInfo;
             }
         }

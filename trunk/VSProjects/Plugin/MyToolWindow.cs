@@ -8,6 +8,8 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 
+using Plugin.GUI;
+
 namespace MEFEditor.Plugin
 {
     /// <summary>
@@ -19,7 +21,7 @@ namespace MEFEditor.Plugin
     /// This class derives from the ToolWindowPane class provided from the MPF in order to use its 
     /// implementation of the IVsUIElementPane interface.
     /// </summary>
-    [Guid("3493cb8a-1c51-4fdf-8765-8d8f3116438a")]
+    [Guid("9358ccce-9353-4de9-9f65-28b3755709dc")]
     public class MyToolWindow : ToolWindowPane
     {
         /// <summary>
@@ -41,7 +43,7 @@ namespace MEFEditor.Plugin
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
-            base.Content = new MyControl();
+            base.Content = new EditorGUI();
         }
     }
 }

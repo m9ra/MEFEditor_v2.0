@@ -16,8 +16,9 @@ using Analyzing.Editing;
 using Analyzing.Execution;
 using MEFAnalyzers.Drawings;
 
+using Plugin.GUI;
+
 using Research.Drawings;
-using Research.GUI;
 
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;

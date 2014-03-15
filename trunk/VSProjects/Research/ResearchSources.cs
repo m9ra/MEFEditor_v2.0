@@ -94,6 +94,7 @@ namespace Research
             .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
             .AddToRuntime<SimpleStringExport>()
             .AddToRuntime<StringImport>()
+            .AddWrappedGenericToRuntime(typeof(List<>))
 
             .RegisterAssembly(testAssembly)
             ;

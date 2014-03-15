@@ -28,7 +28,7 @@ namespace MEFEditor.Plugin
         private void button1_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(string.Format(System.Globalization.CultureInfo.CurrentUICulture, "We are inside {0}.button1_Click()", this.ToString()),
-                            "MEF Editor v2");
+                            "MEF Editor V2");
 
         }
     }
