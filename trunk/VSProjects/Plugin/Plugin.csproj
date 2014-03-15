@@ -140,8 +140,8 @@
   <ItemGroup>
     <Compile Include="GUI\AssemblyItem.cs" />
     <Compile Include="GUI\EditorGUI.xaml.cs">
-		<DependentUpon>EditorGUI.xaml</DependentUpon>
-	</Compile>
+      <DependentUpon>EditorGUI.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GUI\GUIColors.cs" />
     <Compile Include="GUI\GUIManager.cs" />
     <Compile Include="GUI\SettingsSection.cs" />
