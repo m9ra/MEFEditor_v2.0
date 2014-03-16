@@ -10,7 +10,7 @@ using Analyzing.Editing;
 
 namespace AssemblyProviders.CSharp.Transformations
 {
-    class BlockProvider : BlockTransformationProvider
+    class BlockProvider : BlockTransformProvider
     {
         readonly INodeAST _line;
         readonly Source _source;
@@ -23,12 +23,12 @@ namespace AssemblyProviders.CSharp.Transformations
                 throw new ArgumentNullException("source");
         }
 
-        public override Transformation ShiftBefore(BlockTransformationProvider provider)
+        public override Transformation ShiftBefore(BlockTransformProvider provider)
         {
             throw new NotImplementedException();
         }
 
-        public override Transformation ShiftBehind(BlockTransformationProvider provider)
+        public override Transformation ShiftBehind(BlockTransformProvider provider)
         {
             var other = provider as BlockProvider;
             var lineSource = _line.Source;

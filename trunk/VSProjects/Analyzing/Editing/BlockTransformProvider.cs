@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Analyzing.Editing
 {
-    public abstract class BlockTransformationProvider
+    public abstract class BlockTransformProvider
     {
-        public abstract Transformation ShiftBefore(BlockTransformationProvider provider);
-        public abstract Transformation ShiftBehind(BlockTransformationProvider provider);
+        public abstract Transformation ShiftBefore(BlockTransformProvider provider);
+        public abstract Transformation ShiftBehind(BlockTransformProvider provider);
         public abstract Transformation PrependCall(CallEditInfo call);
         public abstract Transformation AppendCall(CallEditInfo call);
     }

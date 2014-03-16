@@ -8,14 +8,14 @@ using Analyzing.Editing.Transformations;
 
 namespace Analyzing.Editing
 {
-    class EmptyShiftingProvider : BlockTransformationProvider
+    class EmptyShiftingProvider : BlockTransformProvider
     {
-        public override Transformation ShiftBefore(BlockTransformationProvider provider)
+        public override Transformation ShiftBefore(BlockTransformProvider provider)
         {
             return new EmptyTransformation();
         }
 
-        public override Transformation ShiftBehind(BlockTransformationProvider provider)
+        public override Transformation ShiftBehind(BlockTransformProvider provider)
         {
             return new EmptyTransformation();
         }
