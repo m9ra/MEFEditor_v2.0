@@ -12,11 +12,6 @@ namespace Analyzing
     public abstract class LoaderBase
     {
         /// <summary>
-        /// Entry point for execution start
-        /// </summary>
-        public abstract MethodID EntryPoint { get; }
-
-        /// <summary>
         /// Resolve method with static argument info
         /// </summary>
         /// <param name="method">Resolved method</param>

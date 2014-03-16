@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 
+using Analyzing;
 using TypeSystem;
 using AssemblyProviders.ProjectAssembly.MethodBuilding;
 
@@ -72,7 +73,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         public override void VisitAttribute(CodeAttribute2 e)
         {
             //TODO maybe catching exceptions for some search level will be advantageous
-            var fullname = e.FullName;
+            var fullname = e.SafeFullname();
 
             if (fullname == Naming.ExportAttribute)
             {
@@ -88,7 +89,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             }
             else if (fullname == Naming.CompositionPointAttribute)
             {
-                throw new NotImplementedException("Add composition point attribute");
+                addCompositionPoint(new AttributeInfo(e));
             }
         }
 
@@ -129,26 +130,72 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <summary>
         /// Add export according to given <see cref="CodeAttribute"/>
         /// </summary>
-        /// <param name="importAttrbiute">Attribute defining export</param>
+        /// <param name="exportAttrbiute">Attribute defining export</param>
         private void addExport(AttributeInfo exportAttrbiute)
         {
             var property = getProperty(exportAttrbiute.Element);
+
+            var isSelfExport = false;
+            CodeClass selfClass=null;
             if (property == null)
             {
-                //TODO log that export attribute cannot be handled
-                throw new NotImplementedException("Check for self exports");
+                selfClass = exportAttrbiute.Element.Parent as CodeClass;
+                if (selfClass == null)
+                {
+                    //TODO log that export attribute cannot be handled
+                    return;
+                }
+
+                isSelfExport = true;
             }
 
-            var name = property.Name;
-            var type = property.Type;
-
-            var explicitContract = exportAttrbiute.GetArgument(0);
-            var exportTypeDescriptor = MethodBuilder.CreateDescriptor(type);
-            var contract = explicitContract == null ? exportTypeDescriptor.TypeName : explicitContract;
 
             var builder = getOrCreateCurrentBuilder();
-            var getterID = Naming.Method(builder.ComponentType, Naming.GetterPrefix + name, false, ParameterTypeInfo.NoParams);
-            builder.AddExport(exportTypeDescriptor, getterID, contract);
+
+            TypeDescriptor exportTypeDescriptor;
+            MethodID exportID=null;
+            if (isSelfExport)
+            {
+                exportTypeDescriptor = MethodBuilder.CreateDescriptor(selfClass);
+            }
+            else
+            {
+                var name = property.Name;
+                var type = property.Type;
+                exportTypeDescriptor = MethodBuilder.CreateDescriptor(type);
+                exportID= Naming.Method(builder.ComponentType, Naming.GetterPrefix + name, false, ParameterTypeInfo.NoParams);
+            }
+
+            var explicitContract = exportAttrbiute.GetArgument(0);
+            var contract = explicitContract == null ? exportTypeDescriptor.TypeName : explicitContract;
+
+            if (isSelfExport)
+            {
+                builder.AddSelfExport(contract);
+            }
+            else
+            {
+                builder.AddExport(exportTypeDescriptor, exportID, contract);
+            }
+        }
+
+        /// <summary>
+        /// Add CompositionPoint according to given <see cref="CodeAttribute"/>
+        /// </summary>
+        /// <param name="compositionAttrbiute">Attribute defining export</param>
+        private void addCompositionPoint(AttributeInfo compositionAttrbiute)
+        {
+            var method = getMethod(compositionAttrbiute.Element);
+            if (method == null)
+            {
+                throw new NotImplementedException("Log that method cannot been loaded");
+            }
+
+            //TODO handle composition point arguments
+            var info = MethodBuilder.CreateMethodInfo(method);
+
+            var builder = getOrCreateCurrentBuilder();
+            builder.AddExplicitCompositionPoint(info.MethodID);
         }
 
         /// <summary>
@@ -159,6 +206,16 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         private CodeProperty getProperty(CodeAttribute attribute)
         {
             return attribute.Parent as CodeProperty;
+        }
+
+        /// <summary>
+        /// Get <see cref="CodeProperty"/> where given attribute is defined
+        /// </summary>
+        /// <param name="attribute">Attribute which property is needed</param>
+        /// <returns><see cref="CodeProperty"/> where given attribute is defined, <c>null</c> if there is no such property</returns>
+        private CodeFunction getMethod(CodeAttribute attribute)
+        {
+            return attribute.Parent as CodeFunction;
         }
 
         /// <summary>

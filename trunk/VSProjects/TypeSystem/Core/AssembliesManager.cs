@@ -31,7 +31,7 @@ namespace TypeSystem.Core
 
         readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
 
-        internal readonly AssemblyCollection Assemblies;
+        internal readonly AssemblyCollectionBase Assemblies;
 
         internal readonly MachineSettings Settings;
 
@@ -41,7 +41,7 @@ namespace TypeSystem.Core
 
         internal IEnumerable<ComponentInfo> Components { get { return _components.Values; } }
 
-        internal AssembliesManager(AssemblyCollection assemblies, MachineSettings settings)
+        internal AssembliesManager(AssemblyCollectionBase assemblies, MachineSettings settings)
         {
             _services = new TypeServices(this);
             Settings = settings;

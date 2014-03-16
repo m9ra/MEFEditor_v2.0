@@ -62,7 +62,7 @@
     <Compile Include="Editing\EmptyShiftingProvider.cs" />
     <Compile Include="Editing\InstanceRemoveProvider.cs" />
     <Compile Include="Editing\RemoveTransformProvider.cs" />
-    <Compile Include="Editing\BlockTransformationProvider.cs" />
+    <Compile Include="Editing\BlockTransformProvider.cs" />
     <Compile Include="Editing\ExecutionView.cs" />
     <Compile Include="Editing\EmptyCallTransformProvider.cs" />
     <Compile Include="Editing\Transformations\EmptyTransformation.cs" />

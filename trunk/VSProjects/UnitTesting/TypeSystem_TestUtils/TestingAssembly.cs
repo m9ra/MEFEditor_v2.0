@@ -54,7 +54,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         /// <summary>
         /// Current assembly collection
         /// </summary>
-        internal readonly TestAssemblyCollection Assemblies;
+        internal readonly AssemblyCollection Assemblies;
 
         /// <summary>
         /// Method loader used by assembly
@@ -100,7 +100,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             Settings = settings;
             Runtime = settings.Runtime;
-            Assemblies = new TestAssemblyCollection(Runtime, this);
+            Assemblies = new AssemblyCollection(Runtime, this);
             Machine = SettingsProvider.CreateMachine(Settings);
 
             Loader = new AssemblyLoader(Assemblies, Settings);

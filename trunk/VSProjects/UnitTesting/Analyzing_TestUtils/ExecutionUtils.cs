@@ -29,7 +29,7 @@ namespace UnitTesting.Analyzing_TestUtils
 
             assembly.Runtime.BuildAssembly();
             var loader = new EmitDirectorLoader(director, assembly.Loader);
-            return new TestResult(machine.Run(loader));
+            return new TestResult(machine.Run(loader, loader.EntryPoint));
         }
 
         internal static TestCase AssertVariable(this TestResult result, string variable)

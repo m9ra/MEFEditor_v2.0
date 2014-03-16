@@ -129,11 +129,10 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public static TestResult GetResult(this TestingAssembly assembly, MethodID entryMethod, params Instance[] entryArguments)
         {
-            var entryLoader = new EntryPointLoader(entryMethod, assembly.Loader);
             if (!assembly.IsBuilded)
                 assembly.Build();
 
-            var result = assembly.Machine.Run(entryLoader, entryArguments);
+            var result = assembly.Machine.Run(assembly.Loader, entryMethod, entryArguments);
 
             foreach (var action in assembly.UserActions)
                 action(result);

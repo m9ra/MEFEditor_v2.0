@@ -40,7 +40,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
             return lazyEnumeration.First();
         }
-        
+
         /// <summary>
         /// Search all <see cref="CodeElement"/> with given path.
         /// </summary>
@@ -49,15 +49,21 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         internal IEnumerable<CodeElement> SearchAll(string path)
         {
             var pathInfo = new PathInfo(path);
-            var pathParts = pathInfo.Signature.Split('.');
+            var pathParts = pathInfo.Signature.Split(Naming.PathDelimiter);
             if (pathParts.Length == 0)
                 throw new NotSupportedException("Cannot find CodeElement with given path '" + path + "'");
 
             var lastPart = pathParts[pathParts.Length - 1];
 
+            if (pathParts.Length > 1 && (lastPart == Naming.CtorName || lastPart == Naming.ClassCtorName))
+            {
+                //name convention for ctors
+                lastPart = pathParts[pathParts.Length - 2];
+            }
+
             //search for all children with given path on parentElement
             var parentElement = findElement(pathParts, pathParts.Length - 1);
-            foreach (CodeElement child in parentElement.Children)
+            foreach (CodeElement child in parentElement.Children())
             {
                 if (child.Name == lastPart)
                     yield return child;
@@ -80,6 +86,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 var isLast = pathLength == i + 1;
                 var currentPart = pathParts[i];
 
+                if (isLast && i > 1 && (currentPart == Naming.ClassCtorName || currentPart == Naming.CtorName))
+                {
+                    //change to constructor name
+                    currentPart = pathParts[i - 1];
+                }
+
                 CodeElements nextElements = null;
                 foreach (CodeElement currentChild in currentElements)
                 {
@@ -91,7 +103,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                             return currentChild;
 
                         //current element satysfiing the path - step to its children
-                        nextElements = currentChild.Children;
+                        nextElements = currentChild.Children();
                         //go to next part
                         break;
                     }

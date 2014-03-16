@@ -45,6 +45,17 @@ namespace AssemblyProviders.ProjectAssembly
             }
         }
 
+        public static CodeElements Children(this CodeElement element)
+        {
+            switch (element.Kind)
+            {
+                case vsCMElement.vsCMElementNamespace:
+                    return (element as CodeNamespace).Members;
+                default:
+                    return element.Children;
+            }
+        }
+
         /// <summary>
         /// Get TypeDescriptor defined by given element.       
         /// </summary>
@@ -123,7 +134,7 @@ namespace AssemblyProviders.ProjectAssembly
             {
                 string text = null;
                 if (element is CodeFunction) text = getText(element, vsCMPart.vsCMPartBody);
-                if (element is CodeVariable) text = (element as CodeVariable).InitExpression;
+                if (element is CodeVariable) text = (element as CodeVariable).InitExpression as string;
                 if (element is CodeAttributeArgument) text = getAttribArgText(element as CodeAttributeArgument);
                 if (element is CodeAttribute) text = getAttribText(element as CodeAttribute);
                 return text;

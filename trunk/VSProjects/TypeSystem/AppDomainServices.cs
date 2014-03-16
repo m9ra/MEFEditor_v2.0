@@ -14,7 +14,7 @@ namespace TypeSystem
     {
         private readonly AssembliesManager _manager;
 
-        public AssemblyCollection Assemblies { get { return _manager.Assemblies; } }
+        public AssemblyCollectionBase Assemblies { get { return _manager.Assemblies; } }
 
         public IEnumerable<ComponentInfo> Components { get { return _manager.Components; } }
 

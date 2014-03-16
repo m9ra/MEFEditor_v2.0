@@ -36,10 +36,25 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 case vsCMElement.vsCMElementAttribute:
                     VisitAttribute(e as CodeAttribute2);
                     break;
+                case vsCMElement.vsCMElementImportStmt:
+                    VisitImport(e as CodeImport);
+                    break;
                 default:
-                    throw new NotImplementedException();
+                    VisitUnknown(e);
+                    break;
             }
         }
+        
+        public virtual void VisitUnknown(CodeElement e)
+        {
+            //nothing to do
+        }
+
+        private void VisitImport(CodeImport e)
+        {
+            //nothing to do
+        }
+
 
         public virtual void VisitFunction(CodeFunction2 e)
         {
@@ -75,7 +90,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (OnNamespaceEntered != null)
                 OnNamespaceEntered(e);
 
-            foreach (CodeElement child in e.Children)
+            foreach (CodeElement child in e.Members)
             {
                 VisitElement(child);
             }

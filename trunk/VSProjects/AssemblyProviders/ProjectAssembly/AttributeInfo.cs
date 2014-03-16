@@ -36,7 +36,21 @@ namespace AssemblyProviders.ProjectAssembly
         internal AttributeInfo(CodeAttribute2 attribute)
         {
             Element = attribute;
-            throw new NotImplementedException("Collect info");
+
+            foreach(CodeAttributeArgument arg in attribute.Arguments){
+                var name = arg.Name;
+                var value = arg.Value;
+
+                if (name == null)
+                {
+                    var position = _positionalArguments.Count;
+                    _positionalArguments[position] = name;
+                }
+                else
+                {
+                    _namedArguments[name] = value;
+                }
+            }
         }
 
         /// <summary>

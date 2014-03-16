@@ -13,17 +13,12 @@ namespace UnitTesting.Analyzing_TestUtils
         private readonly EmitDirector _director;
         private readonly LoaderBase _wrapped;
 
-        private readonly MethodID _entryPoint = new MethodID("DirectedEntryPoint", false);
+        internal readonly MethodID EntryPoint = new MethodID("DirectedEntryPoint", false);
 
         internal EmitDirectorLoader(EmitDirector director, LoaderBase wrappedLoader)
         {
             _director = director;
             _wrapped = wrappedLoader;
-        }
-
-        public override MethodID EntryPoint
-        {
-            get { return _entryPoint; }
         }
 
         public override GeneratorBase StaticResolve(MethodID method)

@@ -19,9 +19,9 @@ using AssemblyProviders.ProjectAssembly.MethodBuilding;
 namespace AssemblyProviders.ProjectAssembly
 {
     /// <summary>
-    /// Assembly provider implementation for <see cref="VsProject"/> assemblies loaded from Visual Studio solutions
+    /// Assembly provider implementation for <see cref="Project"/> assemblies loaded from Visual Studio solutions
     /// </summary>
-    class VsProjectAssembly : AssemblyProvider
+    public class VsProjectAssembly : AssemblyProvider
     {
         /// <summary>
         /// Represented VsProject assembly
@@ -44,12 +44,12 @@ namespace AssemblyProviders.ProjectAssembly
         internal Project Project { get { return _assemblyProject.Project; } }
 
         /// <summary>
-        /// Initialize new instance of <see cref="VsProjectAssembly"/> from given <see cref="VsProject"/>
+        /// Initialize new instance of <see cref="VsProjectAssembly"/> from given <see cref="Project"/>
         /// </summary>
         /// <param name="assemblyProject">Project that will be represented by initialized assembly</param>
-        public VsProjectAssembly(VSProject assemblyProject)
+        public VsProjectAssembly(Project assemblyProject)
         {
-            _assemblyProject = assemblyProject;
+            _assemblyProject = assemblyProject.Object as VSProject;
             _searcher = new CodeElementSearcher(this);
 
             OnTypeSystemInitialized += initializeAssembly;
@@ -80,7 +80,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         private void hookChangesHandler()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace AssemblyProviders.ProjectAssembly
             {
                 var methodItem = buildMethod(node);
 
-                if (methodItem.Info.MethodID == methodID)
+                if (methodItem.Info.MethodID.Equals(methodID))
                     //we have found matching method
                     return methodItem;
             }

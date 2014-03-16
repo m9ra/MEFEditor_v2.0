@@ -111,7 +111,7 @@ namespace TypeSystem
 
         protected void AddReference(object obj)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         protected void RemoveReference(object obj)

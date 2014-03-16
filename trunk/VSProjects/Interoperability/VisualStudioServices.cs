@@ -34,6 +34,13 @@ namespace Interoperability
         private readonly DispatcherTimer _changeWait = new DispatcherTimer();
 
         /// <summary>
+        /// Timer for waiting until solution starts to been processed. This waiting
+        /// is needed for getting attribute and other fullnames resolved
+        /// </summary>
+        private readonly DispatcherTimer _solutionWait = new DispatcherTimer();
+
+
+        /// <summary>
         /// Visual studio object used for interoperability
         /// </summary>
         private readonly DTE _dte;
@@ -94,6 +101,12 @@ namespace Interoperability
         /// </summary>
         public IEnumerable<Project> SolutionProjects { get { return _watchedProjects.Keys; } }
 
+        /// <summary>
+        /// Determine that solution is opened
+        /// </summary>
+        public bool IsSolutionOpen { get { return _dte.Solution != null; } }
+
+
         #region Forwarded events
 
         /// <summary>
@@ -129,6 +142,9 @@ namespace Interoperability
             _changeWait.Interval = new TimeSpan(0, 0, 1);
             _changeWait.Tick += flushChanges;
 
+            _solutionWait.Interval = new TimeSpan(0, 0, 1);
+            _solutionWait.Tick += solutionOpenedAfterWait;
+
             _dte = dte;
             _events = _dte.Events;
             _textEditorEvents = _events.TextEditorEvents;
@@ -158,6 +174,10 @@ namespace Interoperability
                 //we don't need to handle miscellanaeous projects
                 return;
 
+            if (_watchedProjects.ContainsKey(addedProject))
+                //project is already contained
+                return;
+            
             var manager = new ProjectManager(addedProject, this);
             _watchedProjects.Add(addedProject, manager);
 
@@ -300,6 +320,19 @@ namespace Interoperability
         /// </summary>
         private void solutionOpened()
         {
+            _solutionWait.Stop();
+            _solutionWait.Start();
+        }
+
+        /// <summary>
+        /// Handler called after some time from opening solution.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void solutionOpenedAfterWait(object sender, EventArgs e)
+        {
+            _solutionWait.Stop();
+
             //open all projects
             foreach (Project project in _dte.Solution.Projects)
                 onProjectAdded(project);
@@ -340,7 +373,7 @@ namespace Interoperability
         /// <param name="e">Arguments of event</param>        
         private void flushChanges(object sender, EventArgs e)
         {
-            _changeWait.Stop();
+            HasWaitingChanges = false;
 
             //TODO optimize
             var changes = _changes.ToArray();
@@ -478,5 +511,6 @@ namespace Interoperability
         }
 
         #endregion
+
     }
 }

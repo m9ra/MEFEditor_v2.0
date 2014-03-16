@@ -89,7 +89,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var isConstructor = element.FunctionKind == vsCMFunction.vsCMFunctionConstructor;
             var isShared = element.IsShared;
             var isAbstract = element.MustImplement;
-            var declaringType = CreateDescriptor(element.Parent);
+            var declaringType = CreateDescriptor(element.Parent as CodeClass);
             var returnType = CreateDescriptor(element.Type);
             var parameters = CreateParametersInfo(element.Parameters);
             //there are no generic arguments on method definition
@@ -162,7 +162,12 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns>Created <see cref="TypeDescriptor"/></returns>
         internal static TypeDescriptor CreateDescriptor(CodeTypeRef typeReference)
         {
-            throw new NotImplementedException();
+            var fullname = typeReference.AsFullName;
+            if (fullname == "")
+                return TypeDescriptor.Void;
+
+
+            return ConvertToDescriptor(fullname);
         }
 
         /// <summary>
@@ -174,10 +179,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var fullname = typeNode.FullName;
 
-            var typeName = ConvertToTypeName(fullname);
-
-            var descriptor = TypeDescriptor.Create(typeName);
-            return descriptor;
+           return ConvertToDescriptor(fullname);
         }
 
         /// <summary>
@@ -185,11 +187,13 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>
         /// <param name="fullname">Fullname of element from <see cref="CodeModel"/></param>
         /// <returns></returns>
-        internal static string ConvertToTypeName(string fullname)
+        internal static TypeDescriptor ConvertToDescriptor(string fullname)
         {
-            throw new NotImplementedException("TODO check fullname form especialy for generics");
+           // throw new NotImplementedException("TODO check fullname form especialy for generics");
+            var descriptor = TypeDescriptor.Create(fullname);
+            
+            return descriptor;
         }
-
 
         #endregion
 

@@ -17,17 +17,14 @@ namespace TypeSystem
 
         public readonly AppDomainServices AppDomain;
 
-        public AssemblyLoader(AssemblyCollection assemblies, MachineSettings settings)
+        public MachineSettings Settings { get { return _assemblies.Settings; } }
+
+        public AssemblyLoader(AssemblyCollectionBase assemblies, MachineSettings settings)
         {
             _assemblies = new AssembliesManager(assemblies, settings);
             AppDomain = new AppDomainServices(_assemblies);
         }
-
-        public override MethodID EntryPoint
-        {
-            get { throw new NotImplementedException(); }
-        }
-
+        
         public override GeneratorBase StaticResolve(MethodID method)
         {
             return _assemblies.StaticResolve(method);

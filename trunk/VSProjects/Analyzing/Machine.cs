@@ -83,9 +83,9 @@ namespace Analyzing
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
         /// <returns>Result of analysis</returns>
-        public AnalyzingResult Run(LoaderBase loader, params Instance[] arguments)
+        public AnalyzingResult Run(LoaderBase loader, MethodID entryMethod, params Instance[] arguments)
         {
-            return run(loader, arguments);
+            return run(loader, entryMethod, arguments);
         }
 
         internal string CreateID(string hint)
@@ -111,7 +111,7 @@ namespace Analyzing
         /// Run instructions present in _cachedLoader
         /// </summary>
         /// <returns>Result of analysis</returns>
-        private AnalyzingResult run(LoaderBase loader, params Instance[] arguments)
+        private AnalyzingResult run(LoaderBase loader, MethodID entryMethod, params Instance[] arguments)
         {
             _createdInstances.Clear();
             var context = new Execution.AnalyzingContext(this, loader);
@@ -121,8 +121,7 @@ namespace Analyzing
                 _createdInstances.Add(argument.ID, argument);
             }
 
-            context.FetchCall(loader.EntryPoint, arguments);
-            //context.DynamicCall("EntryPoint", loader.EntryPoint, arguments);
+            context.FetchCall(entryMethod, arguments);
 
             //instance processing
             while (!context.IsExecutionEnd)

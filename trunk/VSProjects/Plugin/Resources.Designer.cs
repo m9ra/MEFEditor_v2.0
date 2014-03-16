@@ -70,7 +70,7 @@ namespace MEFEditor.Plugin {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MEF Editor V2.
+        ///   Looks up a localized string similar to Enhanced MEF Component Architecture Editor.
         /// </summary>
         internal static string ToolWindowTitle {
             get {

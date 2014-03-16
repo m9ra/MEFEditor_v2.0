@@ -4,51 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Collections;
-
 namespace TypeSystem
 {
-
-    public delegate void AssemblyAction(AssemblyProvider provider);
-
-    public abstract class AssemblyCollection : IEnumerable<AssemblyProvider>
+    /// <summary>
+    /// Standard implementation of assembly collection
+    /// </summary>
+    public class AssemblyCollection : AssemblyCollectionBase
     {
-
-        private List<AssemblyProvider> _assemblies=new List<AssemblyProvider>();
-
-        public event AssemblyAction OnAdd;
-
-        public event AssemblyAction OnRemove;
-
-
-        protected void addAssembly(AssemblyProvider assembly)
+        public AssemblyCollection(params AssemblyProvider[] assemblies)
         {
-            _assemblies.Add(assembly);
-
-            if (OnAdd != null)
+            foreach (var assembly in assemblies)
             {
-                OnAdd(assembly);
+                Add(assembly);
             }
         }
 
-        protected void removeAssembly(AssemblyProvider assembly)
+        public void Add(AssemblyProvider assembly)
         {
-            _assemblies.Remove(assembly);
-
-            if (OnRemove != null)
-            {
-                OnRemove(assembly);
-            }
+            addAssembly(assembly);
         }
 
-        public IEnumerator<AssemblyProvider> GetEnumerator()
+        public void Remove(AssemblyProvider assembly)
         {
-            return _assemblies.GetEnumerator();
-        }
-
-        IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return _assemblies.GetEnumerator();
+            removeAssembly(assembly);
         }
     }
 }

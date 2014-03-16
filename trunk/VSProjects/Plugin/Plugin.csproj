@@ -138,6 +138,8 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Drawing\ContentDrawer.cs" />
+    <Compile Include="Drawing\DiagramFactory.cs" />
     <Compile Include="GUI\AssemblyItem.cs" />
     <Compile Include="GUI\EditorGUI.xaml.cs">
       <DependentUpon>EditorGUI.xaml</DependentUpon>
@@ -145,10 +147,11 @@
     <Compile Include="GUI\GUIColors.cs" />
     <Compile Include="GUI\GUIManager.cs" />
     <Compile Include="GUI\SettingsSection.cs" />
+    <Compile Include="Main\Editor.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MyToolWindow.cs" />
+    <Compile Include="EditorWindow.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -245,6 +248,10 @@
     <ProjectReference Include="..\..\VSProjects\TypeSystem\TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
       <Name>TypeSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MEFAnalyzers\MEFAnalyzers.csproj">
+      <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
+      <Name>MEFAnalyzers</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

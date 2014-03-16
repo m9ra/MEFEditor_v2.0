@@ -9,6 +9,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 
+using EnvDTE;
+
 using Plugin;
 
 namespace MEFEditor.Plugin
@@ -32,10 +34,20 @@ namespace MEFEditor.Plugin
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
-    [ProvideToolWindow(typeof(MyToolWindow))]
+    [ProvideToolWindow(typeof(EditorWindow))]
     [Guid(GuidList.guidPluginPkgString)]
     public sealed class PluginPackage : Package
     {
+        /// <summary>
+        /// DTE object obtained from Visual Studio providing access to extensibility services
+        /// </summary>
+        public static readonly DTE DTE;
+
+        static PluginPackage()
+        {
+            DTE = Package.GetGlobalService(typeof(DTE)) as DTE;
+        }
+
         /// <summary>
         /// Default constructor of the package.
         /// Inside this method you can place any initialization code that does not require 
@@ -45,7 +57,7 @@ namespace MEFEditor.Plugin
         /// </summary>
         public PluginPackage()
         {
-            Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
+            Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));          
         }
 
         /// <summary>
@@ -58,7 +70,7 @@ namespace MEFEditor.Plugin
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.FindToolWindow(typeof(MyToolWindow), 0, true);
+            ToolWindowPane window = this.FindToolWindow(typeof(EditorWindow), 0, true);
             if ((null == window) || (null == window.Frame))
             {
                 throw new NotSupportedException(Resources.CanNotCreateWindow);
