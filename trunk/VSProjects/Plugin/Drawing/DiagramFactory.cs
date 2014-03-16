@@ -8,7 +8,7 @@ using Drawing;
 
 using MEFAnalyzers.Drawings;
 
-namespace Research.Drawings
+namespace MEFEditor.Plugin.Drawing
 {
     class DiagramFactory:AbstractDiagramFactory
     {

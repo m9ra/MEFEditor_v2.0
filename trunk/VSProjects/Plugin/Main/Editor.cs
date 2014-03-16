@@ -15,6 +15,7 @@ using AssemblyProviders.ProjectAssembly;
 using MEFAnalyzers.Drawings;
 
 using Plugin.GUI;
+using MEFEditor.Plugin.Drawing;
 
 namespace MEFEditor.Plugin.Main
 {
@@ -76,7 +77,9 @@ namespace MEFEditor.Plugin.Main
             loadUserExtensions();
             settings.Runtime.BuildAssembly();
 
-            _guiManager = new GUIManager(_loader.AppDomain, GUI, null);
+            //TODO draw according to extensions
+            var factory = new DiagramFactory(new ContentDrawer(null, (item) => new ComponentDrawing(item)));
+            _guiManager = new GUIManager(_loader.AppDomain, GUI, factory);
 
             hookHandlers();
         }

@@ -8,7 +8,7 @@ using System.Windows;
 
 using Drawing;
 
-namespace Research.Drawings
+namespace MEFEditor.Plugin.Drawing
 {
     public delegate ContentDrawing ContentProvider(DiagramItem item);
 

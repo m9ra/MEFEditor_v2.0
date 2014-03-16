@@ -51,7 +51,7 @@ namespace Interoperability
             Element = element;
 
             if (!element.NoWatchedChildren()) 
-                _elements = element.Children;
+                _elements = element.Children();
 
             refreshOffset(); //initialize offset
         }

@@ -52,5 +52,16 @@ namespace Interoperability
             if (element == null) return true;
             return _noWatchedChildren.Contains(element.Kind);
         }
+
+        public static CodeElements Children(this CodeElement element)
+        {
+            switch (element.Kind)
+            {
+                case vsCMElement.vsCMElementNamespace:
+                    return (element as CodeNamespace).Members;
+                default:
+                    return element.Children;
+            }
+        }
     }
 }

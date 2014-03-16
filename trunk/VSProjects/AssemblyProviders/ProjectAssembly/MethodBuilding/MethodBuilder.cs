@@ -33,6 +33,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>
         private MethodBuilder(VsProjectAssembly declaringAssembly)
         {
+            if (declaringAssembly == null)
+                throw new ArgumentNullException("declaringAssembly");
+
             _declaringAssembly = declaringAssembly;
         }
 

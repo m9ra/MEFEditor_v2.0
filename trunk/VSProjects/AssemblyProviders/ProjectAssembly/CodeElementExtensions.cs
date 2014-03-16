@@ -45,17 +45,6 @@ namespace AssemblyProviders.ProjectAssembly
             }
         }
 
-        public static CodeElements Children(this CodeElement element)
-        {
-            switch (element.Kind)
-            {
-                case vsCMElement.vsCMElementNamespace:
-                    return (element as CodeNamespace).Members;
-                default:
-                    return element.Children;
-            }
-        }
-
         /// <summary>
         /// Get TypeDescriptor defined by given element.       
         /// </summary>

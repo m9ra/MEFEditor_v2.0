@@ -13,6 +13,7 @@ using EnvDTE80;
 
 using Analyzing;
 using TypeSystem;
+using Interoperability;
 
 using AssemblyProviders.ProjectAssembly.MethodBuilding;
 
@@ -33,9 +34,10 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// </summary>
         private readonly IEnumerable<CodeElement> _currentNodes;
 
-        private CodeElementIterator(IEnumerable<CodeElement> currentNodes)
+        private CodeElementIterator(IEnumerable<CodeElement> currentNodes, VsProjectAssembly assembly)
         {
             _currentNodes = currentNodes;
+            _assembly = assembly;
         }
 
         internal CodeElementIterator(VsProjectAssembly assembly)
@@ -58,7 +60,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             var actualNodes = new List<CodeElement>();
             foreach (var currentNode in _currentNodes)
             {
-                foreach (CodeElement child in currentNode.Children)
+                foreach (CodeElement child in currentNode.Children())
                 {
                     //TODO is name in correct form ?
                     if (child.Name == suffix)
@@ -71,7 +73,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (actualNodes.Count == 0)
                 return null;
 
-            return new CodeElementIterator(actualNodes);
+            return new CodeElementIterator(actualNodes, _assembly);
         }
 
         /// <inheritdoc />
@@ -91,8 +93,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
             foreach (var currentNode in _currentNodes)
             {
-                foreach (CodeElement child in currentNode.Children)
+                foreach (CodeElement child in currentNode.Children())
                 {
+                    var methodNode = child as CodeFunction;
+                    if (methodNode == null)
+                        continue;
+
                     var method = MethodBuilder.Build(child, _assembly);
                     methods.Add(method);
                 }

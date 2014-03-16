@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 
 using TypeSystem;
+using Interoperability;
 
 namespace AssemblyProviders.ProjectAssembly.Traversing
 {

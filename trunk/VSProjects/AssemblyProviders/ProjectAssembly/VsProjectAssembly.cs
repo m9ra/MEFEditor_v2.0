@@ -62,7 +62,9 @@ namespace AssemblyProviders.ProjectAssembly
         /// <param name="emitter">Emitter where parsed instructions are emitted</param>
         internal void ParsingProvider(ParsingActivation activation, EmitterBase emitter)
         {
-            throw new NotImplementedException();
+            //TODO make language independant
+
+            CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
         }
 
         /// <summary>
