@@ -96,7 +96,6 @@
       <DependentUpon>DiagramItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="SlotCanvas.cs" />
-    <Compile Include="SlotDrawing.cs" />
     <Compile Include="EditViewBase.cs" />
   </ItemGroup>
   <ItemGroup>

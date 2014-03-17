@@ -13,7 +13,7 @@ namespace Drawing
     /// <summary>
     /// Represents content drawing displayed inside diagram item
     /// </summary>
-    public abstract class ContentDrawing:Border
+    public abstract class ContentDrawing : Border
     {
         public readonly DiagramItem Item;
 
