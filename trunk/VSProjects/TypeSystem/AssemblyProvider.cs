@@ -19,17 +19,74 @@ namespace TypeSystem
 
     internal delegate void MethodEvent(MethodID name);
 
-
+    /// <summary>
+    /// When implemented provides assembly services that are used in TypeSystem. Represents assembly form
+    /// independant layer that could handle assemblies from different sources in the same way.
+    /// </summary>
     public abstract class AssemblyProvider
     {
+        /// <summary>
+        /// Type services of current provider
+        /// </summary>
         private TypeServices _services;
 
+        /// <summary>
+        /// Mapping that is used for current provider
+        /// </summary>
         private string _fullPathMapping;
 
+        /// <summary>
+        /// Event fired when type system is properly initialized for current provider.
+        /// <see cref="TypeServices"/> are not available before initialization
+        /// </summary>
         protected event Action OnTypeSystemInitialized;
 
+        /// <summary>
+        /// Event fired whenever new component is added into assembly
+        /// </summary>
         internal event ComponentEvent ComponentAdded;
 
+        /// <summary>
+        /// Event fired whenever path mapping for assembly is changed
+        /// </summary>
+        public AssemblyEvent MappingChanged;
+
+        /// <summary>
+        /// Name of provided assembly
+        /// </summary>
+        public string Name { get { return getAssemblyName(); } }
+
+        /// <summary>
+        /// Fullpath representing provided assembly 
+        /// </summary>
+        public string FullPath { get { return getAssemblyFullPath(); } }
+
+        /// <summary>
+        /// Mapping of fullpath used for provided assembly. Path mapping
+        /// is necessary for analzing development configuration: Extending of an Existing Application.
+        /// </summary>
+        public string FullPathMapping
+        {
+            get
+            {
+                return _fullPathMapping;
+            }
+            set
+            {
+                if (_fullPathMapping == value)
+                    return;
+
+                _fullPathMapping = value;
+
+                if (MappingChanged != null)
+                    MappingChanged(this);
+            }
+        }
+
+        /// <summary>
+        /// Services exposed by type system for provided assembly. Services also handle assembly references.
+        /// In terms of limiting access to not referenced assemblies.
+        /// </summary>
         internal protected TypeServices TypeServices
         {
             protected get
@@ -53,29 +110,12 @@ namespace TypeSystem
                     OnTypeSystemInitialized();
             }
         }
-
-        public AssemblyEvent MappingChanged;
-
-        public string Name { get { return getAssemblyName(); } }
-
-        public string FullPath { get { return getAssemblyFullPath(); } }
-
-        public string FullPathMapping
+                /// <summary>
+        /// Unload provided assembly
+        /// </summary>
+        internal void Unload()
         {
-            get
-            {
-                return _fullPathMapping;
-            }
-            set
-            {
-                if (_fullPathMapping == value)
-                    return;
-
-                _fullPathMapping = value;
-
-                if (MappingChanged != null)
-                    MappingChanged(this);
-            }
+            //TODO what to unload
         }
 
         #region Template method API
@@ -98,31 +138,51 @@ namespace TypeSystem
 
         #endregion
 
-        protected void ReportInvalidation(MethodID name)
+        #region Reference API
+
+        /// <summary>
+        /// Add reference for provided assembly. Referenced assembly is load if needed
+        /// </summary>
+        /// <param name="reference">Reference representation used for assembly loading</param>
+        protected void AddReference(object reference)
         {
-            throw new NotImplementedException();
+            _services.AddReference(reference);
         }
 
-        protected void AddComponent(ComponentInfo component)
+        /// <summary>
+        /// Remove reference from provided assembly. Referenced assembly may be unloaded
+        /// </summary>
+        /// <param name="reference">Reference representation used for assembly unloading</param>
+        protected void RemoveReference(object reference)
+        {
+            _services.RemoveReference(reference);
+        }
+
+        #endregion
+
+        #region Component API
+
+        /// <summary>
+        /// Report that component has been discovered within provided assembly
+        /// </summary>
+        /// <param name="component">Discovered component</param>
+        protected void ComponentDiscovered(ComponentInfo component)
         {
             if (ComponentAdded != null)
                 ComponentAdded(component);
         }
 
-        protected void AddReference(object obj)
-        {
-            //throw new NotImplementedException();
-        }
-
-        protected void RemoveReference(object obj)
+        /// <summary>
+        /// Report that component has been removed from provided assembly
+        /// </summary>
+        protected void ComponentRemoved()
         {
             throw new NotImplementedException();
         }
+        
+        #endregion
 
-        protected void RemoveComponent()
-        {
-            throw new NotImplementedException();
-        }
+        #region Transaction API
 
         /// <summary>
         /// Start transaction with given description. Transaction can be reported about progress.
@@ -135,6 +195,9 @@ namespace TypeSystem
             // throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Commit started transaction. 
+        /// </summary>
         protected void CommitTransaction()
         {
             //  throw new NotImplementedException();
@@ -148,14 +211,16 @@ namespace TypeSystem
         {
         }
 
-        internal void HookChange(MethodEvent changeEvent)
+        /// <summary>
+        /// TODO Form of invalidation
+        /// </summary>
+        /// <param name="name"></param>
+        protected void ReportInvalidation(MethodID name)
         {
             throw new NotImplementedException();
         }
 
-        internal void UnloadServices()
-        {
-            //TODO what unload
-        }
+
+        #endregion
     }
 }

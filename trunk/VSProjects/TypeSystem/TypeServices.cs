@@ -15,11 +15,47 @@ namespace TypeSystem
     /// </summary>
     public class TypeServices
     {
+        private readonly AssemblyProvider _owner;
+
         private readonly AssembliesManager _manager;
 
-        internal TypeServices(AssembliesManager manager)
+        private readonly ReferencedAssemblies _references = new ReferencedAssemblies();
+
+        /// <summary>
+        /// Currently available settings
+        /// </summary>
+        public MachineSettings Settings { get { return _manager.Settings; } }
+
+        internal TypeServices(AssemblyProvider owner, AssembliesManager manager)
         {
+            _owner = owner;
             _manager = manager;
+
+            //every assembly has to have runtime as prioritized reference
+            //note that adding Runtime reference to itself is not a problem
+            _references.Add(Settings.Runtime);
+            //assembly used for resolving is also owner itself
+            _references.Add(owner);
+        }
+
+        /// <summary>
+        /// Add reference for provided assembly. Referenced assembly is load if needed
+        /// </summary>
+        /// <param name="reference">Reference representation used for assembly loading</param>
+        internal void AddReference(object reference)
+        {
+            var assembly = _manager.LoadReference(reference);
+            _references.Add(assembly);
+        }
+
+        /// <summary>
+        /// Remove reference from provided assembly. Referenced assembly may be unloaded
+        /// </summary>
+        /// <param name="reference">Reference representation used for assembly unloading</param>
+        internal void RemoveReference(object reference)
+        {
+            var assembly = _manager.UnLoadReference(reference);
+            _references.Remove(assembly);
         }
 
         /// <summary>
@@ -28,7 +64,7 @@ namespace TypeSystem
         /// <returns>Created method searcher</returns>
         public MethodSearcher CreateSearcher()
         {
-            return _manager.CreateSearcher();
+            return _manager.CreateSearcher(_references);
         }
 
         /// <summary>
@@ -60,24 +96,26 @@ namespace TypeSystem
 
         public TypeAssembly LoadAssembly(string assemblyPath)
         {
+            //TODO load only for purposes of single composition point
             return _manager.LoadAssembly(assemblyPath);
         }
 
         public void RegisterAssembly(AssemblyProvider assembly)
         {
+            //TODO it doesn't belong here
             _manager.RegisterAssembly(assembly);
         }
-
-        public MethodID GetStaticInitializerID(InstanceInfo info)
-        {
-            return _manager.GetStaticInitializer(info);
-        }
-
+        
         public TypeAssembly DefiningAssembly(MethodID callerId)
         {
             return _manager.DefiningAssembly(callerId);
         }
 
+        /// <summary>
+        /// Get components defined within given assembly
+        /// </summary>
+        /// <param name="assembly">Assembly where components are searched</param>
+        /// <returns>Components defined within assembly</returns>
         public IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
         {
             return _manager.GetComponents(assembly);
@@ -102,5 +140,6 @@ namespace TypeSystem
         {
             return _manager.GetChain(type);
         }
+
     }
 }

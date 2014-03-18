@@ -62,7 +62,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// <param name="emitter">Emitter where parsed instructions are emitted</param>
         internal void ParsingProvider(ParsingActivation activation, EmitterBase emitter)
         {
-            //TODO make language independant
+            //TODO make it language independant
 
             CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
         }
@@ -127,7 +127,7 @@ namespace AssemblyProviders.ProjectAssembly
 
             var searcher = new ComponentSearcher(TypeServices);
             searcher.OnNamespaceEntered += reportSearchProgress;
-            searcher.OnComponentFound += AddComponent;
+            searcher.OnComponentFound += ComponentDiscovered;
 
             //search components in whole project
             searcher.VisitProject(Project);

@@ -13,31 +13,31 @@ namespace TypeSystem
 {
     public class AssemblyLoader : LoaderBase
     {
-        readonly AssembliesManager _assemblies;
+        readonly AssembliesManager _manager;
 
         public readonly AppDomainServices AppDomain;
 
-        public MachineSettings Settings { get { return _assemblies.Settings; } }
+        public MachineSettings Settings { get { return _manager.Settings; } }
 
         public AssemblyLoader(AssemblyCollectionBase assemblies, MachineSettings settings)
         {
-            _assemblies = new AssembliesManager(assemblies, settings);
-            AppDomain = new AppDomainServices(_assemblies);
+            _manager = new AssembliesManager(assemblies, settings);
+            AppDomain = new AppDomainServices(_manager);
         }
         
         public override GeneratorBase StaticResolve(MethodID method)
         {
-            return _assemblies.StaticResolve(method);
+            return _manager.StaticResolve(method);
         }
 
         public override MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
-            return _assemblies.DynamicResolve(method, dynamicArgumentInfo);
+            return _manager.DynamicResolve(method, dynamicArgumentInfo);
         }
 
         public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
         {
-            return _assemblies.GetComponentInfo(instanceInfo);
+            return _manager.GetComponentInfo(instanceInfo);
         }
     }
 }

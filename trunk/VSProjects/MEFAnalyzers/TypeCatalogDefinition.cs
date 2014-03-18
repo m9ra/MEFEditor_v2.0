@@ -78,8 +78,7 @@ namespace MEFAnalyzers
 
             drawer.ForceShow();
         }
-
-
+        
         private object addComponentTypeProvider(TypeAssembly callerAssembly, ExecutionView v)
         {
             var components = getComponents(callerAssembly);

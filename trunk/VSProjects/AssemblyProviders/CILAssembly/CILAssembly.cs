@@ -130,7 +130,7 @@ namespace AssemblyProviders.CILAssembly
                 if (isComponent(type))
                 {
                     var info = createComponentInfo(type);
-                    AddComponent(info);
+                    ComponentDiscovered(info);
                 }
             }
 
@@ -623,8 +623,7 @@ namespace AssemblyProviders.CILAssembly
             }
 
             //if no explicit cctor is found default one is created
-
-            var initializerId = TypeServices.GetStaticInitializerID(info);
+            var initializerId = TypeServices.Settings.GetSharedInitializer(info);
 
             //add default implementation
             var methodInfo = new TypeMethodInfo(

@@ -135,7 +135,7 @@ namespace TypeSystem.Runtime
                 buildDefinition(dataType);
                 if (dataType.ComponentInfo != null)
                 {
-                    AddComponent(dataType.ComponentInfo);
+                    ComponentDiscovered(dataType.ComponentInfo);
                 }
             }
             IsBuilded = true;

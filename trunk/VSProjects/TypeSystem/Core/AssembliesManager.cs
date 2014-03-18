@@ -8,6 +8,7 @@ using System.IO;
 
 using Utilities;
 using Analyzing;
+using TypeSystem.Runtime;
 
 
 namespace TypeSystem.Core
@@ -25,8 +26,6 @@ namespace TypeSystem.Core
         /// </summary>
         readonly Dictionary<string, AssemblyProvider> _assemblyPathIndex = new Dictionary<string, AssemblyProvider>();
 
-        readonly TypeServices _services;
-
         readonly MultiDictionary<AssemblyProvider, ComponentInfo> _assemblyComponents = new MultiDictionary<AssemblyProvider, ComponentInfo>();
 
         readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
@@ -41,9 +40,10 @@ namespace TypeSystem.Core
 
         internal IEnumerable<ComponentInfo> Components { get { return _components.Values; } }
 
+        internal RuntimeAssembly Runtime { get { return Settings.Runtime; } }
+
         internal AssembliesManager(AssemblyCollectionBase assemblies, MachineSettings settings)
         {
-            _services = new TypeServices(this);
             Settings = settings;
 
             Assemblies = assemblies;
@@ -57,7 +57,6 @@ namespace TypeSystem.Core
         }
 
         #region Internal methods for accessing assemblies
-
 
         internal IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
         {
@@ -150,14 +149,9 @@ namespace TypeSystem.Core
         /// Creates method searcher, which can search in referenced assemblies
         /// </summary>
         /// <returns>Created method searcher</returns>
-        internal MethodSearcher CreateSearcher()
+        internal MethodSearcher CreateSearcher(ReferencedAssemblies references)
         {
-            return new MethodSearcher(Assemblies);
-        }
-
-        internal MethodID GetStaticInitializer(InstanceInfo info)
-        {
-            return Settings.GetSharedInitializer(info);
+            return new MethodSearcher(references);
         }
 
         internal IEnumerable<string> GetFiles(string directoryFullPath)
@@ -332,7 +326,9 @@ namespace TypeSystem.Core
             var typeAssembly = new TypeAssembly(this, assembly);
             _assemblies.Add(assembly, typeAssembly);
             assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
-            assembly.TypeServices = _services;
+
+            var services = new TypeServices(assembly, this);
+            assembly.TypeServices = services;
         }
 
         private void _onAssemblyRemove(AssemblyProvider assembly)
@@ -345,7 +341,7 @@ namespace TypeSystem.Core
 
             _assemblyPathIndex.Remove(assembly.FullPath);
             _assemblies.Remove(assembly);
-            assembly.UnloadServices();
+            assembly.Unload();
         }
 
         private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
@@ -376,5 +372,15 @@ namespace TypeSystem.Core
 
         #endregion
 
+
+        internal AssemblyProvider LoadReference(object reference)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal AssemblyProvider UnLoadReference(object reference)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
