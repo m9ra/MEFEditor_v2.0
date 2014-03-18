@@ -15,10 +15,19 @@ namespace TypeSystem
     /// </summary>
     public class TypeServices
     {
-        private readonly AssemblyProvider _owner;
-
+        /// <summary>
+        /// Representation of AppDomain where assemblies are stored
+        /// </summary>
         private readonly AssembliesManager _manager;
 
+        /// <summary>
+        /// Owner which uses current <see cref="TypeServices"/>
+        /// </summary>
+        private readonly AssemblyProvider _owner;
+
+        /// <summary>
+        /// References of <see cref="_owner"/> assembly
+        /// </summary>
         private readonly ReferencedAssemblies _references = new ReferencedAssemblies();
 
         /// <summary>
@@ -26,6 +35,11 @@ namespace TypeSystem
         /// </summary>
         public MachineSettings Settings { get { return _manager.Settings; } }
 
+        /// <summary>
+        /// Initialize <see cref="TypeServices"/> object that provides services from TypeSystem to given owner
+        /// </summary>
+        /// <param name="owner">Owner which uses current <see cref="TypeServices"/></param>
+        /// <param name="manager">Representation of AppDomain where assemblies are stored</param>
         internal TypeServices(AssemblyProvider owner, AssembliesManager manager)
         {
             _owner = owner;
@@ -37,6 +51,8 @@ namespace TypeSystem
             //assembly used for resolving is also owner itself
             _references.Add(owner);
         }
+
+        #region Reference API
 
         /// <summary>
         /// Add reference for provided assembly. Referenced assembly is load if needed
@@ -58,6 +74,10 @@ namespace TypeSystem
             _references.Remove(assembly);
         }
 
+        #endregion
+
+        #region Type inspection API
+
         /// <summary>
         /// Creates method searcher, which can search in referenced assemblies
         /// </summary>
@@ -65,6 +85,17 @@ namespace TypeSystem
         public MethodSearcher CreateSearcher()
         {
             return _manager.CreateSearcher(_references);
+        }
+
+        /// <summary>
+        /// Get concrete implementation of abstract (virtual,interface,..) method on given type
+        /// </summary>
+        /// <param name="type">Type where concrete implementation is searched</param>
+        /// <param name="abstractMethod">Abstract method which implementation is searched</param>
+        /// <returns>Concreate implementation if available, <c>null</c> otherwise</returns>
+        public MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
+        {
+            return _manager.TryGetImplementation(type, abstractMethod);
         }
 
         /// <summary>
@@ -79,36 +110,53 @@ namespace TypeSystem
             return _manager.IsAssignable(targetTypeName, assignedTypeName);
         }
 
+        /// <summary>
+        /// Determine that assignedType can be assigned into variable with targetType without any conversion calls (implicit nor explicit)
+        /// Only tests inheritance
+        /// </summary>
+        /// <param name="targetType">Target variable type</param>
+        /// <param name="assignedType">Assigned type</param>
+        /// <returns><c>true</c> if assigned type is assignable, <c>false</c> otherwise</returns>
         public bool IsAssignable(InstanceInfo targetType, InstanceInfo assignedType)
         {
             return IsAssignable(targetType.TypeName, assignedType.TypeName);
         }
 
-        public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
+        /// <summary>
+        /// Get inheritance chain for given type
+        /// </summary>
+        /// <param name="type">Type which inheritance chain is desired</param>
+        /// <returns>Founded inheritance chain if available, <c>null</c> otherwise</returns>
+        public InheritanceChain GetChain(TypeDescriptor type)
         {
-            return _manager.GetComponentInfo(instanceInfo);
+            return _manager.GetChain(type);
         }
 
-        public MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
+        /// <summary>
+        /// Create inheritance chain for given type and subChains
+        /// <remarks>This is used by <see cref="AssemblyProvider"/> to create information about inheritance</remarks>
+        /// </summary>
+        /// <param name="type">Type which inheritance chain is created</param>
+        /// <param name="subChains"><see cref="InheritanceChains"/> of sub types</param>
+        /// <returns>Created chain</returns>
+        public InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
-            return _manager.TryGetImplementation(type, abstractMethod);
+            return _manager.CreateChain(type, subChains);
         }
 
-        public TypeAssembly LoadAssembly(string assemblyPath)
-        {
-            //TODO load only for purposes of single composition point
-            return _manager.LoadAssembly(assemblyPath);
-        }
 
-        public void RegisterAssembly(AssemblyProvider assembly)
+        #endregion
+
+        #region Component API
+
+        /// <summary>
+        /// Get <see cref="ComponentInfo"/> defined for given type.
+        /// </summary>
+        /// <param name="type">Type which component info is needed</param>
+        /// <returns><see cref="ComponentInfo"/> defined for type if available, <c>false</c> otherwise</returns>
+        public ComponentInfo GetComponentInfo(InstanceInfo type)
         {
-            //TODO it doesn't belong here
-            _manager.RegisterAssembly(assembly);
-        }
-        
-        public TypeAssembly DefiningAssembly(MethodID callerId)
-        {
-            return _manager.DefiningAssembly(callerId);
+            return _manager.GetComponentInfo(type);
         }
 
         /// <summary>
@@ -121,25 +169,44 @@ namespace TypeSystem
             return _manager.GetComponents(assembly);
         }
 
+
+        #endregion
+
+        #region Assembly API
+
         /// <summary>
-        /// Get files that are present in given directory
+        /// Get files that are present in given directory by taking assemblies mapping into consideration
         /// </summary>
-        /// <param name="directoryFullPath"></param>
-        /// <returns></returns>
+        /// <param name="directoryFullPath">Fullpath of directory which files will be retrieved</param>
+        /// <returns>Files that are present in directory according to virtual mapping</returns>
         public IEnumerable<string> GetFiles(string directoryFullPath)
         {
             return _manager.GetFiles(directoryFullPath);
         }
 
-        public InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
+        /// <summary>
+        /// Load assembly for purposes of interpretation analysis. Assembly is automatically cached between multiple runs.
+        /// Mapping of assemblies is take into consideration
+        /// </summary>
+        /// <param name="assemblyPath">Path of loaded assembly</param>
+        /// <returns>Loaded assembly if available, <c>null</c> otherwise</returns>
+        public TypeAssembly LoadAssembly(string assemblyPath)
         {
-            return _manager.CreateChain(type, subChains);
+            //TODO load only for purposes of single composition point
+            return _manager.LoadAssembly(assemblyPath);
         }
 
-        public InheritanceChain GetChain(TypeDescriptor type)
+        /// <summary>
+        /// Get assembly which defines given method.
+        /// </summary>
+        /// <param name="method">Method which assembly is searched</param>
+        /// <returns>Assembly where method is defined</returns>
+        public TypeAssembly GetDefiningAssembly(MethodID method)
         {
-            return _manager.GetChain(type);
+            return _manager.GetDefiningAssembly(method);
         }
+
+        #endregion
 
     }
 }

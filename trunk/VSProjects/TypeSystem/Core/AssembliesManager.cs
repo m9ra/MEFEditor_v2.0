@@ -13,87 +13,89 @@ using TypeSystem.Runtime;
 
 namespace TypeSystem.Core
 {
+    /// <summary>
+    /// Representation of AppDomain, that handle loading/unloading, type resolving and components. Is topmost manager
+    /// for TypeSystem services
+    /// </summary>
     class AssembliesManager
     {
         /// <summary>
-        /// In these assemblies are searched generators
-        /// <remarks>May differ from method searcher providing assemblies - that are based on assembly references</remarks>
+        /// Assemblies that are currently loaded
         /// </summary>
-        readonly Dictionary<AssemblyProvider, TypeAssembly> _assemblies = new Dictionary<AssemblyProvider, TypeAssembly>();
+        private readonly AssembliesStorage _assemblies;
 
         /// <summary>
-        /// Assembly providers indexed by their full paths
+        /// Loader that is used for creating assemblies
         /// </summary>
-        readonly Dictionary<string, AssemblyProvider> _assemblyPathIndex = new Dictionary<string, AssemblyProvider>();
+        private readonly AssemblyLoader _loader;
 
+        /// <summary>
+        /// Components indexed by their defining assemblies
+        /// </summary>
         readonly MultiDictionary<AssemblyProvider, ComponentInfo> _assemblyComponents = new MultiDictionary<AssemblyProvider, ComponentInfo>();
 
+        /// <summary>
+        /// Components indexed by defining types
+        /// </summary>
         readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
 
-        internal readonly AssemblyCollectionBase Assemblies;
-
+        /// <summary>
+        /// Settings available fur current AppDomain
+        /// </summary>
         internal readonly MachineSettings Settings;
 
+        /// <summary>
+        /// Event fired whenever new component is added
+        /// </summary>
         internal event ComponentEvent ComponentAdded;
 
+        /// <summary>
+        /// Event fired whenever component is removed
+        /// </summary>
         internal event ComponentEvent ComponentRemoved;
 
+        /// <summary>
+        /// Event fired whenever new assembly is added into AppDomain
+        /// </summary>
+        internal event AssemblyEvent AssemblyAdded;
+
+        /// <summary>
+        /// Event fired whenever assembly is removed from AppDomain
+        /// </summary>
+        internal event AssemblyEvent AssemblyRemoved;
+
+        /// <summary>
+        /// Enumeration of all available components
+        /// </summary>
         internal IEnumerable<ComponentInfo> Components { get { return _components.Values; } }
 
+        /// <summary>
+        /// All loaded assemblies
+        /// </summary>
+        public IEnumerable<AssemblyProvider> Assemblies { get { return _assemblies.Providers; } }
+
+        /// <summary>
+        /// Runtime used by current AppDomain
+        /// </summary>
         internal RuntimeAssembly Runtime { get { return Settings.Runtime; } }
 
-        internal AssembliesManager(AssemblyCollectionBase assemblies, MachineSettings settings)
+        internal AssembliesManager(AssemblyLoader loader, MachineSettings settings)
         {
             Settings = settings;
 
-            Assemblies = assemblies;
-            Assemblies.OnAdd += _onAssemblyAdd;
-            Assemblies.OnRemove += _onAssemblyRemove;
+            _loader = loader;
 
-            foreach (var assembly in Assemblies)
-            {
-                _onAssemblyAdd(assembly);
-            }
+            _assemblies = new AssembliesStorage(this);
+            _assemblies.OnRootAdd += _onRootAssemblyAdd;
+            _assemblies.OnRootRemove += _onAssemblyRemove;
+            _assemblies.OnRegistered += _onRootRegistered;
+
+            //runtime assembly has to be present
+            _assemblies.AddRoot(settings.Runtime);
         }
 
-        #region Internal methods for accessing assemblies
+        #region Internal methods exposed for AssemblyLoader
 
-        internal IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
-        {
-            return _assemblyComponents.Get(assembly);
-        }
-
-        internal void RegisterAssembly(AssemblyProvider assembly)
-        {
-            _onAssemblyAdd(assembly);
-        }
-
-        internal TypeAssembly LoadAssembly(string assemblyPath)
-        {
-            //TODO performance improvement
-            //TODO loading of not registered assemblies (because of directory catalogs)
-
-            foreach (var assemblyPair in _assemblies)
-            {
-                if (assemblyPair.Key.FullPathMapping == assemblyPath)
-                    return assemblyPair.Value;
-            }
-
-            return null;
-        }
-
-        internal TypeAssembly DefiningAssembly(MethodID callerId)
-        {
-            foreach (var assemblyPair in _assemblies)
-            {
-                var assembly = assemblyPair.Key;
-                var generator = assembly.GetMethodGenerator(callerId);
-                if (generator != null)
-                    return assemblyPair.Value;
-            }
-
-            return null;
-        }
 
         internal GeneratorBase StaticResolve(MethodID method)
         {
@@ -117,6 +119,47 @@ namespace TypeSystem.Core
             return methodImplementation;
         }
 
+        #endregion
+
+        #region Internal methods exposed for TypeServices
+
+        #region Reference API
+
+        //improvements are needed
+        internal AssemblyProvider LoadReference(object reference)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal AssemblyProvider UnLoadReference(object reference)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Type inspection API
+
+        /// <summary>
+        /// Get concrete implementation of abstract (virtual,interface,..) method on given type
+        /// </summary>
+        /// <param name="type">Type where concrete implementation is searched</param>
+        /// <param name="abstractMethod">Abstract method which implementation is searched</param>
+        /// <returns>Concreate implementation if available, <c>null</c> otherwise</returns>
+        internal MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
+        {
+            return tryDynamicResolve(type, abstractMethod);
+        }
+
+        /// <summary>
+        /// Creates method searcher, which can search in referenced assemblies
+        /// </summary>
+        /// <returns>Created method searcher</returns>
+        internal MethodSearcher CreateSearcher(ReferencedAssemblies references)
+        {
+            return new MethodSearcher(references);
+        }
+
         /// <summary>
         /// Determine that assignedType can be assigned into variable with targetTypeName without any conversion calls (implicit nor explicit)
         /// Only tests inheritance
@@ -133,52 +176,13 @@ namespace TypeSystem.Core
             return chain.HasSubChain(targetTypeName);
         }
 
-        internal ComponentInfo GetComponentInfo(InstanceInfo info)
-        {
-            ComponentInfo result;
-            _components.TryGetValue(info, out result);
-            return result;
-        }
-
-        internal MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
-        {
-            return tryDynamicResolve(type, abstractMethod);
-        }
-
         /// <summary>
-        /// Creates method searcher, which can search in referenced assemblies
+        /// Create inheritance chain for given type and subChains
+        /// <remarks>This is used by <see cref="AssemblyProvider"/> to create information about inheritance</remarks>
         /// </summary>
-        /// <returns>Created method searcher</returns>
-        internal MethodSearcher CreateSearcher(ReferencedAssemblies references)
-        {
-            return new MethodSearcher(references);
-        }
-
-        internal IEnumerable<string> GetFiles(string directoryFullPath)
-        {
-            var realFiles = Directory.GetFiles(directoryFullPath);
-            foreach (var realFile in realFiles)
-            {
-                if (_assemblyPathIndex.ContainsKey(realFile))
-                    //assemblies are added according to their mapping
-                    continue;
-
-                yield return realFile;
-            }
-
-
-            foreach (var assembly in _assemblies.Keys)
-            {
-                if (!assembly.FullPathMapping.StartsWith(directoryFullPath))
-                    //directory has to match begining of path
-                    continue;
-
-                var mappedDirectory = Path.GetDirectoryName(assembly.FullPathMapping);
-                if (mappedDirectory == directoryFullPath)
-                    yield return assembly.FullPathMapping;
-            }
-        }
-
+        /// <param name="type">Type which inheritance chain is created</param>
+        /// <param name="subChains"><see cref="InheritanceChains"/> of sub types</param>
+        /// <returns>Created chain</returns>
         internal InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
             //TODO caching
@@ -186,15 +190,142 @@ namespace TypeSystem.Core
             return new InheritanceChain(type, subChains);
         }
 
+        /// <summary>
+        /// Get inheritance chain for given type
+        /// </summary>
+        /// <param name="type">Type which inheritance chain is desired</param>
+        /// <returns>Founded inheritance chain if available, <c>null</c> otherwise</returns>
         internal InheritanceChain GetChain(TypeDescriptor type)
         {
             return getChain(type.TypeName);
         }
 
+        #endregion
+
+        #region Component API
+
+        /// <summary>
+        /// Get <see cref="ComponentInfo"/> defined for given type.
+        /// </summary>
+        /// <param name="type">Type which component info is needed</param>
+        /// <returns><see cref="ComponentInfo"/> defined for type if available, <c>false</c> otherwise</returns>
+        internal ComponentInfo GetComponentInfo(InstanceInfo type)
+        {
+            ComponentInfo result;
+            _components.TryGetValue(type, out result);
+            return result;
+        }
+
+        /// <summary>
+        /// Get components defined within given assembly
+        /// </summary>
+        /// <param name="assembly">Assembly where components are searched</param>
+        /// <returns>Components defined within assembly</returns>
+        internal IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
+        {
+            return _assemblyComponents.Get(assembly);
+        }
+
+        #endregion
+
+        #region Assembly API
+
+        /// <summary>
+        /// Get files that are present in given directory by taking assemblies mapping into consideration
+        /// </summary>
+        /// <param name="directoryFullPath">Fullpath of directory which files will be retrieved</param>
+        /// <returns>Files that are present in directory according to virtual mapping</returns>
+        internal IEnumerable<string> GetFiles(string directoryFullPath)
+        {
+            var realFiles = Directory.GetFiles(directoryFullPath);
+
+            //get real files filtered by mapped assemblies
+            foreach (var realFile in realFiles)
+            {
+                if (_assemblies.ContainsRealFile(realFile))
+                    //assemblies are added according to their mapping
+                    continue;
+
+                yield return realFile;
+            }
+
+            //get files that are added by virtual mapping
+            foreach (var assembly in _assemblies.Providers)
+            {
+                if (!assembly.FullPathMapping.StartsWith(directoryFullPath))
+                    //directory has to match begining of path
+                    continue;
+
+                var mappedDirectory = Path.GetDirectoryName(assembly.FullPathMapping);
+                if (mappedDirectory == directoryFullPath)
+                    //virtual mapping match
+                    yield return assembly.FullPathMapping;
+            }
+        }
+
+        /// <summary>
+        /// Load assembly for purposes of interpretation analysis. Assembly is automatically cached between multiple runs.
+        /// Mapping of assemblies is take into consideration
+        /// </summary>
+        /// <param name="assemblyPath">Path of loaded assembly</param>
+        /// <returns>Loaded assembly if available, <c>null</c> otherwise</returns>
+        internal TypeAssembly LoadAssembly(string assemblyPath)
+        {
+            //TODO performance improvement
+            //TODO loading of not registered assemblies (because of directory catalogs)
+
+            var assembly = _assemblies.AccordingMappedFullpath(assemblyPath);
+
+            if (assembly != null)
+                return assembly;
+
+            var createdProvider = _loader.CreateAssembly(assemblyPath);
+            if (createdProvider == null)
+                //assembly is not available
+                return null;
+
+            //register created assembly
+            _assemblies.AddReference(createdProvider);
+
+            return _assemblies.GetTypeAssembly(createdProvider);
+        }
+
+        /// <summary>
+        /// Load root assembly into AppDomain
+        /// </summary>
+        /// <param name="loadedAssembly">Asemlby that is loaded</param>
+        internal void LoadRoot(AssemblyProvider loadedAssembly)
+        {
+            //adding will fire appropriate handlers
+            _assemblies.AddRoot(loadedAssembly);
+        }
+
+        /// <summary>
+        /// Get assembly which defines given method.
+        /// </summary>
+        /// <param name="method">Method which assembly is searched</param>
+        /// <returns>Assembly where method is defined</returns>
+        internal TypeAssembly GetDefiningAssembly(MethodID callerId)
+        {
+            foreach (var assemblyProvider in _assemblies.Providers)
+            {
+                var generator = assemblyProvider.GetMethodGenerator(callerId);
+                if (generator != null)
+                    return _assemblies.GetTypeAssembly(assemblyProvider);
+            }
+
+            return null;
+        }
+        #endregion
+
+        #endregion
+
+        #region Private utility methods
+
         private InheritanceChain getChain(string typeName)
         {
             var typePath = new PathInfo(typeName);
-            foreach (var assembly in _assemblies.Keys)
+            foreach (var assembly in _assemblies.Providers)
             {
                 var inheritanceChain = assembly.GetInheritanceChain(typePath);
 
@@ -206,10 +337,6 @@ namespace TypeSystem.Core
 
             throw new NotSupportedException("For type: " + typeName + " there is no inheritance chain");
         }
-
-        #endregion
-
-        #region Private utility methods
 
         private MethodID tryDynamicResolve(TypeDescriptor dynamicInfo, MethodID method)
         {
@@ -248,7 +375,7 @@ namespace TypeSystem.Core
                 return null;
 
 
-            foreach (var assembly in _assemblies.Keys)
+            foreach (var assembly in _assemblies.Providers)
             {
                 var generator = assembly.GetGenericMethodGenerator(method, searchPath);
                 if (generator != null)
@@ -267,7 +394,7 @@ namespace TypeSystem.Core
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
         private GeneratorBase staticExplicitResolve(MethodID method)
         {
-            foreach (var assembly in _assemblies.Keys)
+            foreach (var assembly in _assemblies.Providers)
             {
                 var generator = assembly.GetMethodGenerator(method);
 
@@ -289,7 +416,7 @@ namespace TypeSystem.Core
             var methodSignature = Naming.ChangeDeclaringType(searchPath.Signature, method, true);
             var typePath = new PathInfo(dynamicInfo.TypeName);
 
-            foreach (var assembly in _assemblies.Keys)
+            foreach (var assembly in _assemblies.Providers)
             {
                 var implementation = assembly.GetGenericImplementation(method, searchPath, typePath);
                 if (implementation != null)
@@ -303,7 +430,7 @@ namespace TypeSystem.Core
 
         private MethodID dynamicExplicitResolve(MethodID method, TypeDescriptor dynamicInfo)
         {
-            foreach (var assembly in _assemblies.Keys)
+            foreach (var assembly in _assemblies.Providers)
             {
                 var implementation = assembly.GetImplementation(method, dynamicInfo);
                 if (implementation != null)
@@ -319,16 +446,20 @@ namespace TypeSystem.Core
 
         #region Event handlers
 
-        private void _onAssemblyAdd(AssemblyProvider assembly)
+        private void _onRootAssemblyAdd(AssemblyProvider assembly)
         {
-            _assemblyPathIndex[assembly.FullPath] = assembly;
+            //what to do with root assemblies
+        }
 
-            var typeAssembly = new TypeAssembly(this, assembly);
-            _assemblies.Add(assembly, typeAssembly);
+        private void _onRootRegistered(AssemblyProvider assembly)
+        {
             assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
 
             var services = new TypeServices(assembly, this);
             assembly.TypeServices = services;
+
+            if (AssemblyAdded != null)
+                AssemblyAdded(assembly);
         }
 
         private void _onAssemblyRemove(AssemblyProvider assembly)
@@ -339,14 +470,12 @@ namespace TypeSystem.Core
                 _onComponentRemoved(assembly, component);
             }
 
-            _assemblyPathIndex.Remove(assembly.FullPath);
-            _assemblies.Remove(assembly);
             assembly.Unload();
         }
 
         private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
         {
-            componentInfo.DefiningAssembly = _assemblies[assembly];
+            componentInfo.DefiningAssembly = _assemblies.GetTypeAssembly(assembly);
 
             _assemblyComponents.Add(assembly, componentInfo);
 
@@ -372,15 +501,5 @@ namespace TypeSystem.Core
 
         #endregion
 
-
-        internal AssemblyProvider LoadReference(object reference)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal AssemblyProvider UnLoadReference(object reference)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

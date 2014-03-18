@@ -102,7 +102,7 @@ namespace UnitTesting
             .AddToRuntime<ICollectionStringImport>()
             .AddDirectToRuntime<List<string>>()
             .AddDirectToRuntime<ICollection<string>>()
-            .RegisterAssembly(testAssembly)
+            .AddAssembly(testAssembly)
 
             
             

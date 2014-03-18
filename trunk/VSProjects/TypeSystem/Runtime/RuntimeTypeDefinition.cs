@@ -198,7 +198,7 @@ namespace TypeSystem.Runtime
                 return null;
 
             var callerId = callerContext.Name;
-            var callerAssembly = Services.DefiningAssembly(callerId);
+            var callerAssembly = Services.GetDefiningAssembly(callerId);
             return callerAssembly;
         }
 

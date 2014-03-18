@@ -60,6 +60,7 @@
     <Compile Include="Analyzing_TestUtils\EmitDirectorLoader.cs" />
     <Compile Include="Analyzing_TestUtils\Environment\SettingsProvider.cs" />
     <Compile Include="Analyzing_TestUtils\ExecutionUtils.cs" />
+    <Compile Include="AssemblyProviders_TestUtils\SimpleAssemblyFactory.cs" />
     <Compile Include="AssemblyProviders_TestUtils\Tools.cs" />
     <Compile Include="AssemblyProviders_TestUtils\SourceTest.cs" />
     <Compile Include="AssemblyProviders_TestUtils\SourceUtils.cs" />

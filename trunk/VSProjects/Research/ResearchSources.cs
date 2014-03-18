@@ -47,7 +47,7 @@ namespace Research
            .AddToRuntime<StringImport>()
            .AddWrappedGenericToRuntime(typeof(List<>))
 
-           .AddReference(cilAssembly);
+           .AddAssembly(cilAssembly);
         }
 
         static internal TestingAssembly CECIL_GeneriInterfaceResolving()
@@ -57,7 +57,7 @@ namespace Research
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunGenericIfaceTest")
                 .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
                 .AddWrappedGenericToRuntime(typeof(List<>))
-                .RegisterAssembly(cilAssembly);
+                .AddAssembly(cilAssembly);
         }
 
         static internal TestingAssembly CECIL_InterfaceResolving()
@@ -65,7 +65,7 @@ namespace Research
             var cilAssembly = new CILAssembly("Research.exe");
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunIfaceTest")
                 .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
-                .RegisterAssembly(cilAssembly);
+                .AddAssembly(cilAssembly);
         }
 
         static internal TestingAssembly MEF_Demo()
@@ -96,7 +96,7 @@ namespace Research
             .AddToRuntime<StringImport>()
             .AddWrappedGenericToRuntime(typeof(List<>))
 
-            .RegisterAssembly(testAssembly)
+            .AddAssembly(testAssembly)
             ;
         }
 
@@ -122,7 +122,7 @@ namespace Research
              .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
              .AddToRuntime<DirectoryCatalogDefinition>()
              .AddToRuntime<AssemblyCatalogDefinition>()
-             .AddReference(assembly)
+             .AddAssembly(assembly)
 
              ;
         }
@@ -149,7 +149,7 @@ namespace Research
             .AddDirectToRuntime<ICollection<string>>()
             .AddDirectToRuntime<List<string>>()
 
-            .RegisterAssembly(testAssembly)
+            .AddAssembly(testAssembly)
             ;
         }
 
@@ -189,7 +189,7 @@ namespace Research
             .AddToRuntime<SimpleStringExport>()
             .AddToRuntime<StringImport>()
 
-            .RegisterAssembly(testAssembly)
+            .AddAssembly(testAssembly)
             ;
         }
 
@@ -228,8 +228,8 @@ namespace Research
             .AddToRuntime<StringImport>()
             .AddToRuntime<SimpleStringExport>()
 
-            .RegisterAssembly(testAssembly)
-            .RegisterAssembly(testAssembly2)
+            .AddAssembly(testAssembly)
+            .AddAssembly(testAssembly2)
             ;
         }
 
@@ -258,7 +258,7 @@ namespace Research
             .AddDirectToRuntime<ICollection<string>>()
             .AddDirectToRuntime<List<string>>()
 
-            .RegisterAssembly(testAssembly)
+            .AddAssembly(testAssembly)
             ;
 
 
@@ -268,7 +268,7 @@ namespace Research
         {
             var cilAssembly = new CILAssembly("Research.exe");
             return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.CrossStart")
-                .RegisterAssembly(cilAssembly);
+                .AddAssembly(cilAssembly);
         }
 
         [CompositionPoint]
@@ -424,7 +424,7 @@ namespace Research
             .AddToRuntime<ICollectionStringImport>()
             .AddDirectToRuntime<List<string>>()
             .AddDirectToRuntime<ICollection<string>>()
-            .RegisterAssembly(testAssembly)
+            .AddAssembly(testAssembly)
             ;
         }
 

@@ -35,11 +35,6 @@ namespace MEFEditor.Plugin.Main
         private GUIManager _guiManager;
 
         /// <summary>
-        /// Modifiable collection of all loaded assemblies
-        /// </summary>
-        private AssemblyCollection _assemblies;
-
-        /// <summary>
         /// Loader used for loading assemblies into <see cref="AppDomain"/>
         /// </summary>
         private AssemblyLoader _loader;
@@ -71,8 +66,8 @@ namespace MEFEditor.Plugin.Main
             var settings = new MachineSettings();
             _machine = new Machine(settings);
 
-            _assemblies = new AssemblyCollection(settings.Runtime);
-            _loader = new AssemblyLoader(_assemblies, settings);
+            throw new NotImplementedException("Add assembly factories");
+            _loader = new AssemblyLoader(settings);
 
             loadUserExtensions();
             settings.Runtime.BuildAssembly();
@@ -170,7 +165,7 @@ namespace MEFEditor.Plugin.Main
             foreach (var project in _vs.SolutionProjects)
             {
                 var assembly = new VsProjectAssembly(project);
-                _assemblies.Add(assembly);
+                _loader.Load(project);
             }
         }
 

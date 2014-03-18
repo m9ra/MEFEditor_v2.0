@@ -19,6 +19,7 @@ using AssemblyProviders.CIL;
 
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.Analyzing_TestUtils.Environment;
+using UnitTesting.AssemblyProviders_TestUtils;
 
 namespace UnitTesting.TypeSystem_TestUtils
 {
@@ -52,9 +53,9 @@ namespace UnitTesting.TypeSystem_TestUtils
         List<Action> _afterRuntimeActions = new List<Action>();
 
         /// <summary>
-        /// Current assembly collection
+        /// Factory which will be used fo "loading" providers
         /// </summary>
-        internal readonly AssemblyCollection Assemblies;
+        SimpleAssemblyFactory _factory = new SimpleAssemblyFactory();
 
         /// <summary>
         /// Method loader used by assembly
@@ -100,10 +101,13 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             Settings = settings;
             Runtime = settings.Runtime;
-            Assemblies = new AssemblyCollection(Runtime, this);
             Machine = SettingsProvider.CreateMachine(Settings);
 
-            Loader = new AssemblyLoader(Assemblies, Settings);
+            Loader = new AssemblyLoader(Settings, _factory);
+
+            //load self
+            _factory.Register(this, this);
+            Loader.Load(this);
         }
 
         public void Build()
@@ -177,11 +181,11 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         #region Assembly reference handling
 
-        public TestingAssembly RegisterAssembly(AssemblyProvider testAssembly)
+        public TestingAssembly AddAssembly(AssemblyProvider testAssembly)
         {
             afterRuntimeAction(() =>
             {
-                TypeServices.RegisterAssembly(testAssembly);
+                addRootAssembly(testAssembly);
                 var runtime = testAssembly as RuntimeAssembly;
                 if (runtime != null)
                     runtime.BuildAssembly();
@@ -190,21 +194,11 @@ namespace UnitTesting.TypeSystem_TestUtils
             return this;
         }
 
-        public TestingAssembly AddReference(AssemblyProvider assembly)
+        public TestingAssembly RemoveAssembly(AssemblyProvider assembly)
         {
             afterRuntimeAction(() =>
             {
-                Assemblies.Add(assembly);
-            });
-
-            return this;
-        }
-
-        public TestingAssembly RemoveReference(AssemblyProvider assembly)
-        {
-            afterRuntimeAction(() =>
-            {
-                Assemblies.Remove(assembly);
+                removeRootAssembly(assembly);
             });
 
             return this;
@@ -347,6 +341,20 @@ namespace UnitTesting.TypeSystem_TestUtils
         #endregion
 
         #region Private utils
+
+        private void addRootAssembly(AssemblyProvider assembly)
+        {
+            //register assembly
+            _factory.Register(assembly.FullPath, assembly);
+
+            //load assembly
+            Loader.Load(assembly.FullPath);
+        }
+
+        private void removeRootAssembly(AssemblyProvider assembly)
+        {
+            throw new NotImplementedException();
+        }
 
         private void requireBuilded()
         {

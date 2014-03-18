@@ -12,15 +12,40 @@ namespace TypeSystem
 
     public class AppDomainServices
     {
+        /// <summary>
+        /// Manager which services are provided
+        /// </summary>
         private readonly AssembliesManager _manager;
 
-        public AssemblyCollectionBase Assemblies { get { return _manager.Assemblies; } }
-
+        /// <summary>
+        /// All available components
+        /// </summary>
         public IEnumerable<ComponentInfo> Components { get { return _manager.Components; } }
 
+        /// <summary>
+        /// All loaded assemblies
+        /// </summary>
+        public IEnumerable<AssemblyProvider> Assemblies { get { return _manager.Assemblies; } }
+
+        /// <summary>
+        /// Name of currently running transaction
+        /// </summary>
         public string RunningTransaction { get; private set; }
 
+        /// <summary>
+        /// Name of transaction progress
+        /// </summary>
         public string TransactionProgress { get; private set; }
+
+        /// <summary>
+        /// Event fired whenever new assembly is added into AppDomain
+        /// </summary>
+        public event AssemblyEvent AssemblyAdded;
+
+        /// <summary>
+        /// Event fired whenever assembly is removed from AppDomain
+        /// </summary>
+        public event AssemblyEvent AssemblyRemoved;
 
         public event ComponentEvent ComponentAdded;
 
@@ -42,6 +67,16 @@ namespace TypeSystem
             _manager.ComponentRemoved += (c) =>
             {
                 if (ComponentRemoved != null) ComponentRemoved(c);
+            };
+
+            _manager.AssemblyAdded += (a) =>
+            {
+                if (AssemblyAdded != null) AssemblyAdded(a);
+            };
+
+            _manager.AssemblyRemoved += (a) =>
+            {
+                if (AssemblyRemoved != null) AssemblyRemoved(a);
             };
         }
     }

@@ -48,10 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDomainServices.cs" />
-    <Compile Include="AssemblyCollectionBase.cs" />
     <Compile Include="AssemblyProvider.cs" />
+    <Compile Include="AssemblyProviderFactory.cs" />
     <Compile Include="ComponentInfo.cs" />
     <Compile Include="ComponentInfoBuilder.cs" />
+    <Compile Include="Core\AssembliesStorage.cs" />
     <Compile Include="Core\ReferencedAssemblies.cs" />
     <Compile Include="DirectedGenerator.cs" />
     <Compile Include="DirectGenerator.cs" />
@@ -61,7 +62,6 @@
     <Compile Include="EditView.cs" />
     <Compile Include="Runtime\Attributes.cs" />
     <Compile Include="Runtime\ObjectDefinition.cs" />
-    <Compile Include="AssemblyCollection.cs" />
     <Compile Include="TypeParsing\GenericParamTranslator.cs" />
     <Compile Include="TypeDescriptor.cs" />
     <Compile Include="TypeParsing\TypeAdapter.cs" />

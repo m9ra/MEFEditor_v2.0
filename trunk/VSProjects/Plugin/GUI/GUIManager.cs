@@ -44,12 +44,12 @@ namespace Plugin.GUI
         /// <summary>
         /// Event fired whenever new cross assembly is loaded
         /// </summary>
-        public event AssemblyAction HostAssemblyLoaded;
+        public event AssemblyEvent HostAssemblyLoaded;
 
         /// <summary>
         /// Event fired whenever previously loaded cross assembly is unloaded
         /// </summary>
-        public event AssemblyAction HostAssemblyUnLoaded;
+        public event AssemblyEvent HostAssemblyUnLoaded;
 
         /// <summary>
         /// Composition point that is currently selected
@@ -89,8 +89,8 @@ namespace Plugin.GUI
             _appDomain.ComponentAdded += onComponentAdded;
             _appDomain.ComponentRemoved += onComponentRemoved;
 
-            _appDomain.Assemblies.OnAdd += onAssemblyAdded;
-            _appDomain.Assemblies.OnRemove += onAssemblyRemoved;
+            _appDomain.AssemblyAdded += onAssemblyAdded;
+            _appDomain.AssemblyRemoved += onAssemblyRemoved;
 
             _gui.HostPathChanged += onHostPathChanged;
             _gui.RefreshClicked += forceRefresh;
