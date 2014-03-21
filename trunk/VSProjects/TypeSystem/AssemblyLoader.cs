@@ -42,7 +42,7 @@ namespace TypeSystem
         /// Load assembly defined by give assembly key into application domain
         /// </summary>
         /// <param name="assemblyKey">Key used for loading assembly</param>
-        public AssemblyProvider Load(object assemblyKey)
+        public AssemblyProvider LoadRoot(object assemblyKey)
         {
             var loadedAssembly = CreateAssembly(assemblyKey);
 
@@ -88,7 +88,10 @@ namespace TypeSystem
                 var createdAssembly = factory.Create(assemblyKey);
 
                 if (createdAssembly != null)
+                {
+                    createdAssembly.Key = assemblyKey;
                     return createdAssembly;
+                }
             }
 
             return null;

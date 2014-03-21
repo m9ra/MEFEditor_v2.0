@@ -6,47 +6,47 @@ using System.Text;
 namespace TypeSystem.Core
 {
     /// <summary>
-    /// Representation of assemblies resolved from references
+    /// Representation of resolved assembly references
     /// </summary>
-    class ReferencedAssemblies:IEnumerable<AssemblyProvider>
+    class ReferencedAssemblies : IEnumerable<object>
     {
         /// <summary>
-        /// Stored assemblies
+        /// Stored references
         /// </summary>
-        private readonly List<AssemblyProvider> _assemblies = new List<AssemblyProvider>();
+        private readonly List<object> _assemblyKeys = new List<object>();
 
         /// <summary>
-        /// Add reference to given assembly
+        /// Add assemblyKey representing referenced assembly
         /// </summary>
-        /// <param name="assembly">Assembly to be referenced</param>
-        internal void Add(AssemblyProvider assembly)
+        /// <param name="assemblyKey">Key of referenced assembly</param>
+        internal void Add(object assemblyKey)
         {
-            if (_assemblies.Contains(assembly))
+            if (_assemblyKeys.Contains(assemblyKey))
                 //assembly is already contained
                 return;
 
-            _assemblies.Add(assembly);
+            _assemblyKeys.Add(assemblyKey);
         }
 
         /// <summary>
-        /// Remove given assembly from references
+        /// Remove given reference
         /// </summary>
-        /// <param name="assembly">Assembly to be removed from references</param>
-        internal void Remove(AssemblyProvider assembly)
+        /// <param name="assemblyKey">Key representing removed assembly</param>
+        internal void Remove(object assemblyKey)
         {
-            _assemblies.Remove(assembly);
+            _assemblyKeys.Remove(assemblyKey);
         }
 
         /// </ inheritdoc>
-        public IEnumerator<AssemblyProvider> GetEnumerator()
+        public IEnumerator<object> GetEnumerator()
         {
-            return _assemblies.GetEnumerator();
+            return _assemblyKeys.GetEnumerator();
         }
 
         /// </ inheritdoc>
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return _assemblies.GetEnumerator();
+            return _assemblyKeys.GetEnumerator();
         }
     }
 }

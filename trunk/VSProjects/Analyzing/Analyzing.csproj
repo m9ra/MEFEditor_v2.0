@@ -97,7 +97,7 @@
     <Compile Include="Instance.cs" />
     <Compile Include="InstanceInfo.cs" />
     <Compile Include="LoaderBase.cs" />
-    <Compile Include="IMachineSettings.cs" />
+    <Compile Include="MachineSettingsBase.cs" />
     <Compile Include="InstructionBatch.cs" />
     <Compile Include="InstructionInfo.cs" />
     <Compile Include="Label.cs" />

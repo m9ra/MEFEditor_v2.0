@@ -165,7 +165,7 @@ namespace MEFEditor.Plugin.Main
             foreach (var project in _vs.SolutionProjects)
             {
                 var assembly = new VsProjectAssembly(project);
-                _loader.Load(project);
+                _loader.LoadRoot(project);
             }
         }
 

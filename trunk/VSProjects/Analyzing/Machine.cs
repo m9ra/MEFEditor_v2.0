@@ -22,13 +22,13 @@ namespace Analyzing
         /// <summary>
         /// Settings available for virtual machine
         /// </summary>
-        internal readonly IMachineSettings Settings;
+        internal readonly MachineSettingsBase Settings;
 
         /// <summary>
         /// Initialize machine with specified settings
         /// </summary>
         /// <param name="settings">Settings specified for machine</param>
-        public Machine(IMachineSettings settings)
+        public Machine(MachineSettingsBase settings)
         {
             Settings = settings;
         }
@@ -113,6 +113,8 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         private AnalyzingResult run(LoaderBase loader, MethodID entryMethod, params Instance[] arguments)
         {
+            Settings.FireBeforeInterpretation();
+
             _createdInstances.Clear();
             var context = new Execution.AnalyzingContext(this, loader);
 
@@ -123,20 +125,27 @@ namespace Analyzing
 
             context.FetchCall(entryMethod, arguments);
 
-            //instance processing
-            while (!context.IsExecutionEnd)
+            try
             {
-                var instruction = context.NextInstruction();
-                if (instruction == null)
+                //instance processing
+                while (!context.IsExecutionEnd)
                 {
-                    break;
+                    var instruction = context.NextInstruction();
+                    if (instruction == null)
+                    {
+                        break;
+                    }
+
+                    context.Prepare(instruction);
+                    instruction.Execute(context);
                 }
 
-                context.Prepare(instruction);
-                instruction.Execute(context);
+                return context.GetResult(new Dictionary<string, Instance>(_createdInstances));
             }
-
-            return context.GetResult(new Dictionary<string, Instance>(_createdInstances));
+            finally
+            {
+                Settings.FireAfterInterpretation();
+            }
         }
 
         /// <summary>

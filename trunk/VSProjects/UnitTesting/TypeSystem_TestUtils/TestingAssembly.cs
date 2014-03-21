@@ -107,7 +107,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
             //load self
             _factory.Register(this, this);
-            Loader.Load(this);
+            Loader.LoadRoot(this);
         }
 
         public void Build()
@@ -348,7 +348,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             _factory.Register(assembly.FullPath, assembly);
 
             //load assembly
-            Loader.Load(assembly.FullPath);
+            Loader.LoadRoot(assembly.FullPath);
         }
 
         private void removeRootAssembly(AssemblyProvider assembly)

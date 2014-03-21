@@ -13,11 +13,11 @@ namespace TypeSystem
 {
     public delegate void OnInstanceCreated(Instance instance);
 
-    public class MachineSettings : IMachineSettings
+    public class MachineSettings : MachineSettingsBase
     {
         public readonly RuntimeAssembly Runtime = new RuntimeAssembly();
 
-        public InstanceInfo GetNativeInfo(Type literalType)
+        public override InstanceInfo GetNativeInfo(Type literalType)
         {
             if (literalType.IsAssignableFrom(typeof(Array<InstanceWrap>)))
             {
@@ -27,12 +27,7 @@ namespace TypeSystem
             return TypeDescriptor.Create(literalType);
         }
 
-        public InstanceInfo GetSharedInstanceInfo(string typeFullname)
-        {
-            return TypeDescriptor.Create(typeFullname);
-        }
-
-        public bool IsTrue(Instance condition)
+        public override bool IsTrue(Instance condition)
         {
             var dirVal = condition.DirectValue;
             if (dirVal is bool)
@@ -47,7 +42,7 @@ namespace TypeSystem
             return false;
         }
 
-        public MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
+        public override MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
         {
             if (IsDirect(sharedInstanceInfo))
                 //direct types doesn't have static initializers 
@@ -57,7 +52,7 @@ namespace TypeSystem
             return Naming.Method(sharedInstanceInfo, Naming.ClassCtorName, false, new ParameterTypeInfo[] { });
         }
 
-        public bool IsDirect(InstanceInfo typeInfo)
+        public override bool IsDirect(InstanceInfo typeInfo)
         {
             return Runtime.IsDirectType(typeInfo);
         }

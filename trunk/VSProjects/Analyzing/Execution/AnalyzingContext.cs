@@ -64,7 +64,7 @@ namespace Analyzing.Execution
         /// <summary>
         /// Available machine settings
         /// </summary>
-        internal IMachineSettings Settings { get { return Machine.Settings; } }
+        internal MachineSettingsBase Settings { get { return Machine.Settings; } }
 
         public readonly Machine Machine;
 

@@ -27,8 +27,6 @@ namespace MEFEditor.Plugin
     [Guid("9358ccce-9353-4de9-9f65-28b3755709dc")]
     public class EditorWindow : ToolWindowPane
     {
-        private readonly GUIManager _manager;
-
         /// <summary>
         /// Standard constructor for the tool window.
         /// </summary>

@@ -36,6 +36,11 @@ namespace TypeSystem
         private string _fullPathMapping;
 
         /// <summary>
+        /// Key of represented assembly
+        /// </summary>
+        private object _key;
+
+        /// <summary>
         /// Event fired when type system is properly initialized for current provider.
         /// <see cref="TypeServices"/> are not available before initialization
         /// </summary>
@@ -45,6 +50,11 @@ namespace TypeSystem
         /// Event fired whenever new component is added into assembly
         /// </summary>
         internal event ComponentEvent ComponentAdded;
+
+        /// <summary>
+        /// References of represented assembly
+        /// </summary>
+        internal ReferencedAssemblies References { get { return _services.References; } }
 
         /// <summary>
         /// Event fired whenever path mapping for assembly is changed
@@ -60,6 +70,25 @@ namespace TypeSystem
         /// Fullpath representing provided assembly 
         /// </summary>
         public string FullPath { get { return getAssemblyFullPath(); } }
+
+        /// <summary>
+        /// Key that was used for assembly loading
+        /// </summary>
+        public object Key
+        {
+            get
+            {
+                if (_key == null)
+                    return this;
+
+                return _key;
+            }
+
+            internal set
+            {
+                _key = value;
+            }
+        }
 
         /// <summary>
         /// Mapping of fullpath used for provided assembly. Path mapping
@@ -93,6 +122,7 @@ namespace TypeSystem
             {
                 if (_services == null)
                     throw new InvalidOperationException("Cannot request services before theire initiliazed");
+
                 return _services;
             }
 
@@ -110,7 +140,8 @@ namespace TypeSystem
                     OnTypeSystemInitialized();
             }
         }
-                /// <summary>
+
+        /// <summary>
         /// Unload provided assembly
         /// </summary>
         internal void Unload()
@@ -179,7 +210,7 @@ namespace TypeSystem
         {
             throw new NotImplementedException();
         }
-        
+
         #endregion
 
         #region Transaction API
@@ -222,5 +253,14 @@ namespace TypeSystem
 
 
         #endregion
+
+        /// <summary>
+        /// Force to load components - suppose that no other components from this assembly are registered.
+        /// <remarks>Can be called multiple times when changes in references are registered</remarks>
+        /// </summary>
+        internal void LoadComponents()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

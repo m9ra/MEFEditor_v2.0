@@ -28,7 +28,7 @@ namespace TypeSystem
         /// <summary>
         /// References of <see cref="_owner"/> assembly
         /// </summary>
-        private readonly ReferencedAssemblies _references = new ReferencedAssemblies();
+        internal readonly ReferencedAssemblies References = new ReferencedAssemblies();
 
         /// <summary>
         /// Currently available settings
@@ -47,9 +47,9 @@ namespace TypeSystem
 
             //every assembly has to have runtime as prioritized reference
             //note that adding Runtime reference to itself is not a problem
-            _references.Add(Settings.Runtime);
+            References.Add(Settings.Runtime);
             //assembly used for resolving is also owner itself
-            _references.Add(owner);
+            References.Add(owner);
         }
 
         #region Reference API
@@ -60,8 +60,9 @@ namespace TypeSystem
         /// <param name="reference">Reference representation used for assembly loading</param>
         internal void AddReference(object reference)
         {
-            var assembly = _manager.LoadReference(reference);
-            _references.Add(assembly);
+            //loading of assemblies is processed before compositoin point start
+            References.Add(reference);
+            _manager.ReportReferenceAdded(_owner, reference);
         }
 
         /// <summary>
@@ -70,8 +71,9 @@ namespace TypeSystem
         /// <param name="reference">Reference representation used for assembly unloading</param>
         internal void RemoveReference(object reference)
         {
-            var assembly = _manager.UnLoadReference(reference);
-            _references.Remove(assembly);
+            //removed assemblies are cleaned up if needed lazily
+            References.Remove(reference);
+            _manager.ReportReferenceRemoved(_owner, reference);
         }
 
         #endregion
@@ -84,7 +86,7 @@ namespace TypeSystem
         /// <returns>Created method searcher</returns>
         public MethodSearcher CreateSearcher()
         {
-            return _manager.CreateSearcher(_references);
+            return _manager.CreateSearcher(References);
         }
 
         /// <summary>
@@ -193,7 +195,7 @@ namespace TypeSystem
         public TypeAssembly LoadAssembly(string assemblyPath)
         {
             //TODO load only for purposes of single composition point
-            return _manager.LoadAssembly(assemblyPath);
+            return _manager.LoadReferenceAssembly(assemblyPath);
         }
 
         /// <summary>

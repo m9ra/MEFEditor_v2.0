@@ -32,12 +32,12 @@ namespace TypeSystem.Core
         /// <summary>
         /// Components indexed by their defining assemblies
         /// </summary>
-        readonly MultiDictionary<AssemblyProvider, ComponentInfo> _assemblyComponents = new MultiDictionary<AssemblyProvider, ComponentInfo>();
+        private readonly MultiDictionary<AssemblyProvider, ComponentInfo> _assemblyComponents = new MultiDictionary<AssemblyProvider, ComponentInfo>();
 
         /// <summary>
         /// Components indexed by defining types
         /// </summary>
-        readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
+        private readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
 
         /// <summary>
         /// Settings available fur current AppDomain
@@ -94,6 +94,81 @@ namespace TypeSystem.Core
             _assemblies.AddRoot(settings.Runtime);
         }
 
+        #region Workflow definitions
+
+        /// <summary>
+        /// Tries to recover assembly that has been invalidated
+        /// </summary>
+        /// <param name="assemblyKey">Assembly key describes recovered assembly</param>
+        private void tryRecoverAssembly(object assemblyKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Reload assemblies that are affected by given assembly key
+        /// </summary>
+        /// <param name="key">Key that is affecting assemblies</param>
+        private void reloadAffectedAssemblies(object key)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Force reloading of given assembly (probably because of invalidation of some its references)
+        /// </summary>
+        /// <param name="assembly">Reloaded assembly</param>
+        private void reloadAssembly(AssemblyProvider assembly)
+        {
+            invalidateDefinedComponents(assembly);
+            loadComponents(assembly);
+        }
+
+        /// <summary>
+        /// Force invalidation of all components that are defined within given assembly
+        /// </summary>
+        /// <param name="assembly">Assembly which components will be invalidated</param>
+        private void invalidateDefinedComponents(AssemblyProvider assembly)
+        {
+            var components = GetComponents(assembly);
+            foreach (var component in components)
+            {
+                invalidateComponent(assembly, component);
+            }
+        }
+
+        /// <summary>
+        /// Force invalidation of given component
+        /// </summary>
+        /// <param name="definingAssembly">Assembly where component is defined</param>
+        /// <param name="component">Invalidated component</param>
+        private void invalidateComponent(AssemblyProvider definingAssembly, ComponentInfo component)
+        {
+            //behaves same as real removing from assembly provider
+            _onComponentRemoved(definingAssembly, component);
+        }
+
+        /// <summary>
+        /// Force loading components from given assembly
+        /// </summary>
+        /// <param name="assembly">Assembly which components will be loaded</param>
+        private void loadComponents(AssemblyProvider assembly)
+        {
+            assembly.LoadComponents();
+        }
+
+        /// <summary>
+        /// Completely remove assembly - probably it has been invalidated
+        /// </summary>
+        /// <param name="assembly">Removed assembly</param>
+        private void removeAssembly(AssemblyProvider assembly)
+        {
+            //this will cause unregister events on assembly
+            _assemblies.Remove(assembly);
+        }
+
+        #endregion
+
         #region Internal methods exposed for AssemblyLoader
 
 
@@ -125,15 +200,26 @@ namespace TypeSystem.Core
 
         #region Reference API
 
-        //improvements are needed
-        internal AssemblyProvider LoadReference(object reference)
+        /// <summary>
+        /// Given reference has been removed from given <see cref="AssemblyProvider"/>. Removing assembly provider
+        /// does not need this reference, however other providers may it still referenced
+        /// </summary>
+        /// <param name="assembly">Assembly which references changed</param>
+        /// <param name="reference">Removed reference</param>
+        internal void ReportReferenceRemoved(AssemblyProvider assembly, object reference)
         {
-            throw new NotImplementedException();
+            _onReferenceRemoved(assembly, reference);
         }
 
-        internal AssemblyProvider UnLoadReference(object reference)
+        /// <summary>
+        /// Given reference has been added into given <see cref="AssemblyProvider"/>. If the
+        /// referenced assembly doesnot exists it has to be loaded
+        /// </summary>
+        /// <param name="assembly">Assembly which references changed</param>
+        /// <param name="reference">Reference that has been added into assembly</param>
+        internal void ReportReferenceAdded(AssemblyProvider assembly, object reference)
         {
-            throw new NotImplementedException();
+            _onReferenceAdded(assembly, reference);
         }
 
         #endregion
@@ -157,7 +243,7 @@ namespace TypeSystem.Core
         /// <returns>Created method searcher</returns>
         internal MethodSearcher CreateSearcher(ReferencedAssemblies references)
         {
-            return new MethodSearcher(references);
+            return new MethodSearcher(resolveKeys(references));
         }
 
         /// <summary>
@@ -267,19 +353,16 @@ namespace TypeSystem.Core
         /// Load assembly for purposes of interpretation analysis. Assembly is automatically cached between multiple runs.
         /// Mapping of assemblies is take into consideration
         /// </summary>
-        /// <param name="assemblyPath">Path of loaded assembly</param>
+        /// <param name="assemblyKey">Key of loaded assembly</param>
         /// <returns>Loaded assembly if available, <c>null</c> otherwise</returns>
-        internal TypeAssembly LoadAssembly(string assemblyPath)
+        internal TypeAssembly LoadReferenceAssembly(object assemblyKey)
         {
-            //TODO performance improvement
-            //TODO loading of not registered assemblies (because of directory catalogs)
-
-            var assembly = _assemblies.AccordingMappedFullpath(assemblyPath);
-
+            var assembly = findLoadedAssembly(assemblyKey);
             if (assembly != null)
+                //assembly has been created in the past
                 return assembly;
 
-            var createdProvider = _loader.CreateAssembly(assemblyPath);
+            var createdProvider = createAssembly(assemblyKey);
             if (createdProvider == null)
                 //assembly is not available
                 return null;
@@ -320,7 +403,133 @@ namespace TypeSystem.Core
 
         #endregion
 
+        #region Event handlers
+
+        /// <summary>
+        /// Given reference has been removed from given <see cref="AssemblyProvider"/>. Removing assembly provider
+        /// does not need this reference, however other providers may it still referenced
+        /// </summary>
+        /// <param name="assembly">Assembly which references changed</param>
+        /// <param name="reference">Removed reference</param>
+        private void _onReferenceRemoved(AssemblyProvider assembly, object reference)
+        {
+            reloadAssembly(assembly);
+            throw new NotImplementedException("Info for lazy assembly unloading");
+        }
+
+        /// <summary>
+        /// Given reference has been added into given <see cref="AssemblyProvider"/>. If the
+        /// referenced assembly doesnot exists it has to be loaded
+        /// </summary>
+        /// <param name="assembly">Assembly which references changed</param>
+        /// <param name="reference">Reference that has been added into assembly</param>
+        private void _onReferenceAdded(AssemblyProvider assembly, object reference)
+        {
+            LoadReferenceAssembly(reference);
+            throw new NotImplementedException("//TODO add reloading to after transaction action - reference could be added when assembly creation or asynchronously");
+        }
+
+
+        private void _onAssemblyInvalidation(AssemblyProvider assembly)
+        {
+            //remove invalidated assembly
+            removeAssembly(assembly);
+
+            if (_assemblies.IsRequired(assembly.Key))
+                tryRecoverAssembly(assembly.Key);
+            reloadAffectedAssemblies(assembly.Key);
+        }
+
+        private void _onRootAssemblyAdd(AssemblyProvider assembly)
+        {
+            //what to do with root assemblies
+        }
+
+        private void _onRootRegistered(AssemblyProvider assembly)
+        {
+            assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
+
+            var services = new TypeServices(assembly, this);
+            assembly.TypeServices = services;
+
+
+            if (AssemblyAdded != null)
+                AssemblyAdded(assembly);
+        }
+
+        private void _onAssemblyRemove(AssemblyProvider assembly)
+        {
+            var componentsCopy = GetComponents(assembly).ToArray();
+            foreach (var component in componentsCopy)
+            {
+                _onComponentRemoved(assembly, component);
+            }
+
+            assembly.Unload();
+        }
+
+        private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
+        {
+            componentInfo.DefiningAssembly = _assemblies.GetTypeAssembly(assembly);
+
+            _assemblyComponents.Add(assembly, componentInfo);
+
+            if (_components.ContainsKey(componentInfo.ComponentType))
+                //TODO how to handle same components
+                return;
+            _components.Add(componentInfo.ComponentType, componentInfo);
+
+
+            if (ComponentAdded != null)
+                ComponentAdded(componentInfo);
+        }
+
+        private void _onComponentRemoved(AssemblyProvider assembly, ComponentInfo removedComponent)
+        {
+            _assemblyComponents.Remove(assembly, removedComponent);
+            _components.Remove(removedComponent.ComponentType);
+
+            if (ComponentRemoved != null)
+                ComponentRemoved(removedComponent);
+        }
+
+
+        #endregion
+
         #region Private utility methods
+
+
+        /// <summary>
+        /// Find assembly that is already loaded. Mapping of assembly path is taken into consideration
+        /// </summary>
+        /// <param name="assemblyKey">Key of searched assembly</param>
+        /// <returns>Found assembly if available, <c>null</c> otherwise</returns>
+        private TypeAssembly findLoadedAssembly(object assemblyKey)
+        {
+            var assemblyPath = assemblyKey as string;
+            if (assemblyPath != null)
+            {
+                //key is assembly path so it could be mapped
+                var assembly = _assemblies.AccordingMappedFullpath(assemblyPath);
+
+                if (assembly != null)
+                    return assembly;
+            }
+            else
+            {
+                var assembly = _assemblies.GetProviderFromKey(assemblyKey);
+                var typeAssembly = _assemblies.GetTypeAssembly(assembly);
+                if (typeAssembly != null)
+                    //assembly has been found
+                    return typeAssembly;
+            }
+            return null;
+        }
+
+        private AssemblyProvider createAssembly(object key)
+        {
+            return _loader.CreateAssembly(key);
+        }
 
         private InheritanceChain getChain(string typeName)
         {
@@ -442,64 +651,19 @@ namespace TypeSystem.Core
             return null;
         }
 
-        #endregion
-
-        #region Event handlers
-
-        private void _onRootAssemblyAdd(AssemblyProvider assembly)
+        private IEnumerable<AssemblyProvider> resolveKeys(IEnumerable<object> keys)
         {
-            //what to do with root assemblies
-        }
-
-        private void _onRootRegistered(AssemblyProvider assembly)
-        {
-            assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
-
-            var services = new TypeServices(assembly, this);
-            assembly.TypeServices = services;
-
-            if (AssemblyAdded != null)
-                AssemblyAdded(assembly);
-        }
-
-        private void _onAssemblyRemove(AssemblyProvider assembly)
-        {
-            var componentsCopy = GetComponents(assembly).ToArray();
-            foreach (var component in componentsCopy)
+            foreach (var key in keys)
             {
-                _onComponentRemoved(assembly, component);
+                var resolved = _assemblies.GetProviderFromKey(key);
+
+                if (resolved == null)
+                    //assembly is not available
+                    continue;
+
+                yield return resolved;
             }
-
-            assembly.Unload();
         }
-
-        private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
-        {
-            componentInfo.DefiningAssembly = _assemblies.GetTypeAssembly(assembly);
-
-            _assemblyComponents.Add(assembly, componentInfo);
-
-            if (_components.ContainsKey(componentInfo.ComponentType))
-                //TODO how to handle same components
-                return;
-            _components.Add(componentInfo.ComponentType, componentInfo);
-
-
-            if (ComponentAdded != null)
-                ComponentAdded(componentInfo);
-        }
-
-        private void _onComponentRemoved(AssemblyProvider assembly, ComponentInfo removedComponent)
-        {
-            _assemblyComponents.Remove(assembly, removedComponent);
-            _components.Remove(removedComponent.ComponentType);
-
-            if (ComponentRemoved != null)
-                ComponentRemoved(removedComponent);
-        }
-
-
         #endregion
-
     }
 }

@@ -34,15 +34,22 @@ namespace TypeSystem.Core
         readonly Dictionary<string, AssemblyProvider> _assemblyPathIndex = new Dictionary<string, AssemblyProvider>();
 
         /// <summary>
+        /// Assembly providers indexed by their keys
+        /// </summary>
+        readonly Dictionary<object, AssemblyProvider> _assemblyKeyIndex = new Dictionary<object, AssemblyProvider>();
+
+        /// <summary>
         /// All available assembly providers
         /// </summary>
         public IEnumerable<AssemblyProvider> Providers { get { return _assemblies.Keys; } }
-        
+
         internal event AssemblyEvent OnRootRemove;
 
         internal event AssemblyEvent OnRootAdd;
 
         internal event AssemblyEvent OnRegistered;
+
+        internal event AssemblyEvent OnUnRegistered;
 
         internal AssembliesStorage(AssembliesManager manager)
         {
@@ -67,21 +74,60 @@ namespace TypeSystem.Core
         }
 
         /// <summary>
-        /// Remove root assembly. If assembly is used as reference, it wont be removed totaly.
+        /// Remove root assembly. If assembly is used as reference, it wont be removed completely.
         /// </summary>
         /// <param name="assembly">Removed assembly</param>
         internal void RemoveRoot(AssemblyProvider assembly)
         {
-            if (!_rootAssemblies.Contains(assembly))
+            if (!_rootAssemblies.Remove(assembly))
                 //assembly is not root assembly
                 return;
 
-            throw new NotImplementedException();
+            //detect if root assembly is present somewhere as referenced assembly
+            var isReferenced = false;
+            foreach (var storedAssembly in _assemblies.Keys)
+            {
+                if (storedAssembly == assembly)
+                    //self referenced assembly is not important
+                    continue;
+
+                if (storedAssembly.References.Contains(assembly.Key))
+                {
+                    isReferenced = true;
+                    break;
+                }
+            }
+
+            if (!isReferenced)
+            {
+                //we can remove it completely
+                unregisterAssembly(assembly);
+            }
+
+            if (OnRootRemove != null)
+                OnRootRemove(assembly);
+        }
+
+        /// <summary>
+        /// Completely remove assembly - probably it has been invalidated
+        /// </summary>
+        /// <param name="assembly">Removed assembly</param>
+        internal void Remove(AssemblyProvider assembly)
+        {
+            unregisterAssembly(assembly);
         }
 
         internal void AddReference(AssemblyProvider createdProvider)
         {
             registerAssembly(createdProvider);
+        }
+
+        internal AssemblyProvider GetProviderFromKey(object reference)
+        {
+            AssemblyProvider provider;
+            _assemblyKeyIndex.TryGetValue(reference, out provider);
+
+            return provider;
         }
 
         internal bool ContainsRealFile(string realFile)
@@ -91,6 +137,8 @@ namespace TypeSystem.Core
 
         internal TypeAssembly AccordingMappedFullpath(string assemblyPath)
         {
+            //TODO performance improvement
+
             foreach (var assemblyPair in _assemblies)
             {
                 if (assemblyPair.Key.FullPathMapping == assemblyPath)
@@ -120,6 +168,7 @@ namespace TypeSystem.Core
             if (!_assemblies.ContainsKey(assembly))
             {
                 _assemblyPathIndex[assembly.FullPath] = assembly;
+                _assemblyKeyIndex[assembly.Key] = assembly;
 
                 var typeAssembly = new TypeAssembly(_manager, assembly);
                 _assemblies.Add(assembly, typeAssembly);
@@ -129,6 +178,28 @@ namespace TypeSystem.Core
             }
         }
 
+        /// <summary>
+        /// Unregister given assembly if needed from storage
+        /// </summary>
+        /// <param name="assembly">Unregistered assembly</param>
+        private void unregisterAssembly(AssemblyProvider assembly)
+        {
+            if (_assemblies.Remove(assembly))
+            {
+                _assemblyPathIndex.Remove(assembly.FullPath);
+                _assemblyKeyIndex.Remove(assembly.Key);
+
+                if (OnUnRegistered != null)
+                    OnUnRegistered(assembly);
+            }
+        }
+
         #endregion
+
+
+        internal bool IsRequired(object p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
