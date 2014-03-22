@@ -67,7 +67,6 @@ namespace AssemblyProviders.CILAssembly
         {
             hookChangesHandler();
             initializeReferences();
-            lookupComponents();
         }
 
         /// <summary>
@@ -121,10 +120,8 @@ namespace AssemblyProviders.CILAssembly
         /// <summary>
         /// Search components defined in _assembly and report them.
         /// </summary>
-        private void lookupComponents()
+        protected override void loadComponents()
         {
-            StartTransaction("Searching components");
-
             foreach (var type in _assembly.MainModule.GetTypes())
             {
                 if (isComponent(type))
@@ -133,8 +130,6 @@ namespace AssemblyProviders.CILAssembly
                     ComponentDiscovered(info);
                 }
             }
-
-            CommitTransaction();
         }
 
 

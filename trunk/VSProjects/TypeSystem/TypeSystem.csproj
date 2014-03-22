@@ -63,6 +63,7 @@
     <Compile Include="Runtime\Attributes.cs" />
     <Compile Include="Runtime\ObjectDefinition.cs" />
     <Compile Include="Transactions\Transaction.cs" />
+    <Compile Include="Transactions\TransactionAction.cs" />
     <Compile Include="Transactions\TransactionManager.cs" />
     <Compile Include="TypeParsing\GenericParamTranslator.cs" />
     <Compile Include="TypeDescriptor.cs" />

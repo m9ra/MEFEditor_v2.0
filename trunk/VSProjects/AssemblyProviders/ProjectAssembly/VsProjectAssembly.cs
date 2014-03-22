@@ -74,7 +74,6 @@ namespace AssemblyProviders.ProjectAssembly
         {
             hookChangesHandler();
             initializeReferences();
-            discoverComponents();
         }
 
         /// <summary>
@@ -119,23 +118,6 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Find components in VsProject
-        /// </summary>
-        private void discoverComponents()
-        {
-            StartTransaction("Searching components");
-
-            var searcher = new ComponentSearcher(TypeServices);
-            searcher.OnNamespaceEntered += reportSearchProgress;
-            searcher.OnComponentFound += ComponentDiscovered;
-
-            //search components in whole project
-            searcher.VisitProject(Project);
-
-            CommitTransaction();
-        }
-
-        /// <summary>
         /// Reports search progress to TypeSystem
         /// </summary>
         /// <param name="e">Name of currently processed namespace</param>
@@ -145,6 +127,17 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         #region Assembly provider implementation
+
+        /// <inheritdoc />
+        protected override void loadComponents()
+        {
+            var searcher = new ComponentSearcher(TypeServices);
+            searcher.OnNamespaceEntered += reportSearchProgress;
+            searcher.OnComponentFound += ComponentDiscovered;
+
+            //search components in whole project
+            searcher.VisitProject(Project);
+        }
 
         /// <inheritdoc />
         protected override string getAssemblyName()
@@ -369,5 +362,6 @@ namespace AssemblyProviders.ProjectAssembly
         #endregion
 
         public Interoperability.VisualStudioServices VS { get; set; }
+
     }
 }

@@ -290,6 +290,11 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         #region Assembly provider implementatation
 
+        /// <inheritdoc />
+        protected override void loadComponents()
+        {
+            //probably TestAssembly doesnt need to load assemblies
+        }
 
         protected override string getAssemblyFullPath()
         {

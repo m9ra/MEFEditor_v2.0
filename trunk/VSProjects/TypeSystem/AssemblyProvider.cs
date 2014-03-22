@@ -149,11 +149,34 @@ namespace TypeSystem
             //TODO what to unload
         }
 
+        /// <summary>
+        /// Force to load components - suppose that no other components from this assembly are registered.
+        /// <remarks>Can be called multiple times when changes in references are registered</remarks>
+        /// </summary>
+        internal void LoadComponents()
+        {
+            StartTransaction("Loading components");
+            try
+            {
+                loadComponents();
+            }
+            finally
+            {
+                CommitTransaction();
+            }
+        }
+
         #region Template method API
 
         protected abstract string getAssemblyFullPath();
 
         protected abstract string getAssemblyName();
+
+        /// <summary>
+        /// Force to load components - suppose that no other components from this assembly are registered.
+        /// <remarks>Can be called multiple times when changes in references are registered</remarks>
+        /// </summary>
+        protected abstract void loadComponents();
 
         public abstract GeneratorBase GetMethodGenerator(MethodID method);
 
@@ -254,13 +277,6 @@ namespace TypeSystem
 
         #endregion
 
-        /// <summary>
-        /// Force to load components - suppose that no other components from this assembly are registered.
-        /// <remarks>Can be called multiple times when changes in references are registered</remarks>
-        /// </summary>
-        internal void LoadComponents()
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

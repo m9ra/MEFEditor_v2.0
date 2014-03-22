@@ -15,12 +15,7 @@ namespace TypeSystem.Transactions
         /// Manager that creates current transaction
         /// </summary>
         private readonly TransactionManager _manager;
-
-        /// <summary>
-        /// Actions that will be processed after transaction end
-        /// </summary>
-        private readonly List<Action> _afterActions = new List<Action>();
-
+        
         /// <summary>
         /// Description of transaction that can be displayed to the user
         /// </summary>
@@ -64,14 +59,25 @@ namespace TypeSystem.Transactions
         /// <summary>
         /// End current transaction. After actions could be processed
         /// </summary>
-        public void End()
+        public void Commit()
         {
             ensureRunning();
 
             ProgressStatus = null;
             IsRunning = false;
 
-            _manager.EndTransaction(this, _afterActions);
+            _manager.EndTransaction(this);
+        }
+
+        /// <summary>
+        /// Add action that will be executed after ending of current transaction. But not necessary immediately.
+        /// If action is already included it will be not fired. If it includes another actions
+        /// it will flush them.
+        /// </summary>
+        /// <param name="afterAction">After action</param>
+        public void AddAfterAction(TransactionAction afterAction)
+        {
+            _manager.AttachAfterAction(this, afterAction);
         }
 
         /// <summary>

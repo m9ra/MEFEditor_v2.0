@@ -133,10 +133,6 @@ namespace TypeSystem.Runtime
             foreach (var dataType in _dataTypes.Values)
             {
                 buildDefinition(dataType);
-                if (dataType.ComponentInfo != null)
-                {
-                    ComponentDiscovered(dataType.ComponentInfo);
-                }
             }
             IsBuilded = true;
         }
@@ -195,6 +191,18 @@ namespace TypeSystem.Runtime
         }
 
         #region Assembly provider implementation
+
+        /// <inheritdoc />
+        protected override void loadComponents()
+        {
+            foreach (var type in _dataTypes.Values)
+            {
+                if (type.ComponentInfo != null)
+                {
+                    ComponentDiscovered(type.ComponentInfo);
+                }
+            }
+        }
 
         /// <inheritdoc />
         public override SearchIterator CreateRootIterator()
@@ -265,6 +273,11 @@ namespace TypeSystem.Runtime
             {
                 var item = new MethodItem(generator, generator.MethodInfo);
                 _runtimeMethods.AddItem(item, generator.Implemented);
+            }
+
+            if (definition.ComponentInfo != null)
+            {
+                ComponentDiscovered(definition.ComponentInfo);
             }
         }
 

@@ -8,8 +8,9 @@ using System.IO;
 
 using Utilities;
 using Analyzing;
-using TypeSystem.Runtime;
 
+using TypeSystem.Runtime;
+using TypeSystem.Transactions;
 
 namespace TypeSystem.Core
 {
@@ -23,6 +24,21 @@ namespace TypeSystem.Core
         /// Assemblies that are currently loaded
         /// </summary>
         private readonly AssembliesStorage _assemblies;
+
+        /// <summary>
+        /// Here are managed all <see cref="Transaction"/> objects
+        /// </summary>
+        private readonly TransactionManager _transactions = new TransactionManager();
+
+        /// <summary>
+        /// Stack for keeping correct ordering on system transactions
+        /// </summary>
+        private readonly Stack<Transaction> _systemTransactions = new Stack<Transaction>();
+
+        /// <summary>
+        /// Transaction used when interpreting is running
+        /// </summary>
+        private Transaction _interpetingTransaction;
 
         /// <summary>
         /// Loader that is used for creating assemblies
@@ -87,10 +103,14 @@ namespace TypeSystem.Core
 
             _assemblies = new AssembliesStorage(this);
             _assemblies.OnRootAdd += _onRootAssemblyAdd;
+            _assemblies.OnRootRemove += _onRootAssemblyAdd;
             _assemblies.OnRootRemove += _onAssemblyRemove;
-            _assemblies.OnRegistered += _onRootRegistered;
+            _assemblies.OnRegistered += _onAssemblyRegistered;
 
-            //runtime assembly has to be present
+            Settings.BeforeInterpretation += _beforeInterpretation;
+            Settings.AfterInterpretation += _afterInterpretation;
+
+            //runtime assembly has to be always present
             _assemblies.AddRoot(settings.Runtime);
         }
 
@@ -106,7 +126,7 @@ namespace TypeSystem.Core
         }
 
         /// <summary>
-        /// Reload assemblies that are affected by given assembly key
+        /// Immediately (not within after action) reload assemblies that are affected by given assembly key
         /// </summary>
         /// <param name="key">Key that is affecting assemblies</param>
         private void reloadAffectedAssemblies(object key)
@@ -166,6 +186,63 @@ namespace TypeSystem.Core
             //this will cause unregister events on assembly
             _assemblies.Remove(assembly);
         }
+
+        #endregion
+
+        #region Workflow transaction definitions
+
+        /// <summary>
+        /// Add reload assembly action to after actions of current transaction
+        /// </summary>
+        /// <param name="assembly">Assembly that will be reloaded</param>
+        private void after_reloadAssembly(AssemblyProvider assembly)
+        {
+            addAfterAction(() => reloadAssembly(assembly), "ReloadAssembly", includedByReload);
+        }
+
+        /// <summary>
+        /// Add components load action to after actions of current transaction
+        /// </summary>
+        /// <param name="assembly">Assembly which components will be loaded</param>
+        private void after_loadComponents(AssemblyProvider assembly)
+        {
+            addAfterAction(() => loadComponents(assembly), "LoadComponents", includedByComponentsLoad);
+        }
+
+        /// <summary>
+        /// Add after action to current transaction
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="name"></param>
+        /// <param name="predicate"></param>
+        /// <param name="keys"></param>
+        private void addAfterAction(Action action, string name, IsIncludedPredicate predicate, params object[] keys)
+        {
+            var transactionAction = new TransactionAction(action, name, predicate, keys);
+            _transactions.CurrentTransaction.AddAfterAction(transactionAction);
+        }
+
+        #region Transaction dependencies
+
+        private bool includedByReload(TransactionAction action)
+        {
+            return
+                includedByComponentsInvalidation(action) ||
+                includedByComponentsLoad(action);
+        }
+
+        private bool includedByComponentsInvalidation(TransactionAction action)
+        {
+            //TODO also include all component changes
+            return action.Name == "InvalidateComponents";
+        }
+
+        private bool includedByComponentsLoad(TransactionAction action)
+        {
+            return action.Name == "LoadComponents";
+        }
+
+        #endregion
 
         #endregion
 
@@ -352,6 +429,7 @@ namespace TypeSystem.Core
         /// <summary>
         /// Load assembly for purposes of interpretation analysis. Assembly is automatically cached between multiple runs.
         /// Mapping of assemblies is take into consideration
+        /// <remarks>TODO: Reloading affected assemblies is not processed. Should be?</remarks>
         /// </summary>
         /// <param name="assemblyKey">Key of loaded assembly</param>
         /// <returns>Loaded assembly if available, <c>null</c> otherwise</returns>
@@ -405,6 +483,19 @@ namespace TypeSystem.Core
 
         #region Event handlers
 
+        private void _beforeInterpretation()
+        {
+            _interpetingTransaction = _transactions.StartNew("Interpreting transaction");
+        }
+
+        private void _afterInterpretation()
+        {
+            _interpetingTransaction.Commit();
+
+            _interpetingTransaction = null;
+        }
+
+
         /// <summary>
         /// Given reference has been removed from given <see cref="AssemblyProvider"/>. Removing assembly provider
         /// does not need this reference, however other providers may it still referenced
@@ -413,8 +504,7 @@ namespace TypeSystem.Core
         /// <param name="reference">Removed reference</param>
         private void _onReferenceRemoved(AssemblyProvider assembly, object reference)
         {
-            reloadAssembly(assembly);
-            throw new NotImplementedException("Info for lazy assembly unloading");
+            after_reloadAssembly(assembly);
         }
 
         /// <summary>
@@ -426,9 +516,8 @@ namespace TypeSystem.Core
         private void _onReferenceAdded(AssemblyProvider assembly, object reference)
         {
             LoadReferenceAssembly(reference);
-            throw new NotImplementedException("//TODO add reloading to after transaction action - reference could be added when assembly creation or asynchronously");
+            after_reloadAssembly(assembly);
         }
-
 
         private void _onAssemblyInvalidation(AssemblyProvider assembly)
         {
@@ -437,6 +526,7 @@ namespace TypeSystem.Core
 
             if (_assemblies.IsRequired(assembly.Key))
                 tryRecoverAssembly(assembly.Key);
+
             reloadAffectedAssemblies(assembly.Key);
         }
 
@@ -445,16 +535,30 @@ namespace TypeSystem.Core
             //what to do with root assemblies
         }
 
-        private void _onRootRegistered(AssemblyProvider assembly)
+        private void _onRootAssemblyRemoved(AssemblyProvider assembly)
         {
+            //what to do with root assemblies
+        }
+
+        private void _onAssemblyRegistered(AssemblyProvider assembly)
+        {
+            startTransaction("Registering assembly: " + assembly.Name);
             assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
 
             var services = new TypeServices(assembly, this);
             assembly.TypeServices = services;
+            
+            after_loadComponents(assembly);
 
-
-            if (AssemblyAdded != null)
-                AssemblyAdded(assembly);
+            try
+            {
+                if (AssemblyAdded != null)
+                    AssemblyAdded(assembly);
+            }
+            finally
+            {
+                commitTransaction();
+            }
         }
 
         private void _onAssemblyRemove(AssemblyProvider assembly)
@@ -496,6 +600,30 @@ namespace TypeSystem.Core
 
         #endregion
 
+        #region Transaction system
+
+        /// <summary>
+        /// Strat transaction with given description. Expect safe usage - for TypeSystem purposes only
+        /// </summary>
+        /// <param name="description">Description of started transaction</param>
+        private void startTransaction(string description)
+        {
+            var transaction = _transactions.StartNew(description);
+            _systemTransactions.Push(transaction);
+        }
+
+        /// <summary>
+        /// Commit lastly opened system transaction. Has to be called correctly for every 
+        /// <see cref="startTransaction"/> call.
+        /// </summary>
+        private void commitTransaction()
+        {
+            var transaction = _systemTransactions.Pop();
+            transaction.Commit();
+        }
+
+        #endregion
+
         #region Private utility methods
 
 
@@ -528,7 +656,8 @@ namespace TypeSystem.Core
 
         private AssemblyProvider createAssembly(object key)
         {
-            return _loader.CreateAssembly(key);
+            var assembly = _loader.CreateAssembly(key);
+            return assembly;
         }
 
         private InheritanceChain getChain(string typeName)

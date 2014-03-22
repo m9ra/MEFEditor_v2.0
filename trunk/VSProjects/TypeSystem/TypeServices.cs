@@ -60,8 +60,11 @@ namespace TypeSystem
         /// <param name="reference">Reference representation used for assembly loading</param>
         internal void AddReference(object reference)
         {
-            //loading of assemblies is processed before compositoin point start
             References.Add(reference);
+
+            //report reference add to manager - it will load coresponding assembly if possible
+            //if loading fails reference will be added on registered change from outside
+            //will cause reloading components
             _manager.ReportReferenceAdded(_owner, reference);
         }
 
@@ -71,8 +74,10 @@ namespace TypeSystem
         /// <param name="reference">Reference representation used for assembly unloading</param>
         internal void RemoveReference(object reference)
         {
-            //removed assemblies are cleaned up if needed lazily
+            //assembly corresponding to referece is cleaned up if needed lazily
             References.Remove(reference);
+
+            //will cause reloading components
             _manager.ReportReferenceRemoved(_owner, reference);
         }
 

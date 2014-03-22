@@ -67,10 +67,12 @@ namespace TypeSystem.Core
                 //assembly is already contained
                 return;
 
+
             registerAssembly(assembly);
 
             if (OnRootAdd != null)
                 OnRootAdd(assembly);
+
         }
 
         /// <summary>
