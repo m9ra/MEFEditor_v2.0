@@ -77,6 +77,8 @@ namespace TypeSystem.Transactions
         /// <param name="afterAction">After action</param>
         public void AddAfterAction(TransactionAction afterAction)
         {
+            ensureRunning();
+
             _manager.AttachAfterAction(this, afterAction);
         }
 

@@ -65,9 +65,11 @@ namespace MEFEditor.Plugin.Main
         {
             var settings = new MachineSettings();
             _machine = new Machine(settings);
-
-            throw new NotImplementedException("Add assembly factories");
-            _loader = new AssemblyLoader(settings);
+                        
+            _loader = new AssemblyLoader(settings,
+                new AssemblyProviders.CILAssembly.CILAssemblyFactory(),
+                new AssemblyProviders.ProjectAssembly.ProjectAssemblyFactory()
+                );
 
             loadUserExtensions();
             settings.Runtime.BuildAssembly();

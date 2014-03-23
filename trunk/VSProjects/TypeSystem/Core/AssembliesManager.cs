@@ -150,8 +150,8 @@ namespace TypeSystem.Core
         /// <param name="assembly">Assembly which components will be invalidated</param>
         private void invalidateDefinedComponents(AssemblyProvider assembly)
         {
-            var components = GetComponents(assembly);
-            foreach (var component in components)
+            var componentsCopy = GetComponents(assembly).ToArray();
+            foreach (var component in componentsCopy)
             {
                 invalidateComponent(assembly, component);
             }

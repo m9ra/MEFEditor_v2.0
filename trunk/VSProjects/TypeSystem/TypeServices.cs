@@ -49,7 +49,7 @@ namespace TypeSystem
             //note that adding Runtime reference to itself is not a problem
             References.Add(Settings.Runtime);
             //assembly used for resolving is also owner itself
-            References.Add(owner);
+            References.Add(owner.Key);
         }
 
         #region Reference API

@@ -32,6 +32,9 @@ namespace TypeSystem.Transactions
 
         internal void EndTransaction(Transaction transaction)
         {
+            if (_transactionStack.Pop() != transaction)
+                throw new NotImplementedException("Auto commit transaction stack unwiding");
+            
             var afterActions = _activeTransactions[transaction];
             _activeTransactions.Remove(transaction);
 

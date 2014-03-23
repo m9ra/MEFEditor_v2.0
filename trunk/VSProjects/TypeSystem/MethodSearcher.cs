@@ -25,13 +25,17 @@ namespace TypeSystem
             }
         }
 
-        public void ExtendName(params string[] suffixes)
+        /// <summary>
+        /// Extend name according to possible suffixes. Suffixes are searched in paralel
+        /// </summary>
+        /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel</param>
+        public void ExtendName(params string[] possibleSuffixes)
         {
             var currentIterator = _activeIteartors.First;
 
             while (currentIterator != null)
             {
-                foreach (var suffix in suffixes)
+                foreach (var suffix in possibleSuffixes)
                 {
                     var newIt = currentIterator.Value.ExtendName(suffix);
                     if (newIt != null)
@@ -44,6 +48,10 @@ namespace TypeSystem
             }
         }
 
+        /// <summary>
+        /// Dispatch currently reached locations according to given name
+        /// </summary>
+        /// <param name="searchedMethod">Method that is searched at reached locations</param>
         public void Dispatch(string searchedMethod)
         {
             foreach (var iterator in _activeIteartors)
@@ -81,6 +89,10 @@ namespace TypeSystem
         /// <returns>Extended search iterator</returns>
         public abstract SearchIterator ExtendName(string suffix);
 
+        /// <summary>
+        /// Dispatch currently reached locations according to given name
+        /// </summary>
+        /// <param name="searchedMethod">Method that is searched at reached locations</param>
         public abstract IEnumerable<TypeMethodInfo> FindMethods(string searchedName);
     }
 }

@@ -31,6 +31,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
         /// <summary>
         /// Nodes, which are initial positions of current iterator
+        /// <remarks>If no position is specified - contains null</remarks>
         /// </summary>
         private readonly IEnumerable<CodeElement> _currentNodes;
 
@@ -43,37 +44,26 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         internal CodeElementIterator(VsProjectAssembly assembly)
         {
             _assembly = assembly;
-
-            var currentNodes = new List<CodeElement>();
-
-            foreach (CodeElement element in assembly.CodeModel.CodeElements)
-            {
-                currentNodes.Add(element);
-            }
-
-            _currentNodes = currentNodes;
+            _currentNodes = null;
         }
 
         /// <inheritdoc />
         public override SearchIterator ExtendName(string suffix)
         {
-            var actualNodes = new List<CodeElement>();
-            foreach (var currentNode in _currentNodes)
+            var selectedNodes = new List<CodeElement>();
+            foreach (var actualNode in getActualNodes())
             {
-                foreach (CodeElement child in currentNode.Children())
+                //TODO is name in correct form for generics?
+                if (actualNode.Name == suffix)
                 {
-                    //TODO is name in correct form ?
-                    if (child.Name == suffix)
-                    {
-                        actualNodes.Add(child);
-                    }
+                    selectedNodes.Add(actualNode);
                 }
             }
 
-            if (actualNodes.Count == 0)
+            if (selectedNodes.Count == 0)
                 return null;
 
-            return new CodeElementIterator(actualNodes, _assembly);
+            return new CodeElementIterator(selectedNodes, _assembly);
         }
 
         /// <inheritdoc />
@@ -87,21 +77,63 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             }
         }
 
+        private IEnumerable<CodeElement> getActualNodes()
+        {
+            if (_currentNodes == null)
+            {
+                //position has not been currently set - use root nodes
+                foreach (CodeElement node in _assembly.CodeModel.CodeElements)
+                {
+                    yield return node;
+                }
+            }
+            else
+            {
+                //we already have initial position
+                foreach (var node in _currentNodes)
+                {
+                    foreach (CodeElement child in node.Children())
+                    {
+                        yield return child;
+                    }
+                }
+            }
+        }
+
         private IEnumerable<MethodItem> getMethodItems(string searchedName)
         {
             var methods = new List<MethodItem>();
 
-            foreach (var currentNode in _currentNodes)
+            foreach (CodeElement child in getActualNodes())
             {
-                foreach (CodeElement child in currentNode.Children())
-                {
-                    var methodNode = child as CodeFunction;
-                    if (methodNode == null)
-                        continue;
+                var methodNode = child as CodeFunction;
+                if (methodNode == null)
+                    continue;
 
-                    var method = MethodBuilder.Build(child, _assembly);
-                    methods.Add(method);
+                if (searchedName == Naming.ClassCtorName || searchedName == Naming.CtorName)
+                {
+                    var kind = methodNode.FunctionKind;
+                    if (kind != vsCMFunction.vsCMFunctionConstructor)
+                    {
+                        //has to be constructor
+                        continue;
+                    }
                 }
+                else
+                {
+                    //TODO form of generics
+                    //name has to match
+                    if (methodNode.Name != searchedName)
+                        //name doesnt match
+                        continue;
+                }
+
+                var method = MethodBuilder.Build(child, _assembly);
+                if (method.Info.MethodName != searchedName)
+                    //not everything could be filtered by CodeFunction testing
+                    continue;
+
+                methods.Add(method);
             }
 
             return methods;
