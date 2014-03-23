@@ -104,27 +104,25 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <param name="forceMany">Determine that explicit <c>AllowMany</c> is used</param>
         private void addImport(AttributeInfo importAttrbute, bool forceMany = false)
         {
-            var property = getProperty(importAttrbute.Element);
-            if (property == null)
+            var builder = getOrCreateCurrentBuilder();
+
+            MethodID importMethodID;
+            TypeDescriptor importType;
+            if (!getImportTarget(importAttrbute.Element, builder.ComponentType, out importMethodID, out importType))
             {
                 //TODO log that import attribute cannot be handled
                 return;
             }
 
-            var name = property.Name;
-            var type = property.Type;
             var explicitContract = importAttrbute.GetArgument(0);
 
             var allowMany = forceMany || importAttrbute.IsTrue("AllowMany");
             var allowDefault = forceMany || importAttrbute.IsTrue("AllowDefault");
 
-            var importTypeDesciptor = MethodBuilder.CreateDescriptor(type);
-            var importTypeInfo = ImportTypeInfo.ParseFromMany(importTypeDesciptor, allowMany, _services);
+            var importTypeInfo = ImportTypeInfo.ParseFromMany(importType, allowMany, _services);
             var contract = explicitContract == null ? importTypeInfo.ItemType.TypeName : explicitContract;
 
-            var builder = getOrCreateCurrentBuilder();
-            var setterID = Naming.Method(builder.ComponentType, Naming.SetterPrefix + name, false, ParameterTypeInfo.Create("p", importTypeDesciptor));
-            builder.AddImport(importTypeInfo, setterID, contract, allowMany, allowDefault);
+            builder.AddImport(importTypeInfo, importMethodID, contract, allowMany, allowDefault);
         }
 
         /// <summary>
@@ -133,41 +131,19 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <param name="exportAttrbiute">Attribute defining export</param>
         private void addExport(AttributeInfo exportAttrbiute)
         {
-            var property = getProperty(exportAttrbiute.Element);
-
-            var isSelfExport = false;
-            CodeClass selfClass=null;
-            if (property == null)
-            {
-                selfClass = exportAttrbiute.Element.Parent as CodeClass;
-                if (selfClass == null)
-                {
-                    //TODO log that export attribute cannot be handled
-                    return;
-                }
-
-                isSelfExport = true;
-            }
-
-
             var builder = getOrCreateCurrentBuilder();
 
             TypeDescriptor exportTypeDescriptor;
-            MethodID exportID=null;
-            if (isSelfExport)
+            MethodID exportMethodID;
+            if (!getExportTarget(exportAttrbiute.Element, builder.ComponentType, out exportMethodID, out exportTypeDescriptor))
             {
-                exportTypeDescriptor = MethodBuilder.CreateDescriptor(selfClass);
-            }
-            else
-            {
-                var name = property.Name;
-                var type = property.Type;
-                exportTypeDescriptor = MethodBuilder.CreateDescriptor(type);
-                exportID= Naming.Method(builder.ComponentType, Naming.GetterPrefix + name, false, ParameterTypeInfo.NoParams);
+                //TODO log that export attribute cannot be handled
+                return;
             }
 
             var explicitContract = exportAttrbiute.GetArgument(0);
             var contract = explicitContract == null ? exportTypeDescriptor.TypeName : explicitContract;
+            var isSelfExport = exportMethodID == null;
 
             if (isSelfExport)
             {
@@ -175,7 +151,86 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             }
             else
             {
-                builder.AddExport(exportTypeDescriptor, exportID, contract);
+                builder.AddExport(exportTypeDescriptor, exportMethodID, contract);
+            }
+        }
+
+        /// <summary>
+        /// Get export target description where given attribute is defined
+        /// </summary>
+        /// <param name="attribute">Export attribute</param>
+        /// <param name="componentType">Type of defining component</param>
+        /// <param name="exportMethodID">Id of method that can be used for export. It is <c>null</c> for self exports</param>
+        /// <param name="exportType">Type of defined export</param>
+        /// <returns><c>true</c> if target has been succesfully found, <c>false</c> otherwise</returns>
+        private bool getExportTarget(CodeAttribute2 attribute, TypeDescriptor componentType, out MethodID exportMethodID, out TypeDescriptor exportType)
+        {
+            var target = attribute.Parent as CodeElement;
+
+            exportMethodID = null;
+            exportType = null;
+
+            var name = target.Name;
+
+            switch (target.Kind)
+            {
+                case vsCMElement.vsCMElementVariable:
+                    //variables are represented by properties within type system
+                    exportMethodID = Naming.Method(componentType, Naming.GetterPrefix + name, false, ParameterTypeInfo.NoParams);
+                    exportType = MethodBuilder.CreateDescriptor((target as CodeVariable).Type);
+                    return true;
+
+                case vsCMElement.vsCMElementProperty:
+                    exportMethodID = Naming.Method(componentType, Naming.GetterPrefix + name, false, ParameterTypeInfo.NoParams);
+                    exportType = MethodBuilder.CreateDescriptor((target as CodeProperty).Type);
+                    return true;
+
+                case vsCMElement.vsCMElementClass:
+                    //self export doesnt need exportMethodID
+                    exportType = MethodBuilder.CreateDescriptor(target as CodeClass);
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Get import target description where given attribute is defined
+        /// </summary>
+        /// <param name="attribute">Import attribute</param>
+        /// <param name="componentType">Type of defining component</param>
+        /// <param name="importMethodID">Id of method that can be used for import. It is <c>null</c> for self exports</param>
+        /// <param name="importType">Type of defined export</param>
+        /// <returns><c>true</c> if target has been succesfully found, <c>false</c> otherwise</returns>
+        private bool getImportTarget(CodeAttribute2 attribute, TypeDescriptor componentType, out MethodID importMethodID, out TypeDescriptor importType)
+        {
+            var target = attribute.Parent as CodeElement;
+
+            importMethodID = null;
+            importType = null;
+
+            var name = target.Name;
+
+            switch (target.Kind)
+            {
+                case vsCMElement.vsCMElementVariable:
+                    //variables are represented by properties within type system
+                    importType = MethodBuilder.CreateDescriptor((target as CodeVariable).Type);
+                    importMethodID = Naming.Method(componentType, Naming.SetterPrefix + name, false,
+                        ParameterTypeInfo.Create("value", importType)
+                        );
+                    return true;
+
+                case vsCMElement.vsCMElementProperty:
+                    importType = MethodBuilder.CreateDescriptor((target as CodeProperty).Type);
+                    importMethodID = Naming.Method(componentType, Naming.SetterPrefix + name, false,
+                        ParameterTypeInfo.Create("value", importType)
+                        );
+                    return true;
+
+                default:
+                    return false;
             }
         }
 
@@ -206,6 +261,16 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         private CodeProperty getProperty(CodeAttribute attribute)
         {
             return attribute.Parent as CodeProperty;
+        }
+
+        /// <summary>
+        /// Get <see cref="CodeVariable"/> where given attribute is defined
+        /// </summary>
+        /// <param name="attribute">Attribute which property is needed</param>
+        /// <returns><see cref="CodeVariable"/> where given attribute is defined, <c>null</c> if there is no such variable</returns>
+        private CodeVariable getProperty(CodeVariable attribute)
+        {
+            return attribute.Parent as CodeVariable;
         }
 
         /// <summary>

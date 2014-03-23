@@ -39,6 +39,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 case vsCMElement.vsCMElementImportStmt:
                     VisitImport(e as CodeImport);
                     break;
+                case vsCMElement.vsCMElementVariable:
+                    VisitVariable(e as CodeVariable);
+                    break;
+                case vsCMElement.vsCMElementProperty:
+                    VisitProperty(e as CodeProperty);
+                    break;
                 default:
                     VisitUnknown(e);
                     break;
@@ -55,6 +61,21 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             //nothing to do
         }
 
+        public virtual void VisitProperty(CodeProperty e)
+        {
+            foreach (CodeElement child in e.Children)
+            {
+                VisitElement(child);
+            }
+        }
+
+        public virtual void VisitVariable(CodeVariable e)
+        {
+            foreach (CodeElement child in e.Children)
+            {
+                VisitElement(child);
+            }
+        }
 
         public virtual void VisitFunction(CodeFunction2 e)
         {
