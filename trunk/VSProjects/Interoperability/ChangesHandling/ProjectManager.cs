@@ -45,6 +45,22 @@ namespace Interoperability
         }
 
         /// <summary>
+        /// Get <see cref="FileItemManager"/> watching given item
+        /// </summary>
+        /// <param name="item">Item which manager is needed</param>
+        /// <returns>Founded <see cref="FileItemManager"/> if available, or new one that is created</returns>
+        internal FileItemManager GetFileManager(ProjectItem item)
+        {
+            FileItemManager fileManager;
+            if (!_watchedItems.TryGetValue(item, out fileManager))
+            {
+                fileManager = registerItem(item);
+            }
+
+            return fileManager;
+        }
+
+        /// <summary>
         /// Register all items that are contained within project
         /// </summary>
         internal void RegisterAll()
@@ -75,7 +91,7 @@ namespace Interoperability
         /// </summary>
         /// <param name="item">Project item that is added</param>
         internal void RegisterAdd(ProjectItem item)
-        { 
+        {
             registerItem(item);
         }
 
@@ -118,7 +134,7 @@ namespace Interoperability
         }
 
         #region Private utilities
-        
+
         /// <summary>
         /// Register given <see cref="ProjectItem"/>
         /// </summary>
@@ -153,6 +169,5 @@ namespace Interoperability
         }
 
         #endregion
-
     }
 }

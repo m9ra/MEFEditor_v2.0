@@ -11,10 +11,10 @@ using VSLangProj80;
 
 using Analyzing;
 using TypeSystem;
+using Interoperability;
 
 using AssemblyProviders.ProjectAssembly.Traversing;
 using AssemblyProviders.ProjectAssembly.MethodBuilding;
-
 
 namespace AssemblyProviders.ProjectAssembly
 {
@@ -44,11 +44,18 @@ namespace AssemblyProviders.ProjectAssembly
         internal Project Project { get { return _assemblyProject.Project; } }
 
         /// <summary>
+        /// Services that are available for assembly
+        /// </summary>
+        internal readonly VisualStudioServices VS;
+
+        /// <summary>
         /// Initialize new instance of <see cref="VsProjectAssembly"/> from given <see cref="Project"/>
         /// </summary>
         /// <param name="assemblyProject">Project that will be represented by initialized assembly</param>
-        public VsProjectAssembly(Project assemblyProject)
+        /// <param name="vs"></param>
+        public VsProjectAssembly(Project assemblyProject, VisualStudioServices vs)
         {
+            VS = vs;
             _assemblyProject = assemblyProject.Object as VSProject;
             _searcher = new CodeElementSearcher(this);
 
@@ -65,6 +72,18 @@ namespace AssemblyProviders.ProjectAssembly
             //TODO make it language independant
 
             CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
+        }
+
+        /// <summary>
+        /// Get namespaces that are valid for given <see cref="CodeFunction"/>
+        /// <remarks>Note that class where method is defined also belongs to namespace</remarks>
+        /// </summary>
+        /// <param name="method">Method which namespaces will be returned</param>
+        /// <returns>Validat namespaces for given method</returns>
+        internal IEnumerable<string> GetNamespaces(CodeFunction method)
+        {
+            var namespaces = VS.GetNamespaces(method.ProjectItem);
+            return namespaces;
         }
 
         /// <summary>
@@ -360,8 +379,6 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         #endregion
-
-        public Interoperability.VisualStudioServices VS { get; set; }
 
     }
 }

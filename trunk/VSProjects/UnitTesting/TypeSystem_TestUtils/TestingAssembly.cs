@@ -277,7 +277,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             if (parsedGenerator == null)
                 return "Source not available for " + method;
 
-            return parsedGenerator.Source.Code(view);
+            return parsedGenerator.Source.GetCode(view);
         }
 
         public void SetSource(MethodID method, string sourceCode)

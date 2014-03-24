@@ -162,6 +162,24 @@ namespace Interoperability
             _projectItemEvents.ItemRemoved += onProjectItemRemoved;
         }
 
+        #region Exposed services
+
+        /// <summary>
+        /// Get namespaces that are valid for given <see cref="ProjectItem"/>        
+        /// </summary>
+        /// <param name="projectItem">Project item</param>
+        /// <returns>Valid namespaces for given projectItem</returns>
+        public IEnumerable<string> GetNamespaces(ProjectItem projectItem)
+        {
+            var manager = findFileManager(projectItem);
+            if (manager == null)
+                return new string[0];
+
+            return manager.Namespaces;
+        }
+        
+        #endregion
+
         #region Visual Studio Event handlers
 
         /// <summary>
@@ -177,7 +195,7 @@ namespace Interoperability
             if (_watchedProjects.ContainsKey(addedProject))
                 //project is already contained
                 return;
-            
+
             var manager = new ProjectManager(addedProject, this);
             _watchedProjects.Add(addedProject, manager);
 
@@ -217,7 +235,7 @@ namespace Interoperability
         /// <param name="item">Removed project item</param>
         private void onProjectItemRemoved(ProjectItem item)
         {
-            var manager = findManager(item);
+            var manager = findProjectManager(item);
             if (manager == null)
                 //nothing to do
                 return;
@@ -232,7 +250,7 @@ namespace Interoperability
         /// <param name="item">Added project item</param>
         private void onProjectItemAdded(ProjectItem item)
         {
-            var manager = findManager(item);
+            var manager = findProjectManager(item);
             if (manager == null)
                 //nothing to do
                 return;
@@ -344,12 +362,12 @@ namespace Interoperability
         #endregion
 
         /// <summary>
-        /// Find <see cref="ProjectManager"/> according to given <see cref="ProjectItem"/>.
+        /// Find <see cref="ProjectManager"/> containing given <see cref="ProjectItem"/>.
         /// If manager cannot be found, log entries are emitted
         /// </summary>
         /// <param name="item">Item which manager has to be found</param>
-        /// <returns></returns>
-        private ProjectManager findManager(ProjectItem item)
+        /// <returns>Found <see cref="ProjectManager"/> if available, <c>null</c> otherwise</returns>
+        private ProjectManager findProjectManager(ProjectItem item)
         {
             var containingProject = item.ContainingProject;
             if (containingProject == null)
@@ -364,6 +382,21 @@ namespace Interoperability
                 Log.Message("Project for project item {0} is not known");
             }
             return manager;
+        }
+
+        /// <summary>
+        /// Find <see cref="FileItemManager"/> according to given <see cref="ProjectItem"/>.
+        /// If manager cannot be found, log entries are emitted
+        /// </summary>
+        /// <param name="item">Item which manager has to be found</param>
+        /// <returns>Found <see cref="FileItemManager"/> if available, <c>null</c> otherwise</returns>
+        private FileItemManager findFileManager(ProjectItem item)
+        {
+            var projectManager = findProjectManager(item);
+            if (projectManager == null)
+                return null;
+
+            return projectManager.GetFileManager(item);
         }
 
         /// <summary>

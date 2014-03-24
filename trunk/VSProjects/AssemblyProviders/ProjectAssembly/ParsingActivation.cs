@@ -29,8 +29,13 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         internal readonly IEnumerable<string> GenericParameters;
 
+        /// <summary>
+        /// Namespaces that are available for current method
+        /// </summary>
+        internal readonly IEnumerable<string> Namespaces;
 
-        public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters)
+
+        public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters, IEnumerable<string> namespaces = null)
         {
             if (sourceCode == null)
                 throw new ArgumentNullException("sourceCode");
@@ -41,11 +46,17 @@ namespace AssemblyProviders.ProjectAssembly
             if (genericParameters == null)
                 throw new ArgumentNullException("genericParameterrs");
 
+            if (namespaces == null)
+                namespaces = new string[0];
+
             SourceCode = sourceCode;
             Method = method;
 
             //create defensive copy
             GenericParameters = genericParameters.ToArray();
+
+            //TODO is defensive copy needed?
+            Namespaces = namespaces;    
         }
     }
 }

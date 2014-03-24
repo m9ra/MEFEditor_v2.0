@@ -50,6 +50,9 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <inheritdoc />
         public override SearchIterator ExtendName(string suffix)
         {
+            if (suffix == "")
+                return this;
+
             var selectedNodes = new List<CodeElement>();
             foreach (var actualNode in getActualNodes())
             {

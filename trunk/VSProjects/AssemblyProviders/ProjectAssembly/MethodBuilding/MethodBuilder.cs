@@ -8,6 +8,7 @@ using EnvDTE;
 using EnvDTE80;
 
 using TypeSystem;
+using Interoperability;
 
 using AssemblyProviders.ProjectAssembly.Traversing;
 
@@ -68,11 +69,12 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         internal static MethodItem BuildFrom(CodeFunction element, VsProjectAssembly declaringAssembly)
         {
             var sourceCode = GetSourceCode(element);
+            var namespaces = declaringAssembly.GetNamespaces(element);
             var methodInfo = CreateMethodInfo(element);
 
             var fullname = element.FullName;
             var genericPath = new PathInfo(fullname);
-            var activation = new ParsingActivation(sourceCode, methodInfo, genericPath.GenericArgs);
+            var activation = new ParsingActivation(sourceCode, methodInfo, genericPath.GenericArgs, namespaces);
 
             var generator = new SourceMethodGenerator(activation, declaringAssembly.ParsingProvider);
 
@@ -147,6 +149,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
             return "{" + body;
         }
+               
 
         /// <summary>
         /// Create <see cref="TypeDescriptor"/> from given element
@@ -182,7 +185,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var fullname = typeNode.FullName;
 
-           return ConvertToDescriptor(fullname);
+            return ConvertToDescriptor(fullname);
         }
 
         /// <summary>
@@ -192,9 +195,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns></returns>
         internal static TypeDescriptor ConvertToDescriptor(string fullname)
         {
-           // throw new NotImplementedException("TODO check fullname form especialy for generics");
+            // throw new NotImplementedException("TODO check fullname form especialy for generics");
             var descriptor = TypeDescriptor.Create(fullname);
-            
+
             return descriptor;
         }
 

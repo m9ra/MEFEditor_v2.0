@@ -63,5 +63,52 @@ namespace Interoperability
                     return element.Children;
             }
         }
+
+        /// <summary>
+        /// Get <see cref="CodeElement"/> from Parent property. Considers only named code constructs.
+        /// </summary>
+        /// <param name="element">Element which parent is needed</param>
+        /// <returns>Parent of given element</returns>
+        public static CodeElement Parent(this CodeElement element)
+        {
+            var parent = getParent(element) as CodeElement;
+            return parent;
+        }
+
+        /// <summary>
+        /// Get non-caseted <see cref="CodeElement"/> from Parent property. Considers only named code constructs.
+        /// </summary>
+        /// <param name="e">Element which parent is needed</param>
+        /// <returns>Parent of given element</returns>
+        private static object getParent(CodeElement e)
+        {
+            switch (e.Kind)
+            {
+                case vsCMElement.vsCMElementClass:
+                    return (e as CodeClass).Parent;
+
+                case vsCMElement.vsCMElementFunction:
+                    return (e as CodeFunction).Parent;
+
+                case vsCMElement.vsCMElementVariable:
+                    return (e as CodeVariable).Parent;
+
+                case vsCMElement.vsCMElementInterface:
+                    return (e as CodeInterface).Parent;
+
+                case vsCMElement.vsCMElementNamespace:
+                    return (e as CodeNamespace).Parent;
+
+                case vsCMElement.vsCMElementParameter:
+                    return (e as CodeParameter).Parent;
+
+                case vsCMElement.vsCMElementAttribute:
+                    return (e as CodeAttribute).Parent;
+
+                default:
+                    //parent is not defined
+                    return null;
+            }
+        }
     }
 }

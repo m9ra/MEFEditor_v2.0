@@ -18,11 +18,12 @@ namespace AssemblyProviders.CSharp
 {
     public class Source
     {
+        private HashSet<string> _namespaces = new HashSet<string>();
+
         /// <summary>
         /// Contains method representing this source (e.g with generic parameters - it can be used for type translation)
         /// </summary>
         internal readonly TypeMethodInfo OriginalMethod;
-
 
         public PathInfo OriginalMethodPath { get { return OriginalMethod.Path; } }
 
@@ -30,7 +31,29 @@ namespace AssemblyProviders.CSharp
 
         public readonly string OriginalCode;
 
-        public string Code(ExecutionView view)
+        /// <summary>
+        /// Namespaces available for source of represented method
+        /// </summary>
+        public IEnumerable<string> Namespaces { get { return _namespaces; } }
+
+        public Source(string code, TypeMethodInfo methodInfo)
+        {
+            OriginalCode = code;
+            OriginalMethod = methodInfo;
+            addImplicitNamespaces(methodInfo.DeclaringType);
+        }
+
+        /// <summary>
+        /// Add namespaces that are imported through using construct
+        /// </summary>
+        /// <param name="namespaces">Enumeration of imported namespaces</param>
+        internal void AddExternalNamespaces(IEnumerable<string> namespaces)
+        {
+            _namespaces.UnionWith(namespaces);
+        }
+
+
+        public string GetCode(ExecutionView view)
         {
             return EditContext(view).Code;
         }
@@ -39,13 +62,6 @@ namespace AssemblyProviders.CSharp
         {
             return view.Data(this, () => new EditContext(view, this, OriginalCode));
         }
-
-        public Source(string code, TypeMethodInfo methodInfo)
-        {
-            OriginalCode = code;
-            OriginalMethod = methodInfo;
-        }
-
         internal void RemoveNode(ExecutionView view, INodeAST node, bool keepSideEffect)
         {
             remove(view, node, keepSideEffect);
@@ -256,7 +272,7 @@ namespace AssemblyProviders.CSharp
 
             if (value is string)
             {
-                value = string.Format("\"{0}\"", (value as string).Replace("\\","\\\\"));
+                value = string.Format("\"{0}\"", (value as string).Replace("\\", "\\\\"));
             }
 
             if (value is InstanceInfo)
@@ -377,5 +393,34 @@ namespace AssemblyProviders.CSharp
 
         #endregion
 
+        #region Private utilities
+
+        /// <summary>
+        /// Add implicit namespaces that are valid for methods declared witihn given type
+        /// </summary>
+        /// <param name="type">Type that defines implicit namespaces</param>
+        private void addImplicitNamespaces(TypeDescriptor type)
+        {   
+            //add empty namespace
+            _namespaces.Add("");
+
+            //each part creates implicit namespace
+            var parts = type.TypeName.Split(Naming.PathDelimiter);
+
+            var buffer = new StringBuilder();
+            foreach (var part in parts)
+            {
+                if (buffer.Length > 0)
+                {
+                    //add trailing char
+                    buffer.Append(Naming.PathDelimiter);
+                }
+
+                buffer.Append(part);
+
+                _namespaces.Add(buffer.ToString());
+            }
+        }
+        #endregion
     }
 }

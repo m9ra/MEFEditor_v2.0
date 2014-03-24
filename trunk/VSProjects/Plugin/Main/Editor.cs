@@ -65,10 +65,10 @@ namespace MEFEditor.Plugin.Main
         {
             var settings = new MachineSettings();
             _machine = new Machine(settings);
-                        
+
             _loader = new AssemblyLoader(settings,
                 new AssemblyProviders.CILAssembly.CILAssemblyFactory(),
-                new AssemblyProviders.ProjectAssembly.ProjectAssemblyFactory()
+                new AssemblyProviders.ProjectAssembly.ProjectAssemblyFactory(_vs)
                 );
 
             loadUserExtensions();
@@ -166,7 +166,7 @@ namespace MEFEditor.Plugin.Main
         {
             foreach (var project in _vs.SolutionProjects)
             {
-                var assembly = new VsProjectAssembly(project);
+                var assembly = new VsProjectAssembly(project, _vs);
                 _loader.LoadRoot(project);
             }
         }

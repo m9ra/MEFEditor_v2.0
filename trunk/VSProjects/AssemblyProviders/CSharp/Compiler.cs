@@ -69,6 +69,8 @@ namespace AssemblyProviders.CSharp
             _context = new Context(emitter, services);
 
             _source = new Source(activation.SourceCode, activation.Method);
+            _source.AddExternalNamespaces(activation.Namespaces);
+
             _method = _parser.Parse(_source);
             _info = _method.SourceToken.Position.Source.CompilationInfo;
 
@@ -331,17 +333,28 @@ namespace AssemblyProviders.CSharp
         private RValueProvider resolveNew(INodeAST newOperand)
         {
             INodeAST callNode;
-            var objectType = resolveCtorType(newOperand, out callNode);
-            var nObject = new NewObjectValue(objectType, _context);
+            var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
 
             var searcher = _context.CreateSearcher();
-            searcher.SetCalledObject(objectType);
+            searcher.ExtendName(getNamespaces());
+            searcher.ExtendName(typeSuffix);
             searcher.Dispatch(Naming.CtorName);
-            var activation = findMatchingActivation(nObject, callNode, searcher.FoundResult);
-            if (activation == null)
+
+            if (!searcher.FoundResult.Any())
             {
                 throw new NotSupportedException("Constructor wasn't found");
             }
+
+            //TODO selection can be done more accurate
+            var objectType = searcher.FoundResult.First().DeclaringType;
+            var nObject = new NewObjectValue(objectType, _context);
+
+            var activation = findMatchingActivation(nObject, callNode, searcher.FoundResult);
+            if (activation == null)
+            {
+                throw new NotSupportedException("Constructor call doesn't match to any available definition");
+            }
+
             var ctorCall = new CallRValue(activation, _context);
 
             nObject.SetCtor(ctorCall);
@@ -542,7 +555,7 @@ namespace AssemblyProviders.CSharp
             return false;
         }
 
-        private TypeDescriptor resolveCtorType(INodeAST ctorCall, out INodeAST callNode)
+        private string resolveCtorSuffix(INodeAST ctorCall, out INodeAST callNode)
         {
             var name = new StringBuilder();
 
@@ -566,7 +579,7 @@ namespace AssemblyProviders.CSharp
                 typeName = string.Format("Array<{0},{1}>", typeName, callNode.Indexer.Arguments.Length);
             }
 
-            return TypeDescriptor.Create(typeName);
+            return typeName;
         }
 
         private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
@@ -583,8 +596,7 @@ namespace AssemblyProviders.CSharp
 
             if (calledObject == null)
             {
-                //TODO add namespaces
-                searcher.ExtendName("", MethodInfo.DeclaringType.TypeName);
+                searcher.ExtendName(getNamespaces());
             }
             else
             {
@@ -695,6 +707,15 @@ namespace AssemblyProviders.CSharp
         private VariableInfo getVariableInfo(string variableName)
         {
             return _declaredVariables[variableName];
+        }
+
+        /// <summary>
+        /// Get all namespaces that are valid within compiled method
+        /// </summary>
+        /// <returns>namespaces</returns>
+        private string[] getNamespaces()
+        {
+            return _source.Namespaces.ToArray();
         }
 
         #endregion

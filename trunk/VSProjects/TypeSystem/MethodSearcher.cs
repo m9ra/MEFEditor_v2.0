@@ -33,11 +33,27 @@ namespace TypeSystem
         {
             var currentIterator = _activeIteartors.First;
 
+            var partedSuffixes = new List<string[]>();
+            foreach (var possibleSuffix in possibleSuffixes)
+            {
+                var partedSuffix = possibleSuffix.Split(Naming.PathDelimiter);
+                partedSuffixes.Add(partedSuffix);
+            }
+
             while (currentIterator != null)
             {
-                foreach (var suffix in possibleSuffixes)
+                foreach (var partedSuffix in partedSuffixes)
                 {
-                    var newIt = currentIterator.Value.ExtendName(suffix);
+                    var newIt = currentIterator.Value;
+
+                    //walk all parts
+                    foreach (var suffix in partedSuffix)
+                    {
+                        newIt = newIt.ExtendName(suffix);
+                        if (newIt == null)
+                            break;
+                    }
+
                     if (newIt != null)
                         _activeIteartors.AddFirst(newIt);
                 }
