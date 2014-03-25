@@ -17,11 +17,11 @@ namespace AssemblyProviders.CSharp.Compiling
 
     abstract class ValueProvider
     {
-        protected readonly Context Context;
+        protected readonly CompilationContext Context;
 
         protected EmitterBase E { get { return Context.Emitter; } }
 
-        protected ValueProvider(Context context)
+        protected ValueProvider(CompilationContext context)
         {
             Context = context;
         }
@@ -39,7 +39,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <returns>Name of storage variable</returns>
         public abstract string GetStorage();
 
-        protected RValueProvider(Context context) : base(context) { }
+        protected RValueProvider(CompilationContext context) : base(context) { }
 
 
 
@@ -56,7 +56,7 @@ namespace AssemblyProviders.CSharp.Compiling
         RValueProvider _ctorCall;
         string _storage;
 
-        public NewObjectValue(TypeDescriptor objectType, Context context) :
+        public NewObjectValue(TypeDescriptor objectType, CompilationContext context) :
             base(context)
         {
             _objectType = objectType;
@@ -104,7 +104,7 @@ namespace AssemblyProviders.CSharp.Compiling
         private readonly object _literal;
         private readonly TypeDescriptor _literalInfo;
         private readonly INodeAST _literalNode;
-        public LiteralValue(object literal, INodeAST literalNode, Context context)
+        public LiteralValue(object literal, INodeAST literalNode, CompilationContext context)
             : base(context)
         {
             _literal = literal;
@@ -147,7 +147,7 @@ namespace AssemblyProviders.CSharp.Compiling
         private readonly VariableInfo _variable;
         private readonly INodeAST _variableNode;
 
-        public VariableRValue(VariableInfo variable, INodeAST variableNode, Context context)
+        public VariableRValue(VariableInfo variable, INodeAST variableNode, CompilationContext context)
             : base(context)
         {
             variable.AddVariableUsing(variableNode);
@@ -188,7 +188,7 @@ namespace AssemblyProviders.CSharp.Compiling
         private readonly object _defaultValue;
         private readonly TypeDescriptor _resultType;
 
-        internal DefaultArgValue(object defaultValue, TypeDescriptor resultType, Context context)
+        internal DefaultArgValue(object defaultValue, TypeDescriptor resultType, CompilationContext context)
             : base(context)
         {
             _defaultValue = defaultValue;
@@ -228,7 +228,7 @@ namespace AssemblyProviders.CSharp.Compiling
         private readonly TypeDescriptor _arrayType;
         private readonly RValueProvider[] _args;
 
-        public ParamArgValue(TypeDescriptor arrayType, RValueProvider[] args, Context context)
+        public ParamArgValue(TypeDescriptor arrayType, RValueProvider[] args, CompilationContext context)
             : base(context)
         {
             _arrayType = arrayType;
@@ -280,7 +280,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         internal TypeMethodInfo MethodInfo { get { return _activation.MethodInfo; } }
 
-        public CallRValue(CallActivation activation, Context context)
+        public CallRValue(CallActivation activation, CompilationContext context)
             : base(context)
         {
             if (activation == null)
@@ -350,7 +350,7 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         private readonly string _storage;
 
-        public TemporaryRVariableValue(Context context, string storage = null)
+        public TemporaryRVariableValue(CompilationContext context, string storage = null)
             : base(context)
         {
             if (storage == null)

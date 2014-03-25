@@ -12,47 +12,94 @@ using AssemblyProviders.CSharp.Transformations;
 
 namespace AssemblyProviders.CSharp.Compiling
 {
+    /// <summary>
+    /// Represents detailed information about <see cref="Source"/> that has been collected during compilation.
+    /// </summary>
     public class CompilationInfo
     {
-        List<VariableInfo> _variables = new List<VariableInfo>();
+        /// <summary>
+        /// Mapping of nodes on type that has been resolved during compilation.
+        /// </summary>
         Dictionary<INodeAST, InstanceInfo> _nodeTypes = new Dictionary<INodeAST, InstanceInfo>();
+
+        /// <summary>
+        /// Mapping of call providers according to corresponding <see cref="INodeAST"/>.
+        /// </summary>
         Dictionary<INodeAST, CallProvider> _callProviders = new Dictionary<INodeAST, CallProvider>();
 
-        internal IEnumerable<VariableInfo> Variables { get { return _variables; } }
+        /// <summary>
+        /// Variables that are currently declared in method
+        /// </summary>
+        private readonly Dictionary<string, VariableInfo> _declaredVariables = new Dictionary<string, VariableInfo>();
 
+        /// <summary>
+        /// Enumeration of all variables that has been declared within the method        
+        /// </summary>
+        internal IEnumerable<VariableInfo> Variables { get { return _declaredVariables.Values; } }
+
+        /// <summary>
+        /// Register call provider for given node
+        /// </summary>
+        /// <param name="callNode">Node corresponding to given call provider</param>
+        /// <param name="callProvider">Registered call provider</param>
         internal void RegisterCallProvider(INodeAST callNode, CallProvider callProvider)
         {
             _callProviders.Add(callNode, callProvider);
         }
 
+        /// <summary>
+        /// Get provider registered for given call
+        /// </summary>
+        /// <param name="call">Node which coresponding call provider is needed</param>
+        /// <returns>Registered call provider if available, <c>null</c> otherwise</returns>
         internal CallProvider GetProvider(INodeAST call)
         {
             return _callProviders[call];
         }
 
-        internal void AddVariable(VariableInfo variable)
+        /// <summary>
+        /// Declare variable according to given info
+        /// </summary>
+        /// <param name="variable">Declared variable</param>
+        internal void DeclareVariable(VariableInfo variable)
         {
-            _variables.Add(variable);
+            /// TODO multiple declarations for variable can be made
+            _declaredVariables.Add(variable.Name, variable);
         }
 
-        private void checkNodeType(INodeAST node, NodeTypes nodeType)
+        /// <summary>
+        /// Get <see cref="VariableInfo"/> for given name
+        /// </summary>
+        /// <param name="name">Name of searched variable</param>
+        /// <returns><see cref="VariableInfo"/> for available for given name, <c>null</c> if variable is not declared</returns>
+        internal VariableInfo GetVariable(string name)
         {
-            if (node.NodeType != nodeType)
-            {
-                throw new NotSupportedException("Node is not of expected NodeType");
-            }
+            VariableInfo variable;
+            _declaredVariables.TryGetValue(name, out variable);
+
+            return variable;
         }
 
-        internal void ReportNodeType(INodeAST valueNode, InstanceInfo instanceInfo)
+        /// <summary>
+        /// Register type that has been discovered for given value node
+        /// </summary>
+        /// <param name="valueNode">Node which value is of given type</param>
+        /// <param name="type">Type of value represented by given node</param>
+        internal void RegisterNodeType(INodeAST valueNode, InstanceInfo type)
         {
-            _nodeTypes.Add(valueNode, instanceInfo);
+            _nodeTypes.Add(valueNode, type);
         }
 
+        /// <summary>
+        /// Get type registered for value represented by given node
+        /// </summary>
+        /// <param name="node">Node which type is needed</param>
+        /// <returns>Type of value represented by node if registered, <c>null</c> otherwise</returns>
         internal InstanceInfo GetNodeType(INodeAST node)
         {
             InstanceInfo result;
             _nodeTypes.TryGetValue(node, out result);
-            return result;  
+            return result;
         }
     }
 }

@@ -111,7 +111,7 @@
     <Compile Include="CSharp\Compiler.cs" />
     <Compile Include="CSharp\Compiling\CallActivation.cs" />
     <Compile Include="CSharp\Compiling\CompilationInfo.cs" />
-    <Compile Include="CSharp\Compiling\Context.cs" />
+    <Compile Include="CSharp\Compiling\CompilationContext.cs" />
     <Compile Include="CSharp\Compiling\LValueProviders.cs" />
     <Compile Include="CSharp\Compiling\MethodSelector.cs" />
     <Compile Include="CSharp\Compiling\RValueProviders.cs" />

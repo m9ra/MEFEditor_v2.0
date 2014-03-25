@@ -9,22 +9,19 @@ using AssemblyProviders.CSharp.Interfaces;
 
 namespace AssemblyProviders.CSharp.Primitives
 {
-
-
-
     /// <summary>
     /// Implementation for IPosition.
     /// </summary>
     public class Position
     {
+        public int Offset { get; private set; }
+        public Source Source { get; private set; }
+
         internal Position(Source source,int offset)
         {
             Offset = offset;
             Source = source;
         }
-
-        public int Offset { get; private set; }
-        public Source Source { get; private set; }
 
         public Position Shift(int offset)
         {
@@ -42,6 +39,13 @@ namespace AssemblyProviders.CSharp.Primitives
     /// </summary>
     class Token : IToken
     {
+        public IToken Previous { get; private set; }
+        public IToken Next { get; private set; }
+        public string Value { get; private set; }
+
+
+        public Position Position { get; private set; }
+
         public Token(string value, int position, Token previousToken,Source source)
         {
             this.Value = value;
@@ -50,12 +54,6 @@ namespace AssemblyProviders.CSharp.Primitives
             if (previousToken != null) previousToken.Next = this;
         }
 
-        public IToken Previous { get; private set; }
-        public IToken Next { get; private set; }
-        public string Value { get; private set; }
-
-
-        public Position Position { get; private set; }
 
 
         public override string ToString()

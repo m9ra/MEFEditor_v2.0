@@ -19,29 +19,43 @@ namespace AssemblyProviders.CSharp
 {
 
     /// <summary>
-    /// Resovolve methods are for getting result of operation
-    /// Get methods are for getting value representation of operation
+    /// Compiler from C# to AIL implementation. Internaly uses <see cref="SyntaxParser"/>. Cover 
+    /// all important .NET constructs that are needed for analyzing MEF composition.
+    /// 
+    /// Emit methods - are for instruction emitting
+    /// Resolve methods - are for getting result of operation
+    /// Get methods - are for getting value representation of operation
     /// </summary>
     public class Compiler
     {
-        private readonly static SyntaxParser _parser = new SyntaxParser();
-
-        private readonly CodeNode _method;
-
+        /// <summary>
+        /// Activation that represents request for compiling
+        /// </summary>
         private readonly ParsingActivation _activation;
 
-        private readonly EmitterBase E;
-
-        private readonly Context _context;
-
+        /// <summary>
+        /// Source of parsed method
+        /// </summary>
         private readonly Source _source;
 
-        private TypeMethodInfo MethodInfo { get { return _activation.Method; } }
+        /// <summary>
+        /// Parser used for creating tokens and theri clasification
+        /// </summary>
+        private readonly static SyntaxParser _parser = new SyntaxParser();
 
-        private readonly CompilationInfo _info;
+        /// <summary>
+        /// Result of syntax parsing that is already compiled
+        /// </summary>
+        private readonly CodeNode _method;
 
-        private readonly Dictionary<string, VariableInfo> _declaredVariables = new Dictionary<string, VariableInfo>();
+        /// <summary>
+        /// Context of compilation process
+        /// </summary>
+        private readonly CompilationContext _context;
 
+        /// <summary>
+        /// Mapping operators on .NET methods. First operand is treated as called object, second one is passed as call argument.
+        /// </summary>
         private static Dictionary<string, string> _mathOperatorMethods = new Dictionary<string, string>(){
               {"+","add_operator"},
               {"-","sub_operator"},
@@ -53,6 +67,28 @@ namespace AssemblyProviders.CSharp
               {"==","Equals"}
         };
 
+        /// <summary>
+        /// Emitter where compiled instructions are emitted
+        /// </summary>
+        private EmitterBase E { get { return _context.Emitter; } }
+
+        /// <summary>
+        /// Info that is collected about source during compilation
+        /// </summary>
+        private CompilationInfo CompilationInfo { get { return _source.CompilationInfo; } }
+
+        /// <summary>
+        /// Info of method that is compiled
+        /// </summary>
+        private TypeMethodInfo MethodInfo { get { return _activation.Method; } }
+
+        /// <summary>
+        /// Method for obtaining instructions from given activation
+        /// </summary>
+        /// <param name="activation">Activation which instructions are generated</param>
+        /// <param name="emitter">Emitter where instructions will be generated</param>
+        /// <param name="services">Services from current type system environment</param>
+        /// <returns><see cref="Source"/> object created for given activation. It contains detailed info collected during compilation</returns>
         public static Source GenerateInstructions(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
             var compiler = new Compiler(activation, emitter, services);
@@ -65,34 +101,34 @@ namespace AssemblyProviders.CSharp
         private Compiler(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
             _activation = activation;
-            E = emitter;
-            _context = new Context(emitter, services);
+            _context = new CompilationContext(emitter, services);
 
             _source = new Source(activation.SourceCode, activation.Method);
             _source.AddExternalNamespaces(activation.Namespaces);
 
             _method = _parser.Parse(_source);
-            _info = _method.SourceToken.Position.Source.CompilationInfo;
 
-            var genericArgs = MethodInfo.Path.GenericArgs;
-            var genericParams = activation.GenericParameters.ToArray();
-
-            for (int i = 0; i < genericParams.Length; ++i)
-            {
-                var genericArg = genericArgs[i];
-                var genericParam = genericParams[i];
-
-                _context.SetTypeMapping(genericParam, genericArg);
-            }
+            registerGenericArguments(activation);
         }
 
-        #region Info utilities
-        private string statementText(INodeAST node)
+        #region Debug Info utilities
+
+        /// <summary>
+        /// Get text representing node in human readable form
+        /// </summary>
+        /// <param name="node">Node which textual representation is needed</param>
+        /// <returns>Textual representation of given node</returns>
+        private string getStatementText(INodeAST node)
         {
             return node.ToString().Trim();
         }
 
-        private string conditionalBlockTest(INodeAST block)
+        /// <summary>
+        /// Get textual representation of node that represents conditional block
+        /// </summary>
+        /// <param name="block">Conditional block which representation is needed</param>
+        /// <returns>Textual representation of given node</returns>
+        private string getConditionalBlockTest(INodeAST block)
         {
             return string.Format("{0}({1})", block.Value, block.Arguments[0]);
         }
@@ -100,6 +136,10 @@ namespace AssemblyProviders.CSharp
         #endregion
 
         #region Instruction generating
+
+        /// <summary>
+        /// Emit instructions of whole method
+        /// </summary>
         private void generateInstructions()
         {
             var entryBlock = E.StartNewInfoBlock();
@@ -168,7 +208,7 @@ namespace AssemblyProviders.CSharp
         private void generateIf(INodeAST ifBlock)
         {
             var info = E.StartNewInfoBlock();
-            info.Comment = "\n---" + conditionalBlockTest(ifBlock) + "---";
+            info.Comment = "\n---" + getConditionalBlockTest(ifBlock) + "---";
 
             var condition = getRValue(ifBlock.Arguments[0]);
             var ifBranch = ifBlock.Arguments[1];
@@ -208,7 +248,7 @@ namespace AssemblyProviders.CSharp
         private void generateLine(INodeAST line)
         {
             var info = E.StartNewInfoBlock();
-            info.Comment = "\n---" + statementText(line) + "---";
+            info.Comment = "\n---" + getStatementText(line) + "---";
             info.BlockTransformProvider = new Transformations.BlockProvider(line);
             generateStatement(line);
         }
@@ -313,7 +353,7 @@ namespace AssemblyProviders.CSharp
                     throw new NotImplementedException();
             }
 
-            _info.ReportNodeType(valueNode, result.GetResultInfo());
+            CompilationInfo.RegisterNodeType(valueNode, result.GetResultInfo());
             return result;
         }
 
@@ -544,8 +584,8 @@ namespace AssemblyProviders.CSharp
         private bool tryGetVariable(INodeAST variableNode, out RValueProvider variable)
         {
             var variableName = variableNode.Value;
-            VariableInfo varInfo;
-            if (_declaredVariables.TryGetValue(variableName, out varInfo))
+            var varInfo = getVariableInfo(variableName);
+            if (varInfo != null)
             {
                 variable = new VariableRValue(varInfo, variableNode, _context);
                 return true;
@@ -685,7 +725,7 @@ namespace AssemblyProviders.CSharp
 
             if (callActivation != null)
             {
-                callActivation.SetCallNode(callNode);
+                callActivation.CallNode = callNode;
                 //TODO better this object resolution
                 if (calledObject == null && !callActivation.MethodInfo.IsStatic)
                 {
@@ -700,13 +740,12 @@ namespace AssemblyProviders.CSharp
 
         private void declareVariable(VariableInfo variable)
         {
-            _info.AddVariable(variable);
-            _declaredVariables.Add(variable.Name, variable);
+            CompilationInfo.DeclareVariable(variable);
         }
 
         private VariableInfo getVariableInfo(string variableName)
         {
-            return _declaredVariables[variableName];
+            return CompilationInfo.GetVariable(variableName);
         }
 
         /// <summary>
@@ -716,6 +755,28 @@ namespace AssemblyProviders.CSharp
         private string[] getNamespaces()
         {
             return _source.Namespaces.ToArray();
+        }
+
+        #endregion
+
+        #region Private helpers
+
+        /// <summary>
+        /// Register generic arguments that are available from given activation
+        /// </summary>
+        /// <param name="activation">Parsing activation where generic arguments and parameters are defined</param>
+        private void registerGenericArguments(ParsingActivation activation)
+        {
+            var genericArgs = activation.Method.Path.GenericArgs;
+            var genericParams = activation.GenericParameters.ToArray();
+
+            for (int i = 0; i < genericParams.Length; ++i)
+            {
+                var genericArg = genericArgs[i];
+                var genericParam = genericParams[i];
+
+                _context.RegisterGenericArgument(genericParam, genericArg);
+            }
         }
 
         #endregion

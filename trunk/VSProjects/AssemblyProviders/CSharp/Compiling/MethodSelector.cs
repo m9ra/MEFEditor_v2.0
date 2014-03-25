@@ -16,7 +16,7 @@ namespace AssemblyProviders.CSharp.Compiling
     class MethodSelector
     {
         LinkedList<ArgumentIterator> _argumentIterators = new LinkedList<ArgumentIterator>();
-        internal MethodSelector(IEnumerable<TypeMethodInfo> overloads, Context context)
+        internal MethodSelector(IEnumerable<TypeMethodInfo> overloads, CompilationContext context)
         {
             foreach (var overload in overloads)
             {
@@ -82,7 +82,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private readonly TypeMethodInfo _overload;
 
-        private readonly Context _context;
+        private readonly CompilationContext _context;
 
         /// <summary>
         /// Index of ordered argument to accept
@@ -91,7 +91,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         internal bool IsValid { get; private set; }
 
-        internal ArgumentIterator(TypeMethodInfo overload, Context context)
+        internal ArgumentIterator(TypeMethodInfo overload, CompilationContext context)
         {
             _overload = overload;
             _context = context;

@@ -13,7 +13,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
     abstract class LValueProvider : ValueProvider
     {
-        protected LValueProvider(Context context) : base(context) { }
+        protected LValueProvider(CompilationContext context) : base(context) { }
 
         public abstract string Storage { get; }
     }
@@ -24,7 +24,7 @@ namespace AssemblyProviders.CSharp.Compiling
         private readonly VariableInfo _variable;
         private readonly INodeAST _variableNode;
 
-        public VariableValue(VariableInfo variable, INodeAST variableNode, Context context)
+        public VariableValue(VariableInfo variable, INodeAST variableNode, CompilationContext context)
             : base(context)
         {
             variable.AddVariableUsing(variableNode);
@@ -45,7 +45,7 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         private readonly string _storage;
 
-        public TemporaryVariableValue(Context context, string storage = null)
+        public TemporaryVariableValue(CompilationContext context, string storage = null)
             : base(context)
         {
             if (storage == null)

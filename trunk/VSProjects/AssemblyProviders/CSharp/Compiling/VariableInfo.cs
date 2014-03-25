@@ -10,20 +10,41 @@ using AssemblyProviders.CSharp.Interfaces;
 
 namespace AssemblyProviders.CSharp.Compiling
 {
+    /// <summary>
+    /// Representation of information that is known about variable
+    /// </summary>
     public class VariableInfo
     {
-        public TypeDescriptor Info { get; private set; }
-
-        public readonly string Name;
-
-        public readonly bool IsImplicitlyTyped;
-
-        public bool IsArgument { get { return Declaration == null; } }
-
-        internal readonly INodeAST Declaration;
-
+        /// <summary>
+        /// Nodes where variable has been used
+        /// </summary>
         private readonly List<INodeAST> _variableUsings = new List<INodeAST>();
 
+        /// <summary>
+        /// Currently known type of variable. 
+        /// <remarks>It may change during time and can be null for implicitly typed variables</remarks>
+        /// </summary>
+        public TypeDescriptor Type { get; private set; }
+
+        /// <summary>
+        /// Name of represented variables
+        /// </summary>
+        public readonly string Name;
+
+        /// <summary>
+        /// Determine that variable is implicitly typed (var keyword in C#)
+        /// </summary>
+        public readonly bool IsImplicitlyTyped;
+
+        /// <summary>
+        /// Declaration node of variable
+        /// </summary>
+        internal readonly INodeAST Declaration;
+
+        /// <summary>
+        /// Initialize <see cref="VariableInfo"/> object from variable declaration
+        /// </summary>
+        /// <param name="declaration">Node where is variable declared</param>
         internal VariableInfo(INodeAST declaration)
         {
             Declaration = declaration;
@@ -39,15 +60,23 @@ namespace AssemblyProviders.CSharp.Compiling
             {
                 //not implicitly typed variable, we can determine type
                 IsImplicitlyTyped = false;
-                Info = TypeDescriptor.Create(typeName);
+                Type = TypeDescriptor.Create(typeName);
             }
         }
 
-        internal VariableInfo(string variableName)
+        /// <summary>
+        /// Initialize <see cref="VariableInfo"/> object from name of method argument.
+        /// <remarks>Declaration node is not available for method arguments</remarks>
+        /// </summary>
+        /// <param name="argumentName">Name of argument defining current variable</param>
+        internal VariableInfo(string argumentName)
         {
-            Name = variableName;
+            Name = argumentName;
         }
 
+        /// <summary>
+        /// Nodes where variable has been used
+        /// </summary>
         internal IEnumerable<INodeAST> VariableUsings
         {
             get
@@ -56,6 +85,9 @@ namespace AssemblyProviders.CSharp.Compiling
             }
         }
 
+        /// <summary>
+        /// Nodes where variable were assigned
+        /// </summary>
         internal IEnumerable<INodeAST> VariableAssigns
         {
             get
@@ -66,8 +98,10 @@ namespace AssemblyProviders.CSharp.Compiling
                 {
                     var parent = varUsing.Parent;
                     if (parent == null)
+                        //using is not an assign
                         continue;
 
+                    //determine that variable is assign target not a source
                     if (parent.IsAssign() && parent.Arguments[0] == varUsing)
                     {
                         result.Add(varUsing);
@@ -78,18 +112,29 @@ namespace AssemblyProviders.CSharp.Compiling
             }
         }
 
-        internal void AddVariableUsing(INodeAST variableUse)
+        /// <summary>
+        /// Hint of type of value assigned to represented variable
+        /// that can be used for defining type of variable. 
+        /// In case of <see cref="IsImplicitlyTyped"/> or if it is argument.
+        /// </summary>
+        /// <param name="type">Assigned type</param>
+        internal void HintAssignedType(TypeDescriptor type)
         {
-            _variableUsings.Add(variableUse);
-        }
-
-        internal void HintAssignedType(TypeDescriptor info)
-        {
-            if (Info != null)
+            if (Type != null)
                 //we already have type information
                 return;
 
-            Info = info;
+            //we does not have type yet
+            Type = type;
+        }
+
+        /// <summary>
+        /// Add variable using into list
+        /// </summary>
+        /// <param name="variableUse">Node where variable is used</param>
+        internal void AddVariableUsing(INodeAST variableUse)
+        {
+            _variableUsings.Add(variableUse);
         }
     }
 }

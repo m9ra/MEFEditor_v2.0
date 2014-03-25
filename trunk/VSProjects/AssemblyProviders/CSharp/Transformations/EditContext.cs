@@ -189,7 +189,7 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             if (!variable.IsImplicitlyTyped)
             {
-                return variable.Info;
+                return variable.Type;
             }
 
             foreach (var assignedVar in variable.VariableUsings)
