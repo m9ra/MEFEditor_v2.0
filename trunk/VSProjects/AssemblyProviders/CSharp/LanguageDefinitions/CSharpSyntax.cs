@@ -8,22 +8,50 @@ using System.Diagnostics;
 using AssemblyProviders.CSharp.Primitives;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.CodeInstructions;
-using AssemblyProviders.CSharp.LanguageDefinitions;
 
-namespace AssemblyProviders.CSharp
+namespace AssemblyProviders.CSharp.LanguageDefinitions
 {
     /// <summary>
     /// Provide services for parsing C# syntax.
     /// </summary>
     class CSharpSyntax
-    {        
+    {
+        #region Syntax element constants of C#
+
+        /// <summary>
+        /// Name of variable where this object is stored
+        /// </summary>
+        internal const string ThisVariable = "this";
+
+        /// <summary>
+        /// Operator used for return statement
+        /// </summary>
+        internal const string ReturnOperator = "return";
+
+        /// <summary>
+        /// Operator used for new statement
+        /// </summary>
+        internal const string NewOperator = "new";
+
+        /// <summary>
+        /// Operator for typeof expression
+        /// </summary>
+        internal const string TypeOfOperator = "typeof";
+
+        /// <summary>
+        /// Operator used for if based statement
+        /// </summary>
+        internal const string IfOperator = "if";
+
+        #endregion
+
         readonly Layouts layouts;
         readonly ILexer _lexer;
-        
+
         static readonly HashSet<string> KnownTokens = new HashSet<string>();
-        static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";",":", ",", ")", "}", "]"};
-        static readonly HashSet<string> PrefOperators = new HashSet<string>() {"!", "throw", "out", "ref", "const", "return", "new", "-","+", "--", "++", "~" };
-        static readonly HashSet<string> PostOperators = new HashSet<string>() { "++", "--" };        
+        static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";", ":", ",", ")", "}", "]" };
+        static readonly HashSet<string> PrefOperators = new HashSet<string>() { "!", "throw", "out", "ref", "const", ReturnOperator, NewOperator, "-", "+", "--", "++", "~" };
+        static readonly HashSet<string> PostOperators = new HashSet<string>() { "++", "--" };
         static readonly Dictionary<string, int> BinOperators = new Dictionary<string, int>(){
             {":",50},
             {"=",100},        
@@ -62,13 +90,13 @@ namespace AssemblyProviders.CSharp
         public CSharpSyntax(ILexer lexer, GetNextTree nextTree)
         {
             _lexer = lexer;
-            layouts = new Layouts(nextTree,_lexer);
+            layouts = new Layouts(nextTree, _lexer);
             KnownTokens.UnionWith(BinOperators.Keys);
             KnownTokens.UnionWith(EndingTokens);
             KnownTokens.UnionWith(PrefOperators);
-            KnownTokens.UnionWith(PostOperators);            
+            KnownTokens.UnionWith(PostOperators);
         }
-        
+
         public bool HasLesserPriority(INodeAST node, INodeAST node2)
         {
             if (!BinOperators.ContainsKey(node.Value)) return false;
@@ -81,7 +109,7 @@ namespace AssemblyProviders.CSharp
         /// <param name="node">Node which arity is returned.</param>
         /// <returns>Arity of node.</returns>
         public int Arity(INodeAST node)
-        {            
+        {
             //unary nodes are resolved in context.
             if (node.NodeType == NodeTypes.binaryOperator) return 2;
             return 0;
@@ -95,21 +123,21 @@ namespace AssemblyProviders.CSharp
         {
             switch (_lexer.Current.Value)
             {
-                case "for": 
+                case "for":
                     return layouts.ForLayout();
-                case "switch": 
+                case "switch":
                     return layouts.SwitchLayout();
-                case "if": 
-                case "while": 
-                    return layouts.CondBlockLayout();                    
-                case "{": 
+                case "if":
+                case "while":
+                    return layouts.CondBlockLayout();
+                case "{":
                     return layouts.SequenceLayout();
                 case "(":
                     return layouts.BracketLayout();
                 case "continue":
                 case "break":
                     return layouts.KeywordLayout();
-                default: 
+                default:
                     return layouts.HierarchyLayout();
             }
         }
@@ -129,11 +157,11 @@ namespace AssemblyProviders.CSharp
             else if (BinOperators.ContainsKey(value)) result = new CodeNode(_lexer.Move(), NodeTypes.binaryOperator);
             else if (PostOperators.Contains(value)) result = new CodeNode(_lexer.Move(), NodeTypes.postOperator);
             else if (PrefOperators.Contains(value)) result = new CodeNode(_lexer.Move(), NodeTypes.prefixOperator);
-            
+
             if (result != null)
             {
                 result.IsTreeEnding = _lexer.End || EndingTokens.Contains(_lexer.Current.Value);
-                if (withContext) result = checkContext(result);             
+                if (withContext) result = checkContext(result);
                 return result;
             }
             throw new ParsingException("Unknown token :" + value);
@@ -145,24 +173,24 @@ namespace AssemblyProviders.CSharp
         /// <param name="node">Node which context is checked.</param>
         /// <returns>Node repaired according to context.</returns>
         private CodeNode checkContext(CodeNode node)
-        {            
+        {
             if (node == null || _lexer.End)
                 //ending token
                 return node;
-            if (node.IsTreeEnding)  
+            if (node.IsTreeEnding)
                 //no context for tree ending node
                 return node;
 
-            if (node.NodeType == NodeTypes.hierarchy && isHierarchy()) 
+            if (node.NodeType == NodeTypes.hierarchy && isHierarchy())
                 //variable declaration
                 return new CodeNode(NodeTypes.declaration, node, Next(false));
-          
-            if (node.NodeType == NodeTypes.bracket && node.Child==null && isHierarchy())
+
+            if (node.NodeType == NodeTypes.bracket && node.Child == null && isHierarchy())
             {
                 //conversion expression - doesnt have child and hierarchy node is next
                 return new CodeNode(NodeTypes.conversion, node.Arguments[0] as CodeNode, Next(true));
             }
-                                 
+
             return node;
         }
 
@@ -192,7 +220,7 @@ namespace AssemblyProviders.CSharp
         /// <returns>True if token is prefix operator.</returns>
         internal bool IsPrefixOperator(string token)
         {
-            return PrefOperators.Contains(token);         
+            return PrefOperators.Contains(token);
         }
     }
 }

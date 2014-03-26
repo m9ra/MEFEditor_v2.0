@@ -21,7 +21,7 @@ namespace TypeSystem
     ///     MethodIdentifier: MethodPath {PartDelimiter} ParametersDescription
     /// </summary>
     public static class Naming
-    {       
+    {
         /// <summary>
         /// Fullname of ExportAttributeType
         /// </summary>
@@ -36,7 +36,7 @@ namespace TypeSystem
         /// Fullname of ImportAttributeType
         /// </summary>
         public static readonly string ImportManyAttribute = typeof(ImportManyAttribute).FullName;
-        
+
         /// <summary>
         /// Fullname of CompositionPointattribute
         /// </summary>
@@ -71,6 +71,16 @@ namespace TypeSystem
         /// Prefix of setter methods
         /// </summary>
         public const string SetterPrefix = "set_";
+
+        /// <summary>
+        /// Name of array item setter 
+        /// </summary>
+        public const string ArrayItemSetter = SetterPrefix + "Item";
+
+        /// <summary>
+        /// Name of array item getter 
+        /// </summary>
+        public const string ArrayItemGetter = GetterPrefix + "Item";
 
         /// <summary>
         /// Creates non-generic, non-dynamic MethodID from given name and parameters

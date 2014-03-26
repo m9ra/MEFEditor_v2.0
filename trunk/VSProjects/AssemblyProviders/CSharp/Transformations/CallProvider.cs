@@ -68,7 +68,6 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             return new SourceRemoveProvider((view, source) =>
             {
-                source.OnChildRemoved(view, _call);
                 source.RemoveNode(view, _call, false);
             }, _call.Source);
         }

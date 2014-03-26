@@ -23,12 +23,10 @@ namespace TypeSystem.Runtime
             {
                 var index = ParameterTypeInfo.Create("index", TypeDescriptor.Create<int>());
                 var item = ParameterTypeInfo.Create("item", TypeDescriptor.Create<ItemType>());
-                return Naming.Method(TypeDescriptor.Create("Array<" + item.Type.TypeName + ",1>"), "set_Item", false, index, item);
+                return Naming.Method(TypeDescriptor.Create("Array<" + item.Type.TypeName + ",1>"), Naming.ArrayItemSetter, false, index, item);
             }
         }
-
-        public static MethodID GetItemMethod { get; internal set; }
-
+        
         public Array(int length)
         {
             //TODO multidimensional array
