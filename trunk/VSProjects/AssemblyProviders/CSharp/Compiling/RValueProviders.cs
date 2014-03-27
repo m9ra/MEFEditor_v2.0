@@ -15,10 +15,19 @@ using TypeSystem.Runtime;
 namespace AssemblyProviders.CSharp.Compiling
 {
 
+    /// <summary>
+    /// Base class for providing emitting both lvalues and rvalues
+    /// </summary>
     abstract class ValueProvider
     {
+        /// <summary>
+        /// Context of compilation process
+        /// </summary>
         protected readonly CompilationContext Context;
 
+        /// <summary>
+        /// Emiter that can be used within generation methods
+        /// </summary>
         protected EmitterBase E { get { return Context.Emitter; } }
 
         protected ValueProvider(CompilationContext context)
@@ -27,26 +36,47 @@ namespace AssemblyProviders.CSharp.Compiling
         }
     }
 
-
+    /// <summary>
+    /// Base class for providing rvalue emitting.
+    /// </summary>
     abstract class RValueProvider : ValueProvider
     {
-        public abstract void AssignInto(LValueProvider lValue);
-        public abstract void Return();
+        /// <summary>
+        /// Generate instructions that ensure presence of represented
+        /// rvalue in given target
+        /// </summary>
+        /// <param name="target">Target where represented value will be available</param>
+        public abstract void GenerateAssignInto(LValueProvider target);
+
+        /// <summary>
+        /// Generate return statement passing represented value
+        /// </summary>
+        public abstract void GenerateReturn();
+
+        /// <summary>
+        /// Generate instructions needed for rvalue computation. No
+        /// assigned storage is needed
+        /// </summary>
+        public abstract void Generate();
+
+        /// <summary>
+        /// Get type information about rvalue.
+        /// <remarks>May cause internal calling of generation methods.</remarks>
+        /// </summary>
+        /// <returns>Type informtion about rvalue</returns>
         public abstract TypeDescriptor GetResultInfo();
+
         /// <summary>
         /// Get storage where RValue is available. If there is no such storage, temporary variable is used
+        /// <remarks>May cause internal calling of generation methods.</remarks>
         /// </summary>
         /// <returns>Name of storage variable</returns>
         public abstract string GetStorage();
 
         protected RValueProvider(CompilationContext context) : base(context) { }
 
-
-
-        public abstract void Generate();
     }
-
-
+    
 
 
     class NewObjectValue : RValueProvider
@@ -62,23 +92,27 @@ namespace AssemblyProviders.CSharp.Compiling
             _objectType = objectType;
         }
 
-        public override void AssignInto(LValueProvider lValue)
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
         {
             _storage = lValue.Storage;
             E.AssignNewObject(_storage, _objectType);
             _ctorCall.Generate();
         }
 
-        public override void Return()
+        /// </ inheritdoc>
+        public override void GenerateReturn()
         {
             throw new NotImplementedException();
         }
 
+        /// </ inheritdoc>
         public override TypeDescriptor GetResultInfo()
         {
             return _objectType;
         }
 
+        /// </ inheritdoc>
         public override string GetStorage()
         {
             if (_storage == null)
@@ -88,6 +122,7 @@ namespace AssemblyProviders.CSharp.Compiling
             return _storage;
         }
 
+        /// </ inheritdoc>
         public override void Generate()
         {
             throw new NotImplementedException();
@@ -112,23 +147,27 @@ namespace AssemblyProviders.CSharp.Compiling
             _literalInfo = TypeDescriptor.Create(_literal.GetType());
         }
 
-        public override void AssignInto(LValueProvider lValue)
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
         {
             var storage = lValue.Storage;
             var builder = E.AssignLiteral(storage, _literal);
             builder.RemoveProvider = new AssignRemove(_literalNode);
         }
 
-        public override void Return()
+        /// </ inheritdoc>
+        public override void GenerateReturn()
         {
             E.Return(GetStorage());
         }
 
+        /// </ inheritdoc>
         public override TypeDescriptor GetResultInfo()
         {
             return _literalInfo;
         }
 
+        /// </ inheritdoc>
         public override string GetStorage()
         {
             var temporaryName = E.GetTemporaryVariable();
@@ -136,6 +175,7 @@ namespace AssemblyProviders.CSharp.Compiling
             return temporaryName;
         }
 
+        /// </ inheritdoc>
         public override void Generate()
         {
             //Nothing to generate
@@ -155,28 +195,33 @@ namespace AssemblyProviders.CSharp.Compiling
             _variableNode = variableNode;
         }
 
-        public override void AssignInto(LValueProvider lValue)
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
         {
             var storage = lValue.Storage;
             var builder = E.Assign(storage, _variable.Name);
             builder.RemoveProvider = new AssignRemove(_variableNode);
         }
 
-        public override void Return()
+        /// </ inheritdoc>
+        public override void GenerateReturn()
         {
             E.Return(_variable.Name);
         }
 
+        /// </ inheritdoc>
         public override TypeDescriptor GetResultInfo()
         {
             return E.VariableInfo(_variable.Name) as TypeDescriptor;
         }
 
+        /// </ inheritdoc>
         public override string GetStorage()
         {
             return _variable.Name;
         }
 
+        /// </ inheritdoc>
         public override void Generate()
         {
             //Nothing to generate
@@ -195,21 +240,25 @@ namespace AssemblyProviders.CSharp.Compiling
             _resultType = resultType;
         }
 
-        public override void AssignInto(LValueProvider lValue)
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
         {
             throw new NotImplementedException();
         }
 
-        public override void Return()
+        /// </ inheritdoc>
+        public override void GenerateReturn()
         {
             throw new NotImplementedException();
         }
 
+        /// </ inheritdoc>
         public override TypeDescriptor GetResultInfo()
         {
             return _resultType;
         }
 
+        /// </ inheritdoc>
         public override string GetStorage()
         {
             var tmp = E.GetTemporaryVariable("default");
@@ -217,6 +266,7 @@ namespace AssemblyProviders.CSharp.Compiling
             return tmp;
         }
 
+        /// </ inheritdoc>
         public override void Generate()
         {
             throw new NotImplementedException();
@@ -235,21 +285,25 @@ namespace AssemblyProviders.CSharp.Compiling
             _args = args;
         }
 
-        public override void AssignInto(LValueProvider lValue)
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
         {
             throw new NotImplementedException();
         }
 
-        public override void Return()
+        /// </ inheritdoc>
+        public override void GenerateReturn()
         {
             throw new NotImplementedException();
         }
 
+        /// </ inheritdoc>
         public override TypeDescriptor GetResultInfo()
         {
             return _arrayType;
         }
 
+        /// </ inheritdoc>
         public override string GetStorage()
         {
             var tmp = E.GetTemporaryVariable("param");
@@ -268,6 +322,7 @@ namespace AssemblyProviders.CSharp.Compiling
             return tmp;
         }
 
+        /// </ inheritdoc>
         public override void Generate()
         {
             throw new NotImplementedException();
@@ -289,14 +344,15 @@ namespace AssemblyProviders.CSharp.Compiling
             _activation = activation;
         }
 
-
-        public override void AssignInto(LValueProvider lValue)
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
         {
             generateCall();
             E.AssignReturnValue(lValue.Storage, MethodInfo.ReturnType);
         }
 
-        public override void Return()
+        /// </ inheritdoc>
+        public override void GenerateReturn()
         {
             generateCall();
             var temporaryName = E.GetTemporaryVariable();
@@ -327,23 +383,137 @@ namespace AssemblyProviders.CSharp.Compiling
             }
         }
 
+        /// </ inheritdoc>
         public override TypeDescriptor GetResultInfo()
         {
             return MethodInfo.ReturnType;
         }
 
+        /// </ inheritdoc>
         public override string GetStorage()
         {
             var tmp = new TemporaryVariableValue(Context);
-            AssignInto(tmp);
+            GenerateAssignInto(tmp);
 
             return tmp.Storage;
         }
 
+        /// </ inheritdoc>
         public override void Generate()
         {
             generateCall();
         }
+    }
+
+    /// <summary>
+    /// Emit computation and assign computed result into given storage
+    /// </summary>
+    /// <param name="emitter">Emitter where instructions has to be emitted</param>
+    /// <param name="storage">Storage where computed value has to be assigned</param>
+    delegate void EmitComputation(EmitterBase emitter, string storage);
+
+    class ComputedValue : RValueProvider
+    {
+        private readonly EmitComputation _computation;
+
+        private string _storage;
+
+        private bool _generated;
+
+        public ComputedValue(EmitComputation computation, CompilationContext context)
+            : base(context)
+        {
+            _computation = computation;
+        }
+
+        #region Value provider implementation
+
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
+        {
+            generateAssignToStorage(lValue.Storage);
+        }
+
+        /// </ inheritdoc>
+        public override void GenerateReturn()
+        {
+            var storage = getStorage();
+            E.Return(storage);
+        }
+
+        /// </ inheritdoc>
+        public override TypeDescriptor GetResultInfo()
+        {
+            var storage = getStorage();
+
+            return E.VariableInfo(storage) as TypeDescriptor;
+        }
+
+        /// </ inheritdoc>
+        public override string GetStorage()
+        {
+            if (_storage == null)
+                Generate();
+
+            return _storage;
+        }
+
+        /// </ inheritdoc>
+        public override void Generate()
+        {
+            //storage is not needed
+            generateAssignToStorage(null);
+        }
+
+        #endregion
+
+        #region Computation utilities 
+
+        /// <summary>
+        /// Get storage with computed result. Consider current state of computation.
+        /// </summary>
+        /// <returns>Storage where computation is stored</returns>
+        private string getStorage()
+        {
+            if (_storage == null)
+                generateAssignToStorage(E.GetTemporaryVariable());
+
+            return _storage;
+        }
+
+        /// <summary>
+        /// Generate computation or assigning that are needed
+        /// </summary>
+        /// <param name="target">Target where value will be assigned to</param>
+        private void generateAssignToStorage(string target)
+        {
+            if (_generated && _storage == target)
+            {
+                //storage is already assigned to requested
+                // varialbe. Also computation is generated.
+                return;
+            }
+
+            if (_storage != null)
+            {
+                //reasign value
+
+                E.Assign(target, _storage);
+                return;
+            }
+
+            //remember, target can be null
+            _storage = target;
+
+            if (_generated)
+                return;
+
+            _generated = true;
+
+            _computation(E, _storage);
+        }
+
+        #endregion
     }
 
     class TemporaryRVariableValue : RValueProvider
@@ -364,26 +534,31 @@ namespace AssemblyProviders.CSharp.Compiling
 
         }
 
-        public override void AssignInto(LValueProvider lValue)
+        /// </ inheritdoc>
+        public override void GenerateAssignInto(LValueProvider lValue)
         {
             throw new NotImplementedException();
         }
 
-        public override void Return()
+        /// </ inheritdoc>
+        public override void GenerateReturn()
         {
             E.Return(_storage);
         }
 
+        /// </ inheritdoc>
         public override TypeDescriptor GetResultInfo()
         {
             return E.VariableInfo(_storage) as TypeDescriptor;
         }
 
+        /// </ inheritdoc>
         public override string GetStorage()
         {
             return _storage;
         }
 
+        /// </ inheritdoc>
         public override void Generate()
         {
             throw new NotImplementedException();

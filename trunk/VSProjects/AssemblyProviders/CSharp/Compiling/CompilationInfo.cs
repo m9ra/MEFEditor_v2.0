@@ -72,7 +72,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </summary>
         /// <param name="name">Name of searched variable</param>
         /// <returns><see cref="VariableInfo"/> for available for given name, <c>null</c> if variable is not declared</returns>
-        internal VariableInfo GetVariable(string name)
+        internal VariableInfo TryGetVariable(string name)
         {
             VariableInfo variable;
             _declaredVariables.TryGetValue(name, out variable);

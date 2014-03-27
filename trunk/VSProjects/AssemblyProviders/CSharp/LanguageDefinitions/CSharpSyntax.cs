@@ -55,6 +55,10 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// </summary>
         internal const string DecrementOperator = "--";
 
+        /// <summary>
+        /// Operator used for assigning variable value
+        /// </summary>
+        internal const string AssignOperator = "=";
 
         #endregion
 

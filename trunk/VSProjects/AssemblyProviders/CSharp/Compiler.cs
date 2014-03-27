@@ -145,7 +145,7 @@ namespace AssemblyProviders.CSharp
 
             registerGenericArguments(activation);
         }
-        
+
         #region Instruction generating
 
         /// <summary>
@@ -332,19 +332,20 @@ namespace AssemblyProviders.CSharp
         /// <param name="prefixOperator">Node representing prefix operator</param>
         private void generatePrefixOperator(INodeAST prefixOperator)
         {
-            var argumentNode=prefixOperator.Arguments[0];
+            var argumentNode = prefixOperator.Arguments[0];
             switch (prefixOperator.Value)
             {
                 case CSharpSyntax.ReturnOperator:
-                    var rValue = getRValue(argumentNode);
-                    rValue.Return();
+                    //return has to be resolved in special way - it cannot be 
+                    //resolved as value
+                    var returnValue = getRValue(argumentNode);
+                    returnValue.GenerateReturn();
                     break;
-                case CSharpSyntax.NewOperator:
-                    var newValueExpr = resolveNew(argumentNode);
-                    newValueExpr.Generate();
-                    break;
+
                 default:
-                    throw new NotImplementedException("mathematical operator");
+                    var resolved = resolvePrefixOperator(prefixOperator);
+                    resolved.Generate();
+                    break;
             }
         }
 
@@ -354,17 +355,9 @@ namespace AssemblyProviders.CSharp
         /// <param name="postfixOperator">Node representing postfix operator</param>
         private void generatePostfixOperator(INodeAST postfixOperator)
         {
-            var operatorNotation = postfixOperator.Value;
-
-            switch (operatorNotation)
-            {
-                case CSharpSyntax.IncrementOperator:
-                    break;
-                case CSharpSyntax.DecrementOperator:
-                    break;
-                default:
-                    throw parsingException(postfixOperator, "Unsupported postfix operator {0}", operatorNotation);
-            }
+            //there are no postfix operators that couldnt been resolved
+            var resolved = resolvePostfixOperator(postfixOperator);
+            resolved.Generate();
         }
 
         /// <summary>
@@ -400,8 +393,6 @@ namespace AssemblyProviders.CSharp
         /// <returns><see cref="LValueProvider"/> represented by given node</returns>
         private LValueProvider getLValue(INodeAST lValue)
         {
-            //TODO check semantic
-
             switch (lValue.NodeType)
             {
                 case NodeTypes.declaration:
@@ -411,7 +402,7 @@ namespace AssemblyProviders.CSharp
                     return new VariableValue(variable, lValue, _context);
 
                 case NodeTypes.hierarchy:
-                    //TODO resolve hierarchy
+                    //TODO resolve hierarchy - property setter,...
                     var varInfo = getVariableInfo(lValue.Value);
                     return new VariableValue(varInfo, lValue, _context);
 
@@ -441,7 +432,7 @@ namespace AssemblyProviders.CSharp
                     result = resolveBinary(rValue);
                     break;
                 case NodeTypes.prefixOperator:
-                    result = resolveUnary(rValue);
+                    result = resolvePrefixOperator(rValue);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -513,20 +504,52 @@ namespace AssemblyProviders.CSharp
         #region Unary operators resolving
 
         /// <summary>
-        /// Resolve unary operation represented by given node
+        /// Resolve prefix operation represented by given node.
+        /// <remarks>Only expression prefix operations can be resolved. It means that return operator cannot be resolved here</remarks>
         /// </summary>
-        /// <param name="unary">Node representing unary operation</param>
-        /// <returns>Representation of unary operation result</returns>
-        private RValueProvider resolveUnary(INodeAST unary)
+        /// <param name="prefixOperator">Node representing prefix operation</param>
+        /// <returns>Representation of prefix operation result</returns>
+        private RValueProvider resolvePrefixOperator(INodeAST prefixOperator)
         {
-            var operand = unary.Arguments[0];
-            var operatorName = unary.Value;
-            switch (operatorName)
+            var operand = prefixOperator.Arguments[0];
+            var operatorNotation = prefixOperator.Value;
+            switch (operatorNotation)
             {
                 case CSharpSyntax.NewOperator:
                     return resolveNew(operand);
+
+                case CSharpSyntax.IncrementOperator:
+                    throw new NotImplementedException();
+
+                case CSharpSyntax.DecrementOperator:
+                    throw new NotImplementedException();
+
                 default:
-                    throw new NotSupportedException("Unary operation is not supported: " + unary);
+                    throw parsingException(prefixOperator, "Prefix operation '{0}' is not supported", operatorNotation);
+            }
+        }
+
+        /// <summary>
+        /// Resolve postfix operation represented by given node.        
+        /// </summary>
+        /// <param name="postfixOperator">Node representing postfix operation</param>
+        /// <returns>Representation of postfix operation result</returns>
+        private RValueProvider resolvePostfixOperator(INodeAST postfixOperator)
+        {
+            var operatorNotation = postfixOperator.Value;
+            var argumentNode = postfixOperator.Arguments[0];
+            var lValue = getLValue(argumentNode);
+
+            switch (operatorNotation)
+            {
+                case CSharpSyntax.IncrementOperator:
+                    throw new NotImplementedException();
+
+                case CSharpSyntax.DecrementOperator:
+                    throw new NotImplementedException();
+
+                default:
+                    throw parsingException(postfixOperator, "Postfix operation '{0}' is not supported", operatorNotation);
             }
         }
 
@@ -566,14 +589,25 @@ namespace AssemblyProviders.CSharp
         {
             switch (op)
             {
-                case "=":
+                case CSharpSyntax.AssignOperator:
                     var lValue = getLValue(lNode);
                     var rValue = getRValue(rNode);
 
-                    rValue.AssignInto(lValue);
+                    var assignComputation = new ComputedValue((e, storage) =>
+                    {
+                        rValue.GenerateAssignInto(lValue);
 
-                    var lVar = getVariableInfo(lValue.Storage);
-                    return new VariableRValue(lVar, lNode, _context);
+                        var lVar = getVariableInfo(lValue.Storage);
+
+                        //report using of variable
+                        lVar.AddVariableUsing(lNode);
+
+                        if (storage != null)
+                            //assign chaining
+                            E.Assign(storage, lValue.Storage);
+                    }, _context);
+
+                    return assignComputation;
                 default:
                     throw new NotImplementedException("TODO add mathassign operators");
             }
@@ -598,11 +632,16 @@ namespace AssemblyProviders.CSharp
             var rOperand = rOperandProvider.GetStorage();
 
             var opMethodId = findOperator(lTypeInfo, op, rTypeInfo);
-            E.Call(opMethodId, lOperand, Arguments.Values(rOperand));
 
-            var result = E.GetTemporaryVariable();
-            E.AssignReturnValue(result, lTypeInfo);
-            return new TemporaryRVariableValue(_context, result);
+            var computation = new ComputedValue((e, storage) =>
+            {
+                e.Call(opMethodId, lOperand, Arguments.Values(rOperand));
+
+                //TODO determine type according to operator return value
+                e.AssignReturnValue(storage, lTypeInfo);
+            }, _context);
+
+            return computation;
         }
 
         /// <summary>
@@ -992,7 +1031,7 @@ namespace AssemblyProviders.CSharp
         /// <returns><see cref="VariableInfo"/> that is currently scoped under variableName</returns>
         private VariableInfo getVariableInfo(string variableName)
         {
-            return CompilationInfo.GetVariable(variableName);
+            return CompilationInfo.TryGetVariable(variableName);
         }
 
         #endregion
@@ -1024,10 +1063,16 @@ namespace AssemblyProviders.CSharp
         #region Private helpers
 
 
-
-        private ParsingException parsingException(INodeAST postfixOperator, string p, string operatorNotation)
+        /// <summary>
+        /// Create exception for parsing error detected in context of given node
+        /// </summary>
+        /// <param name="node">Node where error has been found</param>
+        /// <param name="descriptionFormat">Format of error description</param>
+        /// <param name="formatArgs">Arguments for format descritpion</param>
+        /// <returns>Created exception</returns>
+        private ParsingException parsingException(INodeAST node, string descriptionFormat, params object[] formatArguments)
         {
-            throw new NotImplementedException();
+            return CSharpSyntax.ParsingException(node, descriptionFormat, formatArguments);
         }
 
         /// <summary>
