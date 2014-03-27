@@ -26,8 +26,8 @@ namespace AssemblyProviders.CSharp
             var lexer = new Lexer(source);
             _language = new CSharpSyntax(lexer, _getTree);
 
-            return _getTree();                        
-        }       
+            return _getTree();
+        }
 
         /// <summary>
         /// Usporada podle priorit jednotlive Node ktere vezme z getNode
@@ -37,40 +37,44 @@ namespace AssemblyProviders.CSharp
         {
             var operands = new Stack<CodeNode>();
             var operators = new Stack<CodeNode>();
-                
-            CodeNode newNode=null;
+
+            CodeNode newNode = null;
 
             //determine context to next node 
             bool _expectPrefix = true;
             bool _expectPostfix = false;
 
             //until tree end token is reached
-            while (newNode==null || !newNode.IsTreeEnding ) 
+            while (newNode == null || !newNode.IsTreeEnding)
             {
                 if (_language.End)
-                    throw new ParsingException("Expected tree ending");
+                    throw CSharpSyntax.ParsingException(newNode, "Expected syntax tree ending");
 
                 //infix to tree, according to priorities                
                 newNode = _language.Next(true);
-                if (newNode == null) throw new NotSupportedException("newNode cannot be null");
+                if (newNode == null)
+                    throw new NotSupportedException("newNode cannot be null");
 
                 //resolve prefix/postfix operators they go on stack as operands
                 operatorContext(newNode, _expectPrefix, _expectPostfix);
 
                 //add operand on the stack - behind operand we excpect postfix/binary operator
-                if (newNode.NodeType!=NodeTypes.binaryOperator) {
+                if (newNode.NodeType != NodeTypes.binaryOperator)
+                {
                     _expectPostfix = true;
                     _expectPrefix = false;
                     operands.Push(newNode);
-                    if (newNode.NodeType == NodeTypes.block) break;
-                        continue; 
+                    if (newNode.NodeType == NodeTypes.block) 
+                        break;
+
+                    continue;
                 }
-                
+
                 //we are adding new operator
                 //satisfy all operators with lesser arity
-                while (operators.Count > 0 && isLesser(newNode, operators.Peek()))                
-                    satisfyOperator(operators.Pop(), operands);                   
-                
+                while (operators.Count > 0 && isLesser(newNode, operators.Peek()))
+                    satisfyOperator(operators.Pop(), operands);
+
                 //add operator on the stack
                 operators.Push(newNode);
 
@@ -81,15 +85,15 @@ namespace AssemblyProviders.CSharp
 
             //satisfy all pending operators
             while (operators.Count > 0)
-                satisfyOperator(operators.Pop(), operands);            
+                satisfyOperator(operators.Pop(), operands);
 
             //check stack state
             if (operands.Count > 1)
-                throw new NodeException("Missing operator for operands", operands.Peek());
-            if (operators.Count >0)
-                throw new NodeException ("Missing operand for operator",operators.Peek());
-                     
-            var result=operands.Pop();
+                throw CSharpSyntax.ParsingException(operands.Peek(), "Missing operator for operand {0}", operands.Peek());
+            if (operators.Count > 0)
+                throw CSharpSyntax.ParsingException(operators.Peek(), "Missing operand for operator {0}", operators.Peek());
+
+            var result = operands.Pop();
             result.IsTreeEnding = true;
             return result;
         }
@@ -102,16 +106,18 @@ namespace AssemblyProviders.CSharp
         /// <param name="expectPostfix"></param>
         private void operatorContext(CodeNode newNode, bool expectPrefix, bool expectPostfix)
         {
-            bool shouldRepair=false;            
-            NodeTypes nodeType=newNode.NodeType;
+            bool shouldRepair = false;
+            NodeTypes nodeType = newNode.NodeType;
 
             if (expectPrefix && _language.IsPrefixOperator(newNode.Value))
             {
-                shouldRepair=true;
-                nodeType = NodeTypes.prefixOperator;                
-            }else if (expectPostfix && _language.IsPostfixOperator(newNode.Value)){
                 shouldRepair = true;
-                nodeType = NodeTypes.postOperator;                
+                nodeType = NodeTypes.prefixOperator;
+            }
+            else if (expectPostfix && _language.IsPostfixOperator(newNode.Value))
+            {
+                shouldRepair = true;
+                nodeType = NodeTypes.postOperator;
             }
 
             if (!shouldRepair)
@@ -130,7 +136,7 @@ namespace AssemblyProviders.CSharp
             return _language.HasLesserPriority(node1, node2);
         }
 
-   
+
         /// <summary>        
         /// Satisfy given operator node. Satisfed operator is added into operands stack.        
         /// </summary>
@@ -140,8 +146,8 @@ namespace AssemblyProviders.CSharp
         {
             var arity = _language.Arity(operatorNode);
             if (operands.Count < arity)
-                throw new ParsingException("There aren´t enough operands on the stack");
-         
+                throw CSharpSyntax.ParsingException(operatorNode, "There aren´t enough operands for the operator {0}", operatorNode.Value);
+
             var reverseStack = new Stack<CodeNode>();
 
             for (int i = 0; i < arity; i++) reverseStack.Push(operands.Pop());

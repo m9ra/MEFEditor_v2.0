@@ -5,6 +5,8 @@ using System.Text;
 
 using System.Diagnostics;
 
+using TypeSystem;
+
 using AssemblyProviders.CSharp.Primitives;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.CodeInstructions;
@@ -43,6 +45,17 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// </summary>
         internal const string IfOperator = "if";
 
+        /// <summary>
+        /// Operator used for incrementing variable value
+        /// </summary>
+        internal const string IncrementOperator = "++";
+
+        /// <summary>
+        /// Operator used for decrementing variable value
+        /// </summary>
+        internal const string DecrementOperator = "--";
+
+
         #endregion
 
         readonly Layouts layouts;
@@ -50,8 +63,8 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
 
         static readonly HashSet<string> KnownTokens = new HashSet<string>();
         static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";", ":", ",", ")", "}", "]" };
-        static readonly HashSet<string> PrefOperators = new HashSet<string>() { "!", "throw", "out", "ref", "const", ReturnOperator, NewOperator, "-", "+", "--", "++", "~" };
-        static readonly HashSet<string> PostOperators = new HashSet<string>() { "++", "--" };
+        static readonly HashSet<string> PrefOperators = new HashSet<string>() { "!", "throw", "out", "ref", "const", ReturnOperator, NewOperator, "-", "+", IncrementOperator, DecrementOperator, "~" };
+        static readonly HashSet<string> PostOperators = new HashSet<string>() { IncrementOperator, DecrementOperator };
         static readonly Dictionary<string, int> BinOperators = new Dictionary<string, int>(){
             {":",50},
             {"=",100},        
@@ -95,6 +108,31 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             KnownTokens.UnionWith(EndingTokens);
             KnownTokens.UnionWith(PrefOperators);
             KnownTokens.UnionWith(PostOperators);
+        }
+
+
+        /// <summary>
+        /// Create exception for parsing error detected in context of given node
+        /// </summary>
+        /// <param name="node">Node where error has been found</param>
+        /// <param name="descriptionFormat">Format of error description</param>
+        /// <param name="formatArgs">Arguments for format descritpion</param>
+        /// <returns>Created exception</returns>
+        public static ParsingException ParsingException(INodeAST node, string descriptionFormat, params object[] formatArguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Create exception for parsing error detected in context of given token
+        /// </summary>
+        /// <param name="token">Token where error has been found</param>
+        /// <param name="descriptionFormat">Format of error description</param>
+        /// <param name="formatArgs">Arguments for format descritpion</param>
+        /// <returns>Created exception</returns>
+        public static ParsingException ParsingException(IToken token, string descriptionFormat, params object[] formatArguments)
+        {
+            throw new NotImplementedException();
         }
 
         public bool HasLesserPriority(INodeAST node, INodeAST node2)
@@ -149,22 +187,27 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <returns>Next CodeNode.</returns>
         public CodeNode Next(bool withContext)
         {
-            var value = _lexer.Current.Value;
+            var currentToken = _lexer.Current;
+            var currentValue = currentToken.Value;
             CodeNode result = null;
 
-            if (EndingTokens.Contains(value)) result = new CodeNode(_lexer.Current, NodeTypes.empty);
-            else if (!KnownTokens.Contains(value)) result = applyLayout();
-            else if (BinOperators.ContainsKey(value)) result = new CodeNode(_lexer.Move(), NodeTypes.binaryOperator);
-            else if (PostOperators.Contains(value)) result = new CodeNode(_lexer.Move(), NodeTypes.postOperator);
-            else if (PrefOperators.Contains(value)) result = new CodeNode(_lexer.Move(), NodeTypes.prefixOperator);
+            if (EndingTokens.Contains(currentValue)) result = new CodeNode(currentToken, NodeTypes.empty);
+            else if (!KnownTokens.Contains(currentValue)) result = applyLayout();
+            else if (BinOperators.ContainsKey(currentValue)) result = new CodeNode(_lexer.Move(), NodeTypes.binaryOperator);
+            else if (PostOperators.Contains(currentValue)) result = new CodeNode(_lexer.Move(), NodeTypes.postOperator);
+            else if (PrefOperators.Contains(currentValue)) result = new CodeNode(_lexer.Move(), NodeTypes.prefixOperator);
 
             if (result != null)
             {
-                result.IsTreeEnding = _lexer.End || EndingTokens.Contains(_lexer.Current.Value);
+                //refresh information
+                currentToken = _lexer.Current;
+                currentValue = currentToken.Value;
+
+                result.IsTreeEnding = _lexer.End || EndingTokens.Contains(currentValue);
                 if (withContext) result = checkContext(result);
                 return result;
             }
-            throw new ParsingException("Unknown token :" + value);
+            throw ParsingException(currentToken, "Unknown token : {0}", currentValue);
         }
 
         /// <summary>

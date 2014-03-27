@@ -125,7 +125,6 @@
     <Compile Include="CSharp\Lexer.cs" />
     <Compile Include="CSharp\Primitives\CaseBlock.cs" />
     <Compile Include="CSharp\Primitives\CodeNode.cs" />
-    <Compile Include="CSharp\Primitives\NodeException.cs" />
     <Compile Include="CSharp\Primitives\ParsingPrimitives.cs" />
     <Compile Include="CSharp\Source.cs" />
     <Compile Include="CSharp\StripManager.cs" />

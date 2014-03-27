@@ -145,31 +145,7 @@ namespace AssemblyProviders.CSharp
 
             registerGenericArguments(activation);
         }
-
-        #region Debug Info utilities
-
-        /// <summary>
-        /// Get text representing node in human readable form
-        /// </summary>
-        /// <param name="node">Node which textual representation is needed</param>
-        /// <returns>Textual representation of given node</returns>
-        private string getStatementText(INodeAST node)
-        {
-            return node.ToString().Trim();
-        }
-
-        /// <summary>
-        /// Get textual representation of node that represents conditional block
-        /// </summary>
-        /// <param name="block">Conditional block which representation is needed</param>
-        /// <returns>Textual representation of given node</returns>
-        private string getConditionalBlockTest(INodeAST block)
-        {
-            return string.Format("{0}({1})", block.Value, block.Arguments[0]);
-        }
-
-        #endregion
-
+        
         #region Instruction generating
 
         /// <summary>
@@ -288,6 +264,8 @@ namespace AssemblyProviders.CSharp
             if (elseBranch != null)
             {
                 //if there is else branch generate it
+
+                //firstly protect falling into else branch from ifbranch
                 E.Jump(endLbl);
                 E.SetLabel(falseLbl);
                 generateSubsequence(elseBranch);
@@ -324,6 +302,9 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.prefixOperator:
                     generatePrefixOperator(statement);
                     break;
+                case NodeTypes.postOperator:
+                    generatePostfixOperator(statement);
+                    break;
                 case NodeTypes.call:
                     generateCall(statement);
                     break;
@@ -351,14 +332,38 @@ namespace AssemblyProviders.CSharp
         /// <param name="prefixOperator">Node representing prefix operator</param>
         private void generatePrefixOperator(INodeAST prefixOperator)
         {
+            var argumentNode=prefixOperator.Arguments[0];
             switch (prefixOperator.Value)
             {
                 case CSharpSyntax.ReturnOperator:
-                    var rValue = getRValue(prefixOperator.Arguments[0]);
+                    var rValue = getRValue(argumentNode);
                     rValue.Return();
                     break;
+                case CSharpSyntax.NewOperator:
+                    var newValueExpr = resolveNew(argumentNode);
+                    newValueExpr.Generate();
+                    break;
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("mathematical operator");
+            }
+        }
+
+        /// <summary>
+        /// Generate instructions for given postfix operator node
+        /// </summary>
+        /// <param name="postfixOperator">Node representing postfix operator</param>
+        private void generatePostfixOperator(INodeAST postfixOperator)
+        {
+            var operatorNotation = postfixOperator.Value;
+
+            switch (operatorNotation)
+            {
+                case CSharpSyntax.IncrementOperator:
+                    break;
+                case CSharpSyntax.DecrementOperator:
+                    break;
+                default:
+                    throw parsingException(postfixOperator, "Unsupported postfix operator {0}", operatorNotation);
             }
         }
 
@@ -992,7 +997,38 @@ namespace AssemblyProviders.CSharp
 
         #endregion
 
+        #region Debug Info utilities
+
+        /// <summary>
+        /// Get text representing node in human readable form
+        /// </summary>
+        /// <param name="node">Node which textual representation is needed</param>
+        /// <returns>Textual representation of given node</returns>
+        private string getStatementText(INodeAST node)
+        {
+            return node.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Get textual representation of node that represents conditional block
+        /// </summary>
+        /// <param name="block">Conditional block which representation is needed</param>
+        /// <returns>Textual representation of given node</returns>
+        private string getConditionalBlockTest(INodeAST block)
+        {
+            return string.Format("{0}({1})", block.Value, block.Arguments[0]);
+        }
+
+        #endregion
+
         #region Private helpers
+
+
+
+        private ParsingException parsingException(INodeAST postfixOperator, string p, string operatorNotation)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Get all namespaces that are valid within compiled method

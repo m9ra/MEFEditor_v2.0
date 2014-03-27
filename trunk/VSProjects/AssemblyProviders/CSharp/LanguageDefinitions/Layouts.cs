@@ -34,8 +34,9 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// </summary>
         /// <param name="nextTree">Method which will be used for getting tree nodes.</param>
         /// <param name="lexer">Source of parsed tokens.</param>
-        public Layouts(GetNextTree nextTree,ILexer lexer){
-            _nextTree=nextTree;
+        public Layouts(GetNextTree nextTree, ILexer lexer)
+        {
+            _nextTree = nextTree;
             _lexer = lexer;
         }
 
@@ -45,19 +46,19 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <returns>CodeNode created according to layout.</returns>
         public CodeNode ForLayout()
         {
-            var node = new CodeNode(_lexer.Move(),NodeTypes.block);
-     
-            _shiftToken("(","Error in For layout, expected '('");
+            var node = new CodeNode(_lexer.Move(), NodeTypes.block);
+
+            _shiftToken("(", "Error in For layout, expected '('");
 
             for (int i = 0; i < 3; i++)
-            {             
+            {
                 node.AddArgument(_nextTree());
-                if(i<2)_shiftToken(";","Error in For layout, expected ';'");
+                if (i < 2) _shiftToken(";", "Error in For layout, expected ';'");
             }
 
             _shiftToken(")", "Error in For layout, expected ')'");
 
-            node.Child=_nextTree();
+            node.Child = _nextTree();
             return node;
         }
 
@@ -67,7 +68,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// </summary>
         /// <returns>CodeNode created according to layout.</returns>
         public CodeNode CondBlockLayout()
-        {            
+        {
             var condNode = new CodeNode(_lexer.Move(), NodeTypes.block);
             condition(condNode);
 
@@ -75,7 +76,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
 
             condNode.AddArgument(_nextTree());
             if (_shiftToken("else")) condNode.AddArgument(_nextTree());
-                      
+
             return condNode;
         }
 
@@ -90,7 +91,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             condition(switchNode);
             _shiftToken("{", "expected '{' in switch layout");
 
-            var inSwitch=true;
+            var inSwitch = true;
             while (inSwitch)
             {
                 var label = _current();
@@ -109,7 +110,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                             lines.Add(_nextTree());
                             _shiftToken(";");
                         }
-                        
+
                         labelBlock.SetSubsequence(lines);
                         switchNode.AddArgument(labelBlock);
                         break;
@@ -117,7 +118,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                         inSwitch = false;
                         break;
                     default:
-                        throw new ParsingException("unrecognized token '" + label + "' in switch statement");
+                        throw CSharpSyntax.ParsingException(_lexer.Current, "unrecognized label '{0}' in switch statement", label);
                 }
             }
 
@@ -142,9 +143,10 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             }
 
             if (_shiftToken("."))
-            {            
+            {
                 var child = HierarchyLayout();
-                if (child == null) throw new ParsingException("Expected identifier after '.'");
+                if (child == null)
+                    throw CSharpSyntax.ParsingException(_lexer.Current, "Expected identifier after '.'");
                 node.Child = child;
             }
 
@@ -159,7 +161,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                 var seq = InitializerLayout();
                 node.SetSubsequence(seq);
             }
-                        
+
             return node;
         }
 
@@ -171,8 +173,8 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         internal CodeNode KeywordLayout()
         {
             var keyword = _lexer.Move();
-            var result=new CodeNode(keyword, NodeTypes.keyword);
-            result.IsTreeEnding=true;
+            var result = new CodeNode(keyword, NodeTypes.keyword);
+            result.IsTreeEnding = true;
             return result;
         }
 
@@ -184,16 +186,16 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         public IEnumerable<INodeAST> IndexerLayout()
         {
             var args = new List<INodeAST>();
-            resolveBracket(() => addIndexArg(args), "[", ",", "]", "Error in indexer, expected {0}");            
+            resolveBracket(() => addIndexArg(args), "[", ",", "]", "Error in indexer, expected {0}");
             return args;
         }
 
         bool addIndexArg(List<INodeAST> args)
         {
             CodeNode node;
-            if (_checkToken(",")||_checkToken("]"))
+            if (_checkToken(",") || _checkToken("]"))
                 node = new CodeNode(_lexer.Current, NodeTypes.empty);
-            else 
+            else
                 node = _nextTree();
 
             node.EndingToken = _lexer.Current;
@@ -206,8 +208,9 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// Create CodeNode representing initializer block.
         /// </summary>
         /// <returns>CodeNode created according to layout.</returns>
-        public CodeNode InitializerLayout() {
-            return treeItemsLayout(",",false);
+        public CodeNode InitializerLayout()
+        {
+            return treeItemsLayout(",", false);
         }
 
 
@@ -217,17 +220,17 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <returns>CodeNode created according to layout.</returns>
         public CodeNode SequenceLayout()
         {
-            return treeItemsLayout(";",true);
+            return treeItemsLayout(";", true);
         }
-       
-        private CodeNode treeItemsLayout(string delimiter,bool canSkipDelim)
+
+        private CodeNode treeItemsLayout(string delimiter, bool canSkipDelim)
         {
             var node = new CodeNode(_lexer.Current, NodeTypes.block);
 
             var lines = new List<CodeNode>();
-            resolveBracket(() => addNode(lines,canSkipDelim), "{", delimiter, "}", "Error in sequence, expected '" + delimiter + "'");
+            resolveBracket(() => addNode(lines, canSkipDelim), "{", delimiter, "}", "Error in sequence, expected '" + delimiter + "'");
             node.SetSubsequence(lines);
-            if(_lexer.Current.Value==delimiter)
+            if (_lexer.Current.Value == delimiter)
                 node.EndingToken = _lexer.Current;
 
             return node;
@@ -242,7 +245,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         {
             var node = new CodeNode(_lexer.Move(), NodeTypes.bracket);
 
-            node.AddArgument(_nextTree());           
+            node.AddArgument(_nextTree());
             _shiftToken(")", "Expected closing {0}");
 
             if (_shiftToken("."))
@@ -283,27 +286,27 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             condNode.AddArgument(_nextTree());
             _shiftToken(")", "expected '{0}' in {1} clause", condNode.Value);
         }
-          
+
         /// <summary>
         /// Add tree node into given list.
         /// </summary>
         /// <param name="nodes">List where next node will be added.</param>
         /// <param name="canSkipDelim">Determine if delimiter can be skipped.</param>
         /// <returns></returns>
-        private bool addNode(List<CodeNode> nodes,bool canSkipDelim)
+        private bool addNode(List<CodeNode> nodes, bool canSkipDelim)
         {
             if (_checkToken(";"))
                 return false;
-                        
+
             var node = _nextTree();
             bool skip = canSkipDelim && node.NodeType == NodeTypes.block;
 
-            if(!skip)
+            if (!skip)
                 //blocks doesnt have ending token here
-                node.EndingToken = _lexer.Current;            
+                node.EndingToken = _lexer.Current;
             nodes.Add(node);
             return skip;
-        } 
+        }
 
         /// <summary>
         /// Test if current lexer token value is equal to expectedString. On success move lexer.
@@ -314,10 +317,10 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <param name="msgArgs">Format arguments for errorMessage.</param>
         /// <returns>True if expectedString is equal to lexers current value.</returns>
         /// <exception cref="ParsingException">If errorMessage!=null, is thrown parsing exception with specified errorMessage.</exception>
-        private bool _shiftToken(string expectedString, string errorMessage=null,params object[] msgArgs)
+        private bool _shiftToken(string expectedString, string errorMessage = null, params object[] msgArgs)
         {
-            var result = _checkToken(expectedString, errorMessage,msgArgs);
-            if(result)
+            var result = _checkToken(expectedString, errorMessage, msgArgs);
+            if (result)
                 _lexer.Move();
             return result;
         }
@@ -332,7 +335,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <param name="msgArgs">Format arguments for errorMessage.</param>
         /// <returns>True if expectedString is equal to lexers current value.</returns>
         /// <exception cref="ParsingException">If errorMessage!=null, is thrown parsing exception with specified errorMessage.</exception>
-        private bool _checkToken(string expectedString, string errorMessage = null,params object[] msgArgs)
+        private bool _checkToken(string expectedString, string errorMessage = null, params object[] msgArgs)
         {
             if (_lexer.Current.Value != expectedString)
             {
@@ -341,10 +344,11 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                     var args = new List<object>();
                     args.Add(expectedString);
                     args.AddRange(msgArgs);
-                    throw new ParsingException(string.Format(errorMessage, args.ToArray()));
+
+                    throw CSharpSyntax.ParsingException(_lexer.Current,errorMessage, args);
                 }
                 return false;
-            }            
+            }
             return true;
         }
 
