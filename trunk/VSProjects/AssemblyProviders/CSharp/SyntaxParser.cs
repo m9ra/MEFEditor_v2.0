@@ -56,7 +56,9 @@ namespace AssemblyProviders.CSharp
                     throw new NotSupportedException("newNode cannot be null");
 
                 //resolve prefix/postfix operators they go on stack as operands
-                operatorContext(newNode, _expectPrefix, _expectPostfix);
+                operatorContext(newNode, operands, _expectPrefix, _expectPostfix);
+
+
 
                 //add operand on the stack - behind operand we excpect postfix/binary operator
                 if (newNode.NodeType != NodeTypes.binaryOperator)
@@ -64,7 +66,7 @@ namespace AssemblyProviders.CSharp
                     _expectPostfix = true;
                     _expectPrefix = false;
                     operands.Push(newNode);
-                    if (newNode.NodeType == NodeTypes.block) 
+                    if (newNode.NodeType == NodeTypes.block)
                         break;
 
                     continue;
@@ -102,22 +104,29 @@ namespace AssemblyProviders.CSharp
         /// repair newNode if prefix/postfix operator, according to expect prefix/postfix context
         /// </summary>
         /// <param name="newNode"></param>
+        /// <param name="operands"></param>
         /// <param name="expectPrefix"></param>
         /// <param name="expectPostfix"></param>
-        private void operatorContext(CodeNode newNode, bool expectPrefix, bool expectPostfix)
+        private void operatorContext(CodeNode newNode, Stack<CodeNode> operands, bool expectPrefix, bool expectPostfix)
         {
             bool shouldRepair = false;
             NodeTypes nodeType = newNode.NodeType;
+
+            CodeNode argument=null;
 
             if (expectPrefix && _language.IsPrefixOperator(newNode.Value))
             {
                 shouldRepair = true;
                 nodeType = NodeTypes.prefixOperator;
+                argument = _getTree();
             }
             else if (expectPostfix && _language.IsPostfixOperator(newNode.Value))
-            {
+            {                
                 shouldRepair = true;
                 nodeType = NodeTypes.postOperator;
+
+                //postfix operator has argument already on the stack
+                argument = operands.Pop();
             }
 
             if (!shouldRepair)
@@ -125,10 +134,9 @@ namespace AssemblyProviders.CSharp
                 return;
 
             newNode.NodeType = nodeType;
-            var arg = _getTree();
 
-            newNode.AddArgument(arg);
-            newNode.IsTreeEnding = arg.IsTreeEnding;
+            newNode.AddArgument(argument);
+            newNode.IsTreeEnding |= argument.IsTreeEnding;
         }
 
         private bool isLesser(CodeNode node1, CodeNode node2)

@@ -150,7 +150,7 @@ namespace AssemblyProviders.CSharp.Compiling
             //TODO resolve score, inheritance,..
             if (param.Type.IsParameter)
             {
-                _genericBindings.Add(param, arg.Value.GetResultInfo());
+                _genericBindings.Add(param, arg.Value.Type);
             }
             _argBindings.Add(param, arg.Value);
         }

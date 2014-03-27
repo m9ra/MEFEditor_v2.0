@@ -748,6 +748,17 @@ namespace Research
             return variable;
         }
 
+        static internal TestingAssembly Operators()
+        {
+            return AssemblyUtils.Run(@"
+                var inc=1;
+                ++inc;
+                inc++;
+                var post=inc++;
+                var pref=++inc;
+            ");
+        }
+
         static internal TestingAssembly Fibonacci(int n)
         {
             return AssemblyUtils.Run(@"

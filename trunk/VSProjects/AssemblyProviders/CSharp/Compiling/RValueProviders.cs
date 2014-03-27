@@ -64,19 +64,20 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <remarks>May cause internal calling of generation methods.</remarks>
         /// </summary>
         /// <returns>Type informtion about rvalue</returns>
-        public abstract TypeDescriptor GetResultInfo();
+        public abstract TypeDescriptor Type { get; }
 
         /// <summary>
         /// Get storage where RValue is available. If there is no such storage, temporary variable is used
         /// <remarks>May cause internal calling of generation methods.</remarks>
         /// </summary>
         /// <returns>Name of storage variable</returns>
-        public abstract string GetStorage();
+        public abstract string GenerateStorage();
+
 
         protected RValueProvider(CompilationContext context) : base(context) { }
 
     }
-    
+
 
 
     class NewObjectValue : RValueProvider
@@ -107,13 +108,16 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            return _objectType;
+            get
+            {
+                return _objectType;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
             if (_storage == null)
             {
@@ -158,17 +162,20 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void GenerateReturn()
         {
-            E.Return(GetStorage());
+            E.Return(GenerateStorage());
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            return _literalInfo;
+            get
+            {
+                return _literalInfo;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
             var temporaryName = E.GetTemporaryVariable();
             E.AssignLiteral(temporaryName, _literal);
@@ -210,13 +217,16 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            return E.VariableInfo(_variable.Name) as TypeDescriptor;
+            get
+            {
+                return E.VariableInfo(_variable.Name) as TypeDescriptor;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
             return _variable.Name;
         }
@@ -253,13 +263,16 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            return _resultType;
+            get
+            {
+                return _resultType;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
             var tmp = E.GetTemporaryVariable("default");
             E.AssignLiteral(tmp, _defaultValue, _resultType);
@@ -298,13 +311,16 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            return _arrayType;
+            get
+            {
+                return _arrayType;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
             var tmp = E.GetTemporaryVariable("param");
             var array = new Array<InstanceWrap>(_args.Length);
@@ -317,7 +333,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 var arg = _args[i];
                 E.AssignLiteral(index, i);
 
-                E.Call(setMethod, tmp, Arguments.Values(index, arg.GetStorage()));
+                E.Call(setMethod, tmp, Arguments.Values(index, arg.GenerateStorage()));
             }
             return tmp;
         }
@@ -365,7 +381,7 @@ namespace AssemblyProviders.CSharp.Compiling
             var argVariables = new List<string>();
             foreach (var arg in _activation.Arguments)
             {
-                argVariables.Add(arg.GetStorage());
+                argVariables.Add(arg.GenerateStorage());
             }
 
             var args = Arguments.Values(argVariables.ToArray());
@@ -376,7 +392,7 @@ namespace AssemblyProviders.CSharp.Compiling
             }
             else
             {
-                var objStorage = _activation.CalledObject.GetStorage();
+                var objStorage = _activation.CalledObject.GenerateStorage();
 
                 var builder = E.Call(MethodInfo.MethodID, objStorage, args);
                 builder.SetTransformationProvider(new CallProvider(_activation.CallNode));
@@ -384,15 +400,18 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            return MethodInfo.ReturnType;
+            get
+            {
+                return MethodInfo.ReturnType;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
-            var tmp = new TemporaryVariableValue(Context);
+            var tmp = new TemporaryVariableValue(MethodInfo.ReturnType, Context);
             GenerateAssignInto(tmp);
 
             return tmp.Storage;
@@ -416,13 +435,16 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         private readonly EmitComputation _computation;
 
+        private readonly TypeDescriptor _type;
+
         private string _storage;
 
         private bool _generated;
 
-        public ComputedValue(EmitComputation computation, CompilationContext context)
+        public ComputedValue(TypeDescriptor type, EmitComputation computation, CompilationContext context)
             : base(context)
         {
+            _type = type;
             _computation = computation;
         }
 
@@ -442,20 +464,18 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            var storage = getStorage();
-
-            return E.VariableInfo(storage) as TypeDescriptor;
+            get
+            {
+                return _type;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
-            if (_storage == null)
-                Generate();
-
-            return _storage;
+            return getStorage();
         }
 
         /// </ inheritdoc>
@@ -467,7 +487,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         #endregion
 
-        #region Computation utilities 
+        #region Computation utilities
 
         /// <summary>
         /// Get storage with computed result. Consider current state of computation.
@@ -547,13 +567,16 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// </ inheritdoc>
-        public override TypeDescriptor GetResultInfo()
+        public override TypeDescriptor Type
         {
-            return E.VariableInfo(_storage) as TypeDescriptor;
+            get
+            {
+                return E.VariableInfo(_storage) as TypeDescriptor;
+            }
         }
 
         /// </ inheritdoc>
-        public override string GetStorage()
+        public override string GenerateStorage()
         {
             return _storage;
         }

@@ -168,7 +168,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void BasicParsing()
+        public void Parse_Basic()
         {
             var parser = new SyntaxParser();
             var result = parser.Parse(new Source(@"{
@@ -176,10 +176,9 @@ namespace UnitTesting
                 var test2=System.String.test();
             }", Method.EntryInfo));
         }
-
-
+        
         [TestMethod]
-        public void Emit_VariableAssign()
+        public void Compile_VariableAssign()
         {
             AssemblyUtils.Run(@"
                 var test=""hello"";
@@ -190,7 +189,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_Call()
+        public void Compile_Call()
         {
             AssemblyUtils.Run(@"
                 var test=ParsedMethod();
@@ -204,7 +203,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_StaticCall()
+        public void Compile_StaticCall()
         {
             AssemblyUtils.Run(@"
                 var test=StaticClass.StaticMethod(""CallArg"");
@@ -232,7 +231,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_ObjectCall()
+        public void Compile_ObjectCall()
         {
             AssemblyUtils.Run(@"
                 var obj=""Test string"";
@@ -248,7 +247,7 @@ namespace UnitTesting
 
 
         [TestMethod]
-        public void Emit_ObjectCall_WithArguments()
+        public void Compile_ObjectCall_WithArguments()
         {
             AssemblyUtils.Run(@"
                 var obj=""Object value"";
@@ -264,7 +263,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_ObjectCreation_FieldsUsage()
+        public void Compile_ObjectCreation_FieldsUsage()
         {
             AssemblyUtils.Run(@"
                 var obj=new TestObj(""input"");
@@ -292,7 +291,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_Fibonacci()
+        public void Compile_Fibonacci()
         {
             //fib(24) Time elapsed: 16s (without caching)
             //fib(24) Time elapsed: 15s (IInstructionLoader, IInstructionGenerator to abstract classes)
@@ -314,7 +313,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_GenericCall()
+        public void Compile_GenericCall()
         {
             AssemblyUtils.Run(@"                
                 var test=new Test();     
@@ -349,7 +348,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_VirtualCall()
+        public void Compile_VirtualCall()
         {
             AssemblyUtils.Run(@"
                 var test=new Test();
@@ -388,7 +387,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_VirtualGenericCall()
+        public void Compile_VirtualGenericCall()
         {
             AssemblyUtils.Run(@"
                 var list=new System.Collections.Generic.List<string>();               
@@ -410,7 +409,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Emit_ParamCall()
+        public void Compile_ParamCall()
         {
             AssemblyUtils.Run(@"
                 var formated=System.String.Format(""{0}{1}{2}"",""a"",""b"",""c"");               
@@ -420,6 +419,22 @@ namespace UnitTesting
             ;
         }
 
+        [TestMethod]
+        public void Compile_Operators()
+        {
+            AssemblyUtils.Run(@"
+                var inc=1;
+                ++inc;                
+                var post=inc++;
+                var pref=++inc;            
+                inc++;
+            ")
+
+            .AssertVariable("inc").HasValue(5)
+            .AssertVariable("post").HasValue(2)
+            .AssertVariable("pref").HasValue(4)
+            ;
+        }
 
 
         [TestMethod]

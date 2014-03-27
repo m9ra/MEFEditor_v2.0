@@ -190,7 +190,7 @@ namespace TypeSystem.Runtime.Building
             var attributes = method.GetCustomAttributes(typeof(ReturnTypeAttribute), false);
 
             ReturnTypeAttribute attribute = null;
-            if (attributes.Length > 1)
+            if (attributes.Length > 0)
                 attribute = attributes[0] as ReturnTypeAttribute;
 
             if (attribute == null)

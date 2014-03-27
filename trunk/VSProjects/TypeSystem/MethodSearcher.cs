@@ -85,11 +85,7 @@ namespace TypeSystem
 
         public void SetCalledObject(InstanceInfo instanceInfo)
         {
-            var namespaces = instanceInfo.TypeName.Split('.');
-            foreach (var ns in namespaces)
-            {
-                ExtendName(ns);
-            }
+            ExtendName(instanceInfo.TypeName);
         }
     }
 

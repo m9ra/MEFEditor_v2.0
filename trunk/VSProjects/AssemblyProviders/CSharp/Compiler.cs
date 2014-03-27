@@ -254,7 +254,7 @@ namespace AssemblyProviders.CSharp
             }
 
             //generate condition block with jump table
-            E.ConditionalJump(condition.GetStorage(), trueLbl);
+            E.ConditionalJump(condition.GenerateStorage(), trueLbl);
             E.Jump(falseLbl);
 
             //generate if branch
@@ -434,11 +434,14 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.prefixOperator:
                     result = resolvePrefixOperator(rValue);
                     break;
+                case NodeTypes.postOperator:
+                    result = resolvePostfixOperator(rValue);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
 
-            CompilationInfo.RegisterNodeType(rValue, result.GetResultInfo());
+            CompilationInfo.RegisterNodeType(rValue, result.Type);
             return result;
         }
 
@@ -511,18 +514,20 @@ namespace AssemblyProviders.CSharp
         /// <returns>Representation of prefix operation result</returns>
         private RValueProvider resolvePrefixOperator(INodeAST prefixOperator)
         {
-            var operand = prefixOperator.Arguments[0];
+            var operandNode = prefixOperator.Arguments[0];
             var operatorNotation = prefixOperator.Value;
             switch (operatorNotation)
             {
                 case CSharpSyntax.NewOperator:
-                    return resolveNew(operand);
+                    return resolveNew(operandNode);
 
                 case CSharpSyntax.IncrementOperator:
-                    throw new NotImplementedException();
+                    var incrementedLValue = getLValue(operandNode);
+                    return resolveLValueAdd(incrementedLValue, 1, true);
 
                 case CSharpSyntax.DecrementOperator:
-                    throw new NotImplementedException();
+                    var decrementedLValue = getLValue(operandNode);
+                    return resolveLValueAdd(decrementedLValue, -1, true);
 
                 default:
                     throw parsingException(prefixOperator, "Prefix operation '{0}' is not supported", operatorNotation);
@@ -537,20 +542,62 @@ namespace AssemblyProviders.CSharp
         private RValueProvider resolvePostfixOperator(INodeAST postfixOperator)
         {
             var operatorNotation = postfixOperator.Value;
-            var argumentNode = postfixOperator.Arguments[0];
-            var lValue = getLValue(argumentNode);
+            var operandNode = postfixOperator.Arguments[0];
+            var lValue = getLValue(operandNode);
 
             switch (operatorNotation)
             {
                 case CSharpSyntax.IncrementOperator:
-                    throw new NotImplementedException();
+                    return resolveLValueAdd(lValue, 1, false);
 
                 case CSharpSyntax.DecrementOperator:
-                    throw new NotImplementedException();
+                    return resolveLValueAdd(lValue, -1, false);
 
                 default:
                     throw parsingException(postfixOperator, "Postfix operation '{0}' is not supported", operatorNotation);
             }
+        }
+
+        /// <summary>
+        /// Resolve adding specified number to given target
+        /// </summary>
+        /// <param name="target">Lvalue where value will be added</param>
+        /// <param name="addedValue">Value that is added to lvalue</param>
+        /// <param name="prefixReturn">Determine that result of operation is value after or before adding</param>
+        /// <returns>Representation fo value adding</returns>
+        private RValueProvider resolveLValueAdd(LValueProvider target, int addedValue, bool prefixReturn)
+        {
+            var addRepresentation = new ComputedValue(target.Type, (e, storage) =>
+            {
+                var lTypeInfo = E.VariableInfo(target.Storage);
+                var rTypeInfo = TypeDescriptor.Create<int>();
+
+                var addedValueStorage = E.GetTemporaryVariable();
+                E.AssignLiteral(addedValueStorage, addedValue);
+
+                var opMethodId = findOperator(lTypeInfo, "+", rTypeInfo);
+
+                E.Call(opMethodId, target.Storage, Arguments.Values(addedValueStorage));
+
+                if (storage != null)
+                {
+                    //save copy to storage
+                    if (prefixReturn)
+                    {
+                        E.AssignReturnValue(storage, lTypeInfo);
+                    }
+                    else
+                    {
+                        E.Assign(storage, target.Storage);
+                    }
+                }
+
+                //assign added value 
+                E.AssignReturnValue(target.Storage, lTypeInfo);
+
+            }, _context);
+
+            return addRepresentation;
         }
 
         #endregion
@@ -593,7 +640,7 @@ namespace AssemblyProviders.CSharp
                     var lValue = getLValue(lNode);
                     var rValue = getRValue(rNode);
 
-                    var assignComputation = new ComputedValue((e, storage) =>
+                    var assignComputation = new ComputedValue(lValue.Type, (e, storage) =>
                     {
                         rValue.GenerateAssignInto(lValue);
 
@@ -625,20 +672,21 @@ namespace AssemblyProviders.CSharp
             var lOperandProvider = getRValue(lNode);
             var rOperandProvider = getRValue(rNode);
 
-            var lTypeInfo = lOperandProvider.GetResultInfo();
-            var rTypeInfo = rOperandProvider.GetResultInfo();
+            var lTypeInfo = lOperandProvider.Type;
+            var rTypeInfo = rOperandProvider.Type;
 
-            var lOperand = lOperandProvider.GetStorage();
-            var rOperand = rOperandProvider.GetStorage();
+            var lOperand = lOperandProvider.GenerateStorage();
+            var rOperand = rOperandProvider.GenerateStorage();
 
             var opMethodId = findOperator(lTypeInfo, op, rTypeInfo);
 
-            var computation = new ComputedValue((e, storage) =>
+            var computation = new ComputedValue(lTypeInfo, (e, storage) =>
             {
                 e.Call(opMethodId, lOperand, Arguments.Values(rOperand));
 
                 //TODO determine type according to operator return value
-                e.AssignReturnValue(storage, lTypeInfo);
+                if (storage != null)
+                    e.AssignReturnValue(storage, lTypeInfo);
             }, _context);
 
             return computation;
@@ -913,7 +961,7 @@ namespace AssemblyProviders.CSharp
             }
             else
             {
-                var calledObjectInfo = calledObject.GetResultInfo();
+                var calledObjectInfo = calledObject.Type;
                 searcher.SetCalledObject(calledObjectInfo);
             }
             return searcher;

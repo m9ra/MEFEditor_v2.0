@@ -16,6 +16,8 @@ namespace AssemblyProviders.CSharp.Compiling
         protected LValueProvider(CompilationContext context) : base(context) { }
 
         public abstract string Storage { get; }
+
+        public abstract TypeDescriptor Type { get; }
     }
 
 
@@ -39,15 +41,24 @@ namespace AssemblyProviders.CSharp.Compiling
                 return _variable.Name;
             }
         }
+
+        public override TypeDescriptor Type
+        {
+            get { return _variable.Type; }
+        }
     }
 
     class TemporaryVariableValue : LValueProvider
     {
         private readonly string _storage;
 
-        public TemporaryVariableValue(CompilationContext context, string storage = null)
+        private readonly TypeDescriptor _type;
+
+        public TemporaryVariableValue(TypeDescriptor type, CompilationContext context, string storage = null)
             : base(context)
         {
+            _type = type;
+
             if (storage == null)
             {
                 _storage = E.GetTemporaryVariable();
@@ -64,6 +75,11 @@ namespace AssemblyProviders.CSharp.Compiling
             {
                 return _storage;
             }
+        }
+
+        public override TypeDescriptor Type
+        {
+            get { return _type; }
         }
     }
 }
