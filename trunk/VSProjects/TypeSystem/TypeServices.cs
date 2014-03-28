@@ -199,7 +199,6 @@ namespace TypeSystem
         /// <returns>Loaded assembly if available, <c>null</c> otherwise</returns>
         public TypeAssembly LoadAssembly(string assemblyPath)
         {
-            //TODO load only for purposes of single composition point
             return _manager.LoadReferenceAssembly(assemblyPath);
         }
 

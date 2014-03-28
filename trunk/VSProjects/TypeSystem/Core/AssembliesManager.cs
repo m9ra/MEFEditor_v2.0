@@ -39,12 +39,7 @@ namespace TypeSystem.Core
         /// Transaction used when interpreting is running
         /// </summary>
         private Transaction _interpetingTransaction;
-
-        /// <summary>
-        /// Loader that is used for creating assemblies
-        /// </summary>
-        private readonly AssemblyLoader _loader;
-
+               
         /// <summary>
         /// Components indexed by their defining assemblies
         /// </summary>
@@ -54,6 +49,11 @@ namespace TypeSystem.Core
         /// Components indexed by defining types
         /// </summary>
         private readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
+
+        /// <summary>
+        /// Loader that is used for creating assemblies
+        /// </summary>
+        internal readonly AssemblyLoader Loader;
 
         /// <summary>
         /// Settings available fur current AppDomain
@@ -99,7 +99,7 @@ namespace TypeSystem.Core
         {
             Settings = settings;
 
-            _loader = loader;
+            Loader = loader;
 
             _assemblies = new AssembliesStorage(this);
             _assemblies.OnRootAdd += _onRootAssemblyAdd;
@@ -656,7 +656,7 @@ namespace TypeSystem.Core
 
         private AssemblyProvider createAssembly(object key)
         {
-            var assembly = _loader.CreateAssembly(key);
+            var assembly = Loader.CreateAssembly(key);
             return assembly;
         }
 

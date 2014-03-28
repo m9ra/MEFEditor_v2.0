@@ -107,6 +107,7 @@
     <Compile Include="CIL\ILAnalyzer\ILReaderProvider.cs" />
     <Compile Include="CIL\ILAnalyzer\ILUtilities.cs" />
     <Compile Include="CIL\Transcription.cs" />
+    <Compile Include="CSharp\Compiling\CallHierarchyProcessor.cs" />
     <Compile Include="ProjectAssembly\AttributeInfo.cs" />
     <Compile Include="ProjectAssembly\CodeElementExtensions.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\MethodBuilder.cs" />

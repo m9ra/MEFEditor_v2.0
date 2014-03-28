@@ -748,6 +748,31 @@ namespace Research
             return variable;
         }
 
+        static internal TestingAssembly Properties()
+        {
+            return AssemblyUtils.Run(@"
+                var x= OWithSetter.Property;
+                OWithSetter.Property=""SetterValue"";
+            ")
+
+             .AddMethod("OWithSetter." + Naming.ClassCtorName, (c) => {
+                 c.SetField(c.CurrentArguments[0], "Property", c.Machine.CreateDirectInstance("DefaultValue"));
+             }, Method.Ctor_NoParam)
+
+             .AddMethod("OWithSetter.set_Property", (c) =>
+             {
+                 c.SetField(c.CurrentArguments[0], "Property", c.CurrentArguments[1]);
+             }, Method.StaticVoid_StringParam)
+
+             .AddMethod("OWithSetter.get_Property", (c) =>
+             {
+                 var value = c.GetField(c.CurrentArguments[0], "Property") as Instance;
+                 c.Return(value);
+             }, Method.StaticString_NoParam)
+
+             ;
+        }
+
         static internal TestingAssembly Operators()
         {
             return AssemblyUtils.Run(@"

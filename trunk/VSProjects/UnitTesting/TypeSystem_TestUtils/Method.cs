@@ -33,6 +33,10 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly static MethodDescription StaticString_StringParam = MethodDescription.CreateStatic<string>(StringParam1);
 
+        public readonly static MethodDescription StaticString_NoParam = MethodDescription.CreateStatic<string>();
+
+        public readonly static MethodDescription StaticVoid_StringParam = new MethodDescription(TypeDescriptor.Void, true, StringParam1);
+
         public readonly static MethodDescription StaticInitializer = Void_NoParam;
 
         public readonly static MethodDescription Ctor_NoParam = Void_NoParam;
@@ -40,7 +44,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public readonly static MethodDescription Ctor_StringParam = Void_StringParam;
 
         public readonly static MethodDescription StringICollection_StringICollectionParam = MethodDescription.CreateInstance<ICollection<string>>(StringICollectionParam1);
-            
+
 
 
         public readonly static string EntryMethodPath = "Test.EntryMethod";

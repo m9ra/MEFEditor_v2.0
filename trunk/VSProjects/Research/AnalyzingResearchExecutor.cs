@@ -203,8 +203,8 @@ namespace Research
 
             _guiManager = new GUIManager(_assembly.AppDomain, form.GUI, factory);
             _guiManager.CompositionPointSelected += onCompositionPointSelected;
-            _guiManager.HostAssemblyLoaded += (a) => _assembly.AddAssembly(a);
-            _guiManager.HostAssemblyUnLoaded += (a) => { _assembly.RemoveAssembly(a); };
+       /*     _guiManager.HostAssemblyLoaded += (a) => _assembly.AddAssembly(a);
+            _guiManager.HostAssemblyUnLoaded += (a) => { _assembly.RemoveAssembly(a); };*/
             _guiManager.Display(_diagramDefinition);
 
             form.Show();

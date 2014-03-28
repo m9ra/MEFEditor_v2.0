@@ -52,6 +52,15 @@ namespace TypeSystem
             return loadedAssembly;
         }
 
+        /// <summary>
+        /// Load assembly defined by give assembly key into application domain
+        /// </summary>
+        /// <param name="assemblyKey">Key used for unloading assembly</param>
+        public AssemblyProvider UnloadRoot(object assemblyKey)
+        {
+            throw new NotImplementedException();
+        }
+
         #region LoaderBase implementation
 
         /// </ inheritdoc>

@@ -451,7 +451,7 @@ namespace AssemblyProviders.CSharp
         /// <returns><see cref="LValueProvider"/> representing lvalue provided by hierarchy</returns>
         private LValueProvider resolveLHierarchy(INodeAST hierarchy)
         {
-            //first token can be variable or setter call cascade
+            //hirarchy could looks like [this.]setter or rvalue.setter
             LValueProvider result;
 
             var hasBaseObject = tryGetLVariable(hierarchy, out result);

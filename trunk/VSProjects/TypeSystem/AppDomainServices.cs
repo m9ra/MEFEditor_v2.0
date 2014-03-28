@@ -27,6 +27,8 @@ namespace TypeSystem
         /// </summary>
         public IEnumerable<AssemblyProvider> Assemblies { get { return _manager.Assemblies; } }
 
+        public AssemblyLoader Loader { get { return _manager.Loader; } }
+
         /// <summary>
         /// Name of currently running transaction
         /// </summary>

@@ -161,17 +161,12 @@ namespace Plugin.GUI
             }
 
             if (path == null)
-            {
-                //there is nothing to do
                 return;
-            }
-            else
-            {
-                //TODO refactor - assembly loading algorithm - this is responsibily of managers user
-                _hostAssembly = new CILAssembly(path);
-                if (HostAssemblyLoaded != null)
-                    HostAssemblyLoaded(_hostAssembly);
-            }
+
+            _hostAssembly = _appDomain.Loader.LoadRoot(path);
+
+            if (_hostAssembly != null && HostAssemblyLoaded != null)
+                HostAssemblyLoaded(_hostAssembly);
         }
 
         #endregion
