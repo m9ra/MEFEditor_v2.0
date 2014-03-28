@@ -345,13 +345,13 @@ namespace AssemblyProviders.CSharp.Compiling
         }
     }
 
-    class CallRValue : RValueProvider
+    class CallValue : RValueProvider
     {
         private readonly CallActivation _activation;
 
         internal TypeMethodInfo MethodInfo { get { return _activation.MethodInfo; } }
 
-        public CallRValue(CallActivation activation, CompilationContext context)
+        public CallValue(CallActivation activation, CompilationContext context)
             : base(context)
         {
             if (activation == null)

@@ -393,21 +393,20 @@ namespace AssemblyProviders.CSharp
         /// <returns><see cref="LValueProvider"/> represented by given node</returns>
         private LValueProvider getLValue(INodeAST lValue)
         {
+            var value = lValue.Value;
             switch (lValue.NodeType)
             {
                 case NodeTypes.declaration:
                     //declaration of new variable
                     var variable = new VariableInfo(lValue);
                     declareVariable(variable);
-                    return new VariableValue(variable, lValue, _context);
+                    return new VariableLValue(variable, lValue, _context);
 
                 case NodeTypes.hierarchy:
-                    //TODO resolve hierarchy - property setter,...
-                    var varInfo = getVariableInfo(lValue.Value);
-                    return new VariableValue(varInfo, lValue, _context);
+                    return resolveLHierarchy(lValue);
 
                 default:
-                    throw new NotImplementedException();
+                    throw parsingException(lValue, "LValue {0} is not supported", value);
             }
         }
 
@@ -446,6 +445,26 @@ namespace AssemblyProviders.CSharp
         }
 
         /// <summary>
+        /// Resolve hierarchy node providing begining of lvalue expression
+        /// </summary>
+        /// <param name="hierarchy">Node where hierarchy of lvalue expression starts</param>
+        /// <returns><see cref="LValueProvider"/> representing lvalue provided by hierarchy</returns>
+        private LValueProvider resolveLHierarchy(INodeAST hierarchy)
+        {
+            //first token can be variable or setter call cascade
+            LValueProvider result;
+
+            var hasBaseObject = tryGetLVariable(hierarchy, out result);
+            var isIndexerCall = hierarchy.Indexer != null && hierarchy.NodeType == NodeTypes.hierarchy;
+            var hasCallExtending = hierarchy.Child != null || hierarchy.Indexer != null;
+
+            if (hasCallExtending)
+                throw new NotImplementedException("Setter support");
+
+            return result;
+        }
+
+        /// <summary>
         /// Resolve hierarchy node providing begining of rvalue expression
         /// </summary>
         /// <param name="hierarchy">Node where hierarchy of rvalue expression starts</param>
@@ -456,7 +475,7 @@ namespace AssemblyProviders.CSharp
             //other hierarchy tokens can only be calls (fields are resolved as calls to property getters)
             RValueProvider result;
 
-            var hasBaseObject = tryGetLiteral(hierarchy, out result) || tryGetVariable(hierarchy, out result);
+            var hasBaseObject = tryGetLiteral(hierarchy, out result) || tryGetRVariable(hierarchy, out result);
             var isIndexerCall = hierarchy.Indexer != null && hierarchy.NodeType == NodeTypes.hierarchy;
             var hasCallExtending = hierarchy.Child != null || hierarchy.Indexer != null;
 
@@ -483,13 +502,34 @@ namespace AssemblyProviders.CSharp
             return result;
         }
 
+
         /// <summary>
-        /// Try to get variable for given node
+        /// Try to get variable providing assign support for given node
+        /// </summary>
+        /// <param name="variableNode">Node representing needed variable</param>
+        /// <param name="variable">LValue provider of variable if available, <c>null</c> otherwise</param>
+        /// <returns><c>true</c> if variable is available, <c>false</c> otherwise</returns>
+        private bool tryGetLVariable(INodeAST variableNode, out LValueProvider variable)
+        {
+            var variableName = variableNode.Value;
+            var varInfo = getVariableInfo(variableName);
+            if (varInfo != null)
+            {
+                variable = new VariableLValue(varInfo, variableNode, _context);
+                return true;
+            }
+
+            variable = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Try to get variable providing value for given node
         /// </summary>
         /// <param name="variableNode">Node representing needed variable</param>
         /// <param name="variable">Value provider of variable if available, <c>null</c> otherwise</param>
         /// <returns><c>true</c> if variable is available, <c>false</c> otherwise</returns>
-        private bool tryGetVariable(INodeAST variableNode, out RValueProvider variable)
+        private bool tryGetRVariable(INodeAST variableNode, out RValueProvider variable)
         {
             var variableName = variableNode.Value;
             var varInfo = getVariableInfo(variableName);
@@ -523,11 +563,13 @@ namespace AssemblyProviders.CSharp
 
                 case CSharpSyntax.IncrementOperator:
                     var incrementedLValue = getLValue(operandNode);
-                    return resolveLValueAdd(incrementedLValue, 1, true);
+                    var incrementBase = getRValue(operandNode);
+                    return resolveLValueAdd(incrementedLValue, incrementBase, 1, true, prefixOperator);
 
                 case CSharpSyntax.DecrementOperator:
                     var decrementedLValue = getLValue(operandNode);
-                    return resolveLValueAdd(decrementedLValue, -1, true);
+                    var decrementBase = getRValue(operandNode);
+                    return resolveLValueAdd(decrementedLValue, decrementBase, -1, true, prefixOperator);
 
                 default:
                     throw parsingException(prefixOperator, "Prefix operation '{0}' is not supported", operatorNotation);
@@ -544,14 +586,15 @@ namespace AssemblyProviders.CSharp
             var operatorNotation = postfixOperator.Value;
             var operandNode = postfixOperator.Arguments[0];
             var lValue = getLValue(operandNode);
+            var source = getRValue(operandNode);
 
             switch (operatorNotation)
             {
                 case CSharpSyntax.IncrementOperator:
-                    return resolveLValueAdd(lValue, 1, false);
+                    return resolveLValueAdd(lValue, source, 1, false, postfixOperator);
 
                 case CSharpSyntax.DecrementOperator:
-                    return resolveLValueAdd(lValue, -1, false);
+                    return resolveLValueAdd(lValue, source, -1, false, postfixOperator);
 
                 default:
                     throw parsingException(postfixOperator, "Postfix operation '{0}' is not supported", operatorNotation);
@@ -562,22 +605,25 @@ namespace AssemblyProviders.CSharp
         /// Resolve adding specified number to given target
         /// </summary>
         /// <param name="target">Lvalue where value will be added</param>
-        /// <param name="addedValue">Value that is added to lvalue</param>
+        /// <param name="toAdd">Value that is added to lvalue</param>
         /// <param name="prefixReturn">Determine that result of operation is value after or before adding</param>
         /// <returns>Representation fo value adding</returns>
-        private RValueProvider resolveLValueAdd(LValueProvider target, int addedValue, bool prefixReturn)
+        private RValueProvider resolveLValueAdd(LValueProvider target, RValueProvider source, int toAdd, bool prefixReturn, INodeAST operatorNode)
         {
             var addRepresentation = new ComputedValue(target.Type, (e, storage) =>
             {
                 var lTypeInfo = E.VariableInfo(target.Storage);
                 var rTypeInfo = TypeDescriptor.Create<int>();
 
-                var addedValueStorage = E.GetTemporaryVariable();
-                E.AssignLiteral(addedValueStorage, addedValue);
+                //value for adding
+                var addedValue = new TemporaryRVariableValue(_context);
+                var addedValueStorage = addedValue.GenerateStorage();
+                E.AssignLiteral(addedValueStorage, toAdd);
 
-                var opMethodId = findOperator(lTypeInfo, "+", rTypeInfo);
+                var operatorActivation = createOperatorActivation(source, "+", addedValue, operatorNode);
 
-                E.Call(opMethodId, target.Storage, Arguments.Values(addedValueStorage));
+                var callProvider = new CallValue(operatorActivation, _context);
+                callProvider.Generate();
 
                 if (storage != null)
                 {
@@ -672,44 +718,42 @@ namespace AssemblyProviders.CSharp
             var lOperandProvider = getRValue(lNode);
             var rOperandProvider = getRValue(rNode);
 
-            var lTypeInfo = lOperandProvider.Type;
-            var rTypeInfo = rOperandProvider.Type;
+            var operatorActivation = createOperatorActivation(lOperandProvider, op, rOperandProvider, lNode.Parent);
 
-            var lOperand = lOperandProvider.GenerateStorage();
-            var rOperand = rOperandProvider.GenerateStorage();
-
-            var opMethodId = findOperator(lTypeInfo, op, rTypeInfo);
-
-            var computation = new ComputedValue(lTypeInfo, (e, storage) =>
-            {
-                e.Call(opMethodId, lOperand, Arguments.Values(rOperand));
-
-                //TODO determine type according to operator return value
-                if (storage != null)
-                    e.AssignReturnValue(storage, lTypeInfo);
-            }, _context);
-
-            return computation;
+            var call = new CallValue(operatorActivation, _context);
+            return call;
         }
 
         /// <summary>
         /// Find method representation of operator for given nodes
         /// </summary>
-        /// <param name="leftOperandType">Type of left operand</param>
+        /// <param name="leftOperandType"Left operand</param>
         /// <param name="op">Operator notation</param>
-        /// <param name="rightOperandType">Type of right operand</param>
+        /// <param name="rightOperand">Right operand</param>
+        /// <param name="leftOperand">Node available for operator</param>
         /// <returns>Found operator</returns>
-        private MethodID findOperator(InstanceInfo leftOperandType, string op, InstanceInfo rightOperandType)
+        private CallActivation createOperatorActivation(RValueProvider leftOperand, string op, RValueProvider rightOperand, INodeAST operatorNode)
         {
             //translate method according to operators table
             var method = _mathOperatorMethods[op];
+            var leftOperandType = leftOperand.Type;
 
             var searcher = _context.CreateSearcher();
             searcher.SetCalledObject(leftOperandType);
             searcher.Dispatch(method);
 
-            //TODO properly determine which call is needed (number hiearchy - overloading)
-            return searcher.FoundResult.First().MethodID;
+            if (!searcher.HasResults)
+                throw parsingException(operatorNode, "Method implementation for operator {0} cannot be found", op);
+
+            var selector = new MethodSelector(searcher.FoundResult, _context);
+            var activation = selector.CreateCallActivation(new Argument(rightOperand));
+            activation.CallNode = operatorNode;
+            activation.CalledObject = leftOperand;
+
+            if (activation == null)
+                throw parsingException(operatorNode, "Cannot select method overload for operator {0}", op);
+
+            return activation;
         }
 
         #endregion
@@ -861,13 +905,13 @@ namespace AssemblyProviders.CSharp
             var objectType = searcher.FoundResult.First().DeclaringType;
             var nObject = new NewObjectValue(objectType, _context);
 
-            var activation = createActivation(nObject, callNode, searcher.FoundResult);
+            var activation = createCallActivation(nObject, callNode, searcher.FoundResult);
             if (activation == null)
             {
                 throw new NotSupportedException("Constructor call doesn't match to any available definition");
             }
 
-            var ctorCall = new CallRValue(activation, _context);
+            var ctorCall = new CallValue(activation, _context);
 
             nObject.SetCtor(ctorCall);
             return nObject;
@@ -901,14 +945,14 @@ namespace AssemblyProviders.CSharp
                 if (searcher.HasResults)
                 {
                     //there are possible overloads for call
-                    var callActivation = createActivation(calledObject, currNode, searcher.FoundResult);
+                    var callActivation = createCallActivation(calledObject, currNode, searcher.FoundResult);
                     if (callActivation == null)
                     {
                         //overloads doesnt match to arguments
                         return false;
                     }
 
-                    var resolvedCall = new CallRValue(callActivation, _context);
+                    var resolvedCall = new CallValue(callActivation, _context);
                     if (nextNode == null)
                     {
                         //end of call chain
@@ -1009,7 +1053,7 @@ namespace AssemblyProviders.CSharp
         /// <param name="callNode">Node determining call</param>
         /// <param name="methods">Methods used for right overloading selection</param>
         /// <returns>Created call activation</returns>
-        private CallActivation createActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
+        private CallActivation createCallActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
         {
             var selector = new MethodSelector(methods, _context);
 

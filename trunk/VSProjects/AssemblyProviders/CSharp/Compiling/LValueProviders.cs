@@ -21,12 +21,12 @@ namespace AssemblyProviders.CSharp.Compiling
     }
 
 
-    class VariableValue : LValueProvider
+    class VariableLValue : LValueProvider
     {
         private readonly VariableInfo _variable;
         private readonly INodeAST _variableNode;
 
-        public VariableValue(VariableInfo variable, INodeAST variableNode, CompilationContext context)
+        public VariableLValue(VariableInfo variable, INodeAST variableNode, CompilationContext context)
             : base(context)
         {
             variable.AddVariableUsing(variableNode);
