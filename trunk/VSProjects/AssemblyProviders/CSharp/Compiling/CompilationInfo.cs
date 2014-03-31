@@ -44,7 +44,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <param name="callProvider">Registered call provider</param>
         internal void RegisterCallProvider(INodeAST callNode, CallProvider callProvider)
         {
-            _callProviders.Add(callNode, callProvider);
+            _callProviders[callNode]=callProvider;
         }
 
         /// <summary>

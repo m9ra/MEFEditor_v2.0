@@ -96,8 +96,18 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void GenerateAssignInto(LValueProvider lValue)
         {
-            _storage = lValue.Storage;
-            E.AssignNewObject(_storage, _objectType);
+            var storageProvider = lValue as IStorageReadProvider;
+            if (storageProvider == null)
+            {
+                throw new NotImplementedException("Create temporary variable and reasign");
+            }
+            else
+            {
+                _storage = storageProvider.Storage;
+            }
+
+            lValue.AssignNewObject(_objectType);
+
             _ctorCall.Generate();
         }
 
@@ -154,9 +164,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void GenerateAssignInto(LValueProvider lValue)
         {
-            var storage = lValue.Storage;
-            var builder = E.AssignLiteral(storage, _literal);
-            builder.RemoveProvider = new AssignRemove(_literalNode);
+            lValue.AssignLiteral(_literal, _literalNode);
         }
 
         /// </ inheritdoc>
@@ -205,9 +213,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void GenerateAssignInto(LValueProvider lValue)
         {
-            var storage = lValue.Storage;
-            var builder = E.Assign(storage, _variable.Name);
-            builder.RemoveProvider = new AssignRemove(_variableNode);
+            lValue.Assign(_variable.Name, _variableNode);
         }
 
         /// </ inheritdoc>
@@ -364,7 +370,7 @@ namespace AssemblyProviders.CSharp.Compiling
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             generateCall();
-            E.AssignReturnValue(lValue.Storage, MethodInfo.ReturnType);
+            lValue.AssignReturnValue(MethodInfo.ReturnType);
         }
 
         /// </ inheritdoc>
@@ -429,7 +435,7 @@ namespace AssemblyProviders.CSharp.Compiling
     /// </summary>
     /// <param name="emitter">Emitter where instructions has to be emitted</param>
     /// <param name="storage">Storage where computed value has to be assigned</param>
-    delegate void EmitComputation(EmitterBase emitter, string storage);
+    delegate void EmitComputation(EmitterBase emitter, LValueProvider storage);
 
     class ComputedValue : RValueProvider
     {
@@ -437,7 +443,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private readonly TypeDescriptor _type;
 
-        private string _storage;
+        private LValueProvider _storage;
 
         private bool _generated;
 
@@ -453,7 +459,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void GenerateAssignInto(LValueProvider lValue)
         {
-            generateAssignToStorage(lValue.Storage);
+            generateAssignToStorage(lValue);
         }
 
         /// </ inheritdoc>
@@ -496,16 +502,20 @@ namespace AssemblyProviders.CSharp.Compiling
         private string getStorage()
         {
             if (_storage == null)
-                generateAssignToStorage(E.GetTemporaryVariable());
+            {
+                var tmp = new TemporaryVariableValue(_type, Context);
+                generateAssignToStorage(tmp);
+            }
 
-            return _storage;
+            var storageProvider = _storage as IStorageReadProvider;
+            return storageProvider.Storage;
         }
 
         /// <summary>
         /// Generate computation or assigning that are needed
         /// </summary>
         /// <param name="target">Target where value will be assigned to</param>
-        private void generateAssignToStorage(string target)
+        private void generateAssignToStorage(LValueProvider target)
         {
             if (_generated && _storage == target)
             {
@@ -518,8 +528,7 @@ namespace AssemblyProviders.CSharp.Compiling
             {
                 //reasign value
 
-                E.Assign(target, _storage);
-                return;
+                throw new NotImplementedException();
             }
 
             //remember, target can be null
@@ -531,6 +540,7 @@ namespace AssemblyProviders.CSharp.Compiling
             _generated = true;
 
             _computation(E, _storage);
+            //  throw new NotImplementedException();
         }
 
         #endregion
@@ -538,18 +548,18 @@ namespace AssemblyProviders.CSharp.Compiling
 
     class TemporaryRVariableValue : RValueProvider
     {
-        private readonly string _storage;
+        public readonly string Storage;
 
         public TemporaryRVariableValue(CompilationContext context, string storage = null)
             : base(context)
         {
             if (storage == null)
             {
-                _storage = E.GetTemporaryVariable();
+                Storage = E.GetTemporaryVariable();
             }
             else
             {
-                _storage = storage;
+                Storage = storage;
             }
 
         }
@@ -557,13 +567,13 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void GenerateAssignInto(LValueProvider lValue)
         {
-            throw new NotImplementedException();
+            lValue.Assign(Storage, null);
         }
 
         /// </ inheritdoc>
         public override void GenerateReturn()
         {
-            E.Return(_storage);
+            E.Return(Storage);
         }
 
         /// </ inheritdoc>
@@ -571,14 +581,14 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             get
             {
-                return E.VariableInfo(_storage) as TypeDescriptor;
+                return E.VariableInfo(Storage) as TypeDescriptor;
             }
         }
 
         /// </ inheritdoc>
         public override string GenerateStorage()
         {
-            return _storage;
+            return Storage;
         }
 
         /// </ inheritdoc>

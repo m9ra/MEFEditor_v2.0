@@ -100,12 +100,12 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Context of compilation process
         /// </summary>
-        private readonly CompilationContext _context;
+        internal readonly CompilationContext Context;
 
         /// <summary>
         /// Emitter where compiled instructions are emitted
         /// </summary>
-        private EmitterBase E { get { return _context.Emitter; } }
+        private EmitterBase E { get { return Context.Emitter; } }
 
         /// <summary>
         /// Info that is collected about source during compilation
@@ -116,6 +116,11 @@ namespace AssemblyProviders.CSharp
         /// Info of method that is compiled
         /// </summary>
         private TypeMethodInfo MethodInfo { get { return _activation.Method; } }
+
+        /// <summary>
+        /// Namespaces that are available for compiled method
+        /// </summary>
+        internal IEnumerable<string> Namespaces { get { return _source.Namespaces; } }
 
         /// <summary>
         /// API method providing access to compiler instruction emitting services.
@@ -136,7 +141,7 @@ namespace AssemblyProviders.CSharp
         private Compiler(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
             _activation = activation;
-            _context = new CompilationContext(emitter, services);
+            Context = new CompilationContext(emitter, services);
 
             _source = new Source(activation.SourceCode, activation.Method);
             _source.AddExternalNamespaces(activation.Namespaces);
@@ -400,7 +405,7 @@ namespace AssemblyProviders.CSharp
                     //declaration of new variable
                     var variable = new VariableInfo(lValue);
                     declareVariable(variable);
-                    return new VariableLValue(variable, lValue, _context);
+                    return new VariableLValue(variable, lValue, Context);
 
                 case NodeTypes.hierarchy:
                     return resolveLHierarchy(lValue);
@@ -458,8 +463,26 @@ namespace AssemblyProviders.CSharp
             var isIndexerCall = hierarchy.Indexer != null && hierarchy.NodeType == NodeTypes.hierarchy;
             var hasCallExtending = hierarchy.Child != null || hierarchy.Indexer != null;
 
-            if (hasCallExtending)
-                throw new NotImplementedException("Setter support");
+            if (hasBaseObject && hasCallExtending)
+            {
+                //setter on explicit object
+                RValueProvider baseObject;
+                tryGetRVariable(hierarchy, out baseObject);
+                var callNode = isIndexerCall ? hierarchy : hierarchy.Child;
+
+                if (!tryGetSetter(callNode, out result, baseObject))
+                {
+                    throw new NotSupportedException("Unknown object call hierarchy construction on " + callNode);
+                }
+            }
+            else if (!hasBaseObject)
+            {
+                //there can only be unbased call hierarchy (note: static method with namespaces, etc. is whole call hierarchy) 
+                if (!tryGetSetter(hierarchy, out result))
+                {
+                    throw new NotSupportedException("Unknown hierarchy construction on " + hierarchy);
+                }
+            }
 
             return result;
         }
@@ -503,6 +526,29 @@ namespace AssemblyProviders.CSharp
         }
 
 
+
+        private bool tryGetSetter(INodeAST callNode, out LValueProvider result, RValueProvider baseObject = null)
+        {
+            var processor = new CallHierarchyProcessor(callNode, this);
+
+            return processor.TryGetSetter(out result, baseObject);
+        }
+
+        /// <summary>
+        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes)
+        /// </summary>
+        /// <param name="callHierarchy">Node where call hierarchy starts</param>
+        /// <param name="call">Result representation of call hierarchy</param>
+        /// <param name="calledObject">Object on which call hierarchy starts if any</param>
+        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise</returns>
+        internal bool tryGetCall(INodeAST callNode, out RValueProvider call, RValueProvider calledObject = null)
+        {
+            var processor = new CallHierarchyProcessor(callNode, this);
+
+            return processor.TryGetCall(out call, calledObject);
+        }
+
+
         /// <summary>
         /// Try to get variable providing assign support for given node
         /// </summary>
@@ -515,7 +561,7 @@ namespace AssemblyProviders.CSharp
             var varInfo = getVariableInfo(variableName);
             if (varInfo != null)
             {
-                variable = new VariableLValue(varInfo, variableNode, _context);
+                variable = new VariableLValue(varInfo, variableNode, Context);
                 return true;
             }
 
@@ -535,7 +581,7 @@ namespace AssemblyProviders.CSharp
             var varInfo = getVariableInfo(variableName);
             if (varInfo != null)
             {
-                variable = new VariableRValue(varInfo, variableNode, _context);
+                variable = new VariableRValue(varInfo, variableNode, Context);
                 return true;
             }
 
@@ -612,36 +658,61 @@ namespace AssemblyProviders.CSharp
         {
             var addRepresentation = new ComputedValue(target.Type, (e, storage) =>
             {
-                var lTypeInfo = E.VariableInfo(target.Storage);
+                var lTypeInfo = target.Type;
                 var rTypeInfo = TypeDescriptor.Create<int>();
 
                 //value for adding
-                var addedValue = new TemporaryRVariableValue(_context);
-                var addedValueStorage = addedValue.GenerateStorage();
+                var addedValue = new TemporaryRVariableValue(Context);
+                var addedValueStorage = addedValue.Storage;
+
                 E.AssignLiteral(addedValueStorage, toAdd);
 
                 var operatorActivation = createOperatorActivation(source, "+", addedValue, operatorNode);
 
-                var callProvider = new CallValue(operatorActivation, _context);
+                var callProvider = new CallValue(operatorActivation, Context);
                 callProvider.Generate();
+
+                //assign added value 
+
+                var targetStorageProvider = target as IStorageReadProvider;
+
+                var needToPreserveReturn = false;
+                TemporaryRVariableValue preservedReturn = null;
 
                 if (storage != null)
                 {
+                    var sourceReturnCorruptive = !(source is IStorageReadProvider);
+                    var storageReturnCorruptive = !(source is IStorageReadProvider);
+
+                    needToPreserveReturn = (!prefixReturn && sourceReturnCorruptive) || (prefixReturn && storageReturnCorruptive);
+                    if (needToPreserveReturn)
+                    {
+                        preservedReturn = new TemporaryRVariableValue(Context);
+                        E.AssignReturnValue(preservedReturn.Storage, lTypeInfo);
+                    }
+
                     //save copy to storage
                     if (prefixReturn)
                     {
-                        E.AssignReturnValue(storage, lTypeInfo);
+                        storage.AssignReturnValue(lTypeInfo);
                     }
                     else
                     {
-                        E.Assign(storage, target.Storage);
+                        source.GenerateAssignInto(storage);
                     }
                 }
 
-                //assign added value 
-                E.AssignReturnValue(target.Storage, lTypeInfo);
+                if (needToPreserveReturn)
+                {
+                    preservedReturn.GenerateAssignInto(target);
+                }
+                else
+                {
+                    target.AssignReturnValue(lTypeInfo);
+                }
 
-            }, _context);
+
+            }, Context);
 
             return addRepresentation;
         }
@@ -690,15 +761,15 @@ namespace AssemblyProviders.CSharp
                     {
                         rValue.GenerateAssignInto(lValue);
 
-                        var lVar = getVariableInfo(lValue.Storage);
-
-                        //report using of variable
-                        lVar.AddVariableUsing(lNode);
-
                         if (storage != null)
+                        {
                             //assign chaining
-                            E.Assign(storage, lValue.Storage);
-                    }, _context);
+
+                            //this is needed because of getters/setters
+                            var chainedRValue = getRValue(lNode);
+                            chainedRValue.GenerateAssignInto(storage);
+                        }
+                    }, Context);
 
                     return assignComputation;
                 default:
@@ -720,7 +791,7 @@ namespace AssemblyProviders.CSharp
 
             var operatorActivation = createOperatorActivation(lOperandProvider, op, rOperandProvider, lNode.Parent);
 
-            var call = new CallValue(operatorActivation, _context);
+            var call = new CallValue(operatorActivation, Context);
             return call;
         }
 
@@ -738,14 +809,14 @@ namespace AssemblyProviders.CSharp
             var method = _mathOperatorMethods[op];
             var leftOperandType = leftOperand.Type;
 
-            var searcher = _context.CreateSearcher();
+            var searcher = Context.CreateSearcher();
             searcher.SetCalledObject(leftOperandType);
             searcher.Dispatch(method);
 
             if (!searcher.HasResults)
                 throw parsingException(operatorNode, "Method implementation for operator {0} cannot be found", op);
 
-            var selector = new MethodSelector(searcher.FoundResult, _context);
+            var selector = new MethodSelector(searcher.FoundResult, Context);
             var activation = selector.CreateCallActivation(new Argument(rightOperand));
             activation.CallNode = operatorNode;
             activation.CalledObject = leftOperand;
@@ -775,7 +846,7 @@ namespace AssemblyProviders.CSharp
 
                 //TODO correct string escaping
                 literalToken = literalToken.Replace("\"", "");
-                literal = new LiteralValue(literalToken, literalNode, _context);
+                literal = new LiteralValue(literalToken, literalNode, Context);
                 return true;
             }
 
@@ -784,7 +855,7 @@ namespace AssemblyProviders.CSharp
             {
                 //int literal
 
-                literal = new LiteralValue(num, literalNode, _context);
+                literal = new LiteralValue(num, literalNode, Context);
                 return true;
             }
 
@@ -793,7 +864,7 @@ namespace AssemblyProviders.CSharp
             {
                 //bool literal
 
-                literal = new LiteralValue(bl, literalNode, _context);
+                literal = new LiteralValue(bl, literalNode, Context);
                 return true;
             }
 
@@ -807,7 +878,7 @@ namespace AssemblyProviders.CSharp
 
                 var type = resolveTypeofArgument(literalNode.Arguments[0]);
 
-                literal = new LiteralValue(type, literalNode, _context);
+                literal = new LiteralValue(type, literalNode, Context);
                 return true;
             }
 
@@ -871,7 +942,7 @@ namespace AssemblyProviders.CSharp
                 ctorCall = ctorCall.Child;
             }
 
-            var typeName = _context.Map(name.ToString());
+            var typeName = Context.Map(name.ToString());
             if (callNode.NodeType != NodeTypes.call && callNode.Indexer != null)
             {
                 //array definition
@@ -891,7 +962,7 @@ namespace AssemblyProviders.CSharp
             INodeAST callNode;
             var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
 
-            var searcher = _context.CreateSearcher();
+            var searcher = Context.CreateSearcher();
             searcher.ExtendName(getNamespaces());
             searcher.ExtendName(typeSuffix);
             searcher.Dispatch(Naming.CtorName);
@@ -903,146 +974,18 @@ namespace AssemblyProviders.CSharp
 
             //TODO selection can be done more accurate
             var objectType = searcher.FoundResult.First().DeclaringType;
-            var nObject = new NewObjectValue(objectType, _context);
+            var nObject = new NewObjectValue(objectType, Context);
 
-            var activation = createCallActivation(nObject, callNode, searcher.FoundResult);
+            var activation = CreateCallActivation(nObject, callNode, searcher.FoundResult);
             if (activation == null)
             {
                 throw new NotSupportedException("Constructor call doesn't match to any available definition");
             }
 
-            var ctorCall = new CallValue(activation, _context);
+            var ctorCall = new CallValue(activation, Context);
 
             nObject.SetCtor(ctorCall);
             return nObject;
-        }
-
-        #endregion
-
-        #region Call resolving
-
-        /// <summary>
-        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes)
-        /// </summary>
-        /// <param name="callHierarchy">Node where call hierarchy starts</param>
-        /// <param name="call">Result representation of call hierarchy</param>
-        /// <param name="calledObject">Object on which call hierarchy starts if any</param>
-        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise</returns>
-        private bool tryGetCall(INodeAST callHierarchy, out RValueProvider call, RValueProvider calledObject = null)
-        {
-            //initialize output variable
-            call = null;
-
-            var searcher = createMethodSearcher(calledObject);
-
-            var currNode = callHierarchy;
-            while (currNode != null)
-            {
-                var nextNode = currNode.Child;
-
-                dispatchByNode(searcher, currNode);
-
-                if (searcher.HasResults)
-                {
-                    //there are possible overloads for call
-                    var callActivation = createCallActivation(calledObject, currNode, searcher.FoundResult);
-                    if (callActivation == null)
-                    {
-                        //overloads doesnt match to arguments
-                        return false;
-                    }
-
-                    var resolvedCall = new CallValue(callActivation, _context);
-                    if (nextNode == null)
-                    {
-                        //end of call chain
-                        call = resolvedCall;
-                        return true;
-                    }
-                    else
-                    {
-                        //call chaining
-                        return tryGetCall(nextNode, out call, resolvedCall);
-                    }
-                }
-
-                if (currNode.NodeType == NodeTypes.hierarchy)
-                {
-                    //only hierarchy hasn't been resolved immediately(namespaces) -> shift to next node
-                    searcher.ExtendName(currNode.Value);
-                    currNode = nextNode;
-                }
-                else
-                {
-                    //there should not left any other node types
-                    break;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Create method searcher filled with valid namespaces according to presence 
-        /// of calledObject
-        /// </summary>
-        /// <param name="calledObject">Object representation that is called if available, <c>null</c> otherwise</param>
-        /// <returns>Created <see cref="MethodSearcher"/></returns>
-        private MethodSearcher createMethodSearcher(RValueProvider calledObject = null)
-        {
-            //x without base can resolve to:            
-            //[this namespace].this.get_x /this.set_x
-            //[this namespace].[static class x]
-            //[this namespace].[namespace x]
-            //[imported namespaces].[static class x]
-            //[imported namespaces].[namespace x]
-
-            var searcher = _context.CreateSearcher();
-
-            if (calledObject == null)
-            {
-                searcher.ExtendName(getNamespaces());
-            }
-            else
-            {
-                var calledObjectInfo = calledObject.Type;
-                searcher.SetCalledObject(calledObjectInfo);
-            }
-            return searcher;
-        }
-
-        /// <summary>
-        /// Dispatch given searcher by node. It means that dispatch 
-        /// calls on searcher will be called according to node value and structure
-        /// </summary>
-        /// <param name="searcher">Searcher which is dispatched</param>
-        /// <param name="node">Node dispatching searcher</param>
-        private void dispatchByNode(MethodSearcher searcher, INodeAST node)
-        {
-            switch (node.NodeType)
-            {
-                case NodeTypes.hierarchy:
-                    if (node.Indexer == null)
-                    {
-                        Debug.Assert(node.Arguments.Length == 0);
-                        searcher.Dispatch(Naming.GetterPrefix + node.Value);
-                        searcher.Dispatch(Naming.SetterPrefix + node.Value);
-                    }
-                    else
-                    {
-                        searcher.Dispatch(Naming.ArrayItemGetter);
-                        searcher.Dispatch(Naming.ArrayItemSetter);
-                    }
-                    break;
-
-                case NodeTypes.call:
-                    //TODO this is not correct!!
-                    searcher.Dispatch(_context.Map(node.Value));
-                    break;
-
-                default:
-                    throw new NotSupportedException("Cannot resolve given node type inside hierarchy");
-            }
         }
 
         /// <summary>
@@ -1053,9 +996,9 @@ namespace AssemblyProviders.CSharp
         /// <param name="callNode">Node determining call</param>
         /// <param name="methods">Methods used for right overloading selection</param>
         /// <returns>Created call activation</returns>
-        private CallActivation createCallActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
+        internal CallActivation CreateCallActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
         {
-            var selector = new MethodSelector(methods, _context);
+            var selector = new MethodSelector(methods, Context);
 
             var arguments = getArguments(callNode);
             var callActivation = selector.CreateCallActivation(arguments);
@@ -1068,7 +1011,7 @@ namespace AssemblyProviders.CSharp
                 {
                     //if there is no explicit calledObject, and method call is not static
                     //implicit this object has to be used
-                    calledObject = new TemporaryRVariableValue(_context, CSharpSyntax.ThisVariable);
+                    calledObject = new TemporaryRVariableValue(Context, CSharpSyntax.ThisVariable);
                 }
 
                 callActivation.CalledObject = calledObject;
@@ -1206,7 +1149,7 @@ namespace AssemblyProviders.CSharp
                 var genericArg = genericArgs[i];
                 var genericParam = genericParams[i];
 
-                _context.RegisterGenericArgument(genericParam, genericArg);
+                Context.RegisterGenericArgument(genericParam, genericArg);
             }
         }
 

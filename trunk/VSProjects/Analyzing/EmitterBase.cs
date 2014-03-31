@@ -108,9 +108,5 @@ namespace Analyzing
         /// <param name="variable">Variable which info is resolved</param>
         /// <returns>Stored info</returns>
         public abstract InstanceInfo VariableInfo(string variable);
-
-
-
-
     }
 }

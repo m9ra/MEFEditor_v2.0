@@ -27,6 +27,10 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly static MethodDescription Int_IntParam = MethodDescription.CreateInstance<int>(IntParam1);
 
+        public readonly static MethodDescription Int_NoParam = MethodDescription.CreateInstance<int>();
+
+        public readonly static MethodDescription Void_IntParam = MethodDescription.CreateInstance<int>(IntParam1);
+
         public readonly static MethodDescription String_NoParam = MethodDescription.CreateInstance<string>();
 
         public readonly static MethodDescription String_StringParam = MethodDescription.CreateInstance<string>(StringParam1);

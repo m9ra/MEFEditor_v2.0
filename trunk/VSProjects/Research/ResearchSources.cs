@@ -751,8 +751,11 @@ namespace Research
         static internal TestingAssembly Properties()
         {
             return AssemblyUtils.Run(@"
-                var x= OWithSetter.Property;
-                OWithSetter.Property=""SetterValue"";
+                var initial = OWithSetter.Property;
+                OWithSetter.Property = ""SetterValue"";
+                var getterCheck = OWithSetter.Property;
+
+                var chained = OWithSetter.Property = ""ChainedValue"";                
             ")
 
              .AddMethod("OWithSetter." + Naming.ClassCtorName, (c) => {
@@ -769,6 +772,37 @@ namespace Research
                  var value = c.GetField(c.CurrentArguments[0], "Property") as Instance;
                  c.Return(value);
              }, Method.StaticString_NoParam)
+
+             ;
+        }
+
+        static internal TestingAssembly PropertiesInc()
+        {
+            return AssemblyUtils.Run(@"
+                var obj = new PropertyObj();    
+                
+                obj.Property = 123;
+                var getterCheck = obj.Property;
+                
+                var postInc = obj.Property++;
+                var postIncCheck = obj.Property;
+            ")
+
+             .AddMethod("PropertyObj." + Naming.CtorName, (c) =>
+             {
+                 c.SetField(c.CurrentArguments[0], "Property", c.Machine.CreateDirectInstance("DefaultValue"));
+             }, Method.Ctor_NoParam)
+
+             .AddMethod("PropertyObj.set_Property", (c) =>
+             {
+                 c.SetField(c.CurrentArguments[0], "Property", c.CurrentArguments[1]);
+             }, Method.Void_IntParam)
+
+             .AddMethod("PropertyObj.get_Property", (c) =>
+             {
+                 var value = c.GetField(c.CurrentArguments[0], "Property") as Instance;
+                 c.Return(value);
+             }, Method.Int_NoParam)
 
              ;
         }
