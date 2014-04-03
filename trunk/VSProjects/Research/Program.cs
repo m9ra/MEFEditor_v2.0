@@ -26,9 +26,9 @@ namespace Research
         static void Main()
         {
             ////force JIT to precompile before measuring
-            //var entry2 = ResearchSources.Fibonacci(7).GetResult();
+            var entry2 = ResearchSources.Fibonacci(7);
 
-            var assembly = ResearchSources.PropertiesInc();
+            var assembly = ResearchSources.ForLoop(10);
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 

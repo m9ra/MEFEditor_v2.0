@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Analyzing;
 using TypeSystem;
 
+using AssemblyProviders.CSharp.Interfaces;
+
 namespace AssemblyProviders.CSharp.Compiling
 {
     /// <summary>
@@ -28,6 +30,11 @@ namespace AssemblyProviders.CSharp.Compiling
         /// Mapping of 
         /// </summary>
         private static readonly Dictionary<string, string> AliasLookup = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Stack of block contexts
+        /// </summary>
+        private readonly Stack<BlockContext> _blockContexts = new Stack<BlockContext>();
 
         /// <summary>
         /// Emitter exposed by context. It is used for emitting instructions from <see cref="ValueProvider"/> implementations
@@ -127,6 +134,26 @@ namespace AssemblyProviders.CSharp.Compiling
 
             //there is no mapping
             return typeName;
+        }
+
+        /// <summary>
+        /// Push context of given block
+        /// </summary>
+        /// <param name="block">Block which context is pushed</param>
+        /// <param name="continueLabel">Label that will be used for continue statement within block</param>
+        /// <param name="breakLabel">Label that will be used for break statement within block</param>
+        internal void PushBlock(INodeAST block, Label continueLabel, Label breakLabel)
+        {
+            var context = new BlockContext(block, continueLabel, breakLabel);
+            _blockContexts.Push(context);
+        }
+
+        /// <summary>
+        /// Pop context of peek block
+        /// </summary>
+        internal void PopBlock()
+        {
+            _blockContexts.Pop();
         }
     }
 }

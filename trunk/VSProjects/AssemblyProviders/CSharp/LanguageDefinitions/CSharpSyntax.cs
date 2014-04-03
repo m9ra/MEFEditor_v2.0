@@ -46,6 +46,16 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         internal const string IfOperator = "if";
 
         /// <summary>
+        /// Operator used for while based statement
+        /// </summary>
+        internal const string WhileOperator = "while";
+
+        /// <summary>
+        /// Operator used for for based statement
+        /// </summary>
+        internal const string ForOperator = "for";
+
+        /// <summary>
         /// Operator used for incrementing variable value
         /// </summary>
         internal const string IncrementOperator = "++";

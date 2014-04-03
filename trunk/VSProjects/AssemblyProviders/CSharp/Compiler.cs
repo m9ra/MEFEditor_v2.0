@@ -75,6 +75,21 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         private static readonly string EndLabelCaption = "_end";
 
+        /// <summary>
+        /// Caption for labels on explicit continue jumps
+        /// </summary>
+        private static readonly string ContinueLabelCaption = "_end";
+
+        /// <summary>
+        /// Caption for labels on block conditions
+        /// </summary>
+        private static readonly string ConditionLabelCaption = "_test";
+
+        /// <summary>
+        /// Caption for labels on block loops
+        /// </summary>
+        private static readonly string LoopLabelCaption = "_loop";
+
         #endregion
 
         /// <summary>
@@ -227,10 +242,85 @@ namespace AssemblyProviders.CSharp
                 case CSharpSyntax.IfOperator:
                     generateIf(block);
                     break;
+                case CSharpSyntax.WhileOperator:
+                    generateWhile(block);
+                    break;
+
+                case CSharpSyntax.ForOperator:
+                    generateFor(block);
+                    break;
 
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// Generate instructions for for block
+        /// </summary>
+        /// <param name="forBlock">For block which instructions will be generated</param>
+        private void generateFor(INodeAST forBlock)
+        {
+            startInfoBlock(getConditionalBlockTest(forBlock));
+
+            var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
+            var loopLbl = E.GetTemporaryLabel(LoopLabelCaption);
+            var endLbl = E.GetTemporaryLabel(EndLabelCaption);
+            var continueLbl = E.GetTemporaryLabel(ContinueLabelCaption);
+
+            Context.PushBlock(forBlock,
+                continueLbl,
+                endLbl
+              );
+
+            var initializer = forBlock.Arguments[0];
+            generateStatement(initializer);
+
+            var condition = getRValue(forBlock.Arguments[1]);
+            var increment = forBlock.Arguments[2];
+            var loop = forBlock.Child;
+                        
+            E.SetLabel(conditionLbl);
+            E.ConditionalJump(condition.GenerateStorage(), loopLbl);
+            E.Jump(endLbl);
+            E.SetLabel(loopLbl);
+
+            generateSubsequence(loop);
+
+            E.SetLabel(continueLbl);
+            startInfoBlock("=increment: " + getStatementText(increment));
+            generateStatement(increment);
+
+            E.Jump(conditionLbl);
+            E.SetLabel(endLbl);
+            E.Nop();
+
+            Context.PopBlock();
+        }
+
+        /// <summary>
+        /// Generate instructions for while block
+        /// </summary>
+        /// <param name="whileBlock">While block which instructions will be generated</param>
+        private void generateWhile(INodeAST whileBlock)
+        {
+            startInfoBlock(getConditionalBlockTest(whileBlock));
+
+            var condition = getRValue(whileBlock.Arguments[0]);
+            var loop = whileBlock.Arguments[1];
+
+            var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
+            var loopLbl = E.GetTemporaryLabel(LoopLabelCaption);
+            var endLbl = E.GetTemporaryLabel(EndLabelCaption);
+
+            E.SetLabel(conditionLbl);
+            E.ConditionalJump(condition.GenerateStorage(), loopLbl);
+            E.Jump(endLbl);
+            E.SetLabel(loopLbl);
+            generateSubsequence(loop);
+            E.Jump(conditionLbl);
+            E.SetLabel(endLbl);
+            E.Nop();
         }
 
         /// <summary>
@@ -239,8 +329,7 @@ namespace AssemblyProviders.CSharp
         /// <param name="ifBlock">If block which instructions will be generated</param>
         private void generateIf(INodeAST ifBlock)
         {
-            var info = E.StartNewInfoBlock();
-            info.Comment = InstructionCommentStart + getConditionalBlockTest(ifBlock) + InstructionCommentEnd;
+            startInfoBlock(getConditionalBlockTest(ifBlock));
 
             //block
             var condition = getRValue(ifBlock.Arguments[0]);
@@ -1072,6 +1161,19 @@ namespace AssemblyProviders.CSharp
         #endregion
 
         #region Debug Info utilities
+
+        /// <summary>
+        /// Start new block of isntructions that can be attached by additional
+        /// information
+        /// </summary>
+        /// <param name="blockDescription">Textual description of started block</param>
+        /// <returns>Info object created for the block</returns>
+        private InstructionInfo startInfoBlock(string blockDescription)
+        {
+            var info = E.StartNewInfoBlock();
+            info.Comment = InstructionCommentStart + blockDescription + InstructionCommentEnd;
+            return info;
+        }
 
         /// <summary>
         /// Get text representing node in human readable form

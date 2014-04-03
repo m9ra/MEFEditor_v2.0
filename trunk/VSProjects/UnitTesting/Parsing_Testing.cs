@@ -313,6 +313,36 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Compile_ForLoop()
+        {            
+            AssemblyUtils.Run(@"                
+                var result=0;
+                for(var i=0;i<10;++i){
+                    result=result+2;                    
+                }
+                ++result;
+            ")
+
+             .AssertVariable("result").HasValue(21);
+        }
+
+        [TestMethod]
+        public void Compile_WhileLoop()
+        {
+            AssemblyUtils.Run(@"
+                var i=0;
+                var result=0;
+                while(i<10){
+                    result=result+2;
+                    ++i;
+                }
+                ++result;
+            ")
+
+             .AssertVariable("result").HasValue(21);
+        }
+
+        [TestMethod]
         public void Compile_GenericCall()
         {
             AssemblyUtils.Run(@"                

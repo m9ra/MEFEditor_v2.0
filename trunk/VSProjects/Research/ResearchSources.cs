@@ -818,6 +818,30 @@ namespace Research
             ");
         }
 
+        static internal TestingAssembly ForLoop(int n)
+        {
+            return AssemblyUtils.Run(@"                
+                var result=0;
+                for(var i=0;i<"+n+@";++i){
+                    result=result+2;                    
+                }
+                ++result;
+            ");
+        }
+
+        static internal TestingAssembly WhileLoop(int n)
+        {
+            return AssemblyUtils.Run(@"
+                var i=0;
+                var result=0;
+                while(i<" + n + @"){
+                    result=result+2;
+                    ++i;
+                }
+                ++result;
+            ");
+        }
+
         static internal TestingAssembly Fibonacci(int n)
         {
             return AssemblyUtils.Run(@"
