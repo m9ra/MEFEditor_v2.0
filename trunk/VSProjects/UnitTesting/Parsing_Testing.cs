@@ -176,7 +176,7 @@ namespace UnitTesting
                 var test2=System.String.test();
             }", Method.EntryInfo));
         }
-        
+
         [TestMethod]
         public void Compile_VariableAssign()
         {
@@ -314,7 +314,7 @@ namespace UnitTesting
 
         [TestMethod]
         public void Compile_ForLoop()
-        {            
+        {
             AssemblyUtils.Run(@"                
                 var result=0;
                 for(var i=0;i<10;++i){
@@ -324,6 +324,38 @@ namespace UnitTesting
             ")
 
              .AssertVariable("result").HasValue(21);
+        }
+
+        [TestMethod]
+        public void Compile_ForLoopBreak()
+        {
+            AssemblyUtils.Run(@"                
+                var result=0;
+                for(var i=0;i<10;++i){
+                    result=result+2;            
+                    break;        
+                }
+                ++result;
+            ")
+
+             .AssertVariable("result").HasValue(3);
+        }
+
+        [TestMethod]
+        public void Compile_ForLoopContinue()
+        {
+            AssemblyUtils.Run(@"                
+                var result=0;
+                var incr;
+                for(incr=0;incr<10;++incr){
+                    continue;
+                    result=result+2;                                
+                }
+                ++result;
+            ")
+
+            .AssertVariable("result").HasValue(1)
+            .AssertVariable("incr").HasValue(10);
         }
 
         [TestMethod]

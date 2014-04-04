@@ -78,7 +78,7 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Caption for labels on explicit continue jumps
         /// </summary>
-        private static readonly string ContinueLabelCaption = "_end";
+        private static readonly string ContinueLabelCaption = "_continue";
 
         /// <summary>
         /// Caption for labels on block conditions
@@ -263,34 +263,42 @@ namespace AssemblyProviders.CSharp
         {
             startInfoBlock(getConditionalBlockTest(forBlock));
 
+            //block labels
             var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
             var loopLbl = E.GetTemporaryLabel(LoopLabelCaption);
             var endLbl = E.GetTemporaryLabel(EndLabelCaption);
             var continueLbl = E.GetTemporaryLabel(ContinueLabelCaption);
 
+            //push block to register continue and end labels
             Context.PushBlock(forBlock,
-                continueLbl,
-                endLbl
+                    continueLbl,
+                    endLbl
               );
 
+            //for loop initializer
             var initializer = forBlock.Arguments[0];
             generateStatement(initializer);
 
+            //for loop condition
             var condition = getRValue(forBlock.Arguments[1]);
             var increment = forBlock.Arguments[2];
             var loop = forBlock.Child;
-                        
+
+            //conditional jump table
             E.SetLabel(conditionLbl);
             E.ConditionalJump(condition.GenerateStorage(), loopLbl);
             E.Jump(endLbl);
             E.SetLabel(loopLbl);
 
+            //body of the loop
             generateSubsequence(loop);
 
+            //for loop increment
             E.SetLabel(continueLbl);
             startInfoBlock("=increment: " + getStatementText(increment));
             generateStatement(increment);
 
+            //repeat
             E.Jump(conditionLbl);
             E.SetLabel(endLbl);
             E.Nop();
@@ -306,21 +314,35 @@ namespace AssemblyProviders.CSharp
         {
             startInfoBlock(getConditionalBlockTest(whileBlock));
 
-            var condition = getRValue(whileBlock.Arguments[0]);
-            var loop = whileBlock.Arguments[1];
-
+            //block labels
             var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
             var loopLbl = E.GetTemporaryLabel(LoopLabelCaption);
             var endLbl = E.GetTemporaryLabel(EndLabelCaption);
 
+            Context.PushBlock(whileBlock,
+                    conditionLbl,
+                    endLbl
+                );
+
+            //loop primitives
+            var condition = getRValue(whileBlock.Arguments[0]);
+            var loop = whileBlock.Arguments[1];
+
+            //conditional jump table
             E.SetLabel(conditionLbl);
             E.ConditionalJump(condition.GenerateStorage(), loopLbl);
             E.Jump(endLbl);
+
+            //loop body
             E.SetLabel(loopLbl);
             generateSubsequence(loop);
+
+            //repeat
             E.Jump(conditionLbl);
             E.SetLabel(endLbl);
             E.Nop();
+
+            Context.PopBlock();
         }
 
         /// <summary>
@@ -405,6 +427,13 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.hierarchy:
                     generateHierarchy(statement);
                     break;
+                case NodeTypes.keyword:
+                    generateKeyWord(statement);
+                    break;
+                case NodeTypes.declaration:
+                    //force declaration
+                    getLValue(statement);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -418,6 +447,31 @@ namespace AssemblyProviders.CSharp
         {
             var resolvedHierarchy = resolveRHierarchy(hierarchy);
             resolvedHierarchy.Generate();
+        }
+
+        /// <summary>
+        /// Generate instructions for given keyword
+        /// </summary>
+        /// <param name="keywordNode">Node representing keyword</param>
+        private void generateKeyWord(INodeAST keywordNode)
+        {
+            var keyword = keywordNode.Value;
+
+            switch (keyword)
+            {
+                case CSharpSyntax.BreakKeyword:
+                    var breakLabel = getBreakLabel(keywordNode);
+                    E.Jump(breakLabel);
+                    break;
+
+                case CSharpSyntax.ContinueKeyword:
+                    var continueLabel = getContinueLabel(keywordNode);
+                    E.Jump(continueLabel);
+                    break;
+
+                default:
+                    throw parsingException(keywordNode, "Unsupported keyword {0}", keyword);
+            }
         }
 
         /// <summary>
@@ -502,6 +556,34 @@ namespace AssemblyProviders.CSharp
                 default:
                     throw parsingException(lValue, "LValue {0} is not supported", value);
             }
+        }
+
+        /// <summary>
+        /// Get currently registered continue label
+        /// </summary>
+        /// <param name="continueNode">Node resolved as continue</param>
+        /// <returns>Label that is currently registered for continue statements</returns>
+        private Label getContinueLabel(INodeAST continueNode)
+        {
+            var block = Context.CurrentBlock;
+            if (block == null)
+                throw parsingException(continueNode, "Continue statement is not allowed here");
+
+            return block.ContinueLabel;
+        }
+
+        /// <summary>
+        /// Get currently registered break label
+        /// </summary>
+        /// <param name="breakNode">Node resolved as break</param>
+        /// <returns>Label that is currently registered for break statements</returns>
+        private Label getBreakLabel(INodeAST breakNode)
+        {
+            var block = Context.CurrentBlock;
+            if (block == null)
+                throw parsingException(breakNode, "Break statement is not allowed here");
+
+            return block.BreakLabel;
         }
 
         /// <summary>

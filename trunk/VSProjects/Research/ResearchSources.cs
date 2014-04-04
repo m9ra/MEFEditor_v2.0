@@ -818,6 +818,18 @@ namespace Research
             ");
         }
 
+        static internal TestingAssembly ForLoopBreak()
+        {
+            return AssemblyUtils.Run(@"                
+                var result=0;
+                for(var i=0;i<10;++i){
+                    result=result+2;                    
+                    break;
+                }
+                ++result;
+            ");
+        }
+
         static internal TestingAssembly ForLoop(int n)
         {
             return AssemblyUtils.Run(@"                
@@ -828,7 +840,7 @@ namespace Research
                 ++result;
             ");
         }
-
+        
         static internal TestingAssembly WhileLoop(int n)
         {
             return AssemblyUtils.Run(@"

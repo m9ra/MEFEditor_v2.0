@@ -47,6 +47,19 @@ namespace AssemblyProviders.CSharp.Compiling
         public readonly TypeServices Services;
 
         /// <summary>
+        /// Context of current active block
+        /// </summary>
+        public BlockContext CurrentBlock
+        {
+            get {
+                if (_blockContexts.Count == 0)
+                    return null;
+
+                return _blockContexts.Peek();
+            }
+        }
+
+        /// <summary>
         /// Initialize alias tables
         /// </summary>
         static CompilationContext()

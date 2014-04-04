@@ -41,7 +41,7 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             Block = block;
             BreakLabel = breakLabel;
-            ContinueLabel=continueLabel;
+            ContinueLabel = continueLabel;
         }
     }
 }

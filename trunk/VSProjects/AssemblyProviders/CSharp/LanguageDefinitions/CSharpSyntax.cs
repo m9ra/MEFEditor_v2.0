@@ -70,6 +70,16 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// </summary>
         internal const string AssignOperator = "=";
 
+        /// <summary>
+        /// Keyword for break statement
+        /// </summary>
+        internal const string BreakKeyword = "break";
+
+        /// <summary>
+        /// Keyword for continue statement
+        /// </summary>
+        internal const string ContinueKeyword = "continue";
+        
         #endregion
 
         readonly Layouts layouts;
