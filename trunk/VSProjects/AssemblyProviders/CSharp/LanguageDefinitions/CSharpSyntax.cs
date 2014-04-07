@@ -56,6 +56,11 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         internal const string ForOperator = "for";
 
         /// <summary>
+        /// Operator used for for based statement
+        /// </summary>
+        internal const string SwitchOperator = "switch";
+
+        /// <summary>
         /// Operator used for incrementing variable value
         /// </summary>
         internal const string IncrementOperator = "++";
@@ -69,6 +74,11 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// Operator used for assigning variable value
         /// </summary>
         internal const string AssignOperator = "=";
+
+        /// <summary>
+        /// Operator used for equality comparison
+        /// </summary>
+        internal const string IsEqualOperator = "==";
 
         /// <summary>
         /// Keyword for break statement

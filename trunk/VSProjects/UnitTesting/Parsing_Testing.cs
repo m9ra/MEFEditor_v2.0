@@ -313,6 +313,56 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Compile_SwitchBlock()
+        {
+            AssemblyUtils.Run(@"                
+                var result=5;
+                switch(result){
+                    case 1:
+                        result=1;
+                        break;  
+                    case 2:
+                        result=1;
+                        break;
+                    case 5:
+                        result=55;
+                        break;
+                    default:
+                        result=1;
+                        break;
+                }                
+            ")
+             
+             .AssertVariable("result").HasValue(55);
+        }
+
+        [TestMethod]
+        public void Compile_SwitchBlockContinue()
+        {
+            AssemblyUtils.Run(@"                
+                var result="""";
+
+                for(var i=0;i<3;++i){                
+                    switch(i){
+                        case 0:
+                            result=result+""a"";
+                            break;  
+                        case 1:
+                            result=result+""b"";
+                            continue;                          
+                        default:
+                            result=result+""c"";
+                            break;
+                    }      
+
+                    result=result+"";"";
+                }          
+            ")
+
+             .AssertVariable("result").HasValue("a;bc;");
+        }
+
+        [TestMethod]
         public void Compile_ForLoop()
         {
             AssemblyUtils.Run(@"                

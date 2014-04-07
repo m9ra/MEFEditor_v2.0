@@ -90,6 +90,26 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         private static readonly string LoopLabelCaption = "_loop";
 
+        /// <summary>
+        /// Caption for labels on case branches
+        /// </summary>
+        private static readonly string CaseLabelCaption = "_case";
+
+        /// <summary>
+        /// Caption for labels on default switch branch
+        /// </summary>
+        private static readonly string DefaultLabelCaption = "_default";
+
+        /// <summary>
+        /// Descriptor for string type
+        /// </summary>
+        private static readonly TypeDescriptor StringDescriptor = TypeDescriptor.Create<string>();
+
+        /// <summary>
+        /// Descriptor for bool type
+        /// </summary>
+        private static readonly TypeDescriptor BoolDescriptor = TypeDescriptor.Create<bool>();
+
         #endregion
 
         /// <summary>
@@ -242,6 +262,7 @@ namespace AssemblyProviders.CSharp
                 case CSharpSyntax.IfOperator:
                     generateIf(block);
                     break;
+
                 case CSharpSyntax.WhileOperator:
                     generateWhile(block);
                     break;
@@ -250,9 +271,108 @@ namespace AssemblyProviders.CSharp
                     generateFor(block);
                     break;
 
+                case CSharpSyntax.SwitchOperator:
+                    generateSwitch(block);
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// Generate instructions for switch block
+        /// </summary>
+        /// <param name="switchBlock">Switch block which instructions will be generated</param>
+        private void generateSwitch(INodeAST switchBlock)
+        {
+            startInfoBlock(getConditionalBlockText(switchBlock));
+
+            //transfer continue from upper context
+            var continueLbl = Context.CurrentBlock == null ? null : Context.CurrentBlock.ContinueLabel;
+            var defaultLbl = E.GetTemporaryLabel(DefaultLabelCaption);
+            var endLbl = E.GetTemporaryLabel(EndLabelCaption);
+
+            //push block to register continue and end labels
+            Context.PushBlock(switchBlock,
+                    continueLbl,
+                    endLbl
+              );
+
+            //collect case branches            
+            var caseBranches = new List<INodeAST>();
+            INodeAST defaultBranch = null;
+            for (var i = 1; i < switchBlock.Arguments.Length; ++i)
+            {
+                var caseBranch = switchBlock.Arguments[i];
+                var isDefaultBranch = caseBranch.Arguments.Length == 0;
+                if (isDefaultBranch)
+                {
+                    defaultBranch = caseBranch;
+                }
+                else
+                {
+                    caseBranches.Add(caseBranch);
+                }
+            }
+
+            //resolve condition
+            var conditionNode = switchBlock.Arguments[0];
+
+            var condition = getRValue(conditionNode);
+            var conditionStorage = condition.GenerateStorage();
+            var conditionRStorage = new TemporaryRVariableValue(Context, conditionStorage);
+
+            //generate jump table
+            var caseValueStorage = new TemporaryVariableValue(condition.Type, Context);
+            var caseValueRStorage = new TemporaryRVariableValue(Context, caseValueStorage.Storage);
+            var caseLabels = new List<Label>();
+
+            var testValueStorage = new TemporaryVariableValue(BoolDescriptor, Context);
+
+            foreach (var caseBranch in caseBranches)
+            {
+                var caseLabel = E.GetTemporaryLabel(CaseLabelCaption);
+                caseLabels.Add(caseLabel);
+
+                var caseConditionNode = caseBranch.Arguments[0];
+                var caseCondition = getRValue(caseConditionNode);
+                caseCondition.GenerateAssignInto(caseValueStorage);
+
+                //note that comparing slightly differs from C# switch semantic. However
+                //switch is allowed only on primitive and constant values
+                //so it doesn't matter
+                var comparisonActivation = createOperatorActivation(conditionRStorage, CSharpSyntax.IsEqualOperator, caseValueRStorage, caseConditionNode);
+                var comparisonCall = new CallValue(comparisonActivation, Context);
+                comparisonCall.GenerateAssignInto(testValueStorage);
+
+                E.ConditionalJump(testValueStorage.Storage, caseLabel);
+            }
+
+            //condition table defaults
+            var hasDefaultBranch = defaultBranch != null;
+            var tableDefaultLbl = hasDefaultBranch ? defaultLbl : endLbl;
+            E.Jump(tableDefaultLbl);
+
+            //generate branche statements
+            for (var caseIndex = 0; caseIndex < caseBranches.Count; ++caseIndex)
+            {
+                var caseBranch = caseBranches[caseIndex];
+                var caseLabel = caseLabels[caseIndex];
+
+                E.SetLabel(caseLabel);
+                generateSubsequence(caseBranch);
+            }
+
+            //generate default branch if any
+            if (hasDefaultBranch)
+            {
+                E.SetLabel(defaultLbl);
+                generateSubsequence(defaultBranch);
+            }
+
+            E.SetLabel(endLbl);
+            E.Nop();
         }
 
         /// <summary>
@@ -261,7 +381,7 @@ namespace AssemblyProviders.CSharp
         /// <param name="forBlock">For block which instructions will be generated</param>
         private void generateFor(INodeAST forBlock)
         {
-            startInfoBlock(getConditionalBlockTest(forBlock));
+            startInfoBlock(getConditionalBlockText(forBlock));
 
             //block labels
             var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
@@ -312,7 +432,7 @@ namespace AssemblyProviders.CSharp
         /// <param name="whileBlock">While block which instructions will be generated</param>
         private void generateWhile(INodeAST whileBlock)
         {
-            startInfoBlock(getConditionalBlockTest(whileBlock));
+            startInfoBlock(getConditionalBlockText(whileBlock));
 
             //block labels
             var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
@@ -351,7 +471,7 @@ namespace AssemblyProviders.CSharp
         /// <param name="ifBlock">If block which instructions will be generated</param>
         private void generateIf(INodeAST ifBlock)
         {
-            startInfoBlock(getConditionalBlockTest(ifBlock));
+            startInfoBlock(getConditionalBlockText(ifBlock));
 
             //block
             var condition = getRValue(ifBlock.Arguments[0]);
@@ -969,7 +1089,7 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Find method representation of operator for given nodes
         /// </summary>
-        /// <param name="leftOperandType"Left operand</param>
+        /// <param name="leftOperandType">Left operand</param>
         /// <param name="op">Operator notation</param>
         /// <param name="rightOperand">Right operand</param>
         /// <param name="leftOperand">Node available for operator</param>
@@ -977,25 +1097,80 @@ namespace AssemblyProviders.CSharp
         private CallActivation createOperatorActivation(RValueProvider leftOperand, string op, RValueProvider rightOperand, INodeAST operatorNode)
         {
             //translate method according to operators table
-            var method = _mathOperatorMethods[op];
-            var leftOperandType = leftOperand.Type;
-
-            var searcher = Context.CreateSearcher();
-            searcher.SetCalledObject(leftOperandType);
-            searcher.Dispatch(method);
+            var searcher = findOperatorMethod(leftOperand, op);
 
             if (!searcher.HasResults)
                 throw parsingException(operatorNode, "Method implementation for operator {0} cannot be found", op);
 
+            var hasStaticMethod = false;
+            foreach (var method in searcher.FoundResult)
+            {
+                if (method.IsStatic)
+                {
+                    hasStaticMethod = true;
+                    break;
+                }
+            }
+
+
+            Argument[] arguments;
+            if (hasStaticMethod)
+            {
+                //static methods needs to pass both operands
+                arguments = new[]{
+                    new Argument(leftOperand),
+                    new Argument(rightOperand)
+                };
+            }
+            else
+            {
+                //non static methods passes second argument as this object
+                arguments = new[]{
+                    new Argument(rightOperand)
+                };
+            }
+
+
             var selector = new MethodSelector(searcher.FoundResult, Context);
-            var activation = selector.CreateCallActivation(new Argument(rightOperand));
+            var activation = selector.CreateCallActivation(arguments);
             activation.CallNode = operatorNode;
-            activation.CalledObject = leftOperand;
+
+            if (!hasStaticMethod)
+                //static methods doesnt have called object
+                activation.CalledObject = leftOperand;
 
             if (activation == null)
                 throw parsingException(operatorNode, "Cannot select method overload for operator {0}", op);
 
             return activation;
+        }
+
+        /// <summary>
+        /// Find method representation of given operator
+        /// </summary>
+        /// <param name="leftOperand">Left operand</param>
+        /// <param name="op">Operator notation</param>
+        /// <returns>Searcher with found operator</returns>
+        private MethodSearcher findOperatorMethod(RValueProvider leftOperand, string op)
+        {
+            var searcher = Context.CreateSearcher();
+
+            if (op == "+" && leftOperand.Type.Equals(StringDescriptor))
+            {
+                //exception for handling string concatenation
+                searcher.SetCalledObject(StringDescriptor);
+                searcher.Dispatch("Concat");
+            }
+            else
+            {
+                var method = _mathOperatorMethods[op];
+                var leftOperandType = leftOperand.Type;
+
+                searcher.SetCalledObject(leftOperandType);
+                searcher.Dispatch(method);
+            }
+
+            return searcher;
         }
 
         #endregion
@@ -1272,7 +1447,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="block">Conditional block which representation is needed</param>
         /// <returns>Textual representation of given node</returns>
-        private string getConditionalBlockTest(INodeAST block)
+        private string getConditionalBlockText(INodeAST block)
         {
             return string.Format("{0}({1})", block.Value, block.Arguments[0]);
         }

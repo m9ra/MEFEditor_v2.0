@@ -758,7 +758,8 @@ namespace Research
                 var chained = OWithSetter.Property = ""ChainedValue"";                
             ")
 
-             .AddMethod("OWithSetter." + Naming.ClassCtorName, (c) => {
+             .AddMethod("OWithSetter." + Naming.ClassCtorName, (c) =>
+             {
                  c.SetField(c.CurrentArguments[0], "Property", c.Machine.CreateDirectInstance("DefaultValue"));
              }, Method.Ctor_NoParam)
 
@@ -818,6 +819,29 @@ namespace Research
             ");
         }
 
+        static internal TestingAssembly SwitchBlock()
+        {
+            return AssemblyUtils.Run(@"                
+                var result="""";
+
+                for(var i=0;i<3;++i){                
+                    switch(i){
+                        case 0:
+                            result=result+""a"";
+                            break;  
+                        case 1:
+                            result=result+""b"";
+                            continue;                          
+                        default:
+                            result=result+""c"";
+                            break;
+                    }      
+
+                    result=result+"";"";
+                }                       
+            ");
+        }
+
         static internal TestingAssembly ForLoopBreak()
         {
             return AssemblyUtils.Run(@"                
@@ -834,13 +858,13 @@ namespace Research
         {
             return AssemblyUtils.Run(@"                
                 var result=0;
-                for(var i=0;i<"+n+@";++i){
+                for(var i=0;i<" + n + @";++i){
                     result=result+2;                    
                 }
                 ++result;
             ");
         }
-        
+
         static internal TestingAssembly WhileLoop(int n)
         {
             return AssemblyUtils.Run(@"
