@@ -58,9 +58,22 @@ namespace Interoperability
             switch (element.Kind)
             {
                 case vsCMElement.vsCMElementNamespace:
-                    return (element as CodeNamespace).Members;
+                    return (element as CodeNamespace).Members;                
                 default:
                     return element.Children;
+            }
+        }
+
+        public static string Name(this CodeElement element)
+        {
+            switch (element.Kind)
+            {
+                case vsCMElement.vsCMElementImportStmt:
+                    //import statements doesnt have any name
+                    return null;
+
+                default:
+                    return element.Name;
             }
         }
 

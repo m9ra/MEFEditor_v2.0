@@ -13,7 +13,8 @@ using TypeSystem;
 using TypeSystem.Runtime;
 
 using AssemblyProviders.CIL;
-using AssemblyProviders.TypeDefinitions;
+using AssemblyProviders.CSharp;
+using AssemblyProviders.DirectDefinitions;
 
 using UnitTesting.RuntimeTypeDefinitions;
 using UnitTesting.TypeSystem_TestUtils;
@@ -33,7 +34,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
             typeof(int),typeof(double)
         };
 
-       
+
         static SettingsProvider()
         {
         }
@@ -67,7 +68,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         public static void AddDirectMathType(RuntimeAssembly runtime, Type mathType)
         {
-            var type=typeof(MathDirectType<>).MakeGenericType(mathType);
+            var type = typeof(MathDirectType<>).MakeGenericType(mathType);
 
             var typeDefinition = Activator.CreateInstance(type) as DirectTypeDefinition;
             runtime.AddDirectDefinition(typeDefinition);

@@ -54,20 +54,60 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (pathParts.Length == 0)
                 throw new NotSupportedException("Cannot find CodeElement with given path '" + path + "'");
 
+            //resolve naming conventions of method paths
+
+            //TODO resolve indexe    
+            var isGetter = false;
+            var isSetter = false;
+
             var lastPart = pathParts[pathParts.Length - 1];
 
             if (pathParts.Length > 1 && (lastPart == Naming.CtorName || lastPart == Naming.ClassCtorName))
             {
-                //name convention for ctors
+                //naming convention for ctors force to use class name
                 lastPart = pathParts[pathParts.Length - 2];
+            }
+            else if (lastPart.StartsWith(Naming.GetterPrefix))
+            {
+                isGetter = true;
+                lastPart = lastPart.Substring(Naming.GetterPrefix.Length);
+            }
+            else if (lastPart.StartsWith(Naming.SetterPrefix))
+            {
+                isSetter = true;
+                lastPart = lastPart.Substring(Naming.SetterPrefix.Length);
             }
 
             //search for all children with given path on parentElement
             var parentElement = findElement(pathParts, pathParts.Length - 1);
+            if (parentElement == null)
+                //nothing has been found
+                yield break;
+
+
             foreach (CodeElement child in parentElement.Children())
             {
-                if (child.Name == lastPart)
-                    yield return child;
+                var name = child.Name();
+
+                if (name == lastPart)
+                {
+                    var property = child as CodeProperty;
+
+                    if (property == null)
+                    {
+                        yield return child;
+                    }
+                    else
+                    {
+                        //TODO check of correctnes for auto generated properties
+
+                        if (isGetter)
+                            yield return property.Getter as CodeElement;
+
+                        if (isSetter)
+                            yield return property.Setter as CodeElement;
+                    }
+                }
             }
         }
 
@@ -79,7 +119,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <returns>Found <see cref="CodeElement"/> if any, <c>null</c> otherwise</returns>
         private CodeElement findElement(string[] pathParts, int pathLength)
         {
-            var currentElements = _searchedAssembly.CodeModel.CodeElements;
+            var currentElements = _searchedAssembly.RootElements;
 
             //traverse all allowed part
             for (var i = 0; i < pathLength; ++i)
@@ -93,10 +133,10 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                     currentPart = pathParts[i - 1];
                 }
 
-                CodeElements nextElements = null;
+                IEnumerable<CodeElement> nextElements = null;
                 foreach (CodeElement currentChild in currentElements)
                 {
-                    var name = currentChild.Name;
+                    var name = currentChild.Name();
                     if (name == currentPart)
                     {
                         if (isLast)
@@ -104,7 +144,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                             return currentChild;
 
                         //current element satysfiing the path - step to its children
-                        nextElements = currentChild.Children();
+                        nextElements = from CodeElement child in currentChild.Children() select child;
                         //go to next part
                         break;
                     }

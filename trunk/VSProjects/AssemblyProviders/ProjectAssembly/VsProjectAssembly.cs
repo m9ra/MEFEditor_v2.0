@@ -34,11 +34,6 @@ namespace AssemblyProviders.ProjectAssembly
         private readonly CodeElementSearcher _searcher;
 
         /// <summary>
-        /// Code model represented by current assembly
-        /// </summary>
-        internal CodeModel CodeModel { get { return _assemblyProject.Project.CodeModel; } }
-
-        /// <summary>
         /// <see cref="Project"/> represented by current assembly
         /// </summary>
         internal Project Project { get { return _assemblyProject.Project; } }
@@ -60,6 +55,27 @@ namespace AssemblyProviders.ProjectAssembly
             _searcher = new CodeElementSearcher(this);
 
             OnTypeSystemInitialized += initializeAssembly;
+        }
+
+        /// <summary>
+        /// Root <see cref="CodeElement"/> objects of represented <see cref="Project"/>
+        /// </summary>
+        public IEnumerable<CodeElement> RootElements
+        {
+            get
+            {
+                foreach (ProjectItem projectItem in Project.ProjectItems)
+                {
+                    var fileCodeModel = projectItem.FileCodeModel;
+                    if (fileCodeModel == null)
+                        continue;
+
+                    foreach (CodeElement element in fileCodeModel.CodeElements)
+                    {
+                        yield return element;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -257,13 +273,13 @@ namespace AssemblyProviders.ProjectAssembly
         private MethodItem getMethodItem(MethodID methodID)
         {
             //note that for non generic methods is path same as signature
-            string methodPathSignature, paramDescription;
-            Naming.GetParts(methodID, out methodPathSignature, out paramDescription);
+            var path = Naming.GetMethodPath(methodID);
+            var needGetter = path.IsGetter;
 
             //from given nodes find the one with matching id
-            foreach (var node in findMethodNodes(methodPathSignature))
+            foreach (var node in findMethodNodes(path.ShortSignature))
             {
-                var methodItem = buildMethod(node);
+                var methodItem = buildMethod(node, needGetter);
 
                 if (methodItem.Info.MethodID.Equals(methodID))
                     //we have found matching method
@@ -286,7 +302,7 @@ namespace AssemblyProviders.ProjectAssembly
             foreach (var node in findMethodNodes(methodGenericPath.Signature))
             {
                 //create generic specialization 
-                var methodItem = buildGenericMethod(node, methodGenericPath);
+                var methodItem = buildGenericMethod(node, methodGenericPath, methodGenericPath.IsGetter);
 
                 if (methodItem.Info.MethodID == methodID)
                     //we have found matching generic specialization
@@ -305,19 +321,23 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Find nodes of methods with given signature
+        /// Find nodes that can be base of methods with given signature
+        /// <remarks>Methods can be generated from <see cref="CodeVariable"/>, <see cref="CodeFunction"/>, <see cref="CodeProperty"/></remarks>
         /// </summary>
         /// <param name="methodPathSignature">Path to method in signature form</param>
         /// <returns>Found methods</returns>
-        private IEnumerable<CodeFunction> findMethodNodes(string methodPathSignature)
+        private IEnumerable<CodeElement> findMethodNodes(string methodPathSignature)
         {
             foreach (var element in _searcher.SearchAll(methodPathSignature))
             {
-                var function = element as CodeFunction;
-                if (function == null)
-                    continue;
-
-                yield return function;
+                switch (element.Kind)
+                {
+                    case vsCMElement.vsCMElementVariable:
+                    case vsCMElement.vsCMElementProperty:
+                    case vsCMElement.vsCMElementFunction:
+                        yield return element;
+                        break;
+                }
             }
         }
 
@@ -355,10 +375,10 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         /// <param name="methodNode">Node from which <see cref="MethodItem"/> is builded</param>
         /// <returns>Builded <see cref="MethodItem"/></returns>
-        private MethodItem buildMethod(CodeFunction methodNode)
+        private MethodItem buildMethod(CodeElement methodNode, bool needGetter)
         {
             //building is same as with generic method without parameters
-            return buildGenericMethod(methodNode, null);
+            return buildGenericMethod(methodNode, null, needGetter);
         }
 
         /// <summary>
@@ -367,9 +387,9 @@ namespace AssemblyProviders.ProjectAssembly
         /// <param name="methodNode">Node from which <see cref="MethodItem"/> is builded</param>
         /// <param name="methodGenericPath">Arguments for generic method</param>
         /// <returns>Builded <see cref="MethodItem"/></returns>
-        private MethodItem buildGenericMethod(CodeFunction methodNode, PathInfo methodGenericPath)
+        private MethodItem buildGenericMethod(CodeElement methodNode, PathInfo methodGenericPath, bool needGetter)
         {
-            var methodItem = MethodBuilder.BuildFrom(methodNode, this);
+            var methodItem = MethodBuilder.Build(methodNode, needGetter, this);
 
             if (methodGenericPath != null)
                 //make generic specialization

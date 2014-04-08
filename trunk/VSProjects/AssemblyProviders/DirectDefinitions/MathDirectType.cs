@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using System.Linq.Expressions;
 
@@ -11,14 +10,12 @@ using Analyzing;
 using TypeSystem;
 using TypeSystem.Runtime;
 
-namespace UnitTesting.RuntimeTypeDefinitions
+namespace AssemblyProviders.DirectDefinitions
 {
-    class MathDirectType<T> : DirectTypeDefinition<T>
-        where T : IComparable
+    public class MathDirectType<T> : DirectTypeDefinition<T>
+            where T : IComparable
     {
         readonly Type directType;
-
-
 
         public MathDirectType()
         {

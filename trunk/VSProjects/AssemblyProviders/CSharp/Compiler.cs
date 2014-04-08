@@ -9,7 +9,6 @@ using System.Diagnostics;
 using Analyzing;
 using TypeSystem;
 
-using AssemblyProviders.TypeDefinitions;
 using AssemblyProviders.ProjectAssembly;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
@@ -214,6 +213,8 @@ namespace AssemblyProviders.CSharp
             if (MethodInfo.HasThis)
             {
                 E.AssignArgument(CSharpSyntax.ThisVariable, MethodInfo.DeclaringType, 0);
+                var thisVariable = new VariableInfo(CSharpSyntax.ThisVariable);
+                declareVariable(thisVariable);
             }
             else
             {

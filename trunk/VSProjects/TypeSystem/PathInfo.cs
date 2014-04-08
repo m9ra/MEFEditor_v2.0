@@ -16,9 +16,21 @@ namespace TypeSystem
 
         public readonly string ShortSignature;
 
+        public readonly List<string> GenericArgs = new List<string>();
+
         public bool HasGenericArguments { get { return GenericArgs.Count > 0; } }
 
-        public readonly List<string> GenericArgs = new List<string>();
+        /// <summary>
+        /// Determine that path marks method with getter naming conventions
+        /// </summary>
+        public bool IsGetter
+        {
+            get
+            {
+                //TODO this workaround is not nice
+                return Signature.Contains(Naming.PathDelimiter + Naming.GetterPrefix);
+            }
+        }
 
         public string PrePath
         {

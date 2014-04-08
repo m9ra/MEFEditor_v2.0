@@ -28,7 +28,7 @@ namespace Research
             ////force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7);
 
-            var assembly = ResearchSources.SwitchBlock();
+            var assembly = ResearchSources.MEF_TypeCatalog();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Analyzing;
 using TypeSystem;
 
-namespace AssemblyProviders.TypeDefinitions
+namespace AssemblyProviders.CSharp
 {
     public class LiteralType:Type
     {

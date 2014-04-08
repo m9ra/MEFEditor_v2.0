@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 
+using Analyzing;
 using TypeSystem;
 using Interoperability;
 
@@ -25,6 +26,11 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         private MethodItem _result;
 
         /// <summary>
+        /// Determine that getter is need
+        /// </summary>
+        private bool _needGetter;
+
+        /// <summary>
         /// Assembly where builded method has been declared
         /// </summary>
         private readonly VsProjectAssembly _declaringAssembly;
@@ -32,11 +38,12 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <summary>
         /// Hide constructor - Static Build method should be used
         /// </summary>
-        private MethodBuilder(VsProjectAssembly declaringAssembly)
+        private MethodBuilder(bool needGetter, VsProjectAssembly declaringAssembly)
         {
             if (declaringAssembly == null)
                 throw new ArgumentNullException("declaringAssembly");
 
+            _needGetter = needGetter;
             _declaringAssembly = declaringAssembly;
         }
 
@@ -46,10 +53,12 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// Build <see cref="MethodItem"/> from given element.
         /// </summary>
         /// <param name="element">Method definition element</param>
+        /// <param name="declaringAssembly">Assembly where builded method has been declared</param>
+        /// <param name="needGetter">Determine that getter is needed from given element</param>
         /// <returns>Builded method</returns>
-        internal static MethodItem Build(CodeElement element, VsProjectAssembly declaringAssembly)
+        internal static MethodItem Build(CodeElement element, bool needGetter, VsProjectAssembly declaringAssembly)
         {
-            var builder = new MethodBuilder(declaringAssembly);
+            var builder = new MethodBuilder(needGetter, declaringAssembly);
 
             builder.VisitElement(element);
 
@@ -61,10 +70,13 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             return result;
         }
 
+        #region Concrete method builders
+
         /// <summary>
         /// Build <see cref="MethodItem"/> from given function element.
         /// </summary>
         /// <param name="element">Method definition element</param>
+        /// <param name="declaringAssembly">Assembly in which scope method is builded</param>
         /// <returns>Builded method</returns>
         internal static MethodItem BuildFrom(CodeFunction element, VsProjectAssembly declaringAssembly)
         {
@@ -83,12 +95,49 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         }
 
         /// <summary>
+        /// Build <see cref="MethodItem"/> from given variable element
+        /// </summary>
+        /// <param name="element">Method definition element</param>
+        /// <param name="buildGetter">Determine that getter or setter should be builded</param>
+        /// <returns>Builded method</returns>
+        internal static MethodItem BuildFrom(CodeVariable element, bool buildGetter)
+        {
+            var methodInfo = CreateMethodInfo(element, buildGetter);
+
+            //generate auto property
+            if (buildGetter)
+            {
+                var getterGenerator = new DirectGenerator((c) =>
+                {
+                    var fieldValue = c.GetField(c.CurrentArguments[0], methodInfo.MethodName) as Instance;
+                    c.Return(fieldValue);
+                });
+
+                return new MethodItem(getterGenerator, methodInfo);
+            }
+            else
+            {
+                var setterGenerator = new DirectGenerator((c) =>
+                {
+                    var setValue = c.CurrentArguments[1];
+                    c.SetField(c.CurrentArguments[0], methodInfo.MethodName, setValue);
+                });
+
+                return new MethodItem(setterGenerator, methodInfo);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
         /// Creates <see cref="TypeMethodInfo"/> for given element
         /// </summary>
         /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
         /// <returns>Created <see cref="TypeMethodInfo"/></returns>
         internal static TypeMethodInfo CreateMethodInfo(CodeFunction element)
         {
+            //TODO check if parent is property -> different naming conventions
+
             //collect information from element - note, every call working with element may fail with exception, because of VS doesn't provide determinism
             var name = element.Name;
             var isConstructor = element.FunctionKind == vsCMFunction.vsCMFunctionConstructor;
@@ -97,7 +146,8 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var declaringType = CreateDescriptor(element.Parent as CodeClass);
             var returnType = CreateDescriptor(element.Type);
             var parameters = CreateParametersInfo(element.Parameters);
-            //there are no generic arguments on method definition
+
+            //Methods cannot have generic arguments (only parameters, that are contained within path)
             var methodTypeArguments = TypeDescriptor.NoDescriptors;
 
             if (isConstructor)
@@ -107,6 +157,47 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             }
 
             //create result according to collected information
+            var methodInfo = new TypeMethodInfo(
+                declaringType, name, returnType, parameters,
+                isShared, methodTypeArguments, isAbstract
+                );
+
+            return methodInfo;
+        }
+
+
+        /// <summary>
+        /// Creates <see cref="TypeMethodInfo"/> for given element
+        /// </summary>
+        /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
+        /// <param name="buildGetter"></param>
+        /// <returns>Created <see cref="TypeMethodInfo"/></returns>
+        internal static TypeMethodInfo CreateMethodInfo(CodeVariable element, bool buildGetter)
+        {
+            var namePrefix = buildGetter ? Naming.GetterPrefix : Naming.SetterPrefix;
+            var name = namePrefix + element.Name;
+
+            var isShared = element.IsShared;
+            var isAbstract = false; //variables cannot be abstract
+            var declaringType = CreateDescriptor(element.Parent as CodeClass);
+            var variableType = CreateDescriptor(element.Type);
+
+            //variables cannot have type arguments
+            var methodTypeArguments = TypeDescriptor.NoDescriptors;
+
+            TypeDescriptor returnType;
+            ParameterTypeInfo[] parameters;
+            if (buildGetter)
+            {
+                returnType = variableType;
+                parameters = ParameterTypeInfo.NoParams;
+            }
+            else
+            {
+                returnType = TypeDescriptor.Void;
+                parameters = new[] { ParameterTypeInfo.Create("value", variableType) };
+            }
+
             var methodInfo = new TypeMethodInfo(
                 declaringType, name, returnType, parameters,
                 isShared, methodTypeArguments, isAbstract
@@ -143,13 +234,15 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns>Element's source code</returns>
         internal static string GetSourceCode(CodeFunction element)
         {
+            var name = element.Name;
+            var lang = element.Language;
             if (!element.ProjectItem.IsOpen) element.ProjectItem.Open();
             var editPoint = element.GetStartPoint(vsCMPart.vsCMPartBody).CreateEditPoint();
             var body = editPoint.GetText(element.EndPoint).Replace("\r", "");
 
             return "{" + body;
         }
-               
+
 
         /// <summary>
         /// Create <see cref="TypeDescriptor"/> from given element
@@ -225,6 +318,12 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         public override void VisitFunction(CodeFunction2 e)
         {
             Result(BuildFrom(e, _declaringAssembly));
+        }
+
+        /// <inheritdoc />
+        public override void VisitVariable(CodeVariable e)
+        {
+            Result(BuildFrom(e, _needGetter));
         }
 
         /// <inheritdoc />

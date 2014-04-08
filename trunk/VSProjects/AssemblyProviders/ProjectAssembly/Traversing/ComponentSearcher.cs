@@ -9,6 +9,7 @@ using EnvDTE80;
 
 using Analyzing;
 using TypeSystem;
+using Interoperability;
 using AssemblyProviders.ProjectAssembly.MethodBuilding;
 
 namespace AssemblyProviders.ProjectAssembly.Traversing
@@ -170,7 +171,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             exportMethodID = null;
             exportType = null;
 
-            var name = target.Name;
+            var name = target.Name();
 
             switch (target.Kind)
             {
@@ -210,7 +211,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             importMethodID = null;
             importType = null;
 
-            var name = target.Name;
+            var name = target.Name();
 
             switch (target.Kind)
             {

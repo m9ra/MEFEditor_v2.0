@@ -10,8 +10,13 @@ using TypeSystem.Runtime;
 using TypeSystem.DrawingServices;
 using Interoperability;
 
-using AssemblyProviders.ProjectAssembly;
 
+using AssemblyProviders.CIL;
+using AssemblyProviders.CSharp;
+using AssemblyProviders.ProjectAssembly;
+using AssemblyProviders.DirectDefinitions;
+
+using MEFAnalyzers;
 using MEFAnalyzers.Drawings;
 
 using Plugin.GUI;
@@ -45,6 +50,11 @@ namespace MEFEditor.Plugin.Main
         private Machine _machine;
 
         /// <summary>
+        /// Content drawers that were loaded through extensions
+        /// </summary>
+        private ContentDrawer[] _contentDrawers;
+
+        /// <summary>
         /// GUI used by editor
         /// </summary>
         internal readonly EditorGUI GUI;
@@ -75,7 +85,7 @@ namespace MEFEditor.Plugin.Main
             settings.Runtime.BuildAssembly();
 
             //TODO draw according to extensions
-            var factory = new DiagramFactory(new ContentDrawer(null, (item) => new ComponentDrawing(item)));
+            var factory = new DiagramFactory(_contentDrawers);
             _guiManager = new GUIManager(_loader.AppDomain, GUI, factory);
 
             hookHandlers();
@@ -84,7 +94,59 @@ namespace MEFEditor.Plugin.Main
         private void loadUserExtensions()
         {
             //TODO load extensions
+
+            _contentDrawers = new[]{
+                new ContentDrawer(null, (item) => new ComponentDrawing(item)),
+                new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.CompositionContainer", (item) => new CompositionTesterDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.DirectoryCatalog", (item) => new DirectoryCatalogDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.AggregateCatalog", (item) => new AggregateCatalogDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.TypeCatalog", (item) => new TypeCatalogDrawing(item)),
+                new ContentDrawer("System.ComponentModel.Composition.Hosting.AssemblyCatalog", (item) => new AssemblyCatalogDrawing(item))
+            };
+
+            InitializeRuntime(new[]{
+                typeof(string),
+                typeof(bool),   
+                typeof(VMStack),
+                typeof(LiteralType)
+            }, new[]{
+                typeof(int),
+                typeof(double)
+            });
+
+            Runtime.AddDefinition(new CompositionContainerDefinition());
         }
+
+        #region TODO: Methods that are used only for RESEARCH purposes
+
+        internal void InitializeRuntime(Type[] directTypes, Type[] mathTypes)
+        {
+            foreach (var directType in directTypes)
+            {
+                AddDirectType(directType);
+            }
+
+            foreach (var mathType in mathTypes)
+            {
+                AddDirectMathType(mathType);
+            }
+        }
+
+        public void AddDirectMathType(Type mathType)
+        {
+            var type = typeof(MathDirectType<>).MakeGenericType(mathType);
+
+            var typeDefinition = Activator.CreateInstance(type) as DirectTypeDefinition;
+            Runtime.AddDirectDefinition(typeDefinition);
+        }
+
+        public void AddDirectType(Type directType)
+        {
+            var typeDefinition = new DirectTypeDefinition(directType);
+            Runtime.AddDirectDefinition(typeDefinition);
+        }
+        #endregion
 
         private void hookHandlers()
         {

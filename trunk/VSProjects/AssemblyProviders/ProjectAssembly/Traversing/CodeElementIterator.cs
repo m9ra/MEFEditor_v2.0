@@ -56,8 +56,9 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             var selectedNodes = new List<CodeElement>();
             foreach (var actualNode in getActualNodes())
             {
+                var name = actualNode.Name();
                 //TODO is name in correct form for generics?
-                if (actualNode.Name == suffix)
+                if (name == suffix)
                 {
                     selectedNodes.Add(actualNode);
                 }
@@ -84,11 +85,11 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         {
             if (_currentNodes == null)
             {
-                //position has not been currently set - use root nodes
-                foreach (CodeElement node in _assembly.CodeModel.CodeElements)
-                {
-                    yield return node;
-                }
+                //position has not been currently set - use root elements
+
+                foreach (var element in _assembly.RootElements)
+                    yield return element;
+
             }
             else
             {
@@ -97,6 +98,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 {
                     foreach (CodeElement child in node.Children())
                     {
+                        var lang = node.Language;
                         yield return child;
                     }
                 }
@@ -106,6 +108,8 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         private IEnumerable<MethodItem> getMethodItems(string searchedName)
         {
             var methods = new List<MethodItem>();
+            var isGetter = searchedName.StartsWith(Naming.GetterPrefix);
+
 
             foreach (CodeElement child in getActualNodes())
             {
@@ -131,7 +135,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                         continue;
                 }
 
-                var method = MethodBuilder.Build(child, _assembly);
+                var method = MethodBuilder.Build(child, isGetter, _assembly);
                 if (method.Info.MethodName != searchedName)
                     //not everything could be filtered by CodeFunction testing
                     continue;
