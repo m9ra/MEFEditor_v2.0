@@ -25,8 +25,8 @@
 
         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Name="TopConnectors"/>
         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Name="BottomConnectors"/>
-        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" Name="LeftConnectors"/>
-        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" Name="RightConnectors"/>
+        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" HorizontalAlignment="Center" Name="LeftConnectors"/>
+        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Center" Name="RightConnectors"/>
 
         <ContentPresenter Name="ContentDrawing" Grid.Column="1" Grid.Row="1"/>
     </Grid>

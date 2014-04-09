@@ -73,16 +73,29 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         #region Concrete method builders
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given function element.
+        /// Build <see cref="MethodItem"/> from given <see cref="CodeFunction"/>.
         /// </summary>
         /// <param name="element">Method definition element</param>
         /// <param name="declaringAssembly">Assembly in which scope method is builded</param>
         /// <returns>Builded method</returns>
         internal static MethodItem BuildFrom(CodeFunction element, VsProjectAssembly declaringAssembly)
         {
+            var methodInfo = CreateMethodInfo(element);
+
+            return BuildFrom(element, methodInfo, declaringAssembly);
+        }
+
+
+        /// <summary>
+        /// Build <see cref="MethodItem"/> from given <see cref="CodeFunction"/>.
+        /// </summary>
+        /// <param name="element">Method definition element</param>
+        /// <param name="declaringAssembly">Assembly in which scope method is builded</param>
+        /// <returns>Builded method</returns>
+        private static MethodItem BuildFrom(CodeFunction element, TypeMethodInfo methodInfo, VsProjectAssembly declaringAssembly)
+        {
             var sourceCode = GetSourceCode(element);
             var namespaces = declaringAssembly.GetNamespaces(element);
-            var methodInfo = CreateMethodInfo(element);
 
             var fullname = element.FullName;
             var genericPath = new PathInfo(fullname);
@@ -104,27 +117,27 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var methodInfo = CreateMethodInfo(element, buildGetter);
 
-            //generate auto property
-            if (buildGetter)
-            {
-                var getterGenerator = new DirectGenerator((c) =>
-                {
-                    var fieldValue = c.GetField(c.CurrentArguments[0], methodInfo.MethodName) as Instance;
-                    c.Return(fieldValue);
-                });
+            //variable will generate auto property
+            return buildAutoProperty(methodInfo);
+        }
 
-                return new MethodItem(getterGenerator, methodInfo);
-            }
-            else
-            {
-                var setterGenerator = new DirectGenerator((c) =>
-                {
-                    var setValue = c.CurrentArguments[1];
-                    c.SetField(c.CurrentArguments[0], methodInfo.MethodName, setValue);
-                });
+        /// <summary>
+        /// Build <see cref="MethodItem"/> from given <see cref="CodeProperty"/> element
+        /// </summary>
+        /// <param name="element">Method definition element</param>
+        /// <param name="buildGetter">Determine that getter or setter should be builded</param>
+        /// <returns>Builded method</returns>
+        internal static MethodItem BuildFrom(CodeProperty element, bool buildGetter, VsProjectAssembly declaringAssembly)
+        {
+            var isAutoProperty = element.IsAutoProperty();
+            var methodInfo = CreateMethodInfo(element, buildGetter);
 
-                return new MethodItem(setterGenerator, methodInfo);
-            }
+            if (isAutoProperty)
+                return buildAutoProperty(methodInfo);
+
+            var method = buildGetter ? element.Getter : element.Setter;
+
+            return BuildFrom(method, methodInfo, declaringAssembly);
         }
 
         #endregion
@@ -143,7 +156,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var isConstructor = element.FunctionKind == vsCMFunction.vsCMFunctionConstructor;
             var isShared = element.IsShared;
             var isAbstract = element.MustImplement;
-            var declaringType = CreateDescriptor(element.Parent as CodeClass);
+            var declaringType = CreateDescriptor(element.DeclaringClass());
             var returnType = CreateDescriptor(element.Type);
             var parameters = CreateParametersInfo(element.Parameters);
 
@@ -165,6 +178,48 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             return methodInfo;
         }
 
+        /// <summary>
+        /// Creates <see cref="TypeMethodInfo"/> for given element
+        /// </summary>
+        /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
+        /// <param name="buildGetter"></param>
+        /// <returns>Created <see cref="TypeMethodInfo"/></returns>
+        internal static TypeMethodInfo CreateMethodInfo(CodeProperty element, bool buildGetter)
+        {
+            var namePrefix = buildGetter ? Naming.GetterPrefix : Naming.SetterPrefix;
+            var name = namePrefix + element.Name;
+
+            var method = buildGetter ? element.Getter : element.Setter;
+            var property2 = element as CodeProperty2;
+
+            var isShared = property2 != null && property2.IsShared;
+            var isAbstract = method.MustImplement;
+            var declaringType = CreateDescriptor(element.Parent as CodeClass);
+            var variableType = CreateDescriptor(element.Type);
+
+            //variables cannot have type arguments
+            var methodTypeArguments = TypeDescriptor.NoDescriptors;
+
+            TypeDescriptor returnType;
+            ParameterTypeInfo[] parameters;
+            if (buildGetter)
+            {
+                returnType = variableType;
+                parameters = ParameterTypeInfo.NoParams;
+            }
+            else
+            {
+                returnType = TypeDescriptor.Void;
+                parameters = new[] { ParameterTypeInfo.Create("value", variableType) };
+            }
+
+            var methodInfo = new TypeMethodInfo(
+                declaringType, name, returnType, parameters,
+                isShared, methodTypeArguments, isAbstract
+                );
+
+            return methodInfo;
+        }
 
         /// <summary>
         /// Creates <see cref="TypeMethodInfo"/> for given element
@@ -310,6 +365,37 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             _result = resultMethod;
         }
 
+        /// <summary>
+        /// Build auto generated property from given <see cref="TypeMethodInfo"/>
+        /// </summary>
+        /// <param name="methodInfo">Info of method that will be generated</param>
+        /// <returns></returns>
+        private static MethodItem buildAutoProperty(TypeMethodInfo methodInfo)
+        {
+            var buildGetter = !methodInfo.ReturnType.Equals(TypeDescriptor.Void);
+
+            if (buildGetter)
+            {
+                var getterGenerator = new DirectGenerator((c) =>
+                {
+                    var fieldValue = c.GetField(c.CurrentArguments[0], methodInfo.MethodName) as Instance;
+                    c.Return(fieldValue);
+                });
+
+                return new MethodItem(getterGenerator, methodInfo);
+            }
+            else
+            {
+                var setterGenerator = new DirectGenerator((c) =>
+                {
+                    var setValue = c.CurrentArguments[1];
+                    c.SetField(c.CurrentArguments[0], methodInfo.MethodName, setValue);
+                });
+
+                return new MethodItem(setterGenerator, methodInfo);
+            }
+        }
+
         #endregion
 
         #region Visitor overrides
@@ -324,6 +410,12 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         public override void VisitVariable(CodeVariable e)
         {
             Result(BuildFrom(e, _needGetter));
+        }
+
+        /// <inheritdoc />
+        public override void VisitProperty(CodeProperty e)
+        {
+            Result(BuildFrom(e, _needGetter, _declaringAssembly));
         }
 
         /// <inheritdoc />

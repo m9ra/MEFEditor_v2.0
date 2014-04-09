@@ -91,22 +91,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
                 if (name == lastPart)
                 {
-                    var property = child as CodeProperty;
-
-                    if (property == null)
-                    {
-                        yield return child;
-                    }
-                    else
-                    {
-                        //TODO check of correctnes for auto generated properties
-
-                        if (isGetter)
-                            yield return property.Getter as CodeElement;
-
-                        if (isSetter)
-                            yield return property.Setter as CodeElement;
-                    }
+                    yield return child;
                 }
             }
         }

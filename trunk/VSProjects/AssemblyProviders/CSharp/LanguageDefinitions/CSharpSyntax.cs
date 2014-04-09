@@ -18,6 +18,11 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
     /// </summary>
     class CSharpSyntax
     {
+        /// <summary>
+        /// ID of CSharp language
+        /// </summary>
+        internal const string LanguageID = "{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}";
+
         #region Syntax element constants of C#
 
         /// <summary>

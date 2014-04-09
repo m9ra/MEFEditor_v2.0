@@ -27,6 +27,14 @@ namespace Research
     static class ResearchSources
     {
 
+        static internal TestingAssembly CECIL_InterfaceResolving()
+        {
+            var cilAssembly = new CILAssembly("Research.exe");
+            return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunIfaceTest")
+                .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+                .AddAssembly(cilAssembly);
+        }
+
         static internal TestingAssembly CECIL_Components()
         {
             var cilAssembly = new CILAssembly("Research.exe");
@@ -60,12 +68,13 @@ namespace Research
                 .AddAssembly(cilAssembly);
         }
 
-        static internal TestingAssembly CECIL_InterfaceResolving()
+        static internal TestingAssembly Drawing_MultiConnectors()
         {
-            var cilAssembly = new CILAssembly("Research.exe");
-            return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunIfaceTest")
-                .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
-                .AddAssembly(cilAssembly);
+            return AssemblyUtils.Run(@"        
+               var component=new MultiExportImport();   
+            ")
+
+             .AddToRuntime<MultiExportImport>();
         }
 
         static internal TestingAssembly MEF_Demo()

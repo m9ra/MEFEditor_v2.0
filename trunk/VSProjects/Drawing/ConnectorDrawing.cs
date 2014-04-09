@@ -24,6 +24,19 @@ namespace Drawing
             Align = align;
             Definition = definition;
             OwningItem = owningItem;
+
+            var halfMargin = 10;
+            switch (Align)
+            {
+                case ConnectorAlign.Top:
+                case ConnectorAlign.Bottom:
+                    Margin = new Thickness(halfMargin, 0, halfMargin, 0);
+                    break;
+                case ConnectorAlign.Left:
+                case ConnectorAlign.Right:
+                    Margin = new Thickness(0, halfMargin, 0, halfMargin);
+                    break;
+            }
         }
 
         internal Point OutOfItemPoint
@@ -32,14 +45,14 @@ namespace Drawing
             get
             {
                 var point = GlobalConnectPoint;
-                var shift=40;
+                var shift = 40;
                 switch (Align)
                 {
                     case ConnectorAlign.Top:
                         point.Y -= shift;
                         break;
                     case ConnectorAlign.Bottom:
-                        point.Y+=shift;
+                        point.Y += shift;
                         break;
                     case ConnectorAlign.Left:
                         point.X -= shift;

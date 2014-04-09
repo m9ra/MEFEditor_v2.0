@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using EnvDTE;
 
+using System.Runtime.InteropServices;
+
 namespace Interoperability
 {
     public static class CodeElementExtensions
@@ -52,7 +54,7 @@ namespace Interoperability
             if (element == null) return true;
             return _noWatchedChildren.Contains(element.Kind);
         }
-
+        
         public static CodeElements Children(this CodeElement element)
         {
             switch (element.Kind)
