@@ -33,7 +33,7 @@ namespace TypeSystem.DrawingServices
             WrappedInstance = instance;
 
             Drawing = new DiagramItemDefinition(instance.ID, instance.Info.TypeName);
-            InstanceDrawer = new InstanceDrawer(definition, this);
+            InstanceDrawer = new InstanceDrawer(this);
 
             addEdits();
         }

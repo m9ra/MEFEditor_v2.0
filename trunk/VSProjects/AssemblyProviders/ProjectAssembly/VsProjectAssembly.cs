@@ -87,7 +87,9 @@ namespace AssemblyProviders.ProjectAssembly
         {
             //TODO make it language independant
 
-            CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
+            var source = CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
+
+            source.SourceChangeCommited += activation.OnCommited;
         }
 
         /// <summary>

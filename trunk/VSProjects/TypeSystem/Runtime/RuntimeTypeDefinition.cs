@@ -68,7 +68,7 @@ namespace TypeSystem.Runtime
         internal protected Instance This { get; private set; }
 
 
-        abstract public  TypeDescriptor TypeInfo { get; }
+        abstract public TypeDescriptor TypeInfo { get; }
 
         private List<Edit> _staticEdits = new List<Edit>();
 
@@ -320,7 +320,7 @@ namespace TypeSystem.Runtime
                 return call;
             });
 
-            var edit = new Edit(null, editName, creationTransformation);
+            var edit = new Edit(null, null, editName, creationTransformation);
             _staticEdits.Add(edit);
 
             return edit;

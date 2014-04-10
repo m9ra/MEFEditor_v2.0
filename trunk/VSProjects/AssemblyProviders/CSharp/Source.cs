@@ -8,14 +8,18 @@ using TypeSystem;
 using Analyzing;
 using Analyzing.Editing;
 
+using AssemblyProviders.ProjectAssembly;
+
 using AssemblyProviders.CSharp.Compiling;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
 
 using AssemblyProviders.CSharp.Transformations;
 
+
 namespace AssemblyProviders.CSharp
 {
+
     /// <summary>
     /// Representation of C# source code, with ability to perform transformation.
     /// </summary>
@@ -35,6 +39,11 @@ namespace AssemblyProviders.CSharp
         /// Method path of possible generic ancestors of current method
         /// </summary>
         public PathInfo OriginalMethodPath { get { return OriginalMethod.Path; } }
+
+        /// <summary>
+        /// Event fired whenever change on this source is commited
+        /// </summary>
+        public event SourceChangeCommitedEvent SourceChangeCommited;
 
         /// <summary>
         /// Compilation information collected by compiler.
@@ -91,9 +100,19 @@ namespace AssemblyProviders.CSharp
             return view.Data(this, () => new EditContext(view, this, OriginalCode));
         }
 
+        /// <summary>
+        /// Event notifier fired by <see cref="EditContext"/>
+        /// <param name="commitedContext">Source that has been commited</param>
+        /// </summary>
+        internal void OnCommited(EditContext commitedContext)
+        {
+            if (SourceChangeCommited != null)
+                SourceChangeCommited(commitedContext.Code);
+        }
+
 
         #region Services exposed for transformation implementations
-        
+
         /// <summary>
         /// Remove node in given view
         /// </summary>
@@ -200,7 +219,7 @@ namespace AssemblyProviders.CSharp
         #endregion
 
         #region Remove events handling
-      
+
         /// <summary>
         /// Handler called for every node that is removed (recursively from removedNode to descendants)
         /// </summary>
@@ -293,7 +312,7 @@ namespace AssemblyProviders.CSharp
             //travers top down nodes and call removed handler
             onNodeRemoved(view, removedChild);
         }
-        
+
         #endregion
 
         #region Primitives for source editing
@@ -557,5 +576,6 @@ namespace AssemblyProviders.CSharp
             }
         }
         #endregion
+
     }
 }

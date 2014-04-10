@@ -107,7 +107,7 @@ namespace Analyzing.Editing
             if (transformation == null)
                 return null;
 
-            var edit = new Edit(editProvider, editName, transformation);
+            var edit = new Edit(editProvider, editProvider, editName, transformation);
             editProvider.AddEdit(edit);
             return edit;
         }
@@ -117,7 +117,7 @@ namespace Analyzing.Editing
             if (transformation == null)
                 return;
 
-            var edit = new Edit(editProvider, editName, transformation);
+            var edit = new Edit(attachingInstance, editProvider, editName, transformation);
             editProvider.AttachEdit(attachingInstance, edit);
         }
 

@@ -16,13 +16,10 @@ namespace TypeSystem
 {
     public class InstanceDrawer
     {
-        private readonly RuntimeTypeDefinition _definition;
-
         public readonly DrawedInstance Instance;
 
-        internal InstanceDrawer(RuntimeTypeDefinition definition, DrawedInstance instance)
+        internal InstanceDrawer(DrawedInstance instance)
         {
-            _definition = definition;
             Instance = instance;
         }
 
@@ -62,7 +59,10 @@ namespace TypeSystem
 
         private EditViewBase runEdit(Edit edit, EditView view)
         {
-            return _definition.RunEdit(Instance.WrappedInstance, edit, view);
+            var runtime = Instance.Pipeline.Runtime;
+
+            var contextDefinition = runtime.GetTypeDefinition(edit.Creator);
+            return contextDefinition.RunEdit(Instance.WrappedInstance, edit, view);
         }
 
 

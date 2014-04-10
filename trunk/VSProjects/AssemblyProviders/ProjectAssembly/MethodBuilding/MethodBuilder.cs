@@ -100,6 +100,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var fullname = element.FullName;
             var genericPath = new PathInfo(fullname);
             var activation = new ParsingActivation(sourceCode, methodInfo, genericPath.GenericArgs, namespaces);
+            registerCommits(activation, element);
 
             var generator = new SourceMethodGenerator(activation, declaringAssembly.ParsingProvider);
 
@@ -422,6 +423,47 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         private static void throwNotSupportedElement(CodeElement element)
         {
             throw new NotSupportedException("Given element of type '" + element.GetType() + "' is not supported to be used as method definition");
+        }
+
+        #endregion
+
+        #region Changes writing services
+
+        /// <summary>
+        /// Register commits on activation for writing purposes
+        /// </summary>
+        /// <param name="activation">Activation which commits will be registered</param>
+        /// <param name="element">Element where commited source will be written</param>
+        private static void registerCommits(ParsingActivation activation, CodeFunction element)
+        {
+            activation.SourceChangeCommited += (source) => write(element, source);
+        }
+
+        /// <summary>
+        /// Process source writing into given element
+        /// </summary>
+        /// <param name="element">Element which source will be written</param>
+        /// <param name="source">Source that will be written</param>
+        private static void write(CodeFunction element, string source)
+        {
+            var editPoint = getEditPoint(element);
+            if (element.ProjectItem.Document.ReadOnly)
+                throw new NotSupportedException("Document is read only");
+
+            //TODO this is ugly - refactor getting source code
+            source = source.Substring(1); //remove first {
+
+            editPoint.ReplaceText(element.EndPoint, source, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+        }
+
+        /// <summary>
+        /// Create edit point which can be used for writing into element body.
+        /// </summary>
+        /// <param name="element">Element to get edit point from.</param>
+        /// <returns>Created edit point.</returns>
+        private static EditPoint getEditPoint(CodeFunction element)
+        {
+            return element.GetStartPoint(vsCMPart.vsCMPartBody).CreateEditPoint();
         }
 
         #endregion

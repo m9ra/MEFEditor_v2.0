@@ -14,12 +14,19 @@ namespace Analyzing.Editing
 
         public readonly Transformation Transformation;
 
-        internal readonly Instance Provider;
+        public readonly Instance Provider;
+
+        /// <summary>
+        /// Instance which caused creation of edit
+        /// <remarks>Note that creator can be different from provider because of edit attaching</remarks>
+        /// </summary>
+        public readonly Instance Creator;
 
         internal bool IsEmpty { get { return Transformation is EmptyTransformation; } }
 
-        public Edit(Instance provider, string name, Transformation transformation)
+        public Edit(Instance creator, Instance provider, string name, Transformation transformation)
         {
+            Creator = creator;
             Name = name;
             Transformation = transformation;
             Provider = provider;

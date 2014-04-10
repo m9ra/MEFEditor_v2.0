@@ -64,6 +64,8 @@ namespace AssemblyProviders.CSharp.Transformations
 
             Code = Strips.Data;
             IsCommited = true;
+
+            _source.OnCommited(this);
         }
 
         protected override ExecutionViewData clone()

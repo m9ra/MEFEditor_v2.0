@@ -9,6 +9,12 @@ using TypeSystem;
 namespace AssemblyProviders.ProjectAssembly
 {
     /// <summary>
+    /// Handler for events raised for source changes
+    /// </summary>
+    /// <param name="commitedSource">Source that has been commited</param>
+    public delegate void SourceChangeCommitedEvent(string commitedSource);
+
+    /// <summary>
     /// Activation describing method that could be parsed
     /// </summary>
     public class ParsingActivation
@@ -22,7 +28,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// <see cref="TypeMethodInfo"/> describing generated method
         /// </summary>
         internal readonly TypeMethodInfo Method;
-
+        
         /// <summary>
         /// Generic parameters of method path. They are used for translating source codes according to
         /// generic parameters.
@@ -33,6 +39,11 @@ namespace AssemblyProviders.ProjectAssembly
         /// Namespaces that are available for current method
         /// </summary>
         internal readonly IEnumerable<string> Namespaces;
+
+        /// <summary>
+        /// Event fired whenever change on this source is commited
+        /// </summary>
+        public event SourceChangeCommitedEvent SourceChangeCommited;
 
 
         public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters, IEnumerable<string> namespaces = null)
@@ -57,6 +68,16 @@ namespace AssemblyProviders.ProjectAssembly
 
             //TODO is defensive copy needed?
             Namespaces = namespaces;    
+        }
+
+        /// <summary>
+        /// Method for reporting commits on represented source code
+        /// </summary>
+        /// <param name="commitedSource">Code that has been commited</param>
+        internal void OnCommited(string commitedSource)
+        {
+            if (SourceChangeCommited != null)
+                SourceChangeCommited(commitedSource);
         }
     }
 }

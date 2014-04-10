@@ -25,19 +25,19 @@ namespace TypeSystem.DrawingServices
     {
         private readonly AnalyzingResult _result;
 
-        private readonly RuntimeAssembly _runtime;
-
         private readonly GeneralDrawer _drawer;
 
         private readonly Queue<DrawedInstance> _toDrawQueue = new Queue<DrawedInstance>();
 
         private readonly Dictionary<Instance, DrawedInstance> _instanceDrawings = new Dictionary<Instance, DrawedInstance>();
 
+        internal readonly RuntimeAssembly Runtime;
+
         internal readonly DiagramDefinition Context;
 
         public DrawingPipeline(GeneralDrawer drawer, RuntimeAssembly runtime, AnalyzingResult result)
         {
-            _runtime = runtime;
+            Runtime = runtime;
             _result = result;
             _drawer = drawer;
 
@@ -100,7 +100,7 @@ namespace TypeSystem.DrawingServices
 
         private void concreteDrawing(DrawedInstance instance)
         {
-            var drawer = _runtime.GetDrawer(instance.WrappedInstance);
+            var drawer = Runtime.GetDrawer(instance.WrappedInstance);
             if (drawer != null)
                 drawer.Draw(instance);
         }
@@ -110,7 +110,7 @@ namespace TypeSystem.DrawingServices
             DrawedInstance result;
             if (!_instanceDrawings.TryGetValue(instance, out result))
             {
-                var runtimeTypeDefinition = _runtime.GetTypeDefinition(instance);
+                var runtimeTypeDefinition = Runtime.GetTypeDefinition(instance);
 
                 result = new DrawedInstance(runtimeTypeDefinition, instance, this);
                 _instanceDrawings[instance] = result;
