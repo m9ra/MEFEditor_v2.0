@@ -86,7 +86,7 @@ namespace MEFEditor.Plugin.Main
 
             //TODO draw according to extensions
             var factory = new DiagramFactory(_contentDrawers);
-            _guiManager = new GUIManager(_loader.AppDomain, GUI, factory);
+            _guiManager = new GUIManager(_loader.AppDomain, GUI, factory, _vs);
 
             hookHandlers();
         }

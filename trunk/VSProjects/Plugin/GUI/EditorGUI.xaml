@@ -32,7 +32,7 @@
                     </Grid.Children>
                 </Grid>
             </StackPanel>
-            <Expander Margin="5 0 0 0" DockPanel.Dock="Bottom" Name="logsExpander" IsExpanded="False" MaxHeight="200">
+            <Expander Margin="5 0 0 0" DockPanel.Dock="Bottom" Name="logsExpander" IsExpanded="False" MaxHeight="200" Expanded="logExpander_Expanded" Collapsed="logExpander_Collapsed">
                 <Expander.Header>
                     <TextBlock TextAlignment="Right" HorizontalAlignment="Stretch">Show logs</TextBlock>
                 </Expander.Header>

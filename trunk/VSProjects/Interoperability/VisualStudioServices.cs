@@ -106,7 +106,6 @@ namespace Interoperability
         /// </summary>
         public bool IsSolutionOpen { get { return _dte.Solution != null; } }
 
-
         #region Forwarded events
 
         /// <summary>

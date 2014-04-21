@@ -5,11 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Controls;
+
 
 using Drawing;
 using Analyzing;
 using MEFEditor;
+using Interoperability;
 using TypeSystem;
 using TypeSystem.Runtime;
 
@@ -33,8 +36,16 @@ namespace Plugin.GUI
 
         private readonly DrawingProvider _drawingProvider;
 
+        private readonly VisualStudioServices _vs;
+
+        private readonly Queue<LogEntry> _logQueue = new Queue<LogEntry>();
+
         private AssemblyProvider _hostAssembly;
 
+        /// <summary>
+        /// Number of log entries displayed
+        /// </summary>
+        public readonly int LogHistorySize = 200;
 
         /// <summary>
         /// Event fired whenever composition point is selected
@@ -58,11 +69,12 @@ namespace Plugin.GUI
 
 
 
-        public GUIManager(AppDomainServices appDomain, EditorGUI gui, AbstractDiagramFactory diagramFactory)
+        public GUIManager(AppDomainServices appDomain, EditorGUI gui, AbstractDiagramFactory diagramFactory, VisualStudioServices vs = null)
         {
             _appDomain = appDomain;
             _gui = gui;
             _diagramFactory = diagramFactory;
+            _vs = vs;
 
             _drawingProvider = new DrawingProvider(_gui.Workspace, _diagramFactory);
 
@@ -86,6 +98,11 @@ namespace Plugin.GUI
         /// </summary>
         private void hookEvents()
         {
+            if (_vs != null)
+            {
+                _vs.Log.OnLog += logHandler;
+            }
+
             _appDomain.ComponentAdded += onComponentAdded;
             _appDomain.ComponentRemoved += onComponentRemoved;
 
@@ -94,8 +111,8 @@ namespace Plugin.GUI
 
             _gui.HostPathChanged += onHostPathChanged;
             _gui.RefreshClicked += forceRefresh;
+            _gui.LogRefresh += logRefresh;
         }
-
 
         /// <summary>
         /// Initialize GUI according to current environment state
@@ -264,6 +281,88 @@ namespace Plugin.GUI
                 CompositionPointSelected();
         }
 
+        #endregion
+
+        #region Logging service handling
+
+        /// <summary>
+        /// Handler called for every logged entry
+        /// </summary>
+        /// <param name="entry">Logged entry</param>
+        private void logHandler(LogEntry entry)
+        {
+            _logQueue.Enqueue(entry);
+
+            while (_logQueue.Count > LogHistorySize)
+                _logQueue.Dequeue();
+
+            if (_gui.IsLogVisible)
+                drawLogEntry(entry);
+        }
+
+        /// <summary>
+        /// Draw given entry into Log
+        /// </summary>
+        /// <param name="entry">Entry to draw</param>
+        private void drawLogEntry(LogEntry entry)
+        {
+            var drawing = createLogEntryDrawing(entry);
+
+            _gui.Log.Children.Insert(0, drawing);
+            while (_gui.Log.Children.Count > LogHistorySize)
+                _gui.Log.Children.RemoveAt(LogHistorySize);
+        }
+
+        private void logRefresh()
+        {
+            foreach (var entry in _logQueue)
+            {
+                drawLogEntry(entry);
+            }
+        }
+
+        private UIElement createLogEntryDrawing(LogEntry entry)
+        {
+            Brush entryColor;
+            switch (entry.Level)
+            {
+                case LogLevels.Error:
+                    entryColor = Brushes.Red;
+                    break;
+                case LogLevels.Warning:
+                    entryColor = Brushes.Orange;
+                    break;
+                case LogLevels.Notification:
+                    entryColor = Brushes.Black;
+                    break;
+                default:
+                    entryColor = Brushes.Gray;
+                    break;
+            }
+
+            var heading = new TextBlock();
+            heading.Text = entry.Message;
+            heading.Foreground = entryColor;
+
+            //set navigation handler
+            if (entry.Navigate != null)
+                heading.PreviewMouseDown += (a, b) => entry.Navigate();
+
+            if (entry.Description == null)
+                //no description is available
+                return heading;
+
+            var expander = new Expander();
+            expander.Header = heading;
+            var description = new TextBlock();
+            description.Text = entry.Description;
+            description.Margin = new Thickness(10, 0, 0, 10);
+
+            expander.Content = description;
+            expander.Margin = new Thickness(20, 0, 0, 0);
+
+            return expander;
+        }
         #endregion
     }
 }

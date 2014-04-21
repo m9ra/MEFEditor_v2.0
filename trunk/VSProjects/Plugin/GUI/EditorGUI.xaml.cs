@@ -38,9 +38,21 @@ namespace Plugin.GUI
 
         public StackPanel Log { get { return _Log; } }
 
+        /// <summary>
+        /// Event fired whenever log refresh is needed
+        /// </summary>
+        public event Action LogRefresh;
+
+        /// <summary>
+        /// Determine that log is visible to user
+        /// </summary>
+        public bool IsLogVisible { get { return logsExpander.IsExpanded; } }
+
+        /// <summary>
+        /// List of composition points provided to user
+        /// </summary>
         public ComboBox CompositionPoints { get { return _CompositionPoints; } }
-
-
+        
         /// <summary>
         /// Event for handling changes in host application path
         /// </summary>
@@ -131,7 +143,7 @@ namespace Plugin.GUI
 
             dialog.DefaultExt = ".exe";
             dialog.Filter = "Assembly files (*.dll;*.exe)|*.exe;*.dll|All files (*.*)|*.*";
-            
+
             var initialDirectory = _HostPath.Text;
             if (initialDirectory != null && initialDirectory != "")
             {
@@ -145,6 +157,30 @@ namespace Plugin.GUI
             {
                 HostPath = dialog.FileName;
             }
+        }
+
+        private void logExpander_Expanded(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource != logsExpander)
+                //misplaced event
+                return;
+
+            e.Handled = true;
+            logsExpander.Header = "Hide logs";
+
+            if (LogRefresh != null)
+                LogRefresh();
+        }
+
+        private void logExpander_Collapsed(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource != logsExpander)
+                //misplaced event
+                return;
+
+            Log.Children.Clear();
+            e.Handled = true;
+            logsExpander.Header = "Show logs";
         }
 
         #endregion
