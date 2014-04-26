@@ -52,6 +52,11 @@ namespace TypeSystem
         internal event ComponentEvent ComponentAdded;
 
         /// <summary>
+        /// Event fired whenever component is removed from assembly
+        /// </summary>
+        internal event ComponentEvent ComponentRemoved;
+
+        /// <summary>
         /// References of represented assembly
         /// </summary>
         internal ReferencedAssemblies References { get { return _services.References; } }
@@ -222,6 +227,10 @@ namespace TypeSystem
         /// <param name="component">Discovered component</param>
         protected void ComponentDiscovered(ComponentInfo component)
         {
+            var alreadyExists = _services.GetComponentInfo(component.ComponentType)!=null;
+            if (alreadyExists)
+                return;
+
             if (ComponentAdded != null)
                 ComponentAdded(component);
         }
@@ -229,9 +238,20 @@ namespace TypeSystem
         /// <summary>
         /// Report that component has been removed from provided assembly
         /// </summary>
-        protected void ComponentRemoved()
+        protected void ComponentRemoveDiscovered(string fullname)
         {
-            throw new NotImplementedException();
+            var components = _services.GetComponents(this);
+            foreach (var component in components)
+            {
+                if (component.ComponentType.TypeName == fullname)
+                {
+                    if (ComponentRemoved != null)
+                        ComponentRemoved(component);
+
+                    //only single component could be removed
+                    return;
+                }
+            }
         }
 
         #endregion
@@ -269,9 +289,9 @@ namespace TypeSystem
         /// TODO Form of invalidation
         /// </summary>
         /// <param name="name"></param>
-        protected void ReportInvalidation(MethodID name)
+        protected void ReportInvalidation(string invalidatedNamePrefix)
         {
-            throw new NotImplementedException();
+            //TODO methods invalidation
         }
 
 

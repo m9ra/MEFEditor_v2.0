@@ -26,11 +26,6 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         internal event ComponentEvent OnComponentFound;
 
         /// <summary>
-        /// Stack of currently searched <see cref="CodeClass"/> objects
-        /// </summary>
-        private readonly Stack<CodeClass> _classStack = new Stack<CodeClass>();
-
-        /// <summary>
         /// <see cref="TypeServices"/> used for resolving types' inheritance
         /// </summary>
         private readonly TypeServices _services;
@@ -58,9 +53,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         public override void VisitClass(CodeClass2 e)
         {
             //keep stack of nesting classes
-            _classStack.Push(e);
             base.VisitClass(e);
-            var popped = _classStack.Pop();
 
             if (_buildedComponents.ContainsKey(e))
             {
@@ -105,7 +98,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <param name="forceMany">Determine that explicit <c>AllowMany</c> is used</param>
         private void addImport(AttributeInfo importAttrbute, bool forceMany = false)
         {
-            var builder = getOrCreateCurrentBuilder();
+            var builder = getOrCreateCurrentBuilder(importAttrbute.Element as CodeElement);
 
             MethodID importMethodID;
             TypeDescriptor importType;
@@ -132,7 +125,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <param name="exportAttrbiute">Attribute defining export</param>
         private void addExport(AttributeInfo exportAttrbiute)
         {
-            var builder = getOrCreateCurrentBuilder();
+            var builder = getOrCreateCurrentBuilder(exportAttrbiute.Element as CodeElement);
 
             TypeDescriptor exportTypeDescriptor;
             MethodID exportMethodID;
@@ -250,7 +243,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             //TODO handle composition point arguments
             var info = MethodBuilder.CreateMethodInfo(method);
 
-            var builder = getOrCreateCurrentBuilder();
+            var builder = getOrCreateCurrentBuilder(compositionAttrbiute.Element as CodeElement);
             builder.AddExplicitCompositionPoint(info.MethodID);
         }
 
@@ -285,12 +278,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         }
 
         /// <summary>
-        /// Get or create <see cref="ComponentInfoBuilder"/> for currently visited class
+        /// Get or create <see cref="ComponentInfoBuilder"/> for class owning currently visited element
         /// </summary>
         /// <returns><see cref="ComponentInfoBuilder"/> for currently visited class</returns>
-        private ComponentInfoBuilder getOrCreateCurrentBuilder()
+        private ComponentInfoBuilder getOrCreateCurrentBuilder(CodeElement element)
         {
-            var currentClass = _classStack.Peek();
+            var currentClass = element.DeclaringClass();
 
             ComponentInfoBuilder builder;
             if (!_buildedComponents.TryGetValue(currentClass, out builder))

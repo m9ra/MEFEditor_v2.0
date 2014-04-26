@@ -27,6 +27,9 @@ namespace Drawing
         {
             Engine.Clear();
 
+            if (diagramDefinition == null)
+                return null;
+
             var context = new DiagramContext(this, diagramDefinition);
 
             foreach (var definition in context.RootItemDefinitions)
@@ -42,7 +45,7 @@ namespace Drawing
                     foreach (var to in Engine.DefiningItems(joinDefinition.To))
                     {
                         var join = _diagramFactory.CreateJoin(joinDefinition, context);
-                        Engine.AddJoin(join,from,to);
+                        Engine.AddJoin(join, from, to);
                     }
                 }
             }

@@ -174,6 +174,39 @@ namespace AssemblyProviders.ProjectAssembly
             }
         }
 
+
+        public static CodeClass DeclaringClass(this CodeElement element)
+        {            
+            if (element== null)
+                return null;
+
+            switch (element.Kind)
+            {
+                case vsCMElement.vsCMElementClass:
+                    return element as CodeClass;
+                case vsCMElement.vsCMElementProperty:
+                    return DeclaringClass(element as CodeProperty);
+                case vsCMElement.vsCMElementVariable:
+                    return DeclaringClass(element as CodeVariable);
+                case vsCMElement.vsCMElementFunction:
+                    return DeclaringClass(element as CodeFunction);
+                case vsCMElement.vsCMElementAttribute:
+                    return DeclaringClass(element as CodeAttribute);
+
+                default:
+                    return null;
+            }
+        }
+
+        public static CodeClass DeclaringClass(this CodeAttribute element){
+            var parent = element.Parent as CodeElement;
+            if (parent == null)
+                return null;
+
+            return parent.DeclaringClass();
+        }
+        
+
         public static CodeClass DeclaringClass(this CodeFunction element)
         {
             var parent = element.Parent as CodeElement;
@@ -196,6 +229,11 @@ namespace AssemblyProviders.ProjectAssembly
         public static CodeClass DeclaringClass(this CodeProperty element)
         {
             return element.Parent;
+        }
+
+        public static CodeClass DeclaringClass(this CodeVariable element)
+        {
+            return element.Parent as CodeClass;
         }
 
         /// <summary>

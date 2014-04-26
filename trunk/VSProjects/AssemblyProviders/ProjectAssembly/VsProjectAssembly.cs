@@ -118,7 +118,9 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         private void hookChangesHandler()
         {
-            //throw new NotImplementedException();
+            VS.RegisterElementAdd(_assemblyProject, onAdd);
+            VS.RegisterElementRemove(_assemblyProject, onRemove);
+            VS.RegisterElementChange(_assemblyProject, onChange);
         }
 
         /// <summary>
@@ -155,6 +157,18 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
+        /// Create <see cref="ComponentSearcher"/> with initialized event handlers
+        /// </summary>
+        /// <returns>Created <see cref="ComponentSearcher"/></returns>
+        private ComponentSearcher createComponentSearcher()
+        {
+            var searcher = new ComponentSearcher(TypeServices);
+            searcher.OnNamespaceEntered += reportSearchProgress;
+            searcher.OnComponentFound += ComponentDiscovered;
+            return searcher;
+        }
+
+        /// <summary>
         /// Reports search progress to TypeSystem
         /// </summary>
         /// <param name="e">Name of currently processed namespace</param>
@@ -163,14 +177,45 @@ namespace AssemblyProviders.ProjectAssembly
             ReportProgress(e.FullName);
         }
 
+        #region Changes handlers
+
+        private void onAdd(ElementNode node)
+        {
+            node.SetTag("Name", node.Element.FullName);
+
+            //TODO optimize repeated walking through transactions
+            var searcher = createComponentSearcher();
+            searcher.VisitElement(node.Element);
+        }
+
+        private void onChange(ElementNode node)
+        {
+            //TODO optimize !!
+            onRemove(node);
+            onAdd(node);
+        }
+
+        private void onRemove(ElementNode node)
+        {
+            var tag = node.GetTag("Name") as string;
+            //TODO naming conventions
+
+            if (tag == null)
+                return;
+
+            ReportInvalidation(tag);
+
+            ComponentRemoveDiscovered(tag);
+        }
+
+        #endregion
+
         #region Assembly provider implementation
 
         /// <inheritdoc />
         protected override void loadComponents()
         {
-            var searcher = new ComponentSearcher(TypeServices);
-            searcher.OnNamespaceEntered += reportSearchProgress;
-            searcher.OnComponentFound += ComponentDiscovered;
+            var searcher = createComponentSearcher();
 
             //search components in whole project
             searcher.VisitProject(Project);
@@ -263,7 +308,6 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         #endregion
-
 
         #region Method building helpers
 

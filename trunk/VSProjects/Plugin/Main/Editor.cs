@@ -166,10 +166,17 @@ namespace MEFEditor.Plugin.Main
 
         private void showComposition(MethodID entryMethod, Instance[] entryArguments)
         {
-            var result = _machine.Run(_loader, entryMethod, entryArguments);
-            var drawing = createDrawings(result);
+            if (entryMethod == null)
+            {
+                _guiManager.Display(null);
+            }
+            else
+            {
+                var result = _machine.Run(_loader, entryMethod, entryArguments);
+                var drawing = createDrawings(result);
 
-            _guiManager.Display(drawing);
+                _guiManager.Display(drawing);
+            }
         }
 
         /// <summary>
@@ -211,7 +218,11 @@ namespace MEFEditor.Plugin.Main
         {
             var compositionPoint = _guiManager.SelectedCompositionPoint;
 
-            if (compositionPoint != null)
+            if (compositionPoint == null)
+            {
+                showComposition(null, null);
+            }
+            else
             {
                 var entryMethod = compositionPoint.EntryMethod;
 

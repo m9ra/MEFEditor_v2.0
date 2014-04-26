@@ -544,6 +544,7 @@ namespace TypeSystem.Core
         {
             startTransaction("Registering assembly: " + assembly.Name);
             assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
+            assembly.ComponentRemoved += (compInfo) => _onComponentRemoved(assembly, compInfo);
 
             var services = new TypeServices(assembly, this);
             assembly.TypeServices = services;

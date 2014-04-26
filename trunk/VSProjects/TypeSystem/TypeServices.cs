@@ -160,7 +160,7 @@ namespace TypeSystem
         /// Get <see cref="ComponentInfo"/> defined for given type.
         /// </summary>
         /// <param name="type">Type which component info is needed</param>
-        /// <returns><see cref="ComponentInfo"/> defined for type if available, <c>false</c> otherwise</returns>
+        /// <returns><see cref="ComponentInfo"/> defined for type if available, <c>null</c> otherwise</returns>
         public ComponentInfo GetComponentInfo(InstanceInfo type)
         {
             return _manager.GetComponentInfo(type);

@@ -12,6 +12,12 @@ using EnvDTE80;
 namespace Interoperability
 {
     /// <summary>
+    /// Action observed on given element
+    /// </summary>
+    /// <param name="element"></param>
+    public delegate void ElementNodeHandler(ElementNode element);
+
+    /// <summary>
     /// Provide element events in sourcecode - wrapper over LineChanged event
     /// </summary>
     class FileItemManager
@@ -36,6 +42,21 @@ namespace Interoperability
 
         internal readonly VisualStudioServices VS;
 
+        /// <summary>
+        /// Event fired whenever element is added (top most)
+        /// </summary>
+        internal event ElementNodeHandler ElementAdded;
+
+        /// <summary>
+        /// Event fired whenever element is removed (every)
+        /// </summary>
+        internal event ElementNodeHandler ElementRemoved;
+
+        /// <summary>
+        /// Event fired whenever element is added (every)
+        /// </summary>
+        internal event ElementNodeHandler ElementChanged;
+
         internal FileItemManager(VisualStudioServices vs, FileCodeModel file)
         {
             VS = vs;
@@ -54,7 +75,6 @@ namespace Interoperability
 
 
             _root = new ElementNode(file.CodeElements, this);
-            FlushChanges();
         }
 
         /// <summary>
@@ -127,7 +147,7 @@ namespace Interoperability
 
         private void fireHandlers()
         {
-            //removing has to be before other changes -> remove can be caused via LineChanged, but should be repaired in CheckChildren phase
+            //removing has to be done before other changes -> remove can be caused via LineChanged, but should be repaired in CheckChildren phase
             foreach (var rem in _removed)
                 onElementRemoved(rem.Node);
 
@@ -148,9 +168,7 @@ namespace Interoperability
 
         private void logSpan(string description, ElementNode node)
         {
-            string id = "";
-
-            if (!node.Removed) id = node.Element.FullName;
+            var id = node.Removed ? "$removed" : node.Element.FullName;
 
             //    Log.Message(description + ": " +node.Element.GetHashCode()+ " " + id);
             VS.Log.Message(description + ": " + id);
@@ -163,7 +181,8 @@ namespace Interoperability
         private void onElementChanged(ElementNode node)
         {
             logSpan("Changed", node);
-            throw new NotImplementedException("Element has changed");
+            if (ElementChanged != null)
+                ElementChanged(node);
         }
 
         /// <summary>
@@ -173,8 +192,9 @@ namespace Interoperability
         private void onElementAdd(ElementNode node)
         {
             logSpan("Added", node);
-           
-            throw new NotImplementedException("Element has changed");
+
+            if (ElementAdded != null)
+                ElementAdded(node);
         }
 
         /// <summary>
@@ -185,7 +205,8 @@ namespace Interoperability
         {
             logSpan("Removed", node);
 
-            throw new NotImplementedException("Element has been removed");
+            if (ElementRemoved != null)
+                ElementRemoved(node);
         }
 
         internal void Disconnect()

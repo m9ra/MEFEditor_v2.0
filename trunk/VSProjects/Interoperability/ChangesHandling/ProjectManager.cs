@@ -35,6 +35,21 @@ namespace Interoperability
         private readonly HashSet<FileItemManager> _changedFileManagers = new HashSet<FileItemManager>();
 
         /// <summary>
+        /// Event fired whenever element is added (top most)
+        /// </summary>
+        internal event ElementNodeHandler ElementAdded;
+
+        /// <summary>
+        /// Event fired whenever element is removed (every)
+        /// </summary>
+        internal event ElementNodeHandler ElementRemoved;
+
+        /// <summary>
+        /// Event fired whenever element is added (every)
+        /// </summary>
+        internal event ElementNodeHandler ElementChanged;
+
+        /// <summary>
         /// Initialize manager
         /// </summary>
         /// <param name="project"><see cref="Project"/> that will be watched after Hooking</param>
@@ -42,6 +57,21 @@ namespace Interoperability
         {
             _project = project;
             _vs = vs;
+        }
+
+        internal void RegisterAddHandler(ElementNodeHandler handler)
+        {
+            ElementAdded += handler;
+        }
+
+        internal void RegisterRemoveHandler(ElementNodeHandler handler)
+        {
+            ElementRemoved += handler;
+        }
+
+        internal void RegisterChangeHandler(ElementNodeHandler handler)
+        {
+            ElementChanged += handler;
         }
 
         /// <summary>
@@ -160,6 +190,10 @@ namespace Interoperability
             {
                 //item is source code file so it needs to be registered
                 var manager = new FileItemManager(_vs, fileCodeModel);
+                manager.ElementAdded += ElementAdded;
+                manager.ElementChanged += ElementChanged;
+                manager.ElementRemoved += ElementRemoved;
+                manager.FlushChanges();
 
                 //register item
                 _watchedItems.Add(item, manager);

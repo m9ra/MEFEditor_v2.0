@@ -12,9 +12,21 @@ namespace Interoperability
     /// <summary>
     /// used for wraping elements, because of changes handling
     /// </summary>
-    class ElementNode
+    public class ElementNode
     {
-        Dictionary<CodeElement, ElementNode> _children = new Dictionary<CodeElement, ElementNode>();
+        /// <summary>
+        /// Children of current node
+        /// </summary>
+        readonly Dictionary<CodeElement, ElementNode> _children = new Dictionary<CodeElement, ElementNode>();
+
+        /// <summary>
+        /// Tags stored for current node
+        /// </summary>
+        readonly Dictionary<string, object>  _tags = new Dictionary<string, object>();
+
+        /// <summary>
+        /// CodeElements cached from wrapped element
+        /// </summary>
         CodeElements _elements;
 
         /// <summary>
@@ -44,7 +56,7 @@ namespace Interoperability
         /// </summary>
         public bool Removed;
 
-        public ElementNode(CodeElement element, FileItemManager owner)
+        internal ElementNode(CodeElement element, FileItemManager owner)
         {
             _owner = owner;
             if (element == null) throw new ArgumentNullException("element");
@@ -56,11 +68,24 @@ namespace Interoperability
             refreshOffset(); //initialize offset
         }
 
-        public ElementNode(CodeElements codeElements, FileItemManager owner)
+        internal ElementNode(CodeElements codeElements, FileItemManager owner)
         {
             _owner = owner;
             if (codeElements == null) throw new ArgumentNullException("codeElements");
             _elements = codeElements;
+        }
+
+
+        public void SetTag(string tagName, object tag)
+        {
+            _tags[tagName] = tag;
+        }
+
+        public object GetTag(string tagName)
+        {
+            object result;
+            _tags.TryGetValue(tagName, out result);
+            return result;
         }
 
         /// <summary>
@@ -112,7 +137,7 @@ namespace Interoperability
         /// Check which descendants were added/removed or are misplaced according to ApplyEdits
         /// </summary>
         /// <returns></returns>
-        public List<ElementChange> CheckChildren(List<ElementChange> result = null)
+        internal List<ElementChange> CheckChildren(List<ElementChange> result = null)
         {
             if (result == null) result = new List<ElementChange>();
 
@@ -166,7 +191,7 @@ namespace Interoperability
         /// <param name="change"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public List<ElementChange> ApplyEdit(LineChange change, List<ElementChange> result = null)
+        internal List<ElementChange> ApplyEdit(LineChange change, List<ElementChange> result = null)
         {
             if (result == null) result = new List<ElementChange>();
 
@@ -230,8 +255,7 @@ namespace Interoperability
 
             return changed;
         }
-
-
+        
         public override string ToString()
         {
             var itm = Element.ProjectItem;

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 
 using EnvDTE;
+using VSLangProj;
 using System.Runtime.InteropServices;
 
 namespace Interoperability
@@ -38,7 +39,6 @@ namespace Interoperability
         /// is needed for getting attribute and other fullnames resolved
         /// </summary>
         private readonly DispatcherTimer _solutionWait = new DispatcherTimer();
-
 
         /// <summary>
         /// Visual studio object used for interoperability
@@ -176,7 +176,41 @@ namespace Interoperability
 
             return manager.Namespaces;
         }
-        
+
+        /// <summary>
+        /// Register add changes on elements in given <see cref="VSProject"/>
+        /// </summary>
+        /// <param name="project">Project where changes are listened</param>
+        /// <param name="handler">Handler fired when element is added</param>
+        public void RegisterElementAdd(VSProject project, ElementNodeHandler handler)
+        {            
+            var manager=findProjectManager(project.Project);
+            manager.ElementAdded += handler;
+        }
+
+
+        /// <summary>
+        /// Register remove changes on elements in given <see cref="VSProject"/>
+        /// </summary>
+        /// <param name="project">Project where changes are listened</param>
+        /// <param name="handler">Handler fired when element is removed</param>
+        public void RegisterElementRemove(VSProject project, ElementNodeHandler handler)
+        {
+            var manager = findProjectManager(project.Project);
+            manager.ElementRemoved += handler;
+        }
+
+        /// <summary>
+        /// Register changes on elements in given <see cref="VSProject"/>
+        /// </summary>
+        /// <param name="project">Project where changes are listened</param>
+        /// <param name="handler">Handler fired when element is changed</param>
+        public void RegisterElementChange(VSProject project, ElementNodeHandler handler)
+        {
+            var manager = findProjectManager(project.Project);
+            manager.ElementChanged += handler;
+        }
+
         #endregion
 
         #region Visual Studio Event handlers
@@ -375,10 +409,21 @@ namespace Interoperability
                 return null;
             }
 
+            return findProjectManager(containingProject);
+        }
+
+        /// <summary>
+        /// Find <see cref="ProjectManager"/> containing given <see cref="Project"/>.
+        /// If manager cannot be found, log entries are emitted
+        /// </summary>
+        /// <param name="project">Project which manager has to be found</param>
+        /// <returns>Found <see cref="ProjectManager"/> if available, <c>null</c> otherwise</returns>
+        private ProjectManager findProjectManager(Project project)
+        {
             ProjectManager manager;
-            if (!_watchedProjects.TryGetValue(containingProject, out manager))
+            if (!_watchedProjects.TryGetValue(project, out manager))
             {
-                Log.Message("Project for project item {0} is not known");
+                Log.Message("Manager for project {0} is not known", project.Name);
             }
             return manager;
         }

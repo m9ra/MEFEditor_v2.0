@@ -40,6 +40,10 @@ namespace Plugin.GUI
 
         private readonly Queue<LogEntry> _logQueue = new Queue<LogEntry>();
 
+        private MethodID _desiredCompositionPointMethod;
+
+        private CompositionPoint _selectedCompositionPoint;
+
         private AssemblyProvider _hostAssembly;
 
         /// <summary>
@@ -65,7 +69,20 @@ namespace Plugin.GUI
         /// <summary>
         /// Composition point that is currently selected
         /// </summary>
-        public CompositionPoint SelectedCompositionPoint { get; private set; }
+        public CompositionPoint SelectedCompositionPoint
+        {
+            get
+            {
+                return _selectedCompositionPoint;
+            }
+            private set
+            {
+                if (value != null)
+                    _desiredCompositionPointMethod = value.EntryMethod;
+
+                _selectedCompositionPoint = value;
+            }
+        }
 
 
 
@@ -217,6 +234,10 @@ namespace Plugin.GUI
 
             _compositionPoints.Add(compositionPoint, item);
             _gui.CompositionPoints.Items.Add(item);
+
+            var isDesiredCompositionPoint=_desiredCompositionPointMethod != null && _desiredCompositionPointMethod.Equals(compositionPoint.EntryMethod);
+            if (isDesiredCompositionPoint)
+                _gui.CompositionPoints.SelectedIndex = _gui.CompositionPoints.Items.Count - 1;
         }
 
         private void removeCompositionPoint(CompositionPoint compositionPoint)
@@ -232,7 +253,7 @@ namespace Plugin.GUI
 
             _gui.CompositionPoints.Items.Remove(item);
 
-            if (compositionPoint == SelectedCompositionPoint)
+            if (compositionPoint.Equals(SelectedCompositionPoint))
             {
                 _gui.CompositionPoints.SelectedIndex = 0;
             }
@@ -247,7 +268,7 @@ namespace Plugin.GUI
             item.Content = itemContent;
             item.Selected += (e, s) =>
             {
-                onCompositionPointSelected(compositionPoint);
+                item.Dispatcher.BeginInvoke(new Action(() => onCompositionPointSelected(compositionPoint)));
             };
 
             return item;
