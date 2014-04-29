@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TypeSystem.Core;
-
 using Analyzing;
+
+using TypeSystem.Core;
+using TypeSystem.Transactions;
 
 namespace TypeSystem
 {
@@ -29,6 +30,11 @@ namespace TypeSystem
         /// References of <see cref="_owner"/> assembly
         /// </summary>
         internal readonly ReferencedAssemblies References = new ReferencedAssemblies();
+
+        /// <summary>
+        /// Here are managed all <see cref="Transaction"/> objects
+        /// </summary>
+        internal TransactionManager Transactions { get { return _manager.Transactions; } }
 
         /// <summary>
         /// Currently available settings

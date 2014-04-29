@@ -9,6 +9,8 @@ using System.Windows.Media;
 using System.Windows.Controls;
 
 
+using EnvDTE;
+
 using Drawing;
 using Analyzing;
 using MEFEditor;
@@ -153,8 +155,7 @@ namespace Plugin.GUI
         }
 
         #endregion
-
-
+        
         #region Assembly settings handling
 
         private void onAssemblyRemoved(AssemblyProvider provider)
@@ -206,7 +207,7 @@ namespace Plugin.GUI
         #endregion
 
         #region Composition point list handling
-
+        
         private void forceRefresh()
         {
             onCompositionPointSelected(SelectedCompositionPoint);

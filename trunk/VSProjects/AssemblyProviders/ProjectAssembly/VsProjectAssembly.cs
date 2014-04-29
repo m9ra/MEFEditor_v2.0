@@ -11,6 +11,7 @@ using VSLangProj80;
 
 using Analyzing;
 using TypeSystem;
+using TypeSystem.Transactions;
 using Interoperability;
 
 using AssemblyProviders.ProjectAssembly.Traversing;
@@ -32,6 +33,11 @@ namespace AssemblyProviders.ProjectAssembly
         /// Searcher of <see cref="CodeElement"/> objects
         /// </summary>
         private readonly CodeElementSearcher _searcher;
+
+        /// <summary>
+        /// <see cref="CodeClass"/> set that will be discovered when change transaction is closed
+        /// </summary>
+        private readonly HashSet<CodeClass> _toDiscover = new HashSet<CodeClass>();
 
         /// <summary>
         /// <see cref="Project"/> represented by current assembly
@@ -179,22 +185,37 @@ namespace AssemblyProviders.ProjectAssembly
 
         #region Changes handlers
 
+        /// <summary>
+        /// Handler called for element that has been added
+        /// </summary>
+        /// <param name="node">Affected element node</param>
         private void onAdd(ElementNode node)
         {
             node.SetTag("Name", node.Element.FullName);
 
-            //TODO optimize repeated walking through transactions
-            var searcher = createComponentSearcher();
-            searcher.VisitElement(node.Element);
+            //every component will be reported through add
+            //adding member within component is reported as component change
+            if (node.Element is CodeClass)
+            {
+                _toDiscover.Add(node.Element as CodeClass);
+                requireDiscovering();
+            }
         }
 
+        /// <summary>
+        /// Handler called for element that has been changed
+        /// </summary>
+        /// <param name="node">Affected element node</param>
         private void onChange(ElementNode node)
         {
-            //TODO optimize !!
             onRemove(node);
             onAdd(node);
         }
 
+        /// <summary>
+        /// Handler called for element that has been removed
+        /// </summary>
+        /// <param name="node">Affected element node</param>
         private void onRemove(ElementNode node)
         {
             var tag = node.GetTag("Name") as string;
@@ -206,6 +227,29 @@ namespace AssemblyProviders.ProjectAssembly
             ReportInvalidation(tag);
 
             ComponentRemoveDiscovered(tag);
+        }
+
+        /// <summary>
+        /// Require discovering action after current transaction is completed
+        /// </summary>
+        private void requireDiscovering()
+        {
+            Transactions.AttachAfterAction(Transactions.CurrentTransaction, new TransactionAction(flushDiscovering, "FlushDiscovering", (t) => t.Name == "FlushDiscovering", this));
+        }
+
+        /// <summary>
+        /// Flush discovering of elements collected through changes handlers
+        /// </summary>
+        private void flushDiscovering()
+        {
+            foreach (var element in _toDiscover)
+            {
+                VS.Log.Message("Discovering components in {0}", element.FullName);
+                var searcher = createComponentSearcher();
+                //TODO single level discovering
+                searcher.VisitElement(element as CodeElement);
+            }
+            _toDiscover.Clear();
         }
 
         #endregion
@@ -374,6 +418,8 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns>Found methods</returns>
         private IEnumerable<CodeElement> findMethodNodes(string methodPathSignature)
         {
+            VS.Log.Message("Searching method nodes for {0}", methodPathSignature);
+
             foreach (var element in _searcher.SearchAll(methodPathSignature))
             {
                 switch (element.Kind)
@@ -435,6 +481,8 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns>Builded <see cref="MethodItem"/></returns>
         private MethodItem buildGenericMethod(CodeElement methodNode, PathInfo methodGenericPath, bool needGetter)
         {
+            VS.Log.Message("Building method with path {0}", methodGenericPath.Name);
+
             var methodItem = MethodBuilder.Build(methodNode, needGetter, this);
 
             if (methodGenericPath != null)

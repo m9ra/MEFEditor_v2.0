@@ -47,7 +47,7 @@ namespace MEFEditor.Plugin
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
            
-            var services=new VisualStudioServices(PluginPackage.DTE);
+            var services=new VisualStudioServices(PluginPackage.DTE);            
             var editor = new Editor(services);
             base.Content = editor.GUI;
 

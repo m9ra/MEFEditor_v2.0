@@ -26,11 +26,6 @@ namespace TypeSystem.Core
         private readonly AssembliesStorage _assemblies;
 
         /// <summary>
-        /// Here are managed all <see cref="Transaction"/> objects
-        /// </summary>
-        private readonly TransactionManager _transactions = new TransactionManager();
-
-        /// <summary>
         /// Stack for keeping correct ordering on system transactions
         /// </summary>
         private readonly Stack<Transaction> _systemTransactions = new Stack<Transaction>();
@@ -49,6 +44,11 @@ namespace TypeSystem.Core
         /// Components indexed by defining types
         /// </summary>
         private readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
+
+        /// <summary>
+        /// Here are managed all <see cref="Transaction"/> objects
+        /// </summary>
+        internal readonly TransactionManager Transactions = new TransactionManager();
 
         /// <summary>
         /// Loader that is used for creating assemblies
@@ -219,7 +219,7 @@ namespace TypeSystem.Core
         private void addAfterAction(Action action, string name, IsIncludedPredicate predicate, params object[] keys)
         {
             var transactionAction = new TransactionAction(action, name, predicate, keys);
-            _transactions.CurrentTransaction.AddAfterAction(transactionAction);
+            Transactions.CurrentTransaction.AddAfterAction(transactionAction);
         }
 
         #region Transaction dependencies
@@ -485,7 +485,7 @@ namespace TypeSystem.Core
 
         private void _beforeInterpretation()
         {
-            _interpetingTransaction = _transactions.StartNew("Interpreting transaction");
+            _interpetingTransaction = Transactions.StartNew("Interpreting transaction");
         }
 
         private void _afterInterpretation()
@@ -609,7 +609,7 @@ namespace TypeSystem.Core
         /// <param name="description">Description of started transaction</param>
         private void startTransaction(string description)
         {
-            var transaction = _transactions.StartNew(description);
+            var transaction = Transactions.StartNew(description);
             _systemTransactions.Push(transaction);
         }
 

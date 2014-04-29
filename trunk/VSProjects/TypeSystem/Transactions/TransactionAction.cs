@@ -23,7 +23,7 @@ namespace TypeSystem.Transactions
         public readonly string Name;
 
 
-        internal TransactionAction(Action action, string name, IsIncludedPredicate predicate, params object[] keys)
+        public TransactionAction(Action action, string name, IsIncludedPredicate predicate, params object[] keys)
         {
             _action = action;
             Name = name;

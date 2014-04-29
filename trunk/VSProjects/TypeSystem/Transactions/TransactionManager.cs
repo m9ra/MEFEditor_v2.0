@@ -8,13 +8,13 @@ namespace TypeSystem.Transactions
     /// <summary>
     /// Manager used for processing transactions
     /// </summary>
-    class TransactionManager
+    public class TransactionManager
     {
         private readonly Stack<Transaction> _transactionStack = new Stack<Transaction>();
         private readonly Dictionary<Transaction, List<TransactionAction>> _activeTransactions = new Dictionary<Transaction, List<TransactionAction>>();
 
 
-        internal Transaction CurrentTransaction
+        public Transaction CurrentTransaction
         {
             get
             {
@@ -25,16 +25,16 @@ namespace TypeSystem.Transactions
             }
         }
 
-        internal void AttachAfterAction(Transaction transaction, TransactionAction afterAction)
+        public void AttachAfterAction(Transaction transaction, TransactionAction afterAction)
         {
             _activeTransactions[transaction].Add(afterAction);
         }
 
-        internal void EndTransaction(Transaction transaction)
+        public void EndTransaction(Transaction transaction)
         {
             if (_transactionStack.Pop() != transaction)
                 throw new NotImplementedException("Auto commit transaction stack unwiding");
-            
+
             var afterActions = _activeTransactions[transaction];
             _activeTransactions.Remove(transaction);
 
@@ -44,7 +44,7 @@ namespace TypeSystem.Transactions
             }
         }
 
-        internal Transaction StartNew(string description)
+        public Transaction StartNew(string description)
         {
             var transaction = new Transaction(this, description);
             _transactionStack.Push(transaction);

@@ -85,7 +85,7 @@ namespace Interoperability
         {
             foreach (var change in changes)
             {
-                if (change.Kind == ChangeKind.removed)
+                if (change.Kind == ChangeKind.Removed)
                 {
                     //element cannot be added before removed, because of add is registered at the end in _root.CheckElements
                     //!!!!BUT ELEMENT CAN BE REMOVED AND THEN ADDED!!!! ->be carefull on order for firing events
@@ -154,10 +154,10 @@ namespace Interoperability
             foreach (var chg in _queue)
                 switch (chg.Kind)
                 {
-                    case ChangeKind.added:
+                    case ChangeKind.Added:
                         onElementAdd(chg.Node);
                         break;
-                    case ChangeKind.changed:
+                    case ChangeKind.Changed:
                         onElementChanged(chg.Node);
                         break;
                 }
@@ -181,6 +181,7 @@ namespace Interoperability
         private void onElementChanged(ElementNode node)
         {
             logSpan("Changed", node);
+
             if (ElementChanged != null)
                 ElementChanged(node);
         }

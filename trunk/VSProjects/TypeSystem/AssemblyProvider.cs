@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Analyzing;
 
 using TypeSystem.Core;
+using TypeSystem.Transactions;
 
 namespace TypeSystem
 {
@@ -145,6 +146,11 @@ namespace TypeSystem
                     OnTypeSystemInitialized();
             }
         }
+
+        /// <summary>
+        /// Here are managed all <see cref="Transaction"/> objects
+        /// </summary>
+        protected TransactionManager Transactions { get { return _services.Transactions; } }
 
         /// <summary>
         /// Unload provided assembly

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TypeSystem.Core;
+using TypeSystem.Transactions;
 
 namespace TypeSystem
 {
@@ -38,6 +39,8 @@ namespace TypeSystem
         /// Name of transaction progress
         /// </summary>
         public string TransactionProgress { get; private set; }
+
+        public TransactionManager Transactions { get { return _manager.Transactions; } }
 
         /// <summary>
         /// Event fired whenever new assembly is added into AppDomain

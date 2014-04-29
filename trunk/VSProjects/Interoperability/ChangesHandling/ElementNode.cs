@@ -22,7 +22,7 @@ namespace Interoperability
         /// <summary>
         /// Tags stored for current node
         /// </summary>
-        readonly Dictionary<string, object>  _tags = new Dictionary<string, object>();
+        readonly Dictionary<string, object> _tags = new Dictionary<string, object>();
 
         /// <summary>
         /// CodeElements cached from wrapped element
@@ -62,7 +62,7 @@ namespace Interoperability
             if (element == null) throw new ArgumentNullException("element");
             Element = element;
 
-            if (!element.NoWatchedChildren()) 
+            if (!element.NoWatchedChildren())
                 _elements = element.Children();
 
             refreshOffset(); //initialize offset
@@ -161,23 +161,29 @@ namespace Interoperability
                 //else element was added
                 var nChild = new ElementNode(el, _owner);
                 _children.Add(el, nChild);
-                result.Add(new ElementChange(nChild, ChangeKind.added));
+                result.Add(new ElementChange(nChild, ChangeKind.Added));
             }
 
+            var hasRemovedChild = false;
             //remove children of removed elements
             foreach (var remElement in oldElements)
             {
                 var remChild = _children[remElement];
                 _children.Remove(remElement);
 
-                result.Add(new ElementChange(remChild, ChangeKind.removed));
+                result.Add(new ElementChange(remChild, ChangeKind.Removed));
                 remChild.RemoveChildren(result);
+                hasRemovedChild = true;
             }
+
+            if (hasRemovedChild)
+                //removed child mean change of parent
+                result.Add(new ElementChange(this, ChangeKind.Changed));
 
             //recursively check other children
             foreach (var child in _children.Values)
             {
-                if (child.refreshOffset()) result.Add(new ElementChange(child, ChangeKind.changed)); //mistake in line change handling
+                if (child.refreshOffset()) result.Add(new ElementChange(child, ChangeKind.Changed)); //mistake in line change handling
                 child.CheckChildren(result);
             }
 
@@ -208,7 +214,7 @@ namespace Interoperability
                 }
             }
 
-            if (needFullMatch) result.Add(new ElementChange(this, ChangeKind.changed));
+            if (needFullMatch) result.Add(new ElementChange(this, ChangeKind.Changed));
 
             return result;
         }
@@ -223,7 +229,7 @@ namespace Interoperability
             if (result == null) result = new List<ElementChange>();
             foreach (var child in _children.Values)
             {
-                result.Add(new ElementChange(child, ChangeKind.removed));
+                result.Add(new ElementChange(child, ChangeKind.Removed));
                 child.RemoveChildren(result); //recursively remove
             }
             _children.Clear();
@@ -255,7 +261,7 @@ namespace Interoperability
 
             return changed;
         }
-        
+
         public override string ToString()
         {
             var itm = Element.ProjectItem;
@@ -270,7 +276,7 @@ namespace Interoperability
             if (result == null) result = new List<ElementChange>();
             foreach (var child in _children.Values)
             {
-                result.Add(new ElementChange(child, ChangeKind.changed));
+                result.Add(new ElementChange(child, ChangeKind.Changed));
                 child.NamespaceChange(result);
             }
             return result;

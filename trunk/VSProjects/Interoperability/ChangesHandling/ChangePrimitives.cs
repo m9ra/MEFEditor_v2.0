@@ -15,15 +15,15 @@ namespace Interoperability
         /// <summary>
         /// Object has been removed.
         /// </summary>
-        removed = -1,
+        Removed = -1,
         /// <summary>
         /// Object has been changed.
         /// </summary>
-        changed = 0,
+        Changed = 0,
         /// <summary>
         /// Object has been added.
         /// </summary>
-        added = 1,
+        Added = 1,
         /// <summary>
         /// Body of object has been changed.
         /// </summary>
@@ -79,7 +79,7 @@ namespace Interoperability
         {
             Node = node;
             Kind = change;
-            if (Kind == ChangeKind.removed) Node.Removed = true;
+            if (Kind == ChangeKind.Removed) Node.Removed = true;
         }
 
         public override string ToString()
@@ -96,7 +96,7 @@ namespace Interoperability
 
             if (chg.Node != Node) return false;
 
-            if (chg.Kind != ChangeKind.removed && Kind != ChangeKind.removed) return chg.Kind == Kind;
+            if (chg.Kind != ChangeKind.Removed && Kind != ChangeKind.Removed) return chg.Kind == Kind;
             return true; //because of erasing change queue with remove changes equals ChangeKind.removed with all kinds
         }
         public override int GetHashCode()

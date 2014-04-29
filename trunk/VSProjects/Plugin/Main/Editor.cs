@@ -7,6 +7,7 @@ using Drawing;
 using Analyzing;
 using TypeSystem;
 using TypeSystem.Runtime;
+using TypeSystem.Transactions;
 using TypeSystem.DrawingServices;
 using Interoperability;
 
@@ -53,6 +54,11 @@ namespace MEFEditor.Plugin.Main
         /// Content drawers that were loaded through extensions
         /// </summary>
         private ContentDrawer[] _contentDrawers;
+
+        /// <summary>
+        /// Transaction used for handling changes
+        /// </summary>
+        private Transaction _changesTransaction;
 
         /// <summary>
         /// GUI used by editor
@@ -151,6 +157,9 @@ namespace MEFEditor.Plugin.Main
         private void hookHandlers()
         {
             _guiManager.CompositionPointSelected += _guiManager_CompositionPointSelected;
+
+            _vs.BeforeFlushingChanges += () => _changesTransaction = _loader.AppDomain.Transactions.StartNew("Handling user changes");
+            _vs.AfterFlushingChanges += () => _loader.AppDomain.Transactions.EndTransaction(_changesTransaction);
 
             _vs.SolutionOpened += _vs_SolutionOpened;
             _vs.SolutionClosed += _vs_SolutionClosed;

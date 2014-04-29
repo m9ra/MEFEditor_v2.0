@@ -106,6 +106,16 @@ namespace Interoperability
         /// </summary>
         public bool IsSolutionOpen { get { return _dte.Solution != null; } }
 
+        /// <summary>
+        /// Event fired whenever project changes are flushed
+        /// </summary>
+        public event Action BeforeFlushingChanges;
+
+        /// <summary>
+        /// Event fired after project changes are flushed
+        /// </summary>
+        public event Action AfterFlushingChanges;
+
         #region Forwarded events
 
         /// <summary>
@@ -450,34 +460,45 @@ namespace Interoperability
         /// <param name="e">Arguments of event</param>        
         private void flushChanges(object sender, EventArgs e)
         {
-            HasWaitingChanges = false;
-
-            //TODO optimize
-            var changes = _changes.ToArray();
-            _changes.Clear();
-
-            var changedManagers = new HashSet<ProjectManager>();
-
-            //apply collected line changes to affected managers
-            foreach (var change in changes)
+            try
             {
-                var project = change.Item.ContainingProject;
+                if (BeforeFlushingChanges != null)
+                    BeforeFlushingChanges();
 
-                ProjectManager manager;
-                if (!_watchedProjects.TryGetValue(project, out manager))
+                HasWaitingChanges = false;
+
+                //TODO optimize
+                var changes = _changes.ToArray();
+                _changes.Clear();
+
+                var changedManagers = new HashSet<ProjectManager>();
+
+                //apply collected line changes to affected managers
+                foreach (var change in changes)
                 {
-                    Log.Warning("Change in not registered project {0}", project.Name);
-                    continue;
+                    var project = change.Item.ContainingProject;
+
+                    ProjectManager manager;
+                    if (!_watchedProjects.TryGetValue(project, out manager))
+                    {
+                        Log.Warning("Change in not registered project {0}", project.Name);
+                        continue;
+                    }
+
+                    manager.RegisterChange(change);
+                    changedManagers.Add(manager);
                 }
 
-                manager.RegisterChange(change);
-                changedManagers.Add(manager);
+                //flush all changes in managers
+                foreach (var manager in changedManagers)
+                {
+                    manager.FlushChanges();
+                }
             }
-
-            //flush all changes in managers
-            foreach (var manager in changedManagers)
+            finally
             {
-                manager.FlushChanges();
+                if (AfterFlushingChanges != null)
+                    AfterFlushingChanges();
             }
         }
 
