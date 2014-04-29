@@ -481,14 +481,13 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns>Builded <see cref="MethodItem"/></returns>
         private MethodItem buildGenericMethod(CodeElement methodNode, PathInfo methodGenericPath, bool needGetter)
         {
-            VS.Log.Message("Building method with path {0}", methodGenericPath.Name);
-
             var methodItem = MethodBuilder.Build(methodNode, needGetter, this);
 
             if (methodGenericPath != null)
                 //make generic specialization
                 methodItem = methodItem.Make(methodGenericPath);
 
+            VS.Log.Message("Building method {0}", methodItem.Info.Path.Name);
             return methodItem;
         }
 
