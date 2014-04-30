@@ -187,6 +187,16 @@ namespace TypeSystem
 
         #region Assembly API
 
+
+        /// <summary>
+        /// Invalidate all methods/types/begining with given prefix from cache. 
+        /// </summary>
+        /// <param name="invalidatedNamePrefix">Prefix used for method invalidation</param>
+        internal void Invalidate(string invalidatedNamePrefix)
+        {
+            _manager.Cache.Invalidate(invalidatedNamePrefix);
+        }
+
         /// <summary>
         /// Get files that are present in given directory by taking assemblies mapping into consideration
         /// </summary>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 using Drawing;
 using Analyzing;
@@ -59,6 +60,11 @@ namespace MEFEditor.Plugin.Main
         /// Transaction used for handling changes
         /// </summary>
         private Transaction _changesTransaction;
+
+        /// <summary>
+        /// Current result of analysis
+        /// </summary>
+        private AnalyzingResult _currentResult;
 
         /// <summary>
         /// GUI used by editor
@@ -169,6 +175,8 @@ namespace MEFEditor.Plugin.Main
                 //force loading solution
                 _vs_SolutionOpened();
             }
+
+            _loader.AppDomain.MethodInvalidated += _methodInvalidated;
         }
 
         #region Drawing providing routines
@@ -178,13 +186,18 @@ namespace MEFEditor.Plugin.Main
             if (entryMethod == null)
             {
                 _guiManager.Display(null);
+                _currentResult = null;
             }
             else
             {
-                var result = _machine.Run(_loader, entryMethod, entryArguments);
-                var drawing = createDrawings(result);
+                var watch = Stopwatch.StartNew();
+                _currentResult = _machine.Run(_loader, entryMethod, entryArguments);
+                _vs.Log.Message("Executing composition point {0}ms", watch.ElapsedMilliseconds);
+                watch.Restart();
 
+                var drawing = createDrawings(_currentResult);                
                 _guiManager.Display(drawing);
+                _vs.Log.Message("Drawing composition point {0}ms", watch.ElapsedMilliseconds);
             }
         }
 
@@ -222,6 +235,20 @@ namespace MEFEditor.Plugin.Main
         #endregion
 
         #region Event handlers
+
+
+        void _methodInvalidated(MethodID invalidatedMethod)
+        {
+            _vs.Log.Message("Method invalidation {0}", invalidatedMethod);
+
+            if (_currentResult == null)
+                return;
+
+            if (!_currentResult.Uses(invalidatedMethod))
+                return;
+
+            _guiManager_CompositionPointSelected();
+        }
 
         private void _guiManager_CompositionPointSelected()
         {

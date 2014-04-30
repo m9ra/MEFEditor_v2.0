@@ -153,8 +153,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             //TODO check if parent is property -> different naming conventions
 
             //collect information from element - note, every call working with element may fail with exception, because of VS doesn't provide determinism
-            var name = element.Name;
-            var isConstructor = element.FunctionKind == vsCMFunction.vsCMFunctionConstructor;
+            var name = GetName(element);
             var isShared = element.IsShared;
             var isAbstract = element.MustImplement;
             var declaringType = CreateDescriptor(element.DeclaringClass());
@@ -164,12 +163,6 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             //Methods cannot have generic arguments (only parameters, that are contained within path)
             var methodTypeArguments = TypeDescriptor.NoDescriptors;
 
-            if (isConstructor)
-            {
-                //repair name according to naming conventions
-                name = isShared ? Naming.ClassCtorName : Naming.CtorName;
-            }
-
             //create result according to collected information
             var methodInfo = new TypeMethodInfo(
                 declaringType, name, returnType, parameters,
@@ -177,6 +170,58 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
                 );
 
             return methodInfo;
+        }
+
+        /// <summary>
+        /// Get name representation of given <see cref="CodeFunction"/>
+        /// </summary>
+        /// <param name="element">Element representing function</param>
+        /// <returns>Function name representation</returns>
+        internal static string GetName(CodeFunction element)
+        {
+            var name = element.Name;
+            var isConstructor = element.FunctionKind == vsCMFunction.vsCMFunctionConstructor;
+            var isShared = element.IsShared;
+
+            if (isConstructor)
+            {
+                //repair name according to naming conventions
+                name = isShared ? Naming.ClassCtorName : Naming.CtorName;
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Get fullname representation of given <see cref="CodeFunction"/>
+        /// </summary>
+        /// <param name="element">Element representing function</param>
+        /// <returns>Function name representation</returns>
+        internal static string GetFullName(CodeFunction element)
+        {
+            //TODO correctnes
+            var name = GetName(element);
+            var parentFullname = element.DeclaringClass().FullName;
+
+            return parentFullname + "." + name;
+        }
+
+
+        /// <summary>
+        /// Get fullname representation of given <see cref="CodeFunction"/>
+        /// </summary>
+        /// <param name="element">Element representing function</param>
+        /// <returns>Function name representation</returns>
+        internal static string GetFullName(CodeElement element)
+        {
+            switch (element.Kind)
+            {
+                case vsCMElement.vsCMElementFunction:
+                    return GetFullName(element as CodeFunction);
+                default:
+                    //TODO correctnes
+                    return element.FullName;
+            }
         }
 
         /// <summary>
@@ -299,7 +344,6 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             return "{" + body;
         }
 
-
         /// <summary>
         /// Create <see cref="TypeDescriptor"/> from given element
         /// </summary>
@@ -307,6 +351,10 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns>Created <see cref="TypeDescriptor"/></returns>
         internal static TypeDescriptor CreateDescriptor(CodeElement element)
         {
+            if (element is CodeTypeRef)
+                return CreateDescriptor(element as CodeTypeRef);
+
+            var name = element.FullName;
             throw new NotImplementedException();
         }
 
@@ -320,7 +368,6 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var fullname = typeReference.AsFullName;
             if (fullname == "")
                 return TypeDescriptor.Void;
-
 
             return ConvertToDescriptor(fullname);
         }
@@ -349,6 +396,8 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
             return descriptor;
         }
+
+
 
         #endregion
 

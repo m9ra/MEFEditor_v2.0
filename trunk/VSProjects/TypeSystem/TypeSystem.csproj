@@ -71,6 +71,7 @@
     <Compile Include="ComponentInfo.cs" />
     <Compile Include="ComponentInfoBuilder.cs" />
     <Compile Include="Core\AssembliesStorage.cs" />
+    <Compile Include="Core\MethodsCache.cs" />
     <Compile Include="Core\ReferencedAssemblies.cs" />
     <Compile Include="DirectedGenerator.cs" />
     <Compile Include="DirectGenerator.cs" />

@@ -17,6 +17,8 @@ namespace Analyzing
 
         private readonly Dictionary<string, Instance> _createdInstances;
 
+        private readonly HashSet<MethodID> _methods;
+
         public readonly CallContext EntryContext;
 
         public readonly Instance ReturnValue;
@@ -27,10 +29,11 @@ namespace Analyzing
 
 
 
-        internal AnalyzingResult(Instance returnValue, CallContext entryContext, RemoveHandler removeHandler, Dictionary<string, Instance> createdInstances)
+        internal AnalyzingResult(Instance returnValue, CallContext entryContext, RemoveHandler removeHandler, Dictionary<string, Instance> createdInstances, IEnumerable<MethodID> methods)
         {
             ReturnValue = returnValue;
             EntryContext = entryContext;
+            _methods = new HashSet<MethodID>(methods);
             _removeHandler = removeHandler;
             _createdInstances = createdInstances;
         }
@@ -51,5 +54,14 @@ namespace Analyzing
             return _createdInstances[instanceID];
         }
 
+        /// <summary>
+        /// Determine that given method has been used during interpretation
+        /// </summary>
+        /// <param name="method">Tested method</param>
+        /// <returns><c>true</c> if method has been used, <c>false</c> otherwise</returns>
+        public bool Uses(MethodID method)
+        {
+            return _methods.Contains(method);
+        }
     }
 }

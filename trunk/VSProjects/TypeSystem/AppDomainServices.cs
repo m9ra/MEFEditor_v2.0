@@ -4,12 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing;
+
 using TypeSystem.Core;
 using TypeSystem.Transactions;
 
 namespace TypeSystem
 {
+    /// <summary>
+    /// Event detected on given component
+    /// </summary>
+    /// <param name="component">Component that is affected by event</param>
     public delegate void ComponentEvent(ComponentInfo component);
+
+    /// <summary>
+    /// Reports every resolved method that has been invalidated
+    /// </summary>
+    /// <param name="invalidatedMethod">Method that is invalidated</param>
+    public delegate void InvalidationEvent(MethodID invalidatedMethod);
 
     public class AppDomainServices
     {
@@ -56,6 +68,8 @@ namespace TypeSystem
 
         public event ComponentEvent ComponentRemoved;
 
+        public event InvalidationEvent MethodInvalidated;
+
         public event Action TransactionStarted;
 
         public event Action TransactionEnded;
@@ -82,6 +96,12 @@ namespace TypeSystem
             _manager.AssemblyRemoved += (a) =>
             {
                 if (AssemblyRemoved != null) AssemblyRemoved(a);
+            };
+
+
+            _manager.Cache.MethodInvalidated += (m) =>
+            {
+                if (MethodInvalidated != null) MethodInvalidated(m);
             };
         }
     }

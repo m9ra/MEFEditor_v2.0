@@ -191,7 +191,8 @@ namespace AssemblyProviders.ProjectAssembly
         /// <param name="node">Affected element node</param>
         private void onAdd(ElementNode node)
         {
-            node.SetTag("Name", node.Element.FullName);
+            var fullname = MethodBuilder.GetFullName(node.Element);
+            node.SetTag("Name", fullname);
 
             //every component will be reported through add
             //adding member within component is reported as component change
@@ -208,8 +209,18 @@ namespace AssemblyProviders.ProjectAssembly
         /// <param name="node">Affected element node</param>
         private void onChange(ElementNode node)
         {
-            onRemove(node);
-            onAdd(node);
+            var fullname = node.GetTag("Name") as string;
+            var fn = node.Element as CodeFunction;
+            if (fn == null)
+            {
+                onRemove(node);
+                onAdd(node);
+            }
+            else
+            {
+                //code change within method
+                ReportInvalidation(fullname);
+            }
         }
 
         /// <summary>
@@ -219,8 +230,6 @@ namespace AssemblyProviders.ProjectAssembly
         private void onRemove(ElementNode node)
         {
             var tag = node.GetTag("Name") as string;
-            //TODO naming conventions
-
             if (tag == null)
                 return;
 
@@ -407,7 +416,16 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         private IEnumerable<InheritanceChain> createInheritanceChains(CodeElements typeNodes)
         {
-            throw new NotImplementedException("TODO is needed to test form of references to other assemblies - because of naming");
+            var chains = new List<InheritanceChain>();
+            foreach (CodeElement typeNode in typeNodes)
+            {
+                var descriptor = MethodBuilder.CreateDescriptor(typeNode);
+                var chain = TypeServices.GetChain(descriptor);
+                chains.Add(chain);
+            }
+
+            return chains;
+            //throw new NotImplementedException("TODO is needed to test form of references to other assemblies - because of naming");
         }
 
         /// <summary>

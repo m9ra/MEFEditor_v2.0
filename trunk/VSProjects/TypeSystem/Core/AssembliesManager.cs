@@ -34,7 +34,7 @@ namespace TypeSystem.Core
         /// Transaction used when interpreting is running
         /// </summary>
         private Transaction _interpetingTransaction;
-               
+
         /// <summary>
         /// Components indexed by their defining assemblies
         /// </summary>
@@ -44,6 +44,11 @@ namespace TypeSystem.Core
         /// Components indexed by defining types
         /// </summary>
         private readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
+
+        /// <summary>
+        /// Cache used for storing method generators
+        /// </summary>
+        internal readonly MethodsCache Cache = new MethodsCache();
 
         /// <summary>
         /// Here are managed all <see cref="Transaction"/> objects
@@ -251,7 +256,7 @@ namespace TypeSystem.Core
 
         internal GeneratorBase StaticResolve(MethodID method)
         {
-            var result = tryStaticResolve(method);
+            var result = Cache.GetCachedGenerator(method, tryStaticResolve);
 
             if (result == null)
                 throw new NotSupportedException("Invalid method: " + method);
@@ -548,7 +553,7 @@ namespace TypeSystem.Core
 
             var services = new TypeServices(assembly, this);
             assembly.TypeServices = services;
-            
+
             after_loadComponents(assembly);
 
             try

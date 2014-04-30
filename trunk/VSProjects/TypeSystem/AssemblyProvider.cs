@@ -233,7 +233,7 @@ namespace TypeSystem
         /// <param name="component">Discovered component</param>
         protected void ComponentDiscovered(ComponentInfo component)
         {
-            var alreadyExists = _services.GetComponentInfo(component.ComponentType)!=null;
+            var alreadyExists = _services.GetComponentInfo(component.ComponentType) != null;
             if (alreadyExists)
                 return;
 
@@ -289,15 +289,17 @@ namespace TypeSystem
         /// <param name="progressDescription">Description of transaction progress that can be displayed to user</param>
         protected void ReportProgress(string progressDescription)
         {
+            if (Transactions.CurrentTransaction != null)
+                Transactions.CurrentTransaction.ReportProgress(progressDescription);
         }
 
         /// <summary>
-        /// TODO Form of invalidation
+        /// Invalidate all methods/types/begining with given prefix from cache. 
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="invalidatedNamePrefix">Prefix used for method invalidation</param>
         protected void ReportInvalidation(string invalidatedNamePrefix)
         {
-            //TODO methods invalidation
+            _services.Invalidate(invalidatedNamePrefix);
         }
 
 

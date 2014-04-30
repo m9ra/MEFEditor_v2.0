@@ -23,7 +23,7 @@ namespace Analyzing
         protected abstract void generate(EmitterBase emitter);
 
         internal void Generate(EmitterBase emitter){
-            if (EmittedInstructions != null && _lastCachedContext==emitter.Context)
+            if (EmittedInstructions != null /*&& _lastCachedContext==emitter.Context*/)
             {
                 //we cache previous instructions generation
                 emitter.InsertInstructions(EmittedInstructions);

@@ -122,11 +122,10 @@ namespace Analyzing
             {
                 _createdInstances.Add(argument.ID, argument);
             }
-
             context.FetchCall(entryMethod, arguments);
 
             try
-            {
+            {                            
                 //instance processing
                 while (!context.IsExecutionEnd)
                 {
@@ -140,7 +139,8 @@ namespace Analyzing
                     instruction.Execute(context);
                 }
 
-                return context.GetResult(new Dictionary<string, Instance>(_createdInstances));
+                var result= context.GetResult(new Dictionary<string, Instance>(_createdInstances));
+                return result;
             }
             finally
             {

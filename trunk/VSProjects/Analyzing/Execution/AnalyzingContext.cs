@@ -22,6 +22,11 @@ namespace Analyzing.Execution
         private readonly Dictionary<VariableName, Instance> _globals = new Dictionary<VariableName, Instance>();
 
         /// <summary>
+        /// Resolved methods - it is needed because of avoiding inconsistent resolvings
+        /// </summary>
+        private readonly Dictionary<MethodID, GeneratorBase> _methods = new Dictionary<MethodID, GeneratorBase>();
+
+        /// <summary>
         /// Loader used for loading and resolving methods and type descriptions
         /// </summary>
         private readonly LoaderBase _loader;
@@ -272,7 +277,15 @@ namespace Analyzing.Execution
                 method = _loader.DynamicResolve(method, arguments);
             }
 
-            return _loader.StaticResolve(method);
+            GeneratorBase resolved;
+            if (!_methods.TryGetValue(method, out resolved))
+            {
+                //register resolved method
+                resolved = _loader.StaticResolve(method);
+                _methods[method] = resolved;
+            }
+
+            return resolved;
         }
 
         /// <summary>
@@ -283,7 +296,7 @@ namespace Analyzing.Execution
         internal AnalyzingResult GetResult(Dictionary<string, Instance> createdInstances)
         {
             var removeProvider = new InstanceRemoveProvider(_entryContext);
-            return new AnalyzingResult(LastReturnValue, _entryContext, removeProvider.Remove, createdInstances);
+            return new AnalyzingResult(LastReturnValue, _entryContext, removeProvider.Remove, createdInstances, _methods.Keys);
         }
 
         /// <summary>
