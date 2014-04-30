@@ -354,6 +354,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             if (element is CodeTypeRef)
                 return CreateDescriptor(element as CodeTypeRef);
 
+            if (element is CodeClass)
+                return CreateDescriptor(element as CodeClass);
+
             var name = element.FullName;
             throw new NotImplementedException();
         }
