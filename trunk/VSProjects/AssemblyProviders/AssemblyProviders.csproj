@@ -44,6 +44,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -89,6 +90,7 @@
   <ItemGroup>
     <Compile Include="CILAssembly\CILAssembly.cs" />
     <Compile Include="CILAssembly\CILAssemblyFactory.cs" />
+    <Compile Include="CILAssembly\NamespaceStorage.cs" />
     <Compile Include="CILAssembly\TypeModuleIterator.cs" />
     <Compile Include="CIL\CILInstruction.cs" />
     <Compile Include="CIL\CILMethod.cs" />

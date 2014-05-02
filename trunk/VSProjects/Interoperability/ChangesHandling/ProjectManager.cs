@@ -25,6 +25,11 @@ namespace Interoperability
         private readonly VisualStudioServices _vs;
 
         /// <summary>
+        /// Determine that all items has been already registered by manager
+        /// </summary>
+        private bool _isAllRegistered;
+
+        /// <summary>
         /// Items that has been registered for watching changes
         /// </summary>
         private readonly Dictionary<ProjectItem, FileItemManager> _watchedItems = new Dictionary<ProjectItem, FileItemManager>();
@@ -48,6 +53,20 @@ namespace Interoperability
         /// Event fired whenever element is added (every)
         /// </summary>
         internal event ElementNodeHandler ElementChanged;
+
+        internal IEnumerable<ElementNode> RootNodes
+        {
+            get
+            {
+                foreach (var file in _watchedItems.Values)
+                {
+                    foreach (var node in file.Root.Children)
+                    {
+                        yield return node;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Initialize manager
@@ -93,10 +112,15 @@ namespace Interoperability
         /// <summary>
         /// Register all items that are contained within project
         /// </summary>
-        internal void RegisterAll()
+        internal void RequireRegisterAllItems()
         {
+            if (_isAllRegistered)
+                return;
+
             foreach (ProjectItem item in _project.ProjectItems)
                 registerItem(item); //folder and its project items
+
+            _isAllRegistered = true;
         }
 
         /// <summary>
@@ -172,6 +196,9 @@ namespace Interoperability
         /// <returns><see cref="FileItemManager"/> created for given item if any</returns>
         private FileItemManager registerItem(ProjectItem item)
         {
+            if (_watchedItems.ContainsKey(item))
+                return _watchedItems[item];
+
             var fileCodeModel = item.FileCodeModel;
             if (fileCodeModel == null)
             {
@@ -190,9 +217,18 @@ namespace Interoperability
             {
                 //item is source code file so it needs to be registered
                 var manager = new FileItemManager(_vs, fileCodeModel);
-                manager.ElementAdded += ElementAdded;
-                manager.ElementChanged += ElementChanged;
-                manager.ElementRemoved += ElementRemoved;
+                manager.ElementAdded += (e) =>
+                {
+                    if (ElementAdded != null) ElementAdded(e);
+                };
+                manager.ElementChanged += (e) =>
+                {
+                    if (ElementChanged != null) ElementChanged(e);
+                };
+                manager.ElementRemoved += (e) =>
+                {
+                    if (ElementRemoved != null) ElementRemoved(e);
+                };
                 manager.FlushChanges();
 
                 //register item

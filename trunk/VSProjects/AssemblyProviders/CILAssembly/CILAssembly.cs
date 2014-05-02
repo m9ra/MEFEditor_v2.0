@@ -38,6 +38,11 @@ namespace AssemblyProviders.CILAssembly
         private readonly AssemblyDefinition _assembly;
 
         /// <summary>
+        /// Storage where available namespaces are stored
+        /// </summary>
+        private readonly NamespaceStorage _namespaces = new NamespaceStorage();
+
+        /// <summary>
         /// Create CIL assembly provider from file loaded from given file. If loading fails, appropriate exception is thrown.
         /// </summary>
         /// <param name="assemblyPath"></param>
@@ -67,6 +72,7 @@ namespace AssemblyProviders.CILAssembly
         {
             hookChangesHandler();
             initializeReferences();
+            scanNamespaces();
         }
 
         /// <summary>
@@ -77,6 +83,16 @@ namespace AssemblyProviders.CILAssembly
             //throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Scan namespaces within assembly - because of iterators prunning
+        /// </summary>
+        private void scanNamespaces()
+        {
+            foreach (var type in _assembly.MainModule.GetTypes())
+            {
+                _namespaces.Insert(type.FullName);
+            }
+        }
 
         /// <summary>
         /// Set references according to project referencies
@@ -766,6 +782,17 @@ namespace AssemblyProviders.CILAssembly
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determine that types prefixed with given path may be available within assembly
+        /// <remarks>It is used for prunning hash iterators</remarks>
+        /// </summary>
+        /// <param name="path">Path which is tested</param>
+        /// <returns><c>true</c> if it may be included, <c>false</c> otherwise</returns>
+        internal bool MayInclude(string path)
+        {
+            return _namespaces.CanContains(path);
         }
 
         #endregion

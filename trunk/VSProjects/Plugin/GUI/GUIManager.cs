@@ -17,6 +17,7 @@ using MEFEditor;
 using Interoperability;
 using TypeSystem;
 using TypeSystem.Runtime;
+using TypeSystem.Transactions;
 
 using AssemblyProviders.CILAssembly;
 
@@ -36,6 +37,16 @@ namespace Plugin.GUI
 
         private readonly Dictionary<CompositionPoint, ComboBoxItem> _compositionPoints = new Dictionary<CompositionPoint, ComboBoxItem>();
 
+        /// <summary>
+        /// List of composition point updates
+        /// </summary>
+        private readonly Dictionary<MethodID, CompositionPoint> _compositionPointRemoves = new Dictionary<MethodID, CompositionPoint>();
+
+        /// <summary>
+        /// List of composition point updates
+        /// </summary>
+        private readonly Dictionary<MethodID, CompositionPoint> _compositionPointAdds = new Dictionary<MethodID, CompositionPoint>();
+
         private readonly DrawingProvider _drawingProvider;
 
         private readonly VisualStudioServices _vs;
@@ -47,6 +58,11 @@ namespace Plugin.GUI
         private CompositionPoint _selectedCompositionPoint;
 
         private AssemblyProvider _hostAssembly;
+
+        /// <summary>
+        /// Transaction available in current domain
+        /// </summary>
+        internal TransactionManager Transactions { get { return _appDomain.Transactions; } }
 
         /// <summary>
         /// Number of log entries displayed
@@ -155,7 +171,7 @@ namespace Plugin.GUI
         }
 
         #endregion
-        
+
         #region Assembly settings handling
 
         private void onAssemblyRemoved(AssemblyProvider provider)
@@ -207,7 +223,53 @@ namespace Plugin.GUI
         #endregion
 
         #region Composition point list handling
-        
+
+        internal bool FlushCompositionPointUpdates()
+        {
+            //keep currently selected index
+            var selectedIndex = _gui.CompositionPoints.SelectedIndex;
+
+            //apply composition point removings
+            foreach (var compositionPoint in _compositionPointRemoves.Values)
+            {
+                var item = _compositionPoints[compositionPoint];
+                _compositionPoints.Remove(compositionPoint);
+
+                _gui.CompositionPoints.Items.Remove(item);
+
+                //exact composition has been removed
+                if (compositionPoint.Equals(SelectedCompositionPoint))
+                {
+                    selectedIndex = 0;
+                }
+
+            }
+            _compositionPointRemoves.Clear();
+
+            //apply composition point addings
+            foreach (var compositionPoint in _compositionPointAdds.Values)
+            {
+                var item = createCompositionPointItem(compositionPoint);
+
+                _compositionPoints.Add(compositionPoint, item);
+                _gui.CompositionPoints.Items.Add(item);
+
+                var isDesiredCompositionPoint = _desiredCompositionPointMethod != null && _desiredCompositionPointMethod.Equals(compositionPoint.EntryMethod);
+                if (isDesiredCompositionPoint)
+                    selectedIndex = _gui.CompositionPoints.Items.Count - 1;
+            }
+            _compositionPointAdds.Clear();
+
+            //refresh selected index
+            if (_gui.CompositionPoints.SelectedIndex != selectedIndex)
+            {
+                _gui.CompositionPoints.SelectedIndex = selectedIndex;
+                return true;
+            }
+
+            return false;
+        }
+
         private void forceRefresh()
         {
             onCompositionPointSelected(SelectedCompositionPoint);
@@ -219,6 +281,7 @@ namespace Plugin.GUI
             {
                 addCompositionPoint(compositionPoint);
             }
+            requireUpdate();
         }
 
         private void onComponentRemoved(ComponentInfo component)
@@ -227,37 +290,27 @@ namespace Plugin.GUI
             {
                 removeCompositionPoint(compositionPoint);
             }
+            requireUpdate();
         }
 
         private void addCompositionPoint(CompositionPoint compositionPoint)
         {
-            var item = createCompositionPointItem(compositionPoint);
-
-            _compositionPoints.Add(compositionPoint, item);
-            _gui.CompositionPoints.Items.Add(item);
-
-            var isDesiredCompositionPoint=_desiredCompositionPointMethod != null && _desiredCompositionPointMethod.Equals(compositionPoint.EntryMethod);
-            if (isDesiredCompositionPoint)
-                _gui.CompositionPoints.SelectedIndex = _gui.CompositionPoints.Items.Count - 1;
+            if (!_compositionPoints.ContainsKey(compositionPoint))
+                _compositionPointAdds[compositionPoint.EntryMethod] = compositionPoint;
+            _compositionPointRemoves.Remove(compositionPoint.EntryMethod);
         }
 
         private void removeCompositionPoint(CompositionPoint compositionPoint)
         {
-            if (!_compositionPoints.ContainsKey(compositionPoint))
-            {
-                //nothing to remove
-                return;
-            }
+            if (_compositionPoints.ContainsKey(compositionPoint))
+                _compositionPointRemoves[compositionPoint.EntryMethod] = compositionPoint;
+            _compositionPointAdds.Remove(compositionPoint.EntryMethod);
+        }
 
-            var item = _compositionPoints[compositionPoint];
-            _compositionPoints.Remove(compositionPoint);
-
-            _gui.CompositionPoints.Items.Remove(item);
-
-            if (compositionPoint.Equals(SelectedCompositionPoint))
-            {
-                _gui.CompositionPoints.SelectedIndex = 0;
-            }
+        private void requireUpdate()
+        {
+            var action = new TransactionAction(() => FlushCompositionPointUpdates(), "UpdateCompositionPoints", (t) => t.Name == "UpdateCompositionPoints", this);
+            Transactions.AttachAfterAction(null, action);
         }
 
         private ComboBoxItem createCompositionPointItem(CompositionPoint compositionPoint)
@@ -269,7 +322,7 @@ namespace Plugin.GUI
             item.Content = itemContent;
             item.Selected += (e, s) =>
             {
-                item.Dispatcher.BeginInvoke(new Action(() => onCompositionPointSelected(compositionPoint)));
+                dispatchedAction(new Action(() => onCompositionPointSelected(compositionPoint)));
             };
 
             return item;
@@ -301,6 +354,11 @@ namespace Plugin.GUI
 
             if (CompositionPointSelected != null)
                 CompositionPointSelected();
+        }
+
+        private void dispatchedAction(Action action)
+        {
+            _gui._Workspace.Dispatcher.BeginInvoke(action);
         }
 
         #endregion

@@ -24,9 +24,7 @@ namespace Interoperability
     {
         Document _doc;
         int _docLength;
-
-        ElementNode _root;
-
+        
         /// <summary>
         /// All namespaces available via usings
         /// </summary>
@@ -41,6 +39,8 @@ namespace Interoperability
         HashSet<ElementChange> _removed = new HashSet<ElementChange>();
 
         internal readonly VisualStudioServices VS;
+
+        internal ElementNode Root { get; private set; }
 
         /// <summary>
         /// Event fired whenever element is added (top most)
@@ -74,7 +74,7 @@ namespace Interoperability
             //    _docLength = textDoc.EndPoint.AbsoluteCharOffset;
 
 
-            _root = new ElementNode(file.CodeElements, this);
+            Root = new ElementNode(file.CodeElements, this);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Interoperability
             _docLength = change.DocumentLength;
 
             change.Shortening = shortening;
-            registerChanges(_root.ApplyEdit(change));
+            registerChanges(Root.ApplyEdit(change));
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Interoperability
             VS.CodeModelExceptions(() =>
             {
                 //check for mistakes in LineChanged handling
-                registerChanges(_root.CheckChildren());
+                registerChanges(Root.CheckChildren());
                 bool nsChange;
                 if (_namespaces.Count == _checkedNamespaces.Count)
                 {
@@ -137,7 +137,7 @@ namespace Interoperability
                     _checkedNamespaces.Clear();
 
                     //dont need report change when solution is loading ->all elements are newly added
-                    registerChanges(_root.NamespaceChange());
+                    registerChanges(Root.NamespaceChange());
                 }
             }, "flushinng changes by FileItemManager");
 
@@ -152,6 +152,7 @@ namespace Interoperability
                 onElementRemoved(rem.Node);
 
             foreach (var chg in _queue)
+            {
                 switch (chg.Kind)
                 {
                     case ChangeKind.Added:
@@ -161,6 +162,7 @@ namespace Interoperability
                         onElementChanged(chg.Node);
                         break;
                 }
+            }
 
             _removed.Clear();
             _queue.Clear();
@@ -180,6 +182,10 @@ namespace Interoperability
         /// <param name="node"></param>
         private void onElementChanged(ElementNode node)
         {
+            if (node.IsRoot)
+                //changes on root are not interesting
+                return;
+
             logSpan("Changed", node);
 
             if (ElementChanged != null)
@@ -212,8 +218,8 @@ namespace Interoperability
 
         internal void Disconnect()
         {
-            registerChanges(_root.RemoveChildren());
-            _root = null;
+            registerChanges(Root.RemoveChildren());
+            Root = null;
             fireHandlers();
         }
 

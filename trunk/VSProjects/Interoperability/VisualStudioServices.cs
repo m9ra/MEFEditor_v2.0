@@ -188,6 +188,21 @@ namespace Interoperability
         }
 
         /// <summary>
+        /// Force immediate flushing of all changes that are buffered
+        /// </summary>
+        public void ForceFlushChanges()
+        {
+            flushChanges(null, null);
+        }
+
+        public IEnumerable<ElementNode> GetRootElements(VSProject project)
+        {
+            var manager = findProjectManager(project.Project);
+            manager.RequireRegisterAllItems();
+            return manager.RootNodes;
+        }
+
+        /// <summary>
         /// Register add changes on elements in given <see cref="VSProject"/>
         /// </summary>
         /// <param name="project">Project where changes are listened</param>
@@ -245,6 +260,7 @@ namespace Interoperability
             if (ProjectAdded != null)
                 ProjectAdded(addedProject);
 
+            //changes are proceeded after manager is registered by above event
             manager.FlushChanges();
         }
 
@@ -462,6 +478,7 @@ namespace Interoperability
         {
             try
             {
+                _changeWait.Stop();
                 if (BeforeFlushingChanges != null)
                     BeforeFlushingChanges();
 

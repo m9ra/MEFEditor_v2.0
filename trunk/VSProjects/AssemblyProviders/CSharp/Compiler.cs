@@ -239,6 +239,8 @@ namespace AssemblyProviders.CSharp
         /// <param name="node">Node which subsequence instructions will be generated</param>
         private void generateSubsequence(INodeAST node)
         {
+            var times = new List<long>();
+            var w = System.Diagnostics.Stopwatch.StartNew();
             foreach (var line in node.Subsequence.Lines)
             {
                 if (line.NodeType == NodeTypes.block)
@@ -249,6 +251,9 @@ namespace AssemblyProviders.CSharp
                 {
                     generateLine(line);
                 }
+
+                times.Add(w.ElapsedMilliseconds);
+                w.Restart();
             }
         }
 
@@ -1309,10 +1314,12 @@ namespace AssemblyProviders.CSharp
             INodeAST callNode;
             var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
 
+            var w = System.Diagnostics.Stopwatch.StartNew();
             var searcher = Context.CreateSearcher();
             searcher.ExtendName(getNamespaces());
             searcher.ExtendName(typeSuffix);
             searcher.Dispatch(Naming.CtorName);
+            w.Stop();
 
             if (!searcher.FoundResult.Any())
             {

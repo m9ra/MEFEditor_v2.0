@@ -44,6 +44,11 @@ namespace Interoperability
         public bool IsRoot { get { return Element == null; } }
 
         /// <summary>
+        /// Children of current node
+        /// </summary>
+        public IEnumerable<ElementNode> Children { get { return _children.Values; } }
+
+        /// <summary>
         /// Absolute offset start of wrapped element
         /// </summary>
         private int Start;

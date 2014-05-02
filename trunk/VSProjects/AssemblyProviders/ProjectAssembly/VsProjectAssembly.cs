@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Diagnostics;
+
 using EnvDTE;
 using EnvDTE100;
 using VSLangProj;
@@ -70,7 +72,11 @@ namespace AssemblyProviders.ProjectAssembly
         {
             get
             {
-                foreach (ProjectItem projectItem in Project.ProjectItems)
+                foreach (var node in VS.GetRootElements(_assemblyProject))
+                {
+                    yield return node.Element;
+                }
+                /*foreach (ProjectItem projectItem in Project.ProjectItems)
                 {
                     var fileCodeModel = projectItem.FileCodeModel;
                     if (fileCodeModel == null)
@@ -80,7 +86,7 @@ namespace AssemblyProviders.ProjectAssembly
                     {
                         yield return element;
                     }
-                }
+                }*/
             }
         }
 
@@ -92,10 +98,12 @@ namespace AssemblyProviders.ProjectAssembly
         internal void ParsingProvider(ParsingActivation activation, EmitterBase emitter)
         {
             //TODO make it language independant
-
+            var w = Stopwatch.StartNew();
             var source = CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
 
             source.SourceChangeCommited += activation.OnCommited;
+
+            VS.Log.Message("Parsing time for {0} {1}ms", activation.Method.MethodID, w.ElapsedMilliseconds);
         }
 
         /// <summary>

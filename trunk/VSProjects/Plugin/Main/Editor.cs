@@ -76,6 +76,11 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         internal RuntimeAssembly Runtime { get { return _loader.Settings.Runtime; } }
 
+        /// <summary>
+        /// Transaction available in current domain
+        /// </summary>
+        internal TransactionManager Transactions { get { return _loader.AppDomain.Transactions; } }
+
         internal Editor(VisualStudioServices vs)
         {
             _vs = vs;
@@ -162,13 +167,15 @@ namespace MEFEditor.Plugin.Main
 
         private void hookHandlers()
         {
-            _guiManager.CompositionPointSelected += _guiManager_CompositionPointSelected;
+            _guiManager.CompositionPointSelected += requireRedraw;
 
             _vs.BeforeFlushingChanges += () => _changesTransaction = _loader.AppDomain.Transactions.StartNew("Handling user changes");
-            _vs.AfterFlushingChanges += () => _loader.AppDomain.Transactions.EndTransaction(_changesTransaction);
+            _vs.AfterFlushingChanges += () => _changesTransaction.Commit();
 
             _vs.SolutionOpened += _vs_SolutionOpened;
             _vs.SolutionClosed += _vs_SolutionClosed;
+
+            _vs.ProjectAdded += _vs_ProjectAdded;
 
             if (_vs.IsSolutionOpen)
             {
@@ -178,6 +185,7 @@ namespace MEFEditor.Plugin.Main
 
             _loader.AppDomain.MethodInvalidated += _methodInvalidated;
         }
+
 
         #region Drawing providing routines
 
@@ -192,10 +200,15 @@ namespace MEFEditor.Plugin.Main
             {
                 var watch = Stopwatch.StartNew();
                 _currentResult = _machine.Run(_loader, entryMethod, entryArguments);
+                _currentResult.OnViewCommit += (v) =>
+                {
+                    _vs.ForceFlushChanges();
+                };
+
                 _vs.Log.Message("Executing composition point {0}ms", watch.ElapsedMilliseconds);
                 watch.Restart();
 
-                var drawing = createDrawings(_currentResult);                
+                var drawing = createDrawings(_currentResult);
                 _guiManager.Display(drawing);
                 _vs.Log.Message("Drawing composition point {0}ms", watch.ElapsedMilliseconds);
             }
@@ -231,7 +244,21 @@ namespace MEFEditor.Plugin.Main
             var componentInfo = _loader.GetComponentInfo(instance.WrappedInstance.Info);
             GeneralDefinitionProvider.Draw(instance, componentInfo);
         }
+        #endregion
 
+        #region Transaction handling 
+
+        private void requireRedraw()
+        {
+            if(Transactions.CurrentTransaction==null){
+                //there is no attachable transaction
+                refreshDrawing();
+            }else{
+                var action = new TransactionAction(refreshDrawing, "RefreshDrawing", (t) => t.Name == "RefreshDrawing", this);
+                Transactions.AttachAfterAction(null, action);
+            }
+        }
+        
         #endregion
 
         #region Event handlers
@@ -247,11 +274,15 @@ namespace MEFEditor.Plugin.Main
             if (!_currentResult.Uses(invalidatedMethod))
                 return;
 
-            _guiManager_CompositionPointSelected();
+            requireRedraw();
         }
 
-        private void _guiManager_CompositionPointSelected()
+        private void refreshDrawing()
         {
+            if (_guiManager.FlushCompositionPointUpdates())
+                //flushing will cause event that refresh drawing
+                return;
+
             var compositionPoint = _guiManager.SelectedCompositionPoint;
 
             if (compositionPoint == null)
@@ -271,20 +302,27 @@ namespace MEFEditor.Plugin.Main
             }
         }
 
-        private void _vs_SolutionOpened()
+        private void _vs_ProjectAdded(EnvDTE.Project project)
         {
-            foreach (var project in _vs.SolutionProjects)
-            {
-                var assembly = new VsProjectAssembly(project, _vs);
-                _loader.LoadRoot(project);
-            }
+            var tr = _loader.AppDomain.Transactions.StartNew("Loading project " + project.Name);
+
+            var assembly = new VsProjectAssembly(project, _vs);
+            _loader.LoadRoot(project);
+
+            tr.Commit();
         }
 
-        void _vs_SolutionClosed()
+        private void _vs_SolutionOpened()
+        {
+            //TODO logging
+        }
+
+        private void _vs_SolutionClosed()
         {
             //there is nothing to do, projects are unloaded by ProjectRemoved
         }
 
         #endregion
+
     }
 }

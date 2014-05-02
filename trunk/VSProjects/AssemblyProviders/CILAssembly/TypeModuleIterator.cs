@@ -40,6 +40,10 @@ namespace AssemblyProviders.CILAssembly
                 extendedPath = _currentPath + "." + suffix;
             }
 
+            if (!_assembly.MayInclude(extendedPath))
+                //namespace is incompatible
+                return null;
+
             return new TypeModuleIterator(extendedPath, _assembly);
         }
 
@@ -55,6 +59,12 @@ namespace AssemblyProviders.CILAssembly
             var methodInfos = from method in methods select method.Info;
 
             return methodInfos;
+        }
+
+        public override string ToString()
+        {
+            var pathDescriptor = _currentPath == null ? "$root" : _currentPath;
+            return "[Iterator]" + _assembly.Name + "|" + pathDescriptor;
         }
     }
 }

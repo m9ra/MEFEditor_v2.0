@@ -70,11 +70,14 @@ namespace TypeSystem
         /// <param name="searchedMethod">Method that is searched at reached locations</param>
         public void Dispatch(string searchedMethod)
         {
+
             foreach (var iterator in _activeIteartors)
             {
                 var methods = iterator.FindMethods(searchedMethod);
                 if (methods != null)
                     _foundMethods.AddRange(methods);
+
+
             }
         }
 

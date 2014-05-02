@@ -13,6 +13,7 @@ namespace TypeSystem.Transactions
         private readonly Stack<Transaction> _transactionStack = new Stack<Transaction>();
         private readonly Dictionary<Transaction, List<TransactionAction>> _activeTransactions = new Dictionary<Transaction, List<TransactionAction>>();
 
+        private readonly Queue<TransactionAction> _rootActions = new Queue<TransactionAction>();
 
         public Transaction CurrentTransaction
         {
@@ -27,12 +28,24 @@ namespace TypeSystem.Transactions
 
         public void AttachAfterAction(Transaction transaction, TransactionAction afterAction)
         {
-            _activeTransactions[transaction].Add(afterAction);
+            if (transaction == null)
+            {
+                _rootActions.Enqueue(afterAction);
+            }
+            else
+            {
+                _activeTransactions[transaction].Add(afterAction);
+            }
         }
 
-        public void EndTransaction(Transaction transaction)
+        /// <summary>
+        /// Note that ending of transaction has to be done through <see cref="Transaction.Commit"/>
+        /// </summary>
+        /// <param name="transaction">Transaction that is ended</param>
+        internal void EndTransaction(Transaction transaction)
         {
-            if (_transactionStack.Pop() != transaction)
+            var popped = _transactionStack.Pop();
+            if (popped != transaction)
                 throw new NotImplementedException("Auto commit transaction stack unwiding");
 
             var afterActions = _activeTransactions[transaction];
@@ -41,6 +54,17 @@ namespace TypeSystem.Transactions
             foreach (var afterAction in afterActions)
             {
                 afterAction.Run();
+            }
+
+            var otherTransactions = _transactionStack.Count > 0;
+            if (otherTransactions)
+                return;
+
+            //run root actions at last
+            while (_rootActions.Count > 0)
+            {
+                var action = _rootActions.Dequeue();
+                action.Run();
             }
         }
 
@@ -52,5 +76,7 @@ namespace TypeSystem.Transactions
 
             return transaction;
         }
+
+
     }
 }

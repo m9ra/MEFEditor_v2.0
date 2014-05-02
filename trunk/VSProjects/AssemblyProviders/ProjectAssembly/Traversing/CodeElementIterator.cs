@@ -63,7 +63,6 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                     selectedNodes.Add(actualNode);
                 }
             }
-
             if (selectedNodes.Count == 0)
                 return null;
 
@@ -83,6 +82,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
         private IEnumerable<CodeElement> getActualNodes()
         {
+            //THIS IS PERFORMANCE KILLER - IS IT POSSIBLE TO WORKAROUND VISUAL STUDIO THREADING MODEL?
             if (_currentNodes == null)
             {
                 //position has not been currently set - use root elements

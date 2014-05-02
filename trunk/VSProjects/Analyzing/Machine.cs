@@ -114,19 +114,18 @@ namespace Analyzing
         private AnalyzingResult run(LoaderBase loader, MethodID entryMethod, params Instance[] arguments)
         {
             Settings.FireBeforeInterpretation();
-
-            _createdInstances.Clear();
-            var context = new Execution.AnalyzingContext(this, loader);
-
-            foreach (var argument in arguments)
-            {
-                _createdInstances.Add(argument.ID, argument);
-            }
-            context.FetchCall(entryMethod, arguments);
-
             try
-            {                            
-                //instance processing
+            {
+                _createdInstances.Clear();
+                var context = new Execution.AnalyzingContext(this, loader);
+
+                foreach (var argument in arguments)
+                {
+                    _createdInstances.Add(argument.ID, argument);
+                }
+                context.FetchCall(entryMethod, arguments);
+
+                //interpretation processing
                 while (!context.IsExecutionEnd)
                 {
                     var instruction = context.NextInstruction();
@@ -139,7 +138,7 @@ namespace Analyzing
                     instruction.Execute(context);
                 }
 
-                var result= context.GetResult(new Dictionary<string, Instance>(_createdInstances));
+                var result = context.GetResult(new Dictionary<string, Instance>(_createdInstances));
                 return result;
             }
             finally

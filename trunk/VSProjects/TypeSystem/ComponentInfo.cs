@@ -35,6 +35,20 @@ namespace TypeSystem
             EntryMethod = entryMethod;
             DeclaringComponent = declaringComponent;
         }
+
+        public override int GetHashCode()
+        {
+            return EntryMethod.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as CompositionPoint;
+            if (o == null)
+                return false;
+
+            return EntryMethod.Equals(o.EntryMethod);
+        }
     }
 
     /// <summary>
