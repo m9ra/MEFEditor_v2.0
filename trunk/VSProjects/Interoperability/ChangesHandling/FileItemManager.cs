@@ -24,7 +24,7 @@ namespace Interoperability
     {
         Document _doc;
         int _docLength;
-        
+
         /// <summary>
         /// All namespaces available via usings
         /// </summary>
@@ -120,7 +120,9 @@ namespace Interoperability
             VS.CodeModelExceptions(() =>
             {
                 //check for mistakes in LineChanged handling
-                registerChanges(Root.CheckChildren());
+                if (Root != null)
+                    registerChanges(Root.CheckChildren());
+
                 bool nsChange;
                 if (_namespaces.Count == _checkedNamespaces.Count)
                 {
@@ -137,7 +139,8 @@ namespace Interoperability
                     _checkedNamespaces.Clear();
 
                     //dont need report change when solution is loading ->all elements are newly added
-                    registerChanges(Root.NamespaceChange());
+                    if (Root != null)
+                        registerChanges(Root.NamespaceChange());
                 }
             }, "flushinng changes by FileItemManager");
 
@@ -218,9 +221,9 @@ namespace Interoperability
 
         internal void Disconnect()
         {
-            registerChanges(Root.RemoveChildren());
+            if (Root != null)
+                registerChanges(Root.RemoveChildren());
             Root = null;
-            fireHandlers();
         }
 
 

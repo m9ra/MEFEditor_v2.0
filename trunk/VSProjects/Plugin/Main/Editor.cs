@@ -62,6 +62,16 @@ namespace MEFEditor.Plugin.Main
         private Transaction _changesTransaction;
 
         /// <summary>
+        /// Transaction used for handling project adding
+        /// </summary>
+        private Transaction _projectAddTransaction;
+
+        /// <summary>
+        /// Transaction used for handling solution opening
+        /// </summary>
+        private Transaction _solutionOpenTransaction;
+
+        /// <summary>
         /// Current result of analysis
         /// </summary>
         private AnalyzingResult _currentResult;
@@ -169,23 +179,29 @@ namespace MEFEditor.Plugin.Main
         {
             _guiManager.CompositionPointSelected += requireRedraw;
 
+            Transactions.TransactionOpened += (t) => _vs.Log.Message(">> {0}", t.Description);
+            Transactions.TransactionCommit += (t) => _vs.Log.Message("<< {0}", t.Description);
+
             _vs.BeforeFlushingChanges += () => _changesTransaction = _loader.AppDomain.Transactions.StartNew("Handling user changes");
             _vs.AfterFlushingChanges += () => _changesTransaction.Commit();
 
             _vs.SolutionOpened += _vs_SolutionOpened;
+            _vs.SolutionOpeningStarted += _vs_SolutionOpeningStarted;
             _vs.SolutionClosed += _vs_SolutionClosed;
 
             _vs.ProjectAdded += _vs_ProjectAdded;
+            _vs.ProjectAddingStarted += _vs_ProjectAddingStarted;
+            _vs.ProjectRemoved += _vs_ProjectRemoved;
 
             if (_vs.IsSolutionOpen)
             {
                 //force loading solution
+                _vs_SolutionOpeningStarted();
                 _vs_SolutionOpened();
             }
 
             _loader.AppDomain.MethodInvalidated += _methodInvalidated;
         }
-
 
         #region Drawing providing routines
 
@@ -246,19 +262,22 @@ namespace MEFEditor.Plugin.Main
         }
         #endregion
 
-        #region Transaction handling 
+        #region Transaction handling
 
         private void requireRedraw()
         {
-            if(Transactions.CurrentTransaction==null){
+            if (Transactions.CurrentTransaction == null)
+            {
                 //there is no attachable transaction
                 refreshDrawing();
-            }else{
+            }
+            else
+            {
                 var action = new TransactionAction(refreshDrawing, "RefreshDrawing", (t) => t.Name == "RefreshDrawing", this);
                 Transactions.AttachAfterAction(null, action);
             }
         }
-        
+
         #endregion
 
         #region Event handlers
@@ -302,25 +321,44 @@ namespace MEFEditor.Plugin.Main
             }
         }
 
+        void _vs_ProjectAddingStarted(EnvDTE.Project project)
+        {
+            _projectAddTransaction = Transactions.StartNew("Loading project " + project.Name);
+        }
+
         private void _vs_ProjectAdded(EnvDTE.Project project)
         {
-            var tr = _loader.AppDomain.Transactions.StartNew("Loading project " + project.Name);
-
             var assembly = new VsProjectAssembly(project, _vs);
             _loader.LoadRoot(project);
 
+            _projectAddTransaction.Commit();
+            _projectAddTransaction = null;
+        }
+
+        void _vs_ProjectRemoved(EnvDTE.Project project)
+        {
+            var tr = Transactions.StartNew("Removing project");
+            _loader.UnloadRoot(project);
             tr.Commit();
+        }
+
+
+        void _vs_SolutionOpeningStarted()
+        {
+            _solutionOpenTransaction = Transactions.StartNew("Openining solution");
         }
 
         private void _vs_SolutionOpened()
         {
-            //TODO logging
+            _solutionOpenTransaction.Commit();
+            _solutionOpenTransaction = null;
         }
 
         private void _vs_SolutionClosed()
         {
             //there is nothing to do, projects are unloaded by ProjectRemoved
         }
+
 
         #endregion
 

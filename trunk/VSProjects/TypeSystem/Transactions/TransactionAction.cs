@@ -36,5 +36,21 @@ namespace TypeSystem.Transactions
         {
             _action();
         }
+
+        internal bool IsIncludedIn(TransactionAction coveringAction)
+        {
+            //incompatible keys
+            if (_keys.Length != coveringAction._keys.Length)
+                return false;
+
+            //different keys
+            for (var i = 0; i < _keys.Length; ++i)
+            {
+                if (!_keys[i].Equals(coveringAction._keys[i]))
+                    return false;
+            }
+
+            return _predicate(coveringAction);
+        }
     }
 }

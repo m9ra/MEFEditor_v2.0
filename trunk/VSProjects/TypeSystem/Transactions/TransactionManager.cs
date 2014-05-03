@@ -6,6 +6,12 @@ using System.Text;
 namespace TypeSystem.Transactions
 {
     /// <summary>
+    /// Event used for reporting transaction changes
+    /// </summary>
+    /// <param name="transaction">Affected transaction</param>
+    public delegate void TransactionEvent(Transaction transaction);
+
+    /// <summary>
     /// Manager used for processing transactions
     /// </summary>
     public class TransactionManager
@@ -14,6 +20,10 @@ namespace TypeSystem.Transactions
         private readonly Dictionary<Transaction, List<TransactionAction>> _activeTransactions = new Dictionary<Transaction, List<TransactionAction>>();
 
         private readonly Queue<TransactionAction> _rootActions = new Queue<TransactionAction>();
+
+        public event TransactionEvent TransactionOpened;
+
+        public event TransactionEvent TransactionCommit;
 
         public Transaction CurrentTransaction
         {
@@ -30,12 +40,28 @@ namespace TypeSystem.Transactions
         {
             if (transaction == null)
             {
-                _rootActions.Enqueue(afterAction);
+                if (!isIncludedIn(afterAction, _rootActions))
+                    _rootActions.Enqueue(afterAction);
+
+                tryRunRootActions();
             }
             else
             {
-                _activeTransactions[transaction].Add(afterAction);
+                var actions = _activeTransactions[transaction];
+                if (!isIncludedIn(afterAction, actions))
+                    actions.Add(afterAction);
             }
+        }
+
+        private bool isIncludedIn(TransactionAction action, IEnumerable<TransactionAction> existingActions)
+        {
+            foreach (var existingAction in existingActions)
+            {
+                if (action.IsIncludedIn(existingAction))
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -56,6 +82,14 @@ namespace TypeSystem.Transactions
                 afterAction.Run();
             }
 
+            tryRunRootActions();
+
+            if (TransactionCommit != null)
+                TransactionCommit(transaction);
+        }
+
+        private void tryRunRootActions()
+        {
             var otherTransactions = _transactionStack.Count > 0;
             if (otherTransactions)
                 return;
@@ -73,6 +107,9 @@ namespace TypeSystem.Transactions
             var transaction = new Transaction(this, description);
             _transactionStack.Push(transaction);
             _activeTransactions[transaction] = new List<TransactionAction>();
+
+            if (TransactionOpened != null)
+                TransactionOpened(transaction);
 
             return transaction;
         }

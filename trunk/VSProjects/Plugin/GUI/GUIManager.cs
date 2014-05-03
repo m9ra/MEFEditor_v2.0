@@ -101,9 +101,7 @@ namespace Plugin.GUI
                 _selectedCompositionPoint = value;
             }
         }
-
-
-
+        
         public GUIManager(AppDomainServices appDomain, EditorGUI gui, AbstractDiagramFactory diagramFactory, VisualStudioServices vs = null)
         {
             _appDomain = appDomain;

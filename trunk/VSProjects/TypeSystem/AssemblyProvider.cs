@@ -37,6 +37,16 @@ namespace TypeSystem
         private string _fullPathMapping;
 
         /// <summary>
+        /// Cache for fullpath of assembly
+        /// </summary>
+        private string _fullPath;
+
+        /// <summary>
+        /// Cache for name of assembly
+        /// </summary>
+        private string _name;
+
+        /// <summary>
         /// Key of represented assembly
         /// </summary>
         private object _key;
@@ -70,12 +80,12 @@ namespace TypeSystem
         /// <summary>
         /// Name of provided assembly
         /// </summary>
-        public string Name { get { return getAssemblyName(); } }
+        public string Name { get { return _name == null ? _name = getAssemblyName() : _name; } }
 
         /// <summary>
         /// Fullpath representing provided assembly 
         /// </summary>
-        public string FullPath { get { return getAssemblyFullPath(); } }
+        public string FullPath { get { return _fullPath == null ? _fullPath = getAssemblyFullPath() : _fullPath; } }
 
         /// <summary>
         /// Key that was used for assembly loading

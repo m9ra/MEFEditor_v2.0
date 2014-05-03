@@ -122,6 +122,11 @@ namespace Interoperability
         /// Event fired whenever new <see cref="Project"/> is added into active solution
         /// </summary>
         public event _dispSolutionEvents_ProjectAddedEventHandler ProjectAdded;
+        
+        /// <summary>
+        /// Event fired whenever new <see cref="Project"/> starts to be added into active solution
+        /// </summary>
+        public event _dispSolutionEvents_ProjectAddedEventHandler ProjectAddingStarted;
 
         /// <summary>
         /// Event fired whenever <see cref="Project"/> is removed from active solution
@@ -132,6 +137,11 @@ namespace Interoperability
         /// Event fired whenever active solution is opened - it is ensured that SoluctionClosed appears before opening new solution
         /// </summary>
         public event _dispSolutionEvents_OpenedEventHandler SolutionOpened;
+
+        /// <summary>
+        /// Event fired whenever active solution opening starts - it is ensured that SoluctionClosed appears before opening new solution
+        /// </summary>
+        public event _dispSolutionEvents_OpenedEventHandler SolutionOpeningStarted;
 
         /// <summary>
         /// Event fired whenever active solution is closed
@@ -198,7 +208,6 @@ namespace Interoperability
         public IEnumerable<ElementNode> GetRootElements(VSProject project)
         {
             var manager = findProjectManager(project.Project);
-            manager.RequireRegisterAllItems();
             return manager.RootNodes;
         }
 
@@ -254,6 +263,9 @@ namespace Interoperability
                 //project is already contained
                 return;
 
+            if (ProjectAddingStarted != null)
+                ProjectAddingStarted(addedProject);
+
             var manager = new ProjectManager(addedProject, this);
             _watchedProjects.Add(addedProject, manager);
 
@@ -261,7 +273,19 @@ namespace Interoperability
                 ProjectAdded(addedProject);
 
             //changes are proceeded after manager is registered by above event
+            manager.RequireRegisterAllItems();
+            flushManagerChanges(manager);
+        }
+
+        private void flushManagerChanges(ProjectManager manager)
+        {
+            if (BeforeFlushingChanges != null)
+                BeforeFlushingChanges();
+
             manager.FlushChanges();
+
+            if (AfterFlushingChanges != null)
+                AfterFlushingChanges();
         }
 
         /// <summary>
@@ -269,11 +293,7 @@ namespace Interoperability
         /// </summary>
         /// <param name="removedProject">Project that has been removed</param>
         private void onProjectRemoved(Project removedProject)
-        {
-            if (isMiscellanaeous(removedProject))
-                //we don't need to handle miscellanaeous projects
-                return;
-
+        {         
             ProjectManager removedManager;
             if (!_watchedProjects.TryGetValue(removedProject, out removedManager))
             {
@@ -281,11 +301,13 @@ namespace Interoperability
                 return;
             }
 
+            _watchedProjects.Remove(removedProject);
+
             if (ProjectRemoved != null)
                 ProjectRemoved(removedProject);
-
+            
             removedManager.RemoveAll();
-            removedManager.FlushChanges();
+            flushManagerChanges(removedManager);
         }
 
         /// <summary>
@@ -300,7 +322,7 @@ namespace Interoperability
                 return;
 
             manager.RegisterRemove(item);
-            manager.FlushChanges();
+            flushManagerChanges(manager);
         }
 
         /// <summary>
@@ -315,7 +337,7 @@ namespace Interoperability
                 return;
 
             manager.RegisterAdd(item);
-            manager.FlushChanges();
+            flushManagerChanges(manager);
         }
 
         /// <summary>
@@ -409,6 +431,9 @@ namespace Interoperability
         private void solutionOpenedAfterWait(object sender, EventArgs e)
         {
             _solutionWait.Stop();
+
+            if (SolutionOpeningStarted != null)
+                SolutionOpeningStarted();
 
             //open all projects
             foreach (Project project in _dte.Solution.Projects)

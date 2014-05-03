@@ -58,7 +58,7 @@ namespace TypeSystem
         /// <param name="assemblyKey">Key used for unloading assembly</param>
         public AssemblyProvider UnloadRoot(object assemblyKey)
         {
-            throw new NotImplementedException();
+            return _manager.UnloadRoot(assemblyKey);
         }
 
         #region LoaderBase implementation

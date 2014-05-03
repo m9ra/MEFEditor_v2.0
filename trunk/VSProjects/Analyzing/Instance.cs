@@ -99,7 +99,7 @@ namespace Analyzing
         internal void HintID(string hint, AnalyzingContext context)
         {
             if (
-                 hint == "this" ||
+                
                  hint.StartsWith("$") ||
                  !ID.StartsWith("$")
                 )

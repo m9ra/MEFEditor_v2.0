@@ -124,7 +124,7 @@ namespace TypeSystem.Core
             registerAssembly(createdProvider);
         }
 
-        internal AssemblyProvider GetProviderFromKey(object reference)
+        internal AssemblyProvider FindProviderFromKey(object reference)
         {
             AssemblyProvider provider;
             _assemblyKeyIndex.TryGetValue(reference, out provider);

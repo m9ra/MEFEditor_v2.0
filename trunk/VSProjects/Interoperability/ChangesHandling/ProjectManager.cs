@@ -128,7 +128,11 @@ namespace Interoperability
         /// </summary>
         internal void RemoveAll()
         {
-            throw new NotImplementedException();
+            foreach (var item in _watchedItems.Values)
+            {
+                item.Disconnect();
+                _changedFileManagers.Add(item);
+            }
         }
 
         /// <summary>

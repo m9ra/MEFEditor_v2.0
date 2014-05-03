@@ -107,8 +107,7 @@ namespace TypeSystem.Core
             Loader = loader;
 
             _assemblies = new AssembliesStorage(this);
-            _assemblies.OnRootAdd += _onRootAssemblyAdd;
-            _assemblies.OnRootRemove += _onRootAssemblyAdd;
+            _assemblies.OnRootAdd += _onRootAssemblyAdd;     
             _assemblies.OnRootRemove += _onAssemblyRemove;
             _assemblies.OnRegistered += _onAssemblyRegistered;
 
@@ -202,7 +201,7 @@ namespace TypeSystem.Core
         /// <param name="assembly">Assembly that will be reloaded</param>
         private void after_reloadAssembly(AssemblyProvider assembly)
         {
-            addAfterAction(() => reloadAssembly(assembly), "ReloadAssembly", includedByReload);
+            addAfterAction(() => reloadAssembly(assembly), "ReloadAssembly", includedByReload, assembly);
         }
 
         /// <summary>
@@ -211,7 +210,7 @@ namespace TypeSystem.Core
         /// <param name="assembly">Assembly which components will be loaded</param>
         private void after_loadComponents(AssemblyProvider assembly)
         {
-            addAfterAction(() => loadComponents(assembly), "LoadComponents", includedByComponentsLoad);
+            addAfterAction(() => loadComponents(assembly), "LoadComponents", includedByComponentsLoad, assembly);
         }
 
         /// <summary>
@@ -232,6 +231,7 @@ namespace TypeSystem.Core
         private bool includedByReload(TransactionAction action)
         {
             return
+                action.Name == "ReloadAssembly" ||
                 includedByComponentsInvalidation(action) ||
                 includedByComponentsLoad(action);
         }
@@ -459,11 +459,23 @@ namespace TypeSystem.Core
         /// <summary>
         /// Load root assembly into AppDomain
         /// </summary>
-        /// <param name="loadedAssembly">Asemlby that is loaded</param>
+        /// <param name="loadedAssembly">Asembly that is loaded</param>
         internal void LoadRoot(AssemblyProvider loadedAssembly)
         {
             //adding will fire appropriate handlers
             _assemblies.AddRoot(loadedAssembly);
+        }
+
+        /// <summary>
+        /// Unload root assembly from AppDomain
+        /// </summary>
+        /// <param name="unloadedAssemblyKey">Asembly that is unloaded</param>
+        internal AssemblyProvider UnloadRoot(object unloadedAssemblyKey)
+        {
+            //removing will fire appropriate handlers
+            var provider = _assemblies.FindProviderFromKey(unloadedAssemblyKey);
+            _assemblies.RemoveRoot(provider);
+            return provider;
         }
 
         /// <summary>
@@ -569,13 +581,25 @@ namespace TypeSystem.Core
 
         private void _onAssemblyRemove(AssemblyProvider assembly)
         {
-            var componentsCopy = GetComponents(assembly).ToArray();
-            foreach (var component in componentsCopy)
-            {
-                _onComponentRemoved(assembly, component);
-            }
+            startTransaction("Unegistering assembly: " + assembly.Name);
 
-            assembly.Unload();
+            try
+            {
+                var componentsCopy = GetComponents(assembly).ToArray();
+                foreach (var component in componentsCopy)
+                {
+                    _onComponentRemoved(assembly, component);
+                }
+
+                assembly.Unload();
+
+                if (AssemblyRemoved != null)
+                    AssemblyRemoved(assembly);
+            }
+            finally
+            {
+                commitTransaction();
+            }
         }
 
         private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
@@ -651,7 +675,7 @@ namespace TypeSystem.Core
             }
             else
             {
-                var assembly = _assemblies.GetProviderFromKey(assemblyKey);
+                var assembly = _assemblies.FindProviderFromKey(assemblyKey);
                 var typeAssembly = _assemblies.GetTypeAssembly(assembly);
                 if (typeAssembly != null)
                     //assembly has been found
@@ -790,7 +814,7 @@ namespace TypeSystem.Core
         {
             foreach (var key in keys)
             {
-                var resolved = _assemblies.GetProviderFromKey(key);
+                var resolved = _assemblies.FindProviderFromKey(key);
 
                 if (resolved == null)
                     //assembly is not available

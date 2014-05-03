@@ -6,14 +6,16 @@
              xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
              xmlns:m="clr-namespace:Plugin.GUI"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             ClipToBounds="True"
+             >
     <UserControl.Resources>
         <SolidColorBrush x:Key="SettingSectionForeground" Color="#F6F6F6"/>
         <SolidColorBrush x:Key="SettingSectionBackground" Color="#EBEBEE"/>
 
     </UserControl.Resources>
 
-    <DockPanel LastChildFill="True">
+    <DockPanel LastChildFill="True" ClipToBounds="True">
         <DockPanel DockPanel.Dock="Top" LastChildFill="False">
             <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
                 <ComboBox Name="_CompositionPoints" ToolTip="Displayed composition point" Margin="0 0 0 5" Width="150" SelectedIndex="0" >
@@ -32,7 +34,7 @@
                     </Grid.Children>
                 </Grid>
             </StackPanel>
-            <Expander Margin="5 0 0 0" DockPanel.Dock="Bottom" Name="logsExpander" IsExpanded="False" MaxHeight="200" Expanded="logExpander_Expanded" Collapsed="logExpander_Collapsed">
+            <Expander Margin="5 0 0 0" DockPanel.Dock="Bottom" Name="logsExpander" IsExpanded="True" MaxHeight="200" Expanded="logExpander_Expanded" Collapsed="logExpander_Collapsed">
                 <Expander.Header>
                     <TextBlock TextAlignment="Right" HorizontalAlignment="Stretch">Show logs</TextBlock>
                 </Expander.Header>
@@ -42,85 +44,87 @@
                 </ScrollViewer>
             </Expander>
         </DockPanel>
-        <Grid>
-            <dr:DiagramCanvas Name="_Workspace" Background="White"></dr:DiagramCanvas>
-            <TabControl Name="_Settings" Margin="0 10 0 0">
-                <TabItem  Header="Runtime">
-                    <ScrollViewer>
-                        <DockPanel>
-                            <TextBlock FontSize="25" DockPanel.Dock="Top">Runtime settings</TextBlock>
-                            <StackPanel Name="_RuntimeSettings" Orientation="Vertical">
+        <AdornerDecorator ClipToBounds="True">
+            <Grid>
+                <dr:DiagramCanvas Name="_Workspace" Background="White"></dr:DiagramCanvas>
+                <TabControl Name="_Settings" Margin="0 10 0 0">
+                    <TabItem  Header="Runtime">
+                        <ScrollViewer>
+                            <DockPanel>
+                                <TextBlock FontSize="25" DockPanel.Dock="Top">Runtime settings</TextBlock>
+                                <StackPanel Name="_RuntimeSettings" Orientation="Vertical">
 
-                                <m:SettingsSection Title="Cross-interpreting">
+                                    <m:SettingsSection Title="Cross-interpreting">
+                                        <m:SettingsSection.Children>
+
+                                            <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                                <DockPanel Margin="5">
+                                                    <TextBlock Width="170" DockPanel.Dock="Left">Enable cross interpreting:</TextBlock>
+                                                    <CheckBox Name="_CrossInterpretationValue" VerticalAlignment="Center" Checked="interpretingEnabled_Checked" Unchecked="interpretingEnabled_Unchecked"></CheckBox>
+                                                </DockPanel>
+                                            </DockPanel>
+
+                                            <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                                <DockPanel Margin="5">
+                                                    <TextBlock Width="170" DockPanel.Dock="Left">Host application:</TextBlock>
+                                                    <TextBox Name="_HostPath" IsReadOnly="True" PreviewMouseDown="hostPath_PreviewMouseDown"></TextBox>
+                                                </DockPanel>
+                                            </DockPanel>
+
+
+                                        </m:SettingsSection.Children>
+                                    </m:SettingsSection>
+
+                                    <m:SettingsSection x:Name="_Assemblies" Title="Assemblies">
+
+                                    </m:SettingsSection>
+                                </StackPanel>
+                            </DockPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="Appearence">
+                        <StackPanel>
+                            <TextBlock FontSize="25">Appearance settings</TextBlock>
+                            <DockPanel>
+                                <m:SettingsSection Title="Diagram behaviour">
                                     <m:SettingsSection.Children>
 
                                         <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
                                             <DockPanel Margin="5">
-                                                <TextBlock Width="170" DockPanel.Dock="Left">Enable cross interpreting:</TextBlock>
-                                                <CheckBox Name="_CrossInterpretationValue" VerticalAlignment="Center" Checked="interpretingEnabled_Checked" Unchecked="interpretingEnabled_Unchecked"></CheckBox>
+                                                <TextBlock Width="170" DockPanel.Dock="Left">Auto-refresh enabled :</TextBlock>
+                                                <CheckBox VerticalAlignment="Center"/>
+                                            </DockPanel>
+                                        </DockPanel>
+
+
+                                        <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                            <DockPanel Margin="5">
+                                                <TextBlock Width="170" DockPanel.Dock="Left">Use item collision avoidance :</TextBlock>
+                                                <CheckBox VerticalAlignment="Center"/>
                                             </DockPanel>
                                         </DockPanel>
 
                                         <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
                                             <DockPanel Margin="5">
-                                                <TextBlock Width="170" DockPanel.Dock="Left">Host application:</TextBlock>
-                                                <TextBox Name="_HostPath" IsReadOnly="True" PreviewMouseDown="hostPath_PreviewMouseDown"></TextBox>
+                                                <TextBlock Width="170" DockPanel.Dock="Left">Use join collision avoidance :</TextBlock>
+                                                <CheckBox VerticalAlignment="Center"/>
                                             </DockPanel>
                                         </DockPanel>
 
+                                        <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
+                                            <DockPanel Margin="5">
+                                                <TextBlock Width="170" DockPanel.Dock="Left">Show join lines:</TextBlock>
+                                                <CheckBox VerticalAlignment="Center"/>
+                                            </DockPanel>
+                                        </DockPanel>
 
                                     </m:SettingsSection.Children>
                                 </m:SettingsSection>
-
-                                <m:SettingsSection x:Name="_Assemblies" Title="Assemblies">
-
-                                </m:SettingsSection>
-                            </StackPanel>
-                        </DockPanel>
-                    </ScrollViewer>
-                </TabItem>
-                <TabItem Header="Appearence">
-                    <StackPanel>
-                        <TextBlock FontSize="25">Appearance settings</TextBlock>
-                        <DockPanel>
-                            <m:SettingsSection Title="Diagram behaviour">
-                                <m:SettingsSection.Children>
-
-                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
-                                        <DockPanel Margin="5">
-                                            <TextBlock Width="170" DockPanel.Dock="Left">Auto-refresh enabled :</TextBlock>
-                                            <CheckBox VerticalAlignment="Center"/>
-                                        </DockPanel>
-                                    </DockPanel>
-
-
-                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
-                                        <DockPanel Margin="5">
-                                            <TextBlock Width="170" DockPanel.Dock="Left">Use item collision avoidance :</TextBlock>
-                                            <CheckBox VerticalAlignment="Center"/>
-                                        </DockPanel>
-                                    </DockPanel>
-
-                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
-                                        <DockPanel Margin="5">
-                                            <TextBlock Width="170" DockPanel.Dock="Left">Use join collision avoidance :</TextBlock>
-                                            <CheckBox VerticalAlignment="Center"/>
-                                        </DockPanel>
-                                    </DockPanel>
-
-                                    <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
-                                        <DockPanel Margin="5">
-                                            <TextBlock Width="170" DockPanel.Dock="Left">Show join lines:</TextBlock>
-                                            <CheckBox VerticalAlignment="Center"/>
-                                        </DockPanel>
-                                    </DockPanel>
-
-                                </m:SettingsSection.Children>
-                            </m:SettingsSection>
-                        </DockPanel>
-                    </StackPanel>
-                </TabItem>
-            </TabControl>
-        </Grid>
+                            </DockPanel>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </AdornerDecorator>
     </DockPanel>
 </UserControl>
