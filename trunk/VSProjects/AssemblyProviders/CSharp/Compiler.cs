@@ -807,7 +807,7 @@ namespace AssemblyProviders.CSharp
 
                 if (!tryGetCall(callNode, out result, baseObject))
                 {
-                    throw new NotSupportedException("Unknown object call hierarchy construction on " + callNode);
+                    throw parsingException(callNode, "Unknown object call hierarchy construction", callNode);
                 }
             }
             else if (!hasBaseObject)
@@ -815,7 +815,7 @@ namespace AssemblyProviders.CSharp
                 //there can only be unbased call hierarchy (note: static method with namespaces, etc. is whole call hierarchy) 
                 if (!tryGetCall(hierarchy, out result))
                 {
-                    throw new NotSupportedException("Unknown hierarchy construction on " + hierarchy);
+                    throw parsingException(hierarchy, "Unknown hierarchy construction", hierarchy);
                 }
             }
 
@@ -1225,7 +1225,7 @@ namespace AssemblyProviders.CSharp
                 //typeof(TypeLiteral) expression
                 if (literalNode.Arguments.Length == 0)
                 {
-                    throw new NotSupportedException("typeof doesn't have type specified");
+                    throw parsingException(literalNode, "Operator typeof doesn't have type specified");
                 }
 
                 var type = resolveTypeofArgument(literalNode.Arguments[0]);
@@ -1323,7 +1323,7 @@ namespace AssemblyProviders.CSharp
 
             if (!searcher.FoundResult.Any())
             {
-                throw new NotSupportedException("Constructor wasn't found");
+                throw parsingException(callNode, "Constructor wasn't found");
             }
 
             //TODO selection can be done more accurate
@@ -1333,7 +1333,7 @@ namespace AssemblyProviders.CSharp
             var activation = CreateCallActivation(nObject, callNode, searcher.FoundResult);
             if (activation == null)
             {
-                throw new NotSupportedException("Constructor call doesn't match to any available definition");
+                throw parsingException(callNode, "Constructor call doesn't match to any available definition");
             }
 
             var ctorCall = new CallValue(activation, Context);

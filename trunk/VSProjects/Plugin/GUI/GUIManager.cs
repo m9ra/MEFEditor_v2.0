@@ -101,7 +101,7 @@ namespace Plugin.GUI
                 _selectedCompositionPoint = value;
             }
         }
-        
+
         public GUIManager(AppDomainServices appDomain, EditorGUI gui, AbstractDiagramFactory diagramFactory, VisualStudioServices vs = null)
         {
             _appDomain = appDomain;
@@ -122,6 +122,22 @@ namespace Plugin.GUI
         public void Display(DiagramDefinition diagram)
         {
             _drawingProvider.Display(diagram);
+        }
+
+        /// <summary>
+        /// Display specified entry within workspace
+        /// </summary>
+        /// <param name="entry">Entry to be displayed</param>
+        internal void DisplayEntry(LogEntry entry)
+        {
+            _gui.Workspace.Children.Clear();
+            var entryDrawing = createLogEntryDrawing(entry, true) as Expander;
+
+            var heading = entryDrawing.Header as TextBlock;
+            heading.FontSize = 20;
+
+            entryDrawing.Margin = new Thickness(20);
+            _gui.Workspace.Children.Add(entryDrawing);
         }
 
         #region Initialization routines
@@ -399,7 +415,7 @@ namespace Plugin.GUI
             }
         }
 
-        private UIElement createLogEntryDrawing(LogEntry entry)
+        private UIElement createLogEntryDrawing(LogEntry entry, bool expanded = false)
         {
             Brush entryColor;
             switch (entry.Level)
@@ -432,6 +448,8 @@ namespace Plugin.GUI
 
             var expander = new Expander();
             expander.Header = heading;
+            expander.IsExpanded = expanded;
+
             var description = new TextBlock();
             description.Text = entry.Description;
             description.Margin = new Thickness(10, 0, 0, 10);
@@ -442,5 +460,6 @@ namespace Plugin.GUI
             return expander;
         }
         #endregion
+
     }
 }

@@ -107,6 +107,8 @@ namespace Plugin.GUI
         {
             InitializeComponent();
             settingsVisibility(false);
+
+            logsExpander.IsExpanded = true;
         }
 
         #region Basic GUI events handling

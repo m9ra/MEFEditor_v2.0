@@ -11,9 +11,12 @@ namespace TypeSystem
     /// </summary>
     public class ParsingException : Exception
     {
+        public readonly Action Navigate;
+
         public ParsingException(string errorDescription, Action navigate)
             : base("Error during parsing detected. " + errorDescription)
         {
+            Navigate = navigate;
         }
     }
 }

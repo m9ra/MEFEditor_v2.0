@@ -104,7 +104,7 @@ namespace Interoperability
         /// <summary>
         /// Determine that solution is opened
         /// </summary>
-        public bool IsSolutionOpen { get { return _dte.Solution != null; } }
+        public bool IsSolutionOpen { get { return _dte.Solution != null && _dte.Solution.IsOpen; } }
 
         /// <summary>
         /// Event fired whenever project changes are flushed
@@ -122,7 +122,7 @@ namespace Interoperability
         /// Event fired whenever new <see cref="Project"/> is added into active solution
         /// </summary>
         public event _dispSolutionEvents_ProjectAddedEventHandler ProjectAdded;
-        
+
         /// <summary>
         /// Event fired whenever new <see cref="Project"/> starts to be added into active solution
         /// </summary>
@@ -217,8 +217,8 @@ namespace Interoperability
         /// <param name="project">Project where changes are listened</param>
         /// <param name="handler">Handler fired when element is added</param>
         public void RegisterElementAdd(VSProject project, ElementNodeHandler handler)
-        {            
-            var manager=findProjectManager(project.Project);
+        {
+            var manager = findProjectManager(project.Project);
             manager.ElementAdded += handler;
         }
 
@@ -293,7 +293,7 @@ namespace Interoperability
         /// </summary>
         /// <param name="removedProject">Project that has been removed</param>
         private void onProjectRemoved(Project removedProject)
-        {         
+        {
             ProjectManager removedManager;
             if (!_watchedProjects.TryGetValue(removedProject, out removedManager))
             {
@@ -305,7 +305,7 @@ namespace Interoperability
 
             if (ProjectRemoved != null)
                 ProjectRemoved(removedProject);
-            
+
             removedManager.RemoveAll();
             flushManagerChanges(removedManager);
         }
@@ -645,9 +645,12 @@ namespace Interoperability
         /// <param name="descr">Description for log entry.</param>
         /// <param name="navigate">Navigate to error position</param>
         /// <returns>Log entry according to specified parameters</returns>
-        public void LogErrorEntry(string msg, string descr, Action navigate = null)
+        public LogEntry LogErrorEntry(string msg, string descr, Action navigate = null)
         {
-            Log.Entry(new LogEntry(LogLevels.Error, msg, descr, navigate));
+            var entry = new LogEntry(LogLevels.Error, msg, descr, navigate);
+            Log.Entry(entry);
+
+            return entry;
         }
 
         #endregion

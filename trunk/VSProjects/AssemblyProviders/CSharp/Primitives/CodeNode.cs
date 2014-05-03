@@ -26,9 +26,10 @@ namespace AssemblyProviders.CSharp.Primitives
 
         public IToken EndingToken
         {
-            get {
+            get
+            {
                 if (Lines.Length == 0) throw new NotSupportedException("Cannot get ending token of empty sequence");
-                return Lines[Lines.Length-1].EndingToken;
+                return Lines[Lines.Length - 1].EndingToken;
             }
         }
 
@@ -42,7 +43,7 @@ namespace AssemblyProviders.CSharp.Primitives
         }
     }
 
-    class Indexer:IIndexer
+    class Indexer : IIndexer
     {
         public Indexer(IEnumerable<INodeAST> args)
         {
@@ -55,7 +56,7 @@ namespace AssemblyProviders.CSharp.Primitives
     {
         List<CodeNode> _ops = new List<CodeNode>();
         List<CodeNode> _args = new List<CodeNode>();
-        
+
         /// <summary>
         /// Hint for ending token 
         /// </summary>
@@ -77,7 +78,7 @@ namespace AssemblyProviders.CSharp.Primitives
         /// <summary>
         /// Type of node
         /// </summary>
-        public NodeTypes NodeType { get; set; }  
+        public NodeTypes NodeType { get; set; }
         /// <summary>
         /// Subsequence if available
         /// </summary>
@@ -98,7 +99,7 @@ namespace AssemblyProviders.CSharp.Primitives
         /// <summary>
         /// Source from where this Code node comes
         /// </summary>
-        public Source Source { get {return SourceToken.Position.Source; } }
+        public Source Source { get { return SourceToken.Position.Source; } }
 
 
 
@@ -138,7 +139,7 @@ namespace AssemblyProviders.CSharp.Primitives
                 return _child;
             }
             set
-            {   
+            {
                 var delegateChild = this;
                 while (delegateChild.Child != null)
                     delegateChild = delegateChild.Child as CodeNode;
@@ -201,7 +202,7 @@ namespace AssemblyProviders.CSharp.Primitives
             get
             {
                 var result = SourceToken;
-                if(Child!=null)
+                if (Child != null)
                     result = getMin(result, Child.StartingToken);
 
                 if (_args.Count > 0)
@@ -210,7 +211,7 @@ namespace AssemblyProviders.CSharp.Primitives
                     result = getMin(result, last);
                 }
 
-                if (Subsequence != null && Subsequence.Lines.Length>0)
+                if (Subsequence != null && Subsequence.Lines.Length > 0)
                     result = getMin(result, Subsequence.StartingToken);
                 return result;
             }
@@ -223,9 +224,9 @@ namespace AssemblyProviders.CSharp.Primitives
         {
             get
             {
-                var result =getMax(SourceToken,_endHint);
+                var result = getMax(SourceToken, _endHint);
 
-                if(Child!=null)
+                if (Child != null)
                     result = getMax(result, Child.EndingToken);
 
                 if (_args.Count > 0)
@@ -234,7 +235,7 @@ namespace AssemblyProviders.CSharp.Primitives
                     result = getMax(result, last);
                 }
 
-                if (Subsequence != null && Subsequence.Lines.Length>0)
+                if (Subsequence != null && Subsequence.Lines.Length > 0)
                     result = getMax(result, Subsequence.EndingToken);
                 return result;
             }
@@ -264,9 +265,12 @@ namespace AssemblyProviders.CSharp.Primitives
 
         public override string ToString()
         {
-            var start=StartingToken.Position.Offset;
-            var end=EndingToken.Next.Position.Offset;
-            return Source.OriginalCode.Substring(start, end - start);            
+            var start = StartingToken.Position.Offset;
+
+            var next = EndingToken.Next;
+            
+            var end = next == null ? Source.OriginalCode.Length - 1 : next.Position.Offset;
+            return Source.OriginalCode.Substring(start, end - start);
         }
     }
 }

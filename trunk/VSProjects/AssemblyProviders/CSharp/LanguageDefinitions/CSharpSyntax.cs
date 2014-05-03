@@ -94,7 +94,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// Keyword for continue statement
         /// </summary>
         internal const string ContinueKeyword = "continue";
-        
+
         #endregion
 
         readonly Layouts layouts;
@@ -159,7 +159,10 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <returns>Created exception</returns>
         public static ParsingException ParsingException(INodeAST node, string descriptionFormat, params object[] formatArguments)
         {
-            throw new NotImplementedException();
+            //TODO navigation
+            var description = string.Format(descriptionFormat, formatArguments);
+            var error = string.Format("{0} near {1} at offset {2}", description, node, node.StartingToken.Position.Offset);
+            throw new ParsingException(error, () => navigate(node));
         }
 
         /// <summary>
@@ -217,6 +220,15 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                 default:
                     return layouts.HierarchyLayout();
             }
+        }
+
+        /// <summary>
+        /// Helper for source navigation
+        /// </summary>
+        /// <param name="node">Navigation target</param>
+        private static void navigate(INodeAST node)
+        {
+            throw new NotImplementedException("Navigation support");
         }
 
         /// <summary>

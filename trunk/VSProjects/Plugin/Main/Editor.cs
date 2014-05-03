@@ -77,6 +77,11 @@ namespace MEFEditor.Plugin.Main
         private AnalyzingResult _currentResult;
 
         /// <summary>
+        /// Error of last analysis run if any, <c>null</c> otherwise
+        /// </summary>
+        private LogEntry _analysisError;
+
+        /// <summary>
         /// GUI used by editor
         /// </summary>
         internal readonly EditorGUI GUI;
@@ -205,6 +210,11 @@ namespace MEFEditor.Plugin.Main
 
         #region Drawing providing routines
 
+        /// <summary>
+        /// Show composition based on analysis of given method
+        /// </summary>
+        /// <param name="entryMethod">Entry method of analysis</param>
+        /// <param name="entryArguments">Arguments for entry method</param>
         private void showComposition(MethodID entryMethod, Instance[] entryArguments)
         {
             if (entryMethod == null)
@@ -215,18 +225,50 @@ namespace MEFEditor.Plugin.Main
             else
             {
                 var watch = Stopwatch.StartNew();
+
+                runAnalysis(entryMethod, entryArguments);
+                _vs.Log.Message("Executing composition point {0}ms", watch.ElapsedMilliseconds);
+
+                if (_analysisError == null)
+                {
+                    watch.Restart();
+
+                    //analysis has been successful
+                    var drawing = createDrawings(_currentResult);
+                    _guiManager.Display(drawing);
+                    _vs.Log.Message("Drawing composition point {0}ms", watch.ElapsedMilliseconds);
+                }
+                else
+                {
+                    _guiManager.DisplayEntry(_analysisError);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Run analysis on given composition point
+        /// </summary>
+        /// <param name="entryMethod">Entry method of analysis</param>
+        /// <param name="entryArguments">Arguments for entry method</param>
+        private void runAnalysis(MethodID entryMethod, Instance[] entryArguments)
+        {
+            _analysisError = null;
+
+            try
+            {
                 _currentResult = _machine.Run(_loader, entryMethod, entryArguments);
                 _currentResult.OnViewCommit += (v) =>
                 {
                     _vs.ForceFlushChanges();
                 };
-
-                _vs.Log.Message("Executing composition point {0}ms", watch.ElapsedMilliseconds);
-                watch.Restart();
-
-                var drawing = createDrawings(_currentResult);
-                _guiManager.Display(drawing);
-                _vs.Log.Message("Drawing composition point {0}ms", watch.ElapsedMilliseconds);
+            }
+            catch (ParsingException parsingException)
+            {
+                _analysisError = _vs.LogErrorEntry(parsingException.Message, parsingException.ToString(), parsingException.Navigate);
+            }
+            catch (Exception ex)
+            {
+                _analysisError = _vs.LogErrorEntry(ex.Message, ex.ToString());
             }
         }
 
