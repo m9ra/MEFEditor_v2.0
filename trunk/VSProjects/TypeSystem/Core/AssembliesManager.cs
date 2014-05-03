@@ -100,6 +100,11 @@ namespace TypeSystem.Core
         /// </summary>
         internal RuntimeAssembly Runtime { get { return Settings.Runtime; } }
 
+        /// <summary>
+        /// Initialize new instance of <see cref="AssembliesManager"/> object
+        /// </summary>
+        /// <param name="loader">Loader that is used for loading of assemblies</param>
+        /// <param name="settings">Settings used for interpretation</param>
         internal AssembliesManager(AssemblyLoader loader, MachineSettings settings)
         {
             Settings = settings;
@@ -253,7 +258,11 @@ namespace TypeSystem.Core
 
         #region Internal methods exposed for AssemblyLoader
 
-
+        /// <summary>
+        /// Resolve static (it means here non-virtual) method
+        /// </summary>
+        /// <param name="method">Method to be resolved</param>
+        /// <returns>Generator of resolved method</returns>
         internal GeneratorBase StaticResolve(MethodID method)
         {
             var result = Cache.GetCachedGenerator(method, tryStaticResolve);
@@ -264,6 +273,12 @@ namespace TypeSystem.Core
             return result;
         }
 
+        /// <summary>
+        /// Resolve dynamic (it means here virtual) method
+        /// </summary>
+        /// <param name="method">Method to be resolved</param>
+        /// <param name="dynamicArgumentInfo">Descriptors of arguments available during method invokation</param>
+        /// <returns>Identifier of resolved method</returns>
         internal MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             //resolving of .NET objects depends only on called object type
@@ -500,19 +515,24 @@ namespace TypeSystem.Core
 
         #region Event handlers
 
+        /// <summary>
+        /// Handler fired before interpretation is started
+        /// </summary>
         private void _beforeInterpretation()
         {
-            _interpetingTransaction = Transactions.StartNew("Interpreting transaction");
+            _interpetingTransaction = Transactions.StartNew("Interpreting");
         }
 
+        /// <summary>
+        /// Handler fired after interpretation is completed
+        /// </summary>
         private void _afterInterpretation()
         {
             _interpetingTransaction.Commit();
 
             _interpetingTransaction = null;
         }
-
-
+        
         /// <summary>
         /// Given reference has been removed from given <see cref="AssemblyProvider"/>. Removing assembly provider
         /// does not need this reference, however other providers may it still referenced
@@ -536,6 +556,10 @@ namespace TypeSystem.Core
             after_reloadAssembly(assembly);
         }
 
+        /// <summary>
+        /// Handler called for assembly that is invalidated
+        /// </summary>
+        /// <param name="assembly">Invalidated assembly</param>
         private void _onAssemblyInvalidation(AssemblyProvider assembly)
         {
             //remove invalidated assembly
@@ -547,16 +571,28 @@ namespace TypeSystem.Core
             reloadAffectedAssemblies(assembly.Key);
         }
 
+        /// <summary>
+        /// Root assembly has been added
+        /// </summary>
+        /// <param name="assembly">Added assembly</param>
         private void _onRootAssemblyAdd(AssemblyProvider assembly)
         {
             //what to do with root assemblies
         }
 
+        /// <summary>
+        /// Root assembly has been removed
+        /// </summary>
+        /// <param name="assembly">Removed assembly</param>
         private void _onRootAssemblyRemoved(AssemblyProvider assembly)
         {
             //what to do with root assemblies
         }
 
+        /// <summary>
+        /// Assembly has been registered (every assembly has to be registered exactly one if loaded)
+        /// </summary>
+        /// <param name="assembly">Registered assembly</param>
         private void _onAssemblyRegistered(AssemblyProvider assembly)
         {
             startTransaction("Registering assembly: " + assembly.Name);
@@ -579,9 +615,13 @@ namespace TypeSystem.Core
             }
         }
 
+        /// <summary>
+        /// Assembly that has been removed completely from <see cref="AssembliesManager"/>
+        /// </summary>
+        /// <param name="assembly">Removed assembly</param>
         private void _onAssemblyRemove(AssemblyProvider assembly)
         {
-            startTransaction("Unegistering assembly: " + assembly.Name);
+            startTransaction("Unregistering assembly: " + assembly.Name);
 
             try
             {
@@ -602,6 +642,11 @@ namespace TypeSystem.Core
             }
         }
 
+        /// <summary>
+        /// Handler fired whenever component is added
+        /// </summary>
+        /// <param name="assembly">Assembly where component has been discovered</param>
+        /// <param name="componentInfo">Information about component</param>
         private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
         {
             componentInfo.DefiningAssembly = _assemblies.GetTypeAssembly(assembly);
@@ -618,6 +663,11 @@ namespace TypeSystem.Core
                 ComponentAdded(componentInfo);
         }
 
+        /// <summary>
+        /// Handler fired whenever component is removed
+        /// </summary>
+        /// <param name="assembly">Assembly where component has been defined</param>
+        /// <param name="removedComponent">Information about removed component</param>
         private void _onComponentRemoved(AssemblyProvider assembly, ComponentInfo removedComponent)
         {
             _assemblyComponents.Remove(assembly, removedComponent);
@@ -684,12 +734,22 @@ namespace TypeSystem.Core
             return null;
         }
 
+        /// <summary>
+        /// Create assembly provider from given key, by using <see cref="AssemblyLoader"/>
+        /// </summary>
+        /// <param name="key">Key that is used as definition for assembly creation</param>
+        /// <returns>Created assembly provider</returns>
         private AssemblyProvider createAssembly(object key)
         {
             var assembly = Loader.CreateAssembly(key);
             return assembly;
         }
 
+        /// <summary>
+        /// Get inheritance chain for given type
+        /// </summary>
+        /// <param name="typeName">name of type which inheritance chain is required</param>
+        /// <returns>Created inheritance chain</returns>
         private InheritanceChain getChain(string typeName)
         {
             var typePath = new PathInfo(typeName);
@@ -706,25 +766,36 @@ namespace TypeSystem.Core
             throw new NotSupportedException("For type: " + typeName + " there is no inheritance chain");
         }
 
-        private MethodID tryDynamicResolve(TypeDescriptor dynamicInfo, MethodID method)
+        /// <summary>
+        /// Try to resolve dynamic (generic/non-generic) method according to descriptor of called object
+        /// </summary>
+        /// <param name="calledObjectDescriptor">Descriptor of called object</param>
+        /// <param name="method">Method that is resolved</param>
+        /// <returns>Resolved method if available, <c>null</c> othewrise</returns>
+        private MethodID tryDynamicResolve(TypeDescriptor calledObjectDescriptor, MethodID method)
         {
-            var result = dynamicExplicitResolve(method, dynamicInfo);
+            var result = tryDynamicExplicitResolve(calledObjectDescriptor, method);
 
             if (result == null)
             {
-                result = dynamicGenericResolve(method, dynamicInfo);
+                result = tryDynamicGenericResolve(calledObjectDescriptor, method);
             }
 
             return result;
         }
 
+        /// <summary>
+        /// Try to resolve static (generic/non-generic) method
+        /// </summary>
+        /// <param name="method">Method that is resolved</param>
+        /// <returns>Resolved method if available, <c>null</c> otherwise</returns>
         private GeneratorBase tryStaticResolve(MethodID method)
         {
-            var result = staticExplicitResolve(method);
+            var result = tryStaticExplicitResolve(method);
 
             if (result == null)
             {
-                result = staticGenericResolve(method);
+                result = tryStaticGenericResolve(method);
             }
 
             return result;
@@ -735,7 +806,7 @@ namespace TypeSystem.Core
         /// </summary>
         /// <param name="method">Resolved method</param>
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
-        private GeneratorBase staticGenericResolve(MethodID method)
+        private GeneratorBase tryStaticGenericResolve(MethodID method)
         {
             var searchPath = Naming.GetMethodPath(method);
             if (!searchPath.HasGenericArguments)
@@ -760,7 +831,7 @@ namespace TypeSystem.Core
         /// </summary>
         /// <param name="method">Resolved method</param>
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
-        private GeneratorBase staticExplicitResolve(MethodID method)
+        private GeneratorBase tryStaticExplicitResolve(MethodID method)
         {
             foreach (var assembly in _assemblies.Providers)
             {
@@ -774,7 +845,13 @@ namespace TypeSystem.Core
             return null;
         }
 
-        private MethodID dynamicGenericResolve(MethodID method, InstanceInfo dynamicInfo)
+        /// <summary>
+        /// Try to resolve dynamic generic method according to descriptor of called object
+        /// </summary>
+        /// <param name="calledObjectDescriptor">Descriptor of called object</param>
+        /// <param name="method">Method that is resolved</param>
+        /// <returns>Resolved method if available, <c>null</c> othewrise</returns>
+        private MethodID tryDynamicGenericResolve(TypeDescriptor calledObjectDescriptor, MethodID method)
         {
             var searchPath = Naming.GetMethodPath(method);
             if (!searchPath.HasGenericArguments)
@@ -782,7 +859,7 @@ namespace TypeSystem.Core
                 return null;
 
             var methodSignature = Naming.ChangeDeclaringType(searchPath.Signature, method, true);
-            var typePath = new PathInfo(dynamicInfo.TypeName);
+            var typePath = new PathInfo(calledObjectDescriptor.TypeName);
 
             foreach (var assembly in _assemblies.Providers)
             {
@@ -796,11 +873,17 @@ namespace TypeSystem.Core
             return null;
         }
 
-        private MethodID dynamicExplicitResolve(MethodID method, TypeDescriptor dynamicInfo)
+        /// <summary>
+        /// Try to resolve dynamic method according to descriptor of called object
+        /// </summary>
+        /// <param name="calledObjectDescriptor">Descriptor of called object</param>
+        /// <param name="method">Method that is resolved</param>
+        /// <returns>Resolved method if available, <c>null</c> othewrise</returns>
+        private MethodID tryDynamicExplicitResolve(TypeDescriptor calledObjectDescriptor, MethodID method)
         {
             foreach (var assembly in _assemblies.Providers)
             {
-                var implementation = assembly.GetImplementation(method, dynamicInfo);
+                var implementation = assembly.GetImplementation(method, calledObjectDescriptor);
                 if (implementation != null)
                 {
                     //implementation has been found
@@ -810,6 +893,11 @@ namespace TypeSystem.Core
             return null;
         }
 
+        /// <summary>
+        /// Resolve enumeration of keys into enumeration of <see cref="AssemblyProvider"/> objects
+        /// </summary>
+        /// <param name="keys">Keys to be resolved</param>
+        /// <returns>Resolved enumeration</returns>
         private IEnumerable<AssemblyProvider> resolveKeys(IEnumerable<object> keys)
         {
             foreach (var key in keys)
@@ -823,6 +911,7 @@ namespace TypeSystem.Core
                 yield return resolved;
             }
         }
+
         #endregion
     }
 }
