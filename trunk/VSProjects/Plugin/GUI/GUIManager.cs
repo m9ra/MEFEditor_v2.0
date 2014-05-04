@@ -29,12 +29,26 @@ namespace Plugin.GUI
     /// </summary>
     public class GUIManager
     {
-        private readonly EditorGUI _gui;
+        #region Private members
 
+        /// <summary>
+        /// Gui managed by current manager
+        /// </summary>
+        private readonly EditorGUI _gui;
+        
+        /// <summary>
+        /// Factory used for diagram drawings
+        /// </summary>
         private readonly AbstractDiagramFactory _diagramFactory;
 
+        /// <summary>
+        /// Appdomain where analysis is processed
+        /// </summary>
         private readonly AppDomainServices _appDomain;
 
+        /// <summary>
+        /// WPF items according to defining composition points
+        /// </summary>
         private readonly Dictionary<CompositionPoint, ComboBoxItem> _compositionPoints = new Dictionary<CompositionPoint, ComboBoxItem>();
 
         /// <summary>
@@ -47,17 +61,38 @@ namespace Plugin.GUI
         /// </summary>
         private readonly Dictionary<MethodID, CompositionPoint> _compositionPointAdds = new Dictionary<MethodID, CompositionPoint>();
 
-        private readonly DrawingProvider _drawingProvider;
-
-        private readonly VisualStudioServices _vs;
-
-        private readonly Queue<LogEntry> _logQueue = new Queue<LogEntry>();
-
+        /// <summary>
+        /// Composition that is desired by user to be displayed. It is used 
+        /// for remembering the composition point when is it not currently available
+        /// </summary>
         private MethodID _desiredCompositionPointMethod;
 
+        /// <summary>
+        /// Composition point that is currently selected
+        /// </summary>
         private CompositionPoint _selectedCompositionPoint;
-
+        
+        /// <summary>
+        /// Assembly that is currently hosted
+        /// </summary>
         private AssemblyProvider _hostAssembly;
+
+        /// <summary>
+        /// Access point to drawing services and drawing engine
+        /// </summary>
+        private readonly DrawingProvider _drawingProvider;
+
+        /// <summary>
+        /// Available services exposed by visual studio
+        /// </summary>
+        private readonly VisualStudioServices _vs;
+
+        /// <summary>
+        /// Queue of logged entries
+        /// </summary>
+        private readonly Queue<LogEntry> _logQueue = new Queue<LogEntry>();
+
+        #endregion
 
         /// <summary>
         /// Transaction available in current domain
@@ -95,13 +130,24 @@ namespace Plugin.GUI
             }
             private set
             {
-                if (value != null)
+                if (value != null && !value.EntryMethod.Equals(_desiredCompositionPointMethod))
+                {
                     _desiredCompositionPointMethod = value.EntryMethod;
+                    //reset positions when changing desired composition point
+                    _drawingProvider.ResetPositions();
+                }
 
                 _selectedCompositionPoint = value;
             }
         }
 
+        /// <summary>
+        /// Initialize instance of <see cref="GUIManager"/>
+        /// </summary>
+        /// <param name="appDomain">Appdomain where analysis is processed</param>
+        /// <param name="gui">Gui managed by current manager</param>
+        /// <param name="diagramFactory">Factory used for diagram drawings</param>
+        /// <param name="vs">Available services exposed by visual studio</param>
         public GUIManager(AppDomainServices appDomain, EditorGUI gui, AbstractDiagramFactory diagramFactory, VisualStudioServices vs = null)
         {
             _appDomain = appDomain;
@@ -125,12 +171,23 @@ namespace Plugin.GUI
         }
 
         /// <summary>
+        /// Reset workspace
+        /// </summary>
+        public void ResetWorkspace()
+        {
+            _gui.Workspace.Reset();
+            _drawingProvider.ResetPositions();
+            _drawingProvider.Redraw();
+        }
+
+        /// <summary>
         /// Display specified entry within workspace
         /// </summary>
         /// <param name="entry">Entry to be displayed</param>
         internal void DisplayEntry(LogEntry entry)
         {
-            _gui.Workspace.Children.Clear();
+            _gui.Workspace.Clear();
+            _gui.Workspace.Reset();            
             var entryDrawing = createLogEntryDrawing(entry, true) as Expander;
 
             var heading = entryDrawing.Header as TextBlock;
@@ -460,6 +517,7 @@ namespace Plugin.GUI
             return expander;
         }
         #endregion
+
 
     }
 }

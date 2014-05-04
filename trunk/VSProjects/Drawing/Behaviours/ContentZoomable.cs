@@ -23,6 +23,13 @@ namespace Drawing.Behaviours
             _canvas = canvas;
 
             _canvas.MouseWheel += _canvas_MouseWheel;
+            _canvas.MouseEnter += _canvas_MouseEnter;
+        }
+
+        void _canvas_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (!_canvas.IsFocused)
+                _canvas.Focus();
         }
 
         void _canvas_MouseWheel(object sender, MouseWheelEventArgs e)

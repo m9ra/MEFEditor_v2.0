@@ -125,9 +125,17 @@ namespace Analyzing
                 }
                 context.FetchCall(entryMethod, arguments);
 
+                var executionLimit = Settings.ExecutionLimit;
+
                 //interpretation processing
                 while (!context.IsExecutionEnd)
                 {
+                    //limit execution
+                    --executionLimit;
+                    if (executionLimit < 0)
+                        throw new NotImplementedException("Execution limit has been reached");
+
+                    //process instruction
                     var instruction = context.NextInstruction();
                     if (instruction == null)
                     {

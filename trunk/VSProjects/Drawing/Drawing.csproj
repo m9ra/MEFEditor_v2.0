@@ -87,6 +87,7 @@
     <Compile Include="Behaviours\PreviewDropStrategy.cs" />
     <Compile Include="Behaviours\UpdateGlobalPosition.cs" />
     <Compile Include="Behaviours\ZOrdering.cs" />
+    <Compile Include="CommandDefinition.cs" />
     <Compile Include="ConnectorDrawing.cs" />
     <Compile Include="ContentDrawing.cs" />
     <Compile Include="DiagramCanvas.cs" />

@@ -24,11 +24,15 @@ namespace Drawing
 
         private readonly List<EditDefinition> _edits = new List<EditDefinition>();
 
+        private readonly List<CommandDefinition> _commands = new List<CommandDefinition>();
+
         public IEnumerable<DiagramItemDefinition> ItemDefinitions { get { return _definitions.Values; } }
 
         public IEnumerable<JoinDefinition> JoinDefinitions { get { return _joinDefinitions; } }
 
         public IEnumerable<EditDefinition> Edits { get { return _edits; } }
+
+        public IEnumerable<CommandDefinition> Commands { get { return _commands; } }
 
         public event OnDragEnd OnDragEnd;
 
@@ -140,6 +144,11 @@ namespace Drawing
         public void AddEdit(EditDefinition edit)
         {
             _edits.Add(edit);
+        }
+
+        public void AddCommand(CommandDefinition command)
+        {
+            _commands.Add(command);
         }
     }
 }

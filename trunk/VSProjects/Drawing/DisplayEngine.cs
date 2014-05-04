@@ -71,13 +71,21 @@ namespace Drawing
 
             _orderingGroup = new ElementGroup();
             _items.Clear();
-            _rootItems.Clear();
-            Output.Children.Clear();
+            _rootItems.Clear();            
+            Output.Clear();
         }
-
+        
         #endregion
 
         #region Display building methods
+
+        /// <summary>
+        /// Clear old positions of items
+        /// </summary>
+        internal void ClearOldPositions()
+        {
+            _oldPositions.Clear();
+        }
 
         internal void RegisterItem(DiagramItem item)
         {

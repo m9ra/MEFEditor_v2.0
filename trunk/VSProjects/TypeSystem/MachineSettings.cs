@@ -11,12 +11,20 @@ using TypeSystem.Runtime;
 
 namespace TypeSystem
 {
-    public delegate void OnInstanceCreated(Instance instance);
-
+    /// <summary>
+    /// Machine settings used for analysis, configuring machine in the way that TypeSystem expect.
+    /// </summary>
     public class MachineSettings : MachineSettingsBase
     {
+        /// <summary>
+        /// Runtime that is used with current settings
+        /// </summary>
         public readonly RuntimeAssembly Runtime = new RuntimeAssembly();
 
+        /// </ inheritdoc>
+        public override int ExecutionLimit { get { return 10000; } }
+
+        /// </ inheritdoc>
         public override InstanceInfo GetNativeInfo(Type literalType)
         {
             if (literalType.IsAssignableFrom(typeof(Array<InstanceWrap>)))
@@ -27,6 +35,7 @@ namespace TypeSystem
             return TypeDescriptor.Create(literalType);
         }
 
+        /// </ inheritdoc>
         public override bool IsTrue(Instance condition)
         {
             var dirVal = condition.DirectValue;
@@ -42,6 +51,7 @@ namespace TypeSystem
             return false;
         }
 
+        /// </ inheritdoc>
         public override MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
         {
             if (IsDirect(sharedInstanceInfo))
@@ -52,6 +62,7 @@ namespace TypeSystem
             return Naming.Method(sharedInstanceInfo, Naming.ClassCtorName, false, new ParameterTypeInfo[] { });
         }
 
+        /// </ inheritdoc>
         public override bool IsDirect(InstanceInfo typeInfo)
         {
             return Runtime.IsDirectType(typeInfo);

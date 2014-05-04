@@ -31,9 +31,9 @@ namespace AssemblyProviders.CSharp.Transformations
         public override Transformation ShiftBehind(BlockTransformProvider provider)
         {
             var other = provider as BlockProvider;
-            var lineSource = _line.Source;
+            var lineSource = _source;
 
-            if (lineSource != other._line.Source)
+            if (lineSource != other._source)
             {
                 throw new NotSupportedException("Cannot shift between sources");
             }
@@ -49,7 +49,7 @@ namespace AssemblyProviders.CSharp.Transformations
             return new SourceTransformation((view, source) =>
             {
                 source.PrependCall(view, _line, call);
-            }, _line.Source);
+            }, _source);
         }
 
         public override Transformation AppendCall(CallEditInfo call)
@@ -57,7 +57,7 @@ namespace AssemblyProviders.CSharp.Transformations
             return new SourceTransformation((view, source) =>
             {
                 source.AppendCall(view, _line, call);
-            }, _line.Source);
+            }, _source);
         }
     }
 }

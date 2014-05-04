@@ -96,7 +96,7 @@ namespace Drawing
             {
                 var itemDefinition = DiagramContext.Diagram.GetItemDefinition(itemReference.DefinitionID);
                 var item = new DiagramItem(itemDefinition, this, slotCanvas);
-                var itemContext = DiagramContext.Provider.DrawItem(item);
+                DiagramContext.Provider.InitializeItemDrawing(item);
                 slotCanvas.Children.Add(item);
             }
         }

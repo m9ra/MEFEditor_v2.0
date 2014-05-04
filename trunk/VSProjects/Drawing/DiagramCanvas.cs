@@ -77,5 +77,17 @@ namespace Drawing
             }
             return arrangeSize;
         }
+
+        public void Clear()
+        {
+            Children.Clear();
+            ContextMenu = null;
+        }
+
+        public void Reset()
+        {
+            Shift = new Vector(0, 0);
+            Zoom = 1;
+        }
     }
 }

@@ -24,6 +24,11 @@ namespace Analyzing
         public event Action AfterInterpretation;
 
         /// <summary>
+        /// Limit of instruction count that can be interpreted
+        /// </summary>
+        public abstract int ExecutionLimit { get; }
+
+        /// <summary>
         /// Determine that instance described by given info is represented by
         /// <see cref="DirectInstance"/>
         /// </summary>

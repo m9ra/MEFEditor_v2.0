@@ -31,6 +31,8 @@ namespace MEFEditor.Plugin.Main
     /// </summary>
     class Editor
     {
+        #region Private members
+
         /// <summary>
         /// Services used for interconnection with visual studio
         /// </summary>
@@ -81,6 +83,8 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         private LogEntry _analysisError;
 
+        #endregion
+
         /// <summary>
         /// GUI used by editor
         /// </summary>
@@ -96,6 +100,10 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         internal TransactionManager Transactions { get { return _loader.AppDomain.Transactions; } }
 
+        /// <summary>
+        /// Initialize instance of <see cref="Editor"/> which
+        /// </summary>
+        /// <param name="vs"></param>
         internal Editor(VisualStudioServices vs)
         {
             _vs = vs;
@@ -103,6 +111,11 @@ namespace MEFEditor.Plugin.Main
             GUI = new EditorGUI();
         }
 
+        #region Initialization routines
+
+        /// <summary>
+        /// Initialize editor - extensions and environmennt is loaded, event handlers hooked
+        /// </summary>
         internal void Initialize()
         {
             var settings = new MachineSettings();
@@ -121,8 +134,12 @@ namespace MEFEditor.Plugin.Main
             _guiManager = new GUIManager(_loader.AppDomain, GUI, factory, _vs);
 
             hookHandlers();
+            _vs.Log.Message("EDITOR INITIALIZED");
         }
 
+        /// <summary>
+        /// Load user extensions from extension assemblies
+        /// </summary>
         private void loadUserExtensions()
         {
             //TODO load extensions
@@ -148,6 +165,10 @@ namespace MEFEditor.Plugin.Main
             });
 
             Runtime.AddDefinition(new CompositionContainerDefinition());
+            Runtime.AddDefinition(new AggregateCatalogDefinition());
+            Runtime.AddDefinition(new TypeCatalogDefinition());
+            Runtime.AddDefinition(new DirectoryCatalogDefinition());
+            Runtime.AddDefinition(new ComposablePartCatalogCollectionDefinition());
         }
 
         #region TODO: Methods that are used only for RESEARCH purposes
@@ -180,6 +201,9 @@ namespace MEFEditor.Plugin.Main
         }
         #endregion
 
+        /// <summary>
+        /// Hook all event handlers that are used for editor interaction
+        /// </summary>
         private void hookHandlers()
         {
             _guiManager.CompositionPointSelected += requireRedraw;
@@ -205,8 +229,9 @@ namespace MEFEditor.Plugin.Main
                 _vs_SolutionOpened();
             }
 
-            _loader.AppDomain.MethodInvalidated += _methodInvalidated;
+            _loader.AppDomain.MethodInvalidated += methodInvalidated;
         }
+        #endregion
 
         #region Drawing providing routines
 
@@ -273,75 +298,14 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Create drawings from given result
+        /// Refresh drawing according to current composition point
+        /// <remarks>Is called only</remarks>
         /// </summary>
-        private DiagramDefinition createDrawings(AnalyzingResult result)
-        {
-            var pipeline = _loader.Settings.Runtime.CreateDrawingPipeline(generalDrawer, result);
-
-            foreach (var instance in result.CreatedInstances)
-            {
-                var hasDrawer = Runtime.GetDrawer(instance) != null;
-                var hasComponentInfo = _loader.GetComponentInfo(instance.Info) != null;
-
-                var addToQueue = hasDrawer || hasComponentInfo;
-
-                if (addToQueue)
-                {
-                    pipeline.AddToDrawQueue(instance);
-                    if (hasComponentInfo)
-                        pipeline.ForceDisplay(instance);
-                }
-            }
-
-            return pipeline.GetOutput();
-        }
-
-        private void generalDrawer(DrawedInstance instance)
-        {
-            var componentInfo = _loader.GetComponentInfo(instance.WrappedInstance.Info);
-            GeneralDefinitionProvider.Draw(instance, componentInfo);
-        }
-        #endregion
-
-        #region Transaction handling
-
-        private void requireRedraw()
-        {
-            if (Transactions.CurrentTransaction == null)
-            {
-                //there is no attachable transaction
-                refreshDrawing();
-            }
-            else
-            {
-                var action = new TransactionAction(refreshDrawing, "RefreshDrawing", (t) => t.Name == "RefreshDrawing", this);
-                Transactions.AttachAfterAction(null, action);
-            }
-        }
-
-        #endregion
-
-        #region Event handlers
-
-
-        void _methodInvalidated(MethodID invalidatedMethod)
-        {
-            _vs.Log.Message("Method invalidation {0}", invalidatedMethod);
-
-            if (_currentResult == null)
-                return;
-
-            if (!_currentResult.Uses(invalidatedMethod))
-                return;
-
-            requireRedraw();
-        }
-
         private void refreshDrawing()
         {
             if (_guiManager.FlushCompositionPointUpdates())
-                //flushing will cause event that refresh drawing
+                //flushing will cause event that refresh drawing again - so 
+                //we dont need to refresh drawing immediately
                 return;
 
             var compositionPoint = _guiManager.SelectedCompositionPoint;
@@ -363,11 +327,93 @@ namespace MEFEditor.Plugin.Main
             }
         }
 
+        /// <summary>
+        /// Create drawings from given result
+        /// </summary>
+        private DiagramDefinition createDrawings(AnalyzingResult result)
+        {
+            var pipeline = _loader.Settings.Runtime.CreateDrawingPipeline(generalDrawer, result);
+
+            foreach (var instance in result.CreatedInstances)
+            {
+                var hasDrawer = Runtime.GetDrawer(instance) != null;
+                var hasComponentInfo = _loader.GetComponentInfo(instance.Info) != null;
+
+                var addToQueue = hasDrawer || hasComponentInfo;
+
+                if (addToQueue)
+                {
+                    pipeline.AddToDrawQueue(instance);
+                    if (hasComponentInfo)
+                        pipeline.ForceDisplay(instance);
+                }
+            }
+
+            var definition = pipeline.GetOutput();
+
+            definition.AddCommand(new CommandDefinition("Reset workspace", _guiManager.ResetWorkspace));
+
+            return definition;
+        }
+
+        /// <summary>
+        /// General drawing provider that is commonly used for all instances
+        /// Drawings of required instances are specialized by concrete drawers
+        /// </summary>
+        /// <param name="instance">Instance to be drawn</param>
+        private void generalDrawer(DrawedInstance instance)
+        {
+            var componentInfo = _loader.GetComponentInfo(instance.WrappedInstance.Info);
+            GeneralDefinitionProvider.Draw(instance, componentInfo);
+        }
+
+        #endregion
+
+        #region Transaction handling
+
+        /// <summary>
+        /// Attach refreshRedraw routine into root transaction
+        /// </summary>
+        private void requireRedraw()
+        {
+            var action = new TransactionAction(refreshDrawing, "RefreshDrawing", (t) => t.Name == "RefreshDrawing", this);
+            Transactions.AttachAfterAction(null, action);
+        }
+
+        #endregion
+
+        #region Event handlers
+
+        /// <summary>
+        /// Handler called for methods that has been invalidated
+        /// </summary>
+        /// <param name="invalidatedMethod">Identifier of invalidated method</param>
+        private void methodInvalidated(MethodID invalidatedMethod)
+        {
+            _vs.Log.Message("Method invalidation {0}", invalidatedMethod);
+
+            if (_currentResult == null)
+                return;
+
+            if (!_currentResult.Uses(invalidatedMethod))
+                return;
+
+            requireRedraw();
+        }
+
+        /// <summary>
+        /// Handler called before project is added. Transaction for project adding is started.
+        /// </summary>
+        /// <param name="project">Project that will be added</param>
         void _vs_ProjectAddingStarted(EnvDTE.Project project)
         {
             _projectAddTransaction = Transactions.StartNew("Loading project " + project.Name);
         }
 
+        /// <summary>
+        /// Handler called when project is added.
+        /// </summary>
+        /// <param name="project">Added project</param>
         private void _vs_ProjectAdded(EnvDTE.Project project)
         {
             var assembly = new VsProjectAssembly(project, _vs);
@@ -377,6 +423,10 @@ namespace MEFEditor.Plugin.Main
             _projectAddTransaction = null;
         }
 
+        /// <summary>
+        /// Handler called when project is removed
+        /// </summary>
+        /// <param name="project">Removed project</param>
         void _vs_ProjectRemoved(EnvDTE.Project project)
         {
             var tr = Transactions.StartNew("Removing project");
@@ -384,23 +434,31 @@ namespace MEFEditor.Plugin.Main
             tr.Commit();
         }
 
-
+        /// <summary>
+        /// Handler called before solution is opened. Here opening solution trancasction
+        /// is started.
+        /// </summary>
         void _vs_SolutionOpeningStarted()
         {
             _solutionOpenTransaction = Transactions.StartNew("Openining solution");
         }
 
+        /// <summary>
+        /// Handler called when solution is opened.
+        /// </summary>
         private void _vs_SolutionOpened()
         {
             _solutionOpenTransaction.Commit();
             _solutionOpenTransaction = null;
         }
 
+        /// <summary>
+        /// Handler called when solution is closed.
+        /// </summary>
         private void _vs_SolutionClosed()
         {
             //there is nothing to do, projects are unloaded by ProjectRemoved
         }
-
 
         #endregion
 
