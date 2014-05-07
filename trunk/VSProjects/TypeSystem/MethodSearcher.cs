@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Diagnostics;
+
 using Analyzing;
 
 namespace TypeSystem
@@ -26,7 +28,7 @@ namespace TypeSystem
         }
 
         /// <summary>
-        /// Extend name according to possible suffixes. Suffixes are searched in paralel
+        /// Extend name according to possible suffixes. Suffixes are searched in paralel        /// 
         /// </summary>
         /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel</param>
         public void ExtendName(params string[] possibleSuffixes)
@@ -36,7 +38,7 @@ namespace TypeSystem
             var partedSuffixes = new List<string[]>();
             foreach (var possibleSuffix in possibleSuffixes)
             {
-                var partedSuffix = possibleSuffix.Split(Naming.PathDelimiter);
+                var partedSuffix = splitSuffix(possibleSuffix);
                 partedSuffixes.Add(partedSuffix);
             }
 
@@ -70,7 +72,6 @@ namespace TypeSystem
         /// <param name="searchedMethod">Method that is searched at reached locations</param>
         public void Dispatch(string searchedMethod)
         {
-
             foreach (var iterator in _activeIteartors)
             {
                 var methods = iterator.FindMethods(searchedMethod);
@@ -90,6 +91,41 @@ namespace TypeSystem
         {
             ExtendName(instanceInfo.TypeName);
         }
+
+        private string[] splitSuffix(string suffix)
+        {
+            var parts = new List<string>();
+            var genericDepth = 0;
+            var lastPartEndIndex = 0;
+            for (int i = 0; i < suffix.Length; ++i)
+            {
+                var ch = suffix[i];
+                switch (ch)
+                {
+                    case '<':
+                        ++genericDepth;
+                        break;
+                    case '>':
+                        --genericDepth;
+                        break;
+                    case '.':
+                        if (genericDepth > 0)
+                            //inside namespace of generic argument
+                            break;
+
+                        var part = suffix.Substring(lastPartEndIndex, i - lastPartEndIndex);
+                        parts.Add(part);
+                        lastPartEndIndex = i + 1;
+                        break;
+                }
+            }
+
+            if (lastPartEndIndex + 1 < suffix.Length)
+                parts.Add(suffix.Substring(lastPartEndIndex, suffix.Length - lastPartEndIndex));
+
+            return parts.ToArray();
+        }
+
     }
 
     /// <summary>

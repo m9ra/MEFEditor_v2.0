@@ -23,9 +23,10 @@ namespace TypeSystem
         public MethodItem(GeneratorBase generator, TypeMethodInfo info)
         {
             Info = info;
+
+            _genericGenerator = generator as GenericMethodGenerator;
             if (info.HasGenericParameters)
-            {
-                _genericGenerator = generator as GenericMethodGenerator;
+            {                
                 if (_genericGenerator == null)
                     throw new NotSupportedException("Cannot create method item for generic method without generic generator");
             }

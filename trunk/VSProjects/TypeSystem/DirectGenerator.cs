@@ -8,7 +8,7 @@ using Analyzing;
 
 namespace TypeSystem
 {
-    public class DirectGenerator:GeneratorBase
+    public class DirectGenerator:GeneratorBase, GenericMethodGenerator
     {
         private readonly DirectMethod _method;
 
@@ -20,6 +20,11 @@ namespace TypeSystem
         protected override void generate(EmitterBase emitter)
         {
             emitter.DirectInvoke(_method);
+        }
+
+        public MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition)
+        {
+            return new MethodItem(this, methodDefinition.MakeGenericMethod(methodPath));
         }
     }
 }

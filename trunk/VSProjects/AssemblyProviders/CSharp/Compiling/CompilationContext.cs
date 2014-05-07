@@ -51,7 +51,8 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </summary>
         public BlockContext CurrentBlock
         {
-            get {
+            get
+            {
                 if (_blockContexts.Count == 0)
                     return null;
 
@@ -88,7 +89,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <param name="alias">Alias for registered type</param>
         private static void RegisterAlias<T>(string alias)
         {
-            var type=typeof(T);
+            var type = typeof(T);
             Aliases[type] = alias;
             AliasLookup[alias] = type.FullName;
         }
@@ -126,15 +127,17 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// <summary>
-        /// Map given type name according to aliases and generic arguments
+        /// Map given name according to aliases and generic arguments
         /// </summary>
         /// <param name="typeName">Name of type that should be mapped</param>
         /// <returns>Fullname of mapped type if mapping is available, or unchanged type name otherwise</returns>
-        internal string Map(string typeName)
+        internal string MapGeneric(string typeName)
         {
             string result;
 
-            if(AliasLookup.TryGetValue(typeName, out result)){
+            //whole name mapping
+            if (AliasLookup.TryGetValue(typeName, out result))
+            {
                 //mapped name belongs to alias
                 return result;
             }
@@ -145,8 +148,19 @@ namespace AssemblyProviders.CSharp.Compiling
                 return result;
             }
 
+            if (!typeName.Contains('<'))
+                //there are no generic parameters
+                return typeName;
+            
+            //TODO fullnames of all types has to be present in typename!
+
+            //TODO this is workaround subsitution
+            var mapped = TypeDescriptor.Create(typeName);
+            mapped = mapped.MakeGeneric(AliasLookup);
+            mapped.MakeGeneric(_genericMapping);
+            
             //there is no mapping
-            return typeName;
+            return mapped.TypeName;
         }
 
         /// <summary>

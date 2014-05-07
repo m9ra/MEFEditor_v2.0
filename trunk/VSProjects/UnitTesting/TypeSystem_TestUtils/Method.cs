@@ -17,7 +17,7 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly static ParameterTypeInfo IntParam1 = ParameterTypeInfo.Create("n", TypeDescriptor.Create<int>());
 
-        public readonly static ParameterTypeInfo StringICollectionParam1 = ParameterTypeInfo.Create("c", TypeDescriptor.Create<InstanceInfo>());
+        public readonly static ParameterTypeInfo StringICollectionParam1 = ParameterTypeInfo.Create("c", TypeDescriptor.Create<ICollection<string>>());
 
 
 

@@ -268,7 +268,7 @@ namespace TypeSystem.Core
             var result = Cache.GetCachedGenerator(method, tryStaticResolve);
 
             if (result == null)
-                throw new NotSupportedException("Invalid method: " + method);
+                throw new NotSupportedException("Cannot find method: " + method);
 
             return result;
         }
@@ -500,15 +500,22 @@ namespace TypeSystem.Core
         /// <returns>Assembly where method is defined</returns>
         internal TypeAssembly GetDefiningAssembly(MethodID callerId)
         {
-            foreach (var assemblyProvider in _assemblies.Providers)
+            var definingAssemblyProvider=Cache.GetCachedDefiningAssembly(callerId, (method) =>
             {
-                var generator = assemblyProvider.GetMethodGenerator(callerId);
-                if (generator != null)
-                    return _assemblies.GetTypeAssembly(assemblyProvider);
-            }
+                foreach (var assemblyProvider in _assemblies.Providers)
+                {
+                    var generator = assemblyProvider.GetMethodGenerator(method);                
+                }
 
-            return null;
+                return null;
+            });
+
+            if (definingAssemblyProvider == null)
+                return null;
+
+            return _assemblies.GetTypeAssembly(definingAssemblyProvider);
         }
+
         #endregion
 
         #endregion
@@ -763,7 +770,7 @@ namespace TypeSystem.Core
                 }
             }
 
-            throw new NotSupportedException("For type: " + typeName + " there is no inheritance chain");
+            throw new NotSupportedException("For type: " + typeName + " no inheritance chain has been found");
         }
 
         /// <summary>
@@ -788,14 +795,15 @@ namespace TypeSystem.Core
         /// Try to resolve static (generic/non-generic) method
         /// </summary>
         /// <param name="method">Method that is resolved</param>
+        /// <param name="definingAssembly">Assembly where method is defined</param>
         /// <returns>Resolved method if available, <c>null</c> otherwise</returns>
-        private GeneratorBase tryStaticResolve(MethodID method)
+        private GeneratorBase tryStaticResolve(MethodID method, out AssemblyProvider definingAssembly)
         {
-            var result = tryStaticExplicitResolve(method);
+            var result = tryStaticExplicitResolve(method,out definingAssembly);
 
             if (result == null)
             {
-                result = tryStaticGenericResolve(method);
+                result = tryStaticGenericResolve(method, out definingAssembly);
             }
 
             return result;
@@ -805,9 +813,11 @@ namespace TypeSystem.Core
         /// Resolve method generator with generic search on given method ID
         /// </summary>
         /// <param name="method">Resolved method</param>
+        /// <param name="definingAssembly">Assembly where method is defined</param>
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
-        private GeneratorBase tryStaticGenericResolve(MethodID method)
+        private GeneratorBase tryStaticGenericResolve(MethodID method, out AssemblyProvider definingAssembly)
         {
+            definingAssembly = null;
             var searchPath = Naming.GetMethodPath(method);
             if (!searchPath.HasGenericArguments)
                 //there is no need for generic resolving
@@ -819,6 +829,7 @@ namespace TypeSystem.Core
                 var generator = assembly.GetGenericMethodGenerator(method, searchPath);
                 if (generator != null)
                 {
+                    definingAssembly = assembly;
                     return generator;
                 }
             }
@@ -830,8 +841,9 @@ namespace TypeSystem.Core
         /// Resolve method generator with exact method ID (no generic method searches)
         /// </summary>
         /// <param name="method">Resolved method</param>
+        /// <param name="definingAssembly">Assembly where method is defined</param>
         /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
-        private GeneratorBase tryStaticExplicitResolve(MethodID method)
+        private GeneratorBase tryStaticExplicitResolve(MethodID method, out AssemblyProvider definingAssembly)
         {
             foreach (var assembly in _assemblies.Providers)
             {
@@ -839,9 +851,11 @@ namespace TypeSystem.Core
 
                 if (generator != null)
                 {
+                    definingAssembly = assembly;
                     return generator;
                 }
             }
+            definingAssembly = null;
             return null;
         }
 

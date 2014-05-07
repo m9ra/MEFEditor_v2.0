@@ -58,6 +58,11 @@ namespace UnitTesting.TypeSystem_TestUtils
         SimpleAssemblyFactory _factory = new SimpleAssemblyFactory();
 
         /// <summary>
+        /// Inheritance rules that are known within assembly
+        /// </summary>
+        Dictionary<TypeDescriptor, TypeDescriptor> _knownInheritance = new Dictionary<TypeDescriptor, TypeDescriptor>();
+
+        /// <summary>
         /// Method loader used by assembly
         /// </summary>
         public readonly AssemblyLoader Loader;
@@ -339,8 +344,15 @@ namespace UnitTesting.TypeSystem_TestUtils
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
             requireBuilded();
-            //for testing we dont need to handle inheritance chain
-            return null;
+
+            var descriptor = TypeDescriptor.Create(typePath.Name);
+
+            if (!_knownInheritance.ContainsKey(descriptor))
+                //we handle only contained types
+                return null;
+
+            //inheritance according to known definitions
+            return TypeServices.CreateChain(descriptor, new[] { TypeServices.GetChain(_knownInheritance[descriptor]) });
         }
 
         #endregion
@@ -400,10 +412,24 @@ namespace UnitTesting.TypeSystem_TestUtils
         private void addMethod(GeneratorBase method, TypeMethodInfo info, IEnumerable<InstanceInfo> implementedTypes)
         {
             var implemented = implementedTypes.ToArray();
+
+            if (!_knownInheritance.ContainsKey(info.DeclaringType))
+                _knownInheritance[info.DeclaringType] = TypeDescriptor.ObjectInfo;
+
             _methods.AddItem(new MethodItem(method, info), implemented);
         }
 
         #endregion
 
+
+        internal TestingAssembly DefineInheritance(string childType, Type parentType)
+        {
+            var childDescriptor = TypeDescriptor.Create(childType);
+            var parentDescriptor = TypeDescriptor.Create(parentType);
+
+            _knownInheritance[childDescriptor] = parentDescriptor;
+
+            return this;
+        }
     }
 }

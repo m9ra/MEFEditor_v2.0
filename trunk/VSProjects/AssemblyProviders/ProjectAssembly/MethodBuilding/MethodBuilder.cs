@@ -60,12 +60,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var builder = new MethodBuilder(needGetter, declaringAssembly);
 
-            builder.VisitElement(element);
+            builder.BaseVisitElement(element);
 
             var result = builder._result;
-
-            if (result == null)
-                throwNotSupportedElement(element);
 
             return result;
         }
@@ -371,7 +368,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var fullname = typeReference.AsFullName;
             if (fullname == "")
                 return TypeDescriptor.Void;
-
+        
             return ConvertToDescriptor(fullname);
         }
 
@@ -394,8 +391,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns></returns>
         internal static TypeDescriptor ConvertToDescriptor(string fullname)
         {
-            // throw new NotImplementedException("TODO check fullname form especialy for generics");
-            var descriptor = TypeDescriptor.Create(fullname);
+            //every fullname collected from assembly is compile time - thus all generic arguments are parameters
+            var convertedName = fullname.Replace("<", "<@").Replace(",", ",@");
+            var descriptor = TypeDescriptor.Create(convertedName);
 
             return descriptor;
         }
@@ -453,6 +451,21 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
         #region Visitor overrides
 
+        /// <summary>
+        /// Call <see cref="VisitElement"/> method on base class
+        /// </summary>
+        /// <param name="e">Visited element</param>
+        public void BaseVisitElement(CodeElement e)
+        {
+            base.VisitElement(e);
+        }
+
+        /// <inheritdoc />
+        public override void VisitElement(CodeElement e)
+        {
+            //This element wont generate method implementation
+        }
+
         /// <inheritdoc />
         public override void VisitFunction(CodeFunction2 e)
         {
@@ -474,7 +487,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <inheritdoc />
         private static void throwNotSupportedElement(CodeElement element)
         {
-            throw new NotSupportedException("Given element of type '" + element.GetType() + "' is not supported to be used as method definition");
+            throw new NotSupportedException("Given element of type '" + element.Kind + "' is not supported to be used as method definition");
         }
 
         #endregion
@@ -519,5 +532,10 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         }
 
         #endregion
+
+        internal static string ExtractGeneric(string lastPart)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

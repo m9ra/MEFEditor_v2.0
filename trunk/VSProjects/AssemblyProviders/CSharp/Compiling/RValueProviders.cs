@@ -450,6 +450,9 @@ namespace AssemblyProviders.CSharp.Compiling
         public ComputedValue(TypeDescriptor type, EmitComputation computation, CompilationContext context)
             : base(context)
         {
+            if (type == null)
+                throw new ArgumentNullException("type");
+
             _type = type;
             _computation = computation;
         }

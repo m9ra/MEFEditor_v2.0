@@ -411,7 +411,7 @@ namespace AssemblyProviders.ProjectAssembly
                 //create generic specialization 
                 var methodItem = buildGenericMethod(node, methodGenericPath, methodGenericPath.IsGetter);
 
-                if (methodItem.Info.MethodID == methodID)
+                if (methodItem.Info.MethodID.Equals(methodID))
                     //we have found matching generic specialization
                     return methodItem;
             }

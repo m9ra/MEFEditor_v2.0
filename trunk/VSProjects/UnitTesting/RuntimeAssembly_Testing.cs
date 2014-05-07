@@ -103,7 +103,7 @@ namespace UnitTesting
         public void RuntimeType_DirectWrappedGenericMethod()
         {
             AssemblyUtils.Run(@"                
-                   var cls=new GenericClass<System.Int32>();     
+                   var cls = new GenericClass<System.Int32>();     
                    var result = cls.GenericMethod(""Result"");
                ")
 

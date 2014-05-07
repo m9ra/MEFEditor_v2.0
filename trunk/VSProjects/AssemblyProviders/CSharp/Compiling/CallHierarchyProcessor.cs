@@ -122,6 +122,11 @@ namespace AssemblyProviders.CSharp.Compiling
                 if (overloads.Length > 1)
                     throw CSharpSyntax.ParsingException(currNode, "Cannot select setter overload for {0}", currNode.Value);
 
+                var overload = overloads[0];
+                if (!overload.IsStatic && _currentObject == null)
+                    //only static setter has been found
+                    return null;
+
                 return new SetterLValue(overloads[0], _currentObject, new RValueProvider[0], Context);
             }
 
@@ -234,6 +239,8 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <param name="dispatchSetter">Determine that only setter will be dispatche, otherwise only getter will be dispatched</param>
         private void dispatchByNode(MethodSearcher searcher, INodeAST node, bool dispatchSetter)
         {
+            var name = Context.MapGeneric(node.Value);
+
             switch (node.NodeType)
             {
                 case NodeTypes.hierarchy:
@@ -242,11 +249,11 @@ namespace AssemblyProviders.CSharp.Compiling
                         Debug.Assert(node.Arguments.Length == 0);
                         if (dispatchSetter)
                         {
-                            searcher.Dispatch(Naming.SetterPrefix + node.Value);
+                            searcher.Dispatch(Naming.SetterPrefix + name);
                         }
                         else
                         {
-                            searcher.Dispatch(Naming.GetterPrefix + node.Value);
+                            searcher.Dispatch(Naming.GetterPrefix + name);
                         }
                     }
                     else
@@ -264,7 +271,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
                 case NodeTypes.call:
                     //TODO this is not correct!!
-                    searcher.Dispatch(Context.Map(node.Value));
+                    searcher.Dispatch(name);
                     break;
 
                 default:

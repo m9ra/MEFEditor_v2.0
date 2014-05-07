@@ -493,7 +493,11 @@ namespace UnitTesting
 
             .AddWrappedGenericToRuntime(typeof(ICollection<>))
 
+            .DefineInheritance("Test",typeof(ICollection<string>))
+
             .AssertVariable("result").HasValue("AddedValue");
+
+            
 
             ;
         }

@@ -54,30 +54,6 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (pathParts.Length == 0)
                 throw new NotSupportedException("Cannot find CodeElement with given path '" + path + "'");
 
-            //resolve naming conventions of method paths
-
-            //TODO resolve indexe    
-            var isGetter = false;
-            var isSetter = false;
-
-            var lastPart = pathParts[pathParts.Length - 1];
-
-            if (pathParts.Length > 1 && (lastPart == Naming.CtorName || lastPart == Naming.ClassCtorName))
-            {
-                //naming convention for ctors force to use class name
-                lastPart = pathParts[pathParts.Length - 2];
-            }
-            else if (lastPart.StartsWith(Naming.GetterPrefix))
-            {
-                isGetter = true;
-                lastPart = lastPart.Substring(Naming.GetterPrefix.Length);
-            }
-            else if (lastPart.StartsWith(Naming.SetterPrefix))
-            {
-                isSetter = true;
-                lastPart = lastPart.Substring(Naming.SetterPrefix.Length);
-            }
-
             //search for all children with given path on parentElement
             var parentElement = findElement(pathParts, pathParts.Length - 1);
             if (parentElement == null)
@@ -89,11 +65,74 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             {
                 var name = child.Name();
 
-                if (name == lastPart)
+                //match element with last part
+                if (IsCorrespondingElement(child, pathParts, pathParts.Length - 1))
                 {
                     yield return child;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determine that given element corresponds with specified part of given path considering 
+        /// getter, setter, ctor and generic rules
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="part"></param>
+        /// <param name="isLastPart"></param>
+        /// <returns></returns>
+        internal static bool IsCorrespondingElement(CodeElement element, string[] pathParts, int partIndex)
+        {
+            //TODO maybe this method should be optimized - create matching object that can be reused
+
+            var expectedName = pathParts[partIndex];
+            var isLastPart = pathParts.Length == partIndex + 1;
+
+            //Last part has different matching rules
+            if (isLastPart)
+            {
+                if (pathParts.Length > 1 && (expectedName == Naming.CtorName || expectedName == Naming.ClassCtorName))
+                {
+                    //naming convention for ctors force to use class name
+                    expectedName = pathParts[pathParts.Length - 2];
+
+                    //ctors cannot be generic by itself - just their defining classes are generic
+                    //genericty of defining classes is tested at previous element in path
+                    var ctorGenericIndex = expectedName.IndexOf('<');
+                    if (ctorGenericIndex > 0)
+                        expectedName = expectedName.Substring(0, ctorGenericIndex);
+                }
+                else if (expectedName.StartsWith(Naming.GetterPrefix))
+                {
+                    expectedName = expectedName.Substring(Naming.GetterPrefix.Length);
+                }
+                else if (expectedName.StartsWith(Naming.SetterPrefix))
+                {
+                    expectedName = expectedName.Substring(Naming.SetterPrefix.Length);
+                }
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+
+            //resolve generic parts matching
+            var genericIndex = expectedName.IndexOf('<');
+            var hasToBeGeneric = genericIndex > 0;
+
+            //every generic element ends with closing brace
+            var isGeneric = element.FullName.EndsWith(">");
+
+            if (isGeneric != hasToBeGeneric)
+                //genericity doesnt match
+                return false;   
+
+            if (hasToBeGeneric)
+            {
+                expectedName=expectedName.Substring(0,genericIndex);
+            }
+
+            return expectedName == element.Name();
         }
 
         /// <summary>
@@ -111,6 +150,10 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             {
                 var isLast = pathLength == i + 1;
                 var currentPart = pathParts[i];
+
+                var genericIndex = currentPart.IndexOf('<');
+                if (genericIndex > 0)
+                    currentPart = currentPart.Substring(0, genericIndex);
 
                 if (isLast && i > 1 && (currentPart == Naming.ClassCtorName || currentPart == Naming.CtorName))
                 {

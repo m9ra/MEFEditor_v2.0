@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Text.RegularExpressions;
+
 using Analyzing;
 
 using TypeSystem.TypeParsing;
@@ -24,6 +26,12 @@ namespace TypeSystem
     public class TypeDescriptor : InstanceInfo
     {
         /// <summary>
+        /// Regex that is used for replacing type parameters in fullname
+        /// <remarks>Note that dots are included if available - this prevents replacing namespace parts</remarks>
+        /// </summary>
+        private static readonly Regex _typeReplacement = new Regex(@"[@a-zA-Z01-9.]+", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+
+        /// <summary>
         /// TODO: Correct generic typing for array
         /// </summary>
         public static readonly TypeDescriptor ArrayInfo = TypeDescriptor.Create("Array<@0,@1>");
@@ -37,6 +45,11 @@ namespace TypeSystem
         /// Type descriptor for object
         /// </summary>
         public static readonly TypeDescriptor ObjectInfo = TypeDescriptor.Create<object>();
+
+        /// <summary>
+        /// Type descriptor for instance
+        /// </summary>
+        public static readonly TypeDescriptor InstanceInfo = TypeDescriptor.Create<Instance>();
 
         /// <summary>
         /// Type descriptor for IEnumerable{}
@@ -158,13 +171,23 @@ namespace TypeSystem
         /// <returns>Translated path</returns>
         public static string TranslatePath(string path, Dictionary<string, string> substitutions)
         {
-            foreach (var pair in substitutions)
+            var replaced = _typeReplacement.Replace(path, (m) =>
             {
-                //TODO parse with regexp
-                path = path.Replace(pair.Key, pair.Value);
-            }
+                var matched = m.ToString();
 
-            return path;
+                string result;
+                if (
+                    substitutions.TryGetValue(matched, out result) ||
+                    substitutions.TryGetValue('@' + matched, out result)
+                    )
+                    //substitution is processed
+                    return result;
+
+                //no replacement
+                return matched;
+            });
+
+            return replaced;
         }
 
         /// <summary>

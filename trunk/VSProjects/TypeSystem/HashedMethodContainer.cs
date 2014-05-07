@@ -57,6 +57,12 @@ namespace TypeSystem
             }
         }
 
+        /// <summary>
+        /// Method that is used for searching method info according to path - method info is instantiated
+        /// according to generic
+        /// </summary>
+        /// <param name="path">Path of searched methods</param>
+        /// <returns>Found methods</returns>
         public IEnumerable<TypeMethodInfo> AccordingPath(PathInfo path)
         {
             var overloads = from overload in accordingPath(path) select overload.Info;

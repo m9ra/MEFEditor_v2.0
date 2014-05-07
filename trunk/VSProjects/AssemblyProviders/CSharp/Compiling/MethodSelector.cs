@@ -131,7 +131,8 @@ namespace AssemblyProviders.CSharp.Compiling
             {
                 paramToMatch = getCurrentParam();
                 if (paramToMatch != null && !paramToMatch.HasParam)
-                    //shift until we have HasParam parameter
+                    //shift while we have HasParam parameter
+                    //we can accept multiple arguments
                     ++_orderedArgIndex;
             }
             return paramToMatch;
@@ -147,11 +148,21 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private void bind(ParameterTypeInfo param, Argument arg)
         {
-            //TODO resolve score, inheritance,..
+            //TODO resolve score...
             if (param.Type.IsParameter)
             {
                 _genericBindings.Add(param, arg.Value.Type);
             }
+            else
+            {
+                if (!param.HasParam && !_context.Services.IsAssignable(param.Type, arg.Value.Type))
+                {
+                    //type mismatch
+                    IsValid = false;
+                    return;
+                }
+            }
+            
             _argBindings.Add(param, arg.Value);
         }
 

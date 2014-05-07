@@ -60,6 +60,9 @@ namespace AssemblyProviders.CSharp.Compiling
             _thisObjet = thisObject;
             //defensive copy
             _positionArguments = positionalArguments.ToArray();
+
+            if (!_setter.IsStatic && thisObject == null)
+                throw new ArgumentNullException("thisObject");
         }
 
         public override TypeDescriptor Type
@@ -170,7 +173,7 @@ namespace AssemblyProviders.CSharp.Compiling
         internal readonly string _storage;
 
         private readonly TypeDescriptor _type;
-        
+
         public TemporaryVariableValue(TypeDescriptor type, CompilationContext context, string storage = null)
             : base(context)
         {

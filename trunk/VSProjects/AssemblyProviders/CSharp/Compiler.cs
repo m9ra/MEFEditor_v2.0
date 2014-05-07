@@ -953,7 +953,10 @@ namespace AssemblyProviders.CSharp
         /// <returns>Representation fo value adding</returns>
         private RValueProvider resolveLValueAdd(LValueProvider target, RValueProvider source, int toAdd, bool prefixReturn, INodeAST operatorNode)
         {
-            var addRepresentation = new ComputedValue(target.Type, (e, storage) =>
+            //determine type because of possible implicit typing
+            var resultType = target.Type == null ? source.Type : target.Type;
+
+            var addRepresentation = new ComputedValue(resultType, (e, storage) =>
             {
                 var lTypeInfo = target.Type;
                 var rTypeInfo = TypeDescriptor.Create<int>();
@@ -1054,7 +1057,10 @@ namespace AssemblyProviders.CSharp
                     var lValue = getLValue(lNode);
                     var rValue = getRValue(rNode);
 
-                    var assignComputation = new ComputedValue(lValue.Type, (e, storage) =>
+                    //determine type because of possible implicit typing of variables
+                    var type = lValue.Type == null ? rValue.Type : lValue.Type;
+
+                    var assignComputation = new ComputedValue(type, (e, storage) =>
                     {
                         rValue.GenerateAssignInto(lValue);
 
@@ -1294,7 +1300,7 @@ namespace AssemblyProviders.CSharp
                 ctorCall = ctorCall.Child;
             }
 
-            var typeName = Context.Map(name.ToString());
+            var typeName = Context.MapGeneric(name.ToString());
             if (callNode.NodeType != NodeTypes.call && callNode.Indexer != null)
             {
                 //array definition

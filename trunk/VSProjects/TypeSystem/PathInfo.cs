@@ -168,5 +168,16 @@ namespace TypeSystem
             return result.ToString();
         }
 
+        public static PathInfo Append(PathInfo path, string suffix)
+        {
+            if (path == null)
+            {
+                return new PathInfo(suffix);
+            }
+            else
+            {
+                return new PathInfo(path, suffix);
+            }
+        }
     }
 }

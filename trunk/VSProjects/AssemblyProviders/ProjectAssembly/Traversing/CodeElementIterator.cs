@@ -35,16 +35,23 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// </summary>
         private readonly IEnumerable<CodeElement> _currentNodes;
 
-        private CodeElementIterator(IEnumerable<CodeElement> currentNodes, VsProjectAssembly assembly)
+        /// <summary>
+        /// Here is stored current path of iterator - it is used for generic building
+        /// </summary>
+        private readonly PathInfo _currentPath;
+
+        private CodeElementIterator(IEnumerable<CodeElement> currentNodes, VsProjectAssembly assembly, PathInfo currentPath)
         {
             _currentNodes = currentNodes;
             _assembly = assembly;
+            _currentPath = currentPath;
         }
 
         internal CodeElementIterator(VsProjectAssembly assembly)
         {
             _assembly = assembly;
             _currentNodes = null;
+            _currentPath = null;
         }
 
         /// <inheritdoc />
@@ -53,12 +60,17 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (suffix == "")
                 return this;
 
+            var shortSuffix = suffix;
+            var genericStart = shortSuffix.IndexOf('<');
+            if (genericStart > 0)
+                shortSuffix = shortSuffix.Substring(0, genericStart);
+
             var selectedNodes = new List<CodeElement>();
             foreach (var actualNode in getActualNodes())
             {
                 var name = actualNode.Name();
                 //TODO is name in correct form for generics?
-                if (name == suffix)
+                if (name == shortSuffix)
                 {
                     selectedNodes.Add(actualNode);
                 }
@@ -66,7 +78,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (selectedNodes.Count == 0)
                 return null;
 
-            return new CodeElementIterator(selectedNodes, _assembly);
+            return new CodeElementIterator(selectedNodes, _assembly, PathInfo.Append(_currentPath, suffix));
         }
 
         /// <inheritdoc />
@@ -110,35 +122,16 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             var methods = new List<MethodItem>();
             var isGetter = searchedName.StartsWith(Naming.GetterPrefix);
 
-
+            var path = PathInfo.Append(_currentPath, searchedName);
             foreach (CodeElement child in getActualNodes())
             {
-                var methodNode = child as CodeFunction;
-                if (methodNode == null)
-                    continue;
-
-                if (searchedName == Naming.ClassCtorName || searchedName == Naming.CtorName)
-                {
-                    var kind = methodNode.FunctionKind;
-                    if (kind != vsCMFunction.vsCMFunctionConstructor)
-                    {
-                        //has to be constructor
-                        continue;
-                    }
-                }
-                else
-                {
-                    //TODO form of generics
-                    //name has to match
-                    if (methodNode.Name != searchedName)
-                        //name doesnt match
-                        continue;
-                }
-
                 var method = MethodBuilder.Build(child, isGetter, _assembly);
-                if (method.Info.MethodName != searchedName)
+                if (method == null || method.Info.MethodName != searchedName)
                     //not everything could be filtered by CodeFunction testing
                     continue;
+
+                if (_currentPath.HasGenericArguments)
+                    method = method.Make(path);
 
                 methods.Add(method);
             }

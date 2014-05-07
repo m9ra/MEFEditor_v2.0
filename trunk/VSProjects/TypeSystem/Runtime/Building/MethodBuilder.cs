@@ -156,6 +156,11 @@ namespace TypeSystem.Runtime.Building
                 var paramType = Translator.GetTypeDescriptorFromBase(method, (m) => m.GetParameters()[i].ParameterType);
 
                 var param = parameters[i];
+
+                //translate default parameters
+                if (TypeDescriptor.InstanceInfo.Equals(paramType))
+                    paramType = TypeDescriptor.ObjectInfo;
+
                 var paramInfo = ParameterTypeInfo.From(param, paramType);
                 paramsInfo.Add(paramInfo);
             }
