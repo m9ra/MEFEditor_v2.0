@@ -46,6 +46,11 @@ namespace AssemblyProviders.CSharp
         public event SourceChangeCommitedEvent SourceChangeCommited;
 
         /// <summary>
+        /// Event fired whenever navigation is requested
+        /// </summary>
+        public event NavigationRequestEvent NavigationRequested;
+
+        /// <summary>
         /// Compilation information collected by compiler.
         /// </summary>
         public readonly CompilationInfo CompilationInfo = new CompilationInfo();
@@ -68,6 +73,16 @@ namespace AssemblyProviders.CSharp
         }
 
         #region Public API exposed by Source
+
+        /// <summary>
+        /// Navigate user at given offset
+        /// </summary>
+        /// <param name="offset"></param>
+        public void Navigate(int offset)
+        {
+            if (NavigationRequested != null)
+                NavigationRequested(offset);
+        }
 
         /// <summary>
         /// Get code according to given view
@@ -559,7 +574,7 @@ namespace AssemblyProviders.CSharp
             _namespaces.Add("");
 
             //each part creates implicit namespace
-            var parts = type.TypeName.Split(Naming.PathDelimiter);
+            var parts = Naming.SplitGenericPath(type.TypeName);
 
             var buffer = new StringBuilder();
             foreach (var part in parts)
@@ -576,6 +591,5 @@ namespace AssemblyProviders.CSharp
             }
         }
         #endregion
-
     }
 }

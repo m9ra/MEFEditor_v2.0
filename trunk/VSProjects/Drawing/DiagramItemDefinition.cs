@@ -16,6 +16,8 @@ namespace Drawing
 
         private readonly List<EditDefinition> _edits = new List<EditDefinition>();
 
+        private readonly List<CommandDefinition> _commands = new List<CommandDefinition>();
+
         private readonly MultiDictionary<string, EditDefinition> _attachedEdits = new MultiDictionary<string, EditDefinition>();
 
         private HashSet<SlotDefinition> _slots = new HashSet<SlotDefinition>();
@@ -43,6 +45,8 @@ namespace Drawing
         public IEnumerable<SlotDefinition> Slots { get { return _slots; } }
 
         public IEnumerable<EditDefinition> Edits { get { return _edits; } }
+
+        public IEnumerable<CommandDefinition> Commands { get { return _commands; } }
 
         public Point GlobalPosition { get; set; }
 
@@ -83,6 +87,11 @@ namespace Drawing
             _edits.Add(editDefinition);
         }
 
+        public void AddCommand(CommandDefinition command)
+        {
+            _commands.Add(command);
+        }
+
         public void AttachEdit(string attachingID, EditDefinition editDefinition)
         {
             _attachedEdits.Add(attachingID, editDefinition);
@@ -109,6 +118,5 @@ namespace Drawing
 
             return property.Value;
         }
-
     }
 }

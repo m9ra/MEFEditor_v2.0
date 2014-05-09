@@ -149,7 +149,7 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Info of method that is compiled
         /// </summary>
-        private TypeMethodInfo MethodInfo { get { return _activation.Method; } }
+        internal TypeMethodInfo MethodInfo { get { return _activation.Method; } }
 
         /// <summary>
         /// Namespaces that are available for compiled method
@@ -178,6 +178,9 @@ namespace AssemblyProviders.CSharp
             Context = new CompilationContext(emitter, services);
 
             _source = new Source(activation.SourceCode, activation.Method);
+            _source.SourceChangeCommited += activation.OnCommited;
+            _source.NavigationRequested += activation.OnNavigated;
+
             _source.AddExternalNamespaces(activation.Namespaces);
 
             _method = _parser.Parse(_source);
@@ -739,7 +742,7 @@ namespace AssemblyProviders.CSharp
                     result = resolvePostfixOperator(rValue);
                     break;
                 default:
-                    throw new NotImplementedException();
+                    throw parsingException(rValue, "Unexpected {0} token", rValue.NodeType);
             }
 
             CompilationInfo.RegisterNodeType(rValue, result.Type);
@@ -769,15 +772,16 @@ namespace AssemblyProviders.CSharp
 
                 if (!tryGetSetter(callNode, out result, baseObject))
                 {
-                    throw new NotSupportedException("Unknown object call hierarchy construction on " + callNode);
+                    throw parsingException(callNode, "Unknown setter on object hierarchy construction", callNode);
                 }
             }
             else if (!hasBaseObject)
             {
                 //there can only be unbased call hierarchy (note: static method with namespaces, etc. is whole call hierarchy) 
+                //Note that implicit this for setters is handled within CallHierarchyProcessor
                 if (!tryGetSetter(hierarchy, out result))
                 {
-                    throw new NotSupportedException("Unknown hierarchy construction on " + hierarchy);
+                    throw parsingException(hierarchy, "Unknown hierarchy construction", hierarchy);
                 }
             }
 
@@ -813,6 +817,7 @@ namespace AssemblyProviders.CSharp
             else if (!hasBaseObject)
             {
                 //there can only be unbased call hierarchy (note: static method with namespaces, etc. is whole call hierarchy) 
+                //Note that implicit this for getter is resolved in CreateCallActivation
                 if (!tryGetCall(hierarchy, out result))
                 {
                     throw parsingException(hierarchy, "Unknown hierarchy construction", hierarchy);
@@ -1334,7 +1339,7 @@ namespace AssemblyProviders.CSharp
 
             //TODO selection can be done more accurate
             var objectType = searcher.FoundResult.First().DeclaringType;
-            var nObject = new NewObjectValue(objectType, Context);
+            var nObject = new NewObjectValue(objectType, newOperand.Parent, Context);
 
             var activation = CreateCallActivation(nObject, callNode, searcher.FoundResult);
             if (activation == null)
@@ -1371,13 +1376,27 @@ namespace AssemblyProviders.CSharp
                 {
                     //if there is no explicit calledObject, and method call is not static
                     //implicit this object has to be used
-                    calledObject = new TemporaryRVariableValue(Context, CSharpSyntax.ThisVariable);
+                    calledObject = CreateImplicitThis(callNode);
                 }
 
                 callActivation.CalledObject = calledObject;
             }
 
             return callActivation;
+        }
+
+
+        /// <summary>
+        /// Create value provider with implicit this variable
+        /// </summary>
+        /// <param name="contextNode">Context node that enforces implicit this creation</param>
+        /// <returns>Created provider</returns>
+        internal RValueProvider CreateImplicitThis(INodeAST contextNode)
+        {
+            if (!MethodInfo.HasThis)
+                throw parsingException(contextNode, "Implicit this is not available in static method");
+
+            return new TemporaryRVariableValue(Context, CSharpSyntax.ThisVariable);
         }
 
         /// <summary>
@@ -1527,5 +1546,6 @@ namespace AssemblyProviders.CSharp
         }
 
         #endregion
+
     }
 }

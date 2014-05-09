@@ -98,7 +98,7 @@ namespace MEFAnalyzers.Dialogs
         /// <returns>Created name</returns>
         private static string getDefaultName(RuntimeTypeDefinition definition, CallContext context)
         {
-            var basename = definition.TypeInfo.TypeName.Split('.').Last();
+            var basename = Naming.SplitGenericPath(definition.TypeInfo.TypeName).Last();
             basename = char.ToLowerInvariant(basename[0]) + basename.Substring(1);
 
             var name = basename;

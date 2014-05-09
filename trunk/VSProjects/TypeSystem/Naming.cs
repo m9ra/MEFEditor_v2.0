@@ -130,6 +130,29 @@ namespace TypeSystem
             return Method(declaringType, methodName, needsDynamicResolution, parameters);
         }
 
+        /// <summary>
+        /// Determine that given ID belongs to parameter less constructor
+        /// </summary>
+        /// <param name="methodID">Tested method</param>
+        /// <returns><c>true</c> if given ID belongs to parameter less constructor, <c>false</c> otherwise</returns>
+        public static bool IsParamLessCtor(MethodID methodID)
+        {
+            var isCtor = methodID.MethodString.Contains(Naming.CtorName);
+            var paramCount = GetMethodParamCount(methodID);
+
+            return isCtor && paramCount == 0;
+        }
+
+        /// <summary>
+        /// Determine that given ID belongs to class constructor
+        /// </summary>
+        /// <param name="methodID">Tested method</param>
+        /// <returns><c>true</c> if given ID belongs to parameter class constructor, <c>false</c> otherwise</returns>
+        public static bool IsClassCtor(MethodID methodID)
+        {
+            return methodID.MethodString.Contains(Naming.ClassCtorName);
+        }
+
         #region Method name operations
 
         /// <summary>
@@ -163,6 +186,20 @@ namespace TypeSystem
                 return null;
 
             return methodPath.Substring(nameStart + 1);
+        }
+
+        /// <summary>
+        /// Get count of parameters of method from specified ID
+        /// </summary>
+        /// <param name="method">Method which parameter count is required</param>
+        /// <returns>Number of parameters of given method</returns>
+        public static int GetMethodParamCount(MethodID method)
+        {
+            string path, paramDescription;
+            GetParts(method, out path, out paramDescription);
+
+            //TODO there will be contained detailed info
+            return int.Parse(paramDescription);
         }
 
         /// <summary>
@@ -233,6 +270,45 @@ namespace TypeSystem
             GetParts(method, out path, out description);
 
             return GetDeclaringType(path);
+        }
+
+        /// <summary>
+        /// Split path parts with considerig possible generic arguments.
+        /// </summary>
+        /// <param name="path">Name to be split</param>
+        /// <returns>Name that is split</returns>
+        public static string[] SplitGenericPath(string path)
+        {
+            var parts = new List<string>();
+            var genericDepth = 0;
+            var lastPartEndIndex = 0;
+            for (int i = 0; i < path.Length; ++i)
+            {
+                var ch = path[i];
+                switch (ch)
+                {
+                    case '<':
+                        ++genericDepth;
+                        break;
+                    case '>':
+                        --genericDepth;
+                        break;
+                    case Naming.PathDelimiter:
+                        if (genericDepth > 0)
+                            //inside namespace of generic argument
+                            break;
+
+                        var part = path.Substring(lastPartEndIndex, i - lastPartEndIndex);
+                        parts.Add(part);
+                        lastPartEndIndex = i + 1;
+                        break;
+                }
+            }
+
+            if (lastPartEndIndex + 1 < path.Length)
+                parts.Add(path.Substring(lastPartEndIndex, path.Length - lastPartEndIndex));
+
+            return parts.ToArray();
         }
 
         /// <summary>
@@ -312,5 +388,6 @@ namespace TypeSystem
         }
 
         #endregion
+
     }
 }

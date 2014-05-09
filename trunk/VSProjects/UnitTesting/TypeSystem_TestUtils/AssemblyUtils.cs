@@ -61,7 +61,7 @@ namespace UnitTesting.TypeSystem_TestUtils
                 if (!methodPath.StartsWith(type.FullName))
                     continue;
 
-                var name = methodPath.Split('.').Last();
+                var name = Naming.SplitGenericPath(methodPath).Last();
 
                 foreach (var method in type.Methods)
                 {

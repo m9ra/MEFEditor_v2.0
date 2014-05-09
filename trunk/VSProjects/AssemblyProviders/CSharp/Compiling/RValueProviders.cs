@@ -84,12 +84,15 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         readonly TypeDescriptor _objectType;
 
+        readonly INodeAST _newOperator;
+
         RValueProvider _ctorCall;
         string _storage;
 
-        public NewObjectValue(TypeDescriptor objectType, CompilationContext context) :
+        public NewObjectValue(TypeDescriptor objectType, INodeAST newOperator, CompilationContext context) :
             base(context)
         {
+            _newOperator = newOperator;
             _objectType = objectType;
         }
 
@@ -106,7 +109,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 _storage = storageProvider.Storage;
             }
 
-            lValue.AssignNewObject(_objectType);
+            lValue.AssignNewObject(_objectType, _newOperator);
 
             _ctorCall.Generate();
         }

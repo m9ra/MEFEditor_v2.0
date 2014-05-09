@@ -31,7 +31,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         private bool _needGetter;
 
         /// <summary>
-        /// Assembly where builded method has been declared
+        /// Assembly where built method has been declared
         /// </summary>
         private readonly VsProjectAssembly _declaringAssembly;
 
@@ -55,7 +55,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <param name="element">Method definition element</param>
         /// <param name="declaringAssembly">Assembly where builded method has been declared</param>
         /// <param name="needGetter">Determine that getter is needed from given element</param>
-        /// <returns>Builded method</returns>
+        /// <returns>Built method</returns>
         internal static MethodItem Build(CodeElement element, bool needGetter, VsProjectAssembly declaringAssembly)
         {
             var builder = new MethodBuilder(needGetter, declaringAssembly);
@@ -74,7 +74,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>
         /// <param name="element">Method definition element</param>
         /// <param name="declaringAssembly">Assembly in which scope method is builded</param>
-        /// <returns>Builded method</returns>
+        /// <returns>Built method</returns>
         internal static MethodItem BuildFrom(CodeFunction element, VsProjectAssembly declaringAssembly)
         {
             var methodInfo = CreateMethodInfo(element);
@@ -88,7 +88,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>
         /// <param name="element">Method definition element</param>
         /// <param name="declaringAssembly">Assembly in which scope method is builded</param>
-        /// <returns>Builded method</returns>
+        /// <returns>Built method</returns>
         private static MethodItem BuildFrom(CodeFunction element, TypeMethodInfo methodInfo, VsProjectAssembly declaringAssembly)
         {
             var sourceCode = GetSourceCode(element);
@@ -97,7 +97,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var fullname = element.FullName;
             var genericPath = new PathInfo(fullname);
             var activation = new ParsingActivation(sourceCode, methodInfo, genericPath.GenericArgs, namespaces);
-            registerCommits(activation, element);
+            registerActivation(activation, element);
 
             var generator = new SourceMethodGenerator(activation, declaringAssembly.ParsingProvider);
 
@@ -110,7 +110,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>
         /// <param name="element">Method definition element</param>
         /// <param name="buildGetter">Determine that getter or setter should be builded</param>
-        /// <returns>Builded method</returns>
+        /// <returns>Built method</returns>
         internal static MethodItem BuildFrom(CodeVariable element, bool buildGetter)
         {
             var methodInfo = CreateMethodInfo(element, buildGetter);
@@ -124,7 +124,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>
         /// <param name="element">Method definition element</param>
         /// <param name="buildGetter">Determine that getter or setter should be builded</param>
-        /// <returns>Builded method</returns>
+        /// <returns>Built method</returns>
         internal static MethodItem BuildFrom(CodeProperty element, bool buildGetter, VsProjectAssembly declaringAssembly)
         {
             var isAutoProperty = element.IsAutoProperty();
@@ -136,6 +136,37 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var method = buildGetter ? element.Getter : element.Setter;
 
             return BuildFrom(method, methodInfo, declaringAssembly);
+        }
+
+        /// <summary>
+        /// Build implicit ctor for given declaring class. 
+        /// </summary>   
+        /// <param name="declaringClass">Class that declare implicit ctor</param>
+        /// <returns>Built method</returns>
+        internal static MethodItem BuildImplicitCtor(CodeClass declaringClass)
+        {
+            var declaringType = CreateDescriptor(declaringClass);
+            var methodInfo = new TypeMethodInfo(declaringType,
+                Naming.CtorName, TypeDescriptor.Void, ParameterTypeInfo.NoParams,
+                false, TypeDescriptor.NoDescriptors);
+
+
+            return BuildImplicitCtor(declaringClass, methodInfo);
+        }
+
+        /// <summary>
+        /// Build implicit ctor for given declaring class by using specified <see cref="TypeMethodInfo"/>. 
+        /// </summary>   
+        /// <param name="declaringClass">Class that declare implicit ctor</param>
+        /// <returns>Built method</returns>
+        private static MethodItem BuildImplicitCtor(CodeClass declaringClass, TypeMethodInfo methodInfo)
+        {
+            var ctorGenerator = new DirectGenerator((c) =>
+            {
+                //TODO ctor initialization
+            });
+
+            return new MethodItem(ctorGenerator, methodInfo);
         }
 
         #endregion
@@ -368,7 +399,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var fullname = typeReference.AsFullName;
             if (fullname == "")
                 return TypeDescriptor.Void;
-        
+
             return ConvertToDescriptor(fullname);
         }
 
@@ -495,13 +526,14 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         #region Changes writing services
 
         /// <summary>
-        /// Register commits on activation for writing purposes
+        /// Register handlers on activation for purposes of binding with source
         /// </summary>
-        /// <param name="activation">Activation which commits will be registered</param>
-        /// <param name="element">Element where commited source will be written</param>
-        private static void registerCommits(ParsingActivation activation, CodeFunction element)
+        /// <param name="activation">Activation which bindings will be registered</param>
+        /// <param name="element">Element where bindings will be applied</param>
+        private static void registerActivation(ParsingActivation activation, CodeFunction element)
         {
             activation.SourceChangeCommited += (source) => write(element, source);
+            activation.NavigationRequested += (offset) => navigate(element, offset);
         }
 
         /// <summary>
@@ -519,6 +551,46 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             source = source.Substring(1); //remove first {
 
             editPoint.ReplaceText(element.EndPoint, source, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+        }
+
+        /// <summary>
+        /// Process navigating at offset on given element
+        /// </summary>
+        /// <param name="element">Element which is base for offset navigation</param>
+        /// <param name="navigationOffset">Offset where user will be navigated to</param>
+        private static void navigate(CodeFunction element, int navigationOffset)
+        {
+            element.ProjectItem.Open();
+            var doc = element.ProjectItem.Document;
+            if (doc == null)
+                //document is unavailable
+                return;
+            //activate document to get it visible to user.
+            doc.Activate();
+
+            //part of CodeElement where navigation offset start.
+            vsCMPart part;
+            if (element.Kind == vsCMElement.vsCMElementFunction)
+                //functions are navigated into body
+                part = vsCMPart.vsCMPartBody;
+            else
+                //else navigate from element begining
+                part = vsCMPart.vsCMPartWholeWithAttributes;
+
+            TextPoint start;
+            try
+            {
+                start = element.GetStartPoint(part);
+            }
+            catch (Exception)
+            {
+                //cannot navigate
+                return;
+            }
+
+            var sel = doc.Selection as TextSelection;
+            //Shift cursor at navigation position.
+            sel.MoveToAbsoluteOffset(start.AbsoluteCharOffset + navigationOffset - 1);
         }
 
         /// <summary>

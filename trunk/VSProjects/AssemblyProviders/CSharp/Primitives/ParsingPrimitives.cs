@@ -32,6 +32,11 @@ namespace AssemblyProviders.CSharp.Primitives
         {
             return Source.OriginalCode.Substring(Offset, position.Offset - Offset);
         }
+
+        public void Navigate()
+        {
+            Source.Navigate(Offset);
+        }
     }
 
     /// <summary>

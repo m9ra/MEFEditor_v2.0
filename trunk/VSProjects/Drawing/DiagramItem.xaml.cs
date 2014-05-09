@@ -191,6 +191,11 @@ namespace Drawing
                 addMenuEdit(menu, edit);
             }
 
+            foreach (var command in Definition.Commands)
+            {
+                addMenuCommand(menu, command);
+            }
+
             if (ParentItem != null)
             {
                 //add attached edits
@@ -226,6 +231,14 @@ namespace Drawing
                     item.Click += (e, s) => edit.Commit(DiagramContext.Diagram.InitialView);
                     break;
             }
+        }
+
+        private void addMenuCommand(ContextMenu menu, CommandDefinition command) {
+            var item = new MenuItem();
+            item.Header = command.Name;
+            menu.Items.Add(item);
+
+            item.Click += (e, s) => command.Command();
         }
 
         public override string ToString()

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Analyzing.Execution.Instructions
 {
     class AssignNewObject : AssignBase
-    {        
+    {
         private readonly VariableName _targetVariable;
         private readonly InstanceInfo _objectInfo;
 
@@ -18,8 +18,12 @@ namespace Analyzing.Execution.Instructions
         }
 
         public override void Execute(AnalyzingContext context)
-        {            
-            context.SetValue(_targetVariable, context.Machine.CreateInstance(_objectInfo));
+        {
+            var newInstance = context.Machine.CreateInstance(_objectInfo);
+            if (RemoveProvider != null)
+                newInstance.HintCreationNavigation(RemoveProvider.GetNavigation());
+
+            context.SetValue(_targetVariable, newInstance);
         }
 
         public override string ToString()

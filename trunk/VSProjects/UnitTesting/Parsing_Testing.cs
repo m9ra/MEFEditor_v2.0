@@ -291,6 +291,37 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Compile_ImplicitThis_Setter()
+        {
+            AssemblyUtils.Run(@"
+                var obj=new TestObj();
+                var result=obj.Property;
+            ")
+
+            .AddMethod("TestObj.#ctor", @"
+                Property=""ValueToSet"";                
+            ", Method.Ctor_NoParam)
+
+            .AddMethod("TestObj.set_Property", (c) =>
+            {
+                var arg = c.CurrentArguments[1];
+                var thisObj = c.CurrentArguments[0];
+
+                c.SetField(thisObj, "_property", arg);
+
+            }, Method.Ctor_StringParam)
+
+            .AddMethod("TestObj.get_Property", (c) =>
+            {
+                var thisObj = c.CurrentArguments[0];
+                var data = c.GetField(thisObj, "_property") as Instance;
+                c.Return(data);
+            }, Method.String_NoParam)
+
+            .AssertVariable("result").HasValue("ValueToSet");
+        }
+
+        [TestMethod]
         public void Compile_Fibonacci()
         {
             //fib(24) Time elapsed: 16s (without caching)
@@ -332,7 +363,7 @@ namespace UnitTesting
                         break;
                 }                
             ")
-             
+
              .AssertVariable("result").HasValue(55);
         }
 
@@ -493,11 +524,11 @@ namespace UnitTesting
 
             .AddWrappedGenericToRuntime(typeof(ICollection<>))
 
-            .DefineInheritance("Test",typeof(ICollection<string>))
+            .DefineInheritance("Test", typeof(ICollection<string>))
 
             .AssertVariable("result").HasValue("AddedValue");
 
-            
+
 
             ;
         }

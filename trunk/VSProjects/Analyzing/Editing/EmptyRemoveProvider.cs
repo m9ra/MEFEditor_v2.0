@@ -14,5 +14,10 @@ namespace Analyzing.Editing
         {
             return new EmptyTransformation();
         }
+
+        public override NavigationAction GetNavigation()
+        {
+            return null;
+        }
     }
 }

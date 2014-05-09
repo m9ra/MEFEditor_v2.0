@@ -35,6 +35,11 @@ namespace Analyzing
         public string ID { get; private set; }
 
         /// <summary>
+        /// Navigation action at creation instruction if available, <c>null</c> otherwise
+        /// </summary>
+        public NavigationAction CreationNavigation { get; private set; }
+
+        /// <summary>
         /// Determine that instnace is dirty. It means that its state may not be correctly analyzed.
         /// This is usually caused by unknown operation processing
         /// </summary>
@@ -110,6 +115,14 @@ namespace Analyzing
             ID = idHint;
 
             context.Machine.ReportIDChange(oldID);
+        }
+
+        internal void HintCreationNavigation(NavigationAction navigationAction)
+        {
+            if (CreationNavigation != null)
+                return;
+
+            CreationNavigation = navigationAction;
         }
     }
 }

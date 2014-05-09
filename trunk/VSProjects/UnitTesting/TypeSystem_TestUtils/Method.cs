@@ -50,8 +50,9 @@ namespace UnitTesting.TypeSystem_TestUtils
         public readonly static MethodDescription StringICollection_StringICollectionParam = MethodDescription.CreateInstance<ICollection<string>>(StringICollectionParam1);
 
 
+        public readonly static string EntryClass = "Test";
 
-        public readonly static string EntryMethodPath = "Test.EntryMethod";
+        public readonly static string EntryMethodPath = EntryClass + ".EntryMethod";
 
         public readonly static MethodDescription Entry_NoParam = Void_NoParam;
 

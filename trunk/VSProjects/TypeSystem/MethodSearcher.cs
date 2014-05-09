@@ -38,7 +38,7 @@ namespace TypeSystem
             var partedSuffixes = new List<string[]>();
             foreach (var possibleSuffix in possibleSuffixes)
             {
-                var partedSuffix = splitSuffix(possibleSuffix);
+                var partedSuffix = Naming.SplitGenericPath(possibleSuffix);
                 partedSuffixes.Add(partedSuffix);
             }
 
@@ -77,8 +77,6 @@ namespace TypeSystem
                 var methods = iterator.FindMethods(searchedMethod);
                 if (methods != null)
                     _foundMethods.AddRange(methods);
-
-
             }
         }
 
@@ -90,40 +88,6 @@ namespace TypeSystem
         public void SetCalledObject(InstanceInfo instanceInfo)
         {
             ExtendName(instanceInfo.TypeName);
-        }
-
-        private string[] splitSuffix(string suffix)
-        {
-            var parts = new List<string>();
-            var genericDepth = 0;
-            var lastPartEndIndex = 0;
-            for (int i = 0; i < suffix.Length; ++i)
-            {
-                var ch = suffix[i];
-                switch (ch)
-                {
-                    case '<':
-                        ++genericDepth;
-                        break;
-                    case '>':
-                        --genericDepth;
-                        break;
-                    case '.':
-                        if (genericDepth > 0)
-                            //inside namespace of generic argument
-                            break;
-
-                        var part = suffix.Substring(lastPartEndIndex, i - lastPartEndIndex);
-                        parts.Add(part);
-                        lastPartEndIndex = i + 1;
-                        break;
-                }
-            }
-
-            if (lastPartEndIndex + 1 < suffix.Length)
-                parts.Add(suffix.Substring(lastPartEndIndex, suffix.Length - lastPartEndIndex));
-
-            return parts.ToArray();
         }
 
     }

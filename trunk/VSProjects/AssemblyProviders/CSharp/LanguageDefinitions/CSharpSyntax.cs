@@ -228,7 +228,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <param name="node">Navigation target</param>
         private static void navigate(INodeAST node)
         {
-            throw new NotImplementedException("Navigation support");
+            node.StartingToken.Position.Navigate();
         }
 
         /// <summary>

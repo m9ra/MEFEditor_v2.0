@@ -27,7 +27,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public abstract TypeDescriptor Type { get; }
 
-        public abstract void AssignNewObject(TypeDescriptor newObjectType);
+        public abstract void AssignNewObject(TypeDescriptor newObjectType, INodeAST newObjectNode);
 
         public abstract void AssignLiteral(object literal, INodeAST literalNode);
 
@@ -70,7 +70,7 @@ namespace AssemblyProviders.CSharp.Compiling
             get { return TypeDescriptor.Void; }
         }
 
-        public override void AssignNewObject(TypeDescriptor newObjectType)
+        public override void AssignNewObject(TypeDescriptor newObjectType, INodeAST newObjectNode)
         {
             throw new NotImplementedException();
         }
@@ -145,9 +145,10 @@ namespace AssemblyProviders.CSharp.Compiling
             //note that Storage and Type has to be overriden
         }
 
-        public override void AssignNewObject(TypeDescriptor newObjectType)
+        public override void AssignNewObject(TypeDescriptor newObjectType, INodeAST newObjectNode)
         {
-            E.AssignNewObject(Storage, newObjectType);
+            var builder = E.AssignNewObject(Storage, newObjectType);
+            builder.RemoveProvider = new AssignRemove(newObjectNode);
         }
 
         public override void AssignLiteral(object literal, INodeAST literalNode)

@@ -31,9 +31,9 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         private readonly TypeServices _services;
 
         /// <summary>
-        /// Indexes of builded components
+        /// Indexes of built components
         /// </summary>
-        private Dictionary<CodeClass, ComponentInfoBuilder> _buildedComponents = new Dictionary<CodeClass, ComponentInfoBuilder>();
+        private Dictionary<CodeClass, ComponentInfoBuilder> _builtComponents = new Dictionary<CodeClass, ComponentInfoBuilder>();
 
         /// <summary>
         /// Initialize instance of <see cref="ComponentSearcher"/>
@@ -52,13 +52,21 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <inheritdoc />
         public override void VisitClass(CodeClass2 e)
         {
-            //keep stack of nesting classes
             base.VisitClass(e);
 
-            if (_buildedComponents.ContainsKey(e))
+            if (_builtComponents.ContainsKey(e))
             {
                 //component has been found
-                var componentInfo = _buildedComponents[e].BuildInfo();
+                var componentBuilder = _builtComponents[e];
+
+                //check componts implicit composition point
+                if (!componentBuilder.HasCompositionPoint)
+                {
+                    if (couldHaveImplicitCompositionPoint(e))
+                        componentBuilder.AddImplicitCompositionPoint();
+                }
+
+                var componentInfo = componentBuilder.BuildInfo();
                 OnComponentFound(componentInfo);
             }
         }
@@ -286,12 +294,43 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             var currentClass = element.DeclaringClass();
 
             ComponentInfoBuilder builder;
-            if (!_buildedComponents.TryGetValue(currentClass, out builder))
+            if (!_builtComponents.TryGetValue(currentClass, out builder))
             {
-                _buildedComponents[currentClass] = builder = new ComponentInfoBuilder(MethodBuilder.CreateDescriptor(currentClass));
+                _builtComponents[currentClass] = builder = new ComponentInfoBuilder(MethodBuilder.CreateDescriptor(currentClass));
             }
 
             return builder;
+        }
+
+        /// <summary>
+        /// Determine that given component class satisfies requirements for having implicit
+        /// composition point
+        /// </summary>
+        /// <param name="componentClass">Class to be tested</param>
+        /// <returns><c>true</c> if component class should have implicit composition point, <c>false</c> otherwise</returns>
+        private bool couldHaveImplicitCompositionPoint(CodeClass2 componentClass)
+        {
+            var hasImplicitParamLessCtor = true;
+
+            foreach (var member in componentClass.Members)
+            {
+                var function = member as CodeFunction;
+                if (function == null)
+                    continue;
+
+                if (function.FunctionKind == vsCMFunction.vsCMFunctionConstructor)
+                {
+                    //there already exist constructor which prohibits implicit one
+                    hasImplicitParamLessCtor = false;
+
+                    if (function.Parameters.Count == 0)
+                        //param less ctor exist - implicit composition point is possible
+                        return true;
+                }
+            }
+
+            //no constructor that prohibits implicit compositoin point exist
+            return hasImplicitParamLessCtor;
         }
 
         #endregion

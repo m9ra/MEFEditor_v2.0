@@ -99,10 +99,9 @@ namespace AssemblyProviders.ProjectAssembly
         {
             //TODO make it language independant
             var w = Stopwatch.StartNew();
+
             var source = CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
-
-            source.SourceChangeCommited += activation.OnCommited;
-
+            
             VS.Log.Message("Parsing time for {0} {1}ms", activation.Method.MethodID, w.ElapsedMilliseconds);
         }
 
@@ -379,21 +378,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>false</c> otherwise</returns>
         private MethodItem getMethodItem(MethodID methodID)
         {
-            //note that for non generic methods is path same as signature
-            var path = Naming.GetMethodPath(methodID);
-            var needGetter = path.IsGetter;
-
-            //from given nodes find the one with matching id
-            foreach (var node in findMethodNodes(path.ShortSignature))
-            {
-                var methodItem = buildMethod(node, needGetter);
-
-                if (methodItem.Info.MethodID.Equals(methodID))
-                    //we have found matching method
-                    return methodItem;
-            }
-
-            return null;
+            return getMethodItemFromGeneric(methodID, Naming.GetMethodPath(methodID));
         }
 
         /// <summary>
@@ -405,7 +390,10 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>null</c> otherwise</returns>
         private MethodItem getMethodItemFromGeneric(MethodID methodID, PathInfo methodGenericPath)
         {
-            //search generic method definitions
+            //determine that any method has been found according to signature
+            var hasAnyMethod = false;
+
+            //from given nodes find the one with matching id
             foreach (var node in findMethodNodes(methodGenericPath.Signature))
             {
                 //create generic specialization 
@@ -414,6 +402,18 @@ namespace AssemblyProviders.ProjectAssembly
                 if (methodItem.Info.MethodID.Equals(methodID))
                     //we have found matching generic specialization
                     return methodItem;
+
+                hasAnyMethod = true;
+            }
+
+            //check if param less ctor is needed
+            var needParamLessCtor = Naming.IsParamLessCtor(methodID);
+            if (needParamLessCtor && !hasAnyMethod)
+            {
+                //there is no ctor defined and we need paramLessCtor - implicit one should be created
+                var declaringClass = _searcher.Search(Naming.GetDeclaringType(methodID)) as CodeClass;
+                if (declaringClass != null)
+                    return MethodBuilder.BuildImplicitCtor(declaringClass);
             }
 
             return null;
@@ -489,17 +489,6 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given methodNode
-        /// </summary>
-        /// <param name="methodNode">Node from which <see cref="MethodItem"/> is builded</param>
-        /// <returns>Builded <see cref="MethodItem"/></returns>
-        private MethodItem buildMethod(CodeElement methodNode, bool needGetter)
-        {
-            //building is same as with generic method without parameters
-            return buildGenericMethod(methodNode, null, needGetter);
-        }
-
-        /// <summary>
         /// Build <see cref="MethodItem"/> from given generic methodNode
         /// </summary>
         /// <param name="methodNode">Node from which <see cref="MethodItem"/> is builded</param>
@@ -509,7 +498,7 @@ namespace AssemblyProviders.ProjectAssembly
         {
             var methodItem = MethodBuilder.Build(methodNode, needGetter, this);
 
-            if (methodGenericPath != null)
+            if (methodGenericPath != null && methodGenericPath.HasGenericArguments)
                 //make generic specialization
                 methodItem = methodItem.Make(methodGenericPath);
 

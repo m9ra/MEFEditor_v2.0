@@ -34,6 +34,11 @@ namespace TypeSystem
         private readonly List<CompositionPoint> _explicitCompositionPoints = new List<CompositionPoint>();
 
         /// <summary>
+        /// Defined implicit composition point if available, <c>null</c> otherwise
+        /// </summary>
+        private CompositionPoint _implicitCompositionPoint;
+
+        /// <summary>
         /// Importing constructor if available
         /// </summary>
         private MethodID _importingCtor;
@@ -58,6 +63,11 @@ namespace TypeSystem
                    ;
             }
         }
+
+        /// <summary>
+        /// Determine that component has any composition point
+        /// </summary>
+        public bool HasCompositionPoint { get { return _explicitCompositionPoints.Count > 0 || _implicitCompositionPoint != null; } }
 
         /// <summary>
         /// Create ComponentInfoBuilder
@@ -210,6 +220,14 @@ namespace TypeSystem
         }
 
         /// <summary>
+        /// Add Implicit composition point of component.
+        /// </summary>
+        public void AddImplicitCompositionPoint()
+        {
+            _implicitCompositionPoint = new CompositionPoint(ComponentType, getComponentParamLessCtorID(), false);
+        }
+
+        /// <summary>
         /// Build collected info into ComponentInfo
         /// </summary>
         /// <returns>Created ComponentInfo</returns>
@@ -218,10 +236,14 @@ namespace TypeSystem
             if (_importingCtor == null)
             {
                 //default importin constructor
-                _importingCtor = Naming.Method(ComponentType, Naming.CtorName, false);
+                _importingCtor = getComponentParamLessCtorID();
             }
 
             var compositionPoints = new List<CompositionPoint>(_explicitCompositionPoints);
+            if (_implicitCompositionPoint != null)
+            {
+                compositionPoints.Add(_implicitCompositionPoint);
+            }
 
             return new ComponentInfo(ComponentType, _importingCtor, _imports.ToArray(), _exports.ToArray(), _selfExports.ToArray(), compositionPoints.ToArray());
         }
@@ -241,6 +263,12 @@ namespace TypeSystem
             return setterID;
         }
 
+        private MethodID getComponentParamLessCtorID()
+        {
+            return Naming.Method(ComponentType, Naming.CtorName, false);
+        }
+
         #endregion
+
     }
 }

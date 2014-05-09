@@ -30,7 +30,7 @@ namespace AssemblyProviders.CSharp.Transformations
             {
                 var sideEffect = keepSideEffect && hasSideEffect(argNode);
                 source.RemoveNode(view, argNode, sideEffect);
-            }, argNode.Source);
+            }, argNode);
         }
 
         public override Transformation RewriteArgument(int argumentIndex, ValueProvider valuePovider)
@@ -69,7 +69,15 @@ namespace AssemblyProviders.CSharp.Transformations
             return new SourceRemoveProvider((view, source) =>
             {
                 source.RemoveNode(view, _call, false);
-            }, _call.Source);
+            }, _call);
+        }
+
+        public override NavigationAction GetNavigation()
+        {
+            return () =>
+            {
+                _call.StartingToken.Position.Navigate();
+            };
         }
 
         public override bool IsOptionalArgument(int argumentIndex)
@@ -104,5 +112,6 @@ namespace AssemblyProviders.CSharp.Transformations
         }
 
         #endregion
+
     }
 }

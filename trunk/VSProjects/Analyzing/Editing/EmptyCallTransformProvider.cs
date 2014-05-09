@@ -39,5 +39,10 @@ namespace Analyzing.Editing
         {
             //nothing to do
         }
+
+        public override NavigationAction GetNavigation()
+        {
+            return null;
+        }
     }
 }

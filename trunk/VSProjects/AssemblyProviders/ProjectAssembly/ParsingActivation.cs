@@ -15,6 +15,12 @@ namespace AssemblyProviders.ProjectAssembly
     public delegate void SourceChangeCommitedEvent(string commitedSource);
 
     /// <summary>
+    /// Handler for events raised when user wants to navigate at given offset
+    /// </summary>
+    /// <param name="offset">Offset of navigation target</param>
+    public delegate void NavigationRequestEvent(int offset);
+
+    /// <summary>
     /// Activation describing method that could be parsed
     /// </summary>
     public class ParsingActivation
@@ -28,7 +34,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// <see cref="TypeMethodInfo"/> describing generated method
         /// </summary>
         internal readonly TypeMethodInfo Method;
-        
+
         /// <summary>
         /// Generic parameters of method path. They are used for translating source codes according to
         /// generic parameters.
@@ -44,6 +50,11 @@ namespace AssemblyProviders.ProjectAssembly
         /// Event fired whenever change on this source is commited
         /// </summary>
         public event SourceChangeCommitedEvent SourceChangeCommited;
+
+        /// <summary>
+        /// Event fired whenever navigation request is detected
+        /// </summary>
+        public event NavigationRequestEvent NavigationRequested;
 
 
         public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters, IEnumerable<string> namespaces = null)
@@ -67,7 +78,7 @@ namespace AssemblyProviders.ProjectAssembly
             GenericParameters = genericParameters.ToArray();
 
             //TODO is defensive copy needed?
-            Namespaces = namespaces;    
+            Namespaces = namespaces;
         }
 
         /// <summary>
@@ -78,6 +89,16 @@ namespace AssemblyProviders.ProjectAssembly
         {
             if (SourceChangeCommited != null)
                 SourceChangeCommited(commitedSource);
+        }
+
+        /// <summary>
+        /// Method for reporting navigation requests
+        /// </summary>
+        /// <param name="offset">Offset of navigation target</param>
+        internal void OnNavigated(int offset)
+        {
+            if (NavigationRequested != null)
+                NavigationRequested(offset);
         }
     }
 }

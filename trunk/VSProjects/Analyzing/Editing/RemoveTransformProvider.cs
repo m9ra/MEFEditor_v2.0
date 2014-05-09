@@ -8,6 +8,8 @@ namespace Analyzing.Editing
 {
     public abstract class RemoveTransformProvider
     {
+        public abstract NavigationAction GetNavigation();
+
         public abstract Transformation Remove();
     }
 }

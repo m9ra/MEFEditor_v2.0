@@ -124,8 +124,15 @@ namespace AssemblyProviders.CSharp.Compiling
 
                 var overload = overloads[0];
                 if (!overload.IsStatic && _currentObject == null)
-                    //only static setter has been found
-                    return null;
+                {
+                    if (!_compiler.MethodInfo.HasThis)
+                    {
+                        //cannot get implicit this object
+                        return null;
+                    }
+
+                    _currentObject = _compiler.CreateImplicitThis(currNode);
+                }
 
                 return new SetterLValue(overloads[0], _currentObject, new RValueProvider[0], Context);
             }

@@ -9,7 +9,7 @@ using AssemblyProviders.CSharp.Interfaces;
 
 namespace AssemblyProviders.CSharp.Transformations
 {
-    class AssignRemove:RemoveTransformProvider
+    class AssignRemove : RemoveTransformProvider
     {
         private INodeAST _assignedValue;
 
@@ -19,7 +19,7 @@ namespace AssemblyProviders.CSharp.Transformations
         }
         public override Transformation Remove()
         {
-            var assignOperator=_assignedValue.Parent;
+            var assignOperator = _assignedValue.Parent;
             if (assignOperator.NodeType == NodeTypes.declaration)
             {
                 throw new NotImplementedException();
@@ -33,11 +33,19 @@ namespace AssemblyProviders.CSharp.Transformations
             var variableNode = assignOperator.Arguments[0];
 
             //remove whole statement;
-            return new SourceTransformation((view,source) =>
+            return new SourceTransformation((view, source) =>
             {
                 source.RemoveNode(view, variableNode, false);
-               
-            },_assignedValue.Source);
+
+            }, _assignedValue.Source);
+        }
+
+        public override NavigationAction GetNavigation()
+        {
+            return () =>
+            {
+                _assignedValue.StartingToken.Position.Navigate();
+            };
         }
     }
 }
