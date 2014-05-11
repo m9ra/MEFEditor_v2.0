@@ -571,14 +571,31 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <param name="source">Source that will be written</param>
         private static void write(CodeFunction element, string source)
         {
-            var editPoint = getEditPoint(element);
-            if (element.ProjectItem.Document.ReadOnly)
-                throw new NotSupportedException("Document is read only");
+            bool undoOpened = false;
 
-            //TODO this is ugly - refactor getting source code
-            source = source.Substring(1); //remove first {
+            var dte = element.DTE;
+            if (dte != null && !dte.UndoContext.IsOpen)
+            {
+                dte.UndoContext.Open("MEF Component Architecture Editor Change");
+                undoOpened = true;
+            }
 
-            editPoint.ReplaceText(element.EndPoint, source, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+            try
+            {
+                var editPoint = getEditPoint(element);
+                if (element.ProjectItem.Document.ReadOnly)
+                    throw new NotSupportedException("Document is read only");
+
+                //TODO this is ugly - refactor getting source code
+                source = source.Substring(1); //remove first {
+
+                editPoint.ReplaceText(element.EndPoint, source, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+            }
+            finally
+            {
+                if (undoOpened)
+                    dte.UndoContext.Close();
+            }          
         }
 
         /// <summary>
