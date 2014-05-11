@@ -25,6 +25,10 @@ namespace Analyzing
         private readonly MultiDictionary<Instance, Edit> _attachedEdits = new MultiDictionary<Instance, Edit>();
 
         /// <summary>
+        /// Block where instance has been created if available, <c>null</c> otherwise
+        /// </summary>
+        private ExecutedBlock _creationBlock;
+        /// <summary>
         /// Info describing instance type
         /// </summary>
         public readonly InstanceInfo Info;
@@ -42,7 +46,16 @@ namespace Analyzing
         /// <summary>
         /// Block where instance has been created if available, <c>null</c> otherwise
         /// </summary>
-        public ExecutedBlock CreationBlock { get; internal set; }
+        public ExecutedBlock CreationBlock
+        {
+            get { return _creationBlock; }
+            internal set
+            {
+                if (_creationBlock != null)
+                    return;
+                _creationBlock = value;
+            }
+        }
 
         /// <summary>
         /// Determine that instnace is dirty. It means that its state may not be correctly analyzed.

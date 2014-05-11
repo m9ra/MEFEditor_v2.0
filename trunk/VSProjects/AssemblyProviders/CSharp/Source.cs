@@ -26,9 +26,14 @@ namespace AssemblyProviders.CSharp
     public class Source
     {
         /// <summary>
-        /// Namespaces available for source of represented method
+        /// Namespaces added by using statements
         /// </summary>
-        private HashSet<string> _namespaces = new HashSet<string>();
+        private HashSet<string> _explicitNamespaces = new HashSet<string>();
+
+        /// <summary>
+        /// Implicit namespaces from contained class
+        /// </summary>
+        private HashSet<string> _implicitNamespaces = new HashSet<string>();
 
         /// <summary>
         /// Contains method representing this source (e.g with generic parameters - it can be used for type translation)
@@ -63,7 +68,7 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Namespaces available for source of represented method
         /// </summary>
-        public IEnumerable<string> Namespaces { get { return _namespaces; } }
+        public IEnumerable<string> Namespaces { get { return _implicitNamespaces.Union(_explicitNamespaces); } }
 
         public Source(string code, TypeMethodInfo methodInfo)
         {
@@ -102,7 +107,7 @@ namespace AssemblyProviders.CSharp
         /// <param name="namespaces">Enumeration of imported namespaces</param>
         internal void AddExternalNamespaces(IEnumerable<string> namespaces)
         {
-            _namespaces.UnionWith(namespaces);
+            _explicitNamespaces.UnionWith(namespaces);
         }
 
         /// <summary>
@@ -403,7 +408,7 @@ namespace AssemblyProviders.CSharp
             if (call.CallName == Naming.CtorName)
             {
                 callFormat = "new {0}({2})";
-                thisObj = call.ThisObj.ToString();
+                thisObj = toCSharpType(call.ThisObj as InstanceInfo);
             }
             else
             {
@@ -444,9 +449,8 @@ namespace AssemblyProviders.CSharp
 
             if (value is InstanceInfo)
             {
-                var instanceInfo = value as InstanceInfo;
-                //TODO namespace shortening
-                value = string.Format("typeof({0})", instanceInfo.TypeName);
+                var typeName = toCSharpType(value as InstanceInfo);
+                value = string.Format("typeof({0})", typeName);
             }
 
             if (value == null)
@@ -455,6 +459,74 @@ namespace AssemblyProviders.CSharp
             }
 
             return value.ToString();
+        }
+
+        /// <summary>
+        /// Get CSharp representation of type literal shortened by available namespaces
+        /// </summary>
+        /// <param name="type">Type to be represented in CSharp</param>
+        /// <returns>CSharp representation of given type shortened by available namespaces</returns>
+        private string toCSharpType(InstanceInfo type)
+        {
+            var name = type.TypeName;
+
+            var applicableNS = getApplicableExplicitNamespace(name);
+            if (applicableNS == null)
+            {
+                //if there is no explicit NS, try to find implicit one (that will be shorter or equal to explicit)
+                applicableNS = getApplicableImplicitNamespace(name);
+            }
+
+            if (applicableNS != null)
+            {
+                //remove namespace part with trailing dot
+                name = name.Substring(applicableNS.Length + 1);
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Get Longest applicable implicit namespace for given typename
+        /// </summary>
+        /// <param name="typeName">Type name where namespace will be applied</param>
+        /// <returns>Longest applicable namespace if available, <c>null</c> otherwise</returns>
+        private string getApplicableImplicitNamespace(string typeName)
+        {
+            string applicableNS = null;
+            foreach (var ns in _implicitNamespaces)
+            {
+                if (!typeName.StartsWith(ns + '.'))
+                    //namespace is not applicable
+                    continue;
+
+                if (applicableNS == null || applicableNS.Length < ns.Length)
+                    //find longest applicable namespace
+                    applicableNS = ns;
+            }
+            return applicableNS;
+        }
+
+        /// <summary>
+        /// Get Longest applicable explicit namespace for given typename
+        /// </summary>
+        /// <param name="typeName">Type name where namespace will be applied</param>
+        /// <returns>Applicable namespace if available, <c>null</c> otherwise</returns>
+        private string getApplicableExplicitNamespace(string typeName)
+        {
+            var signature = new PathInfo(typeName).Signature;
+
+            var namespaceEnd = signature.LastIndexOf('.');
+            if (namespaceEnd < 0)
+                //there is no available namespace
+                return null;
+
+            var requiredNamespace = signature.Substring(0, namespaceEnd);
+            if (_explicitNamespaces.Contains(requiredNamespace))
+                //there is required namespace between explicit namespaces
+                return requiredNamespace;
+
+            return null;
         }
 
         /// <summary>
@@ -571,7 +643,7 @@ namespace AssemblyProviders.CSharp
         private void addImplicitNamespaces(TypeDescriptor type)
         {
             //add empty namespace
-            _namespaces.Add("");
+            _implicitNamespaces.Add("");
 
             //each part creates implicit namespace
             var parts = Naming.SplitGenericPath(type.TypeName);
@@ -587,7 +659,7 @@ namespace AssemblyProviders.CSharp
 
                 buffer.Append(part);
 
-                _namespaces.Add(buffer.ToString());
+                _implicitNamespaces.Add(buffer.ToString());
             }
         }
         #endregion

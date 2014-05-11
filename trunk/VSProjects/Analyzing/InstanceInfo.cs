@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace Analyzing
 {
-    public class InstanceInfo
+    public abstract class InstanceInfo
     {
         public readonly string TypeName;
+
+        public abstract string DefaultIdHint { get; }
 
         public InstanceInfo(string typeName)
         {
@@ -23,8 +25,7 @@ namespace Analyzing
         {
             return "[InstanceInfo]" + TypeName;
         }
-
-
+        
         public override int GetHashCode()
         {
             return TypeName.GetHashCode();

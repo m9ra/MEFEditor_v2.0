@@ -315,7 +315,7 @@ namespace TypeSystem.Runtime
                     return null;
                 }
 
-                var call = new CallEditInfo(TypeInfo.TypeName, Naming.CtorName, args);
+                var call = new CallEditInfo(TypeInfo, Naming.CtorName, args);
                 call.ReturnName = name;
                 return call;
             });

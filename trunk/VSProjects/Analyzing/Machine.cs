@@ -105,6 +105,7 @@ namespace Analyzing
         {
             var instance = _createdInstances[oldID];
             _createdInstances.Add(instance.ID, instance);
+            _createdInstances.Remove(oldID);
         }
 
         /// <summary>
@@ -152,6 +153,7 @@ namespace Analyzing
             finally
             {
                 Settings.FireAfterInterpretation();
+                _createdInstances.Clear();
             }
         }
 
@@ -161,7 +163,7 @@ namespace Analyzing
         /// <param name="registeredInstance">Instance that will be created</param>
         private void registerInstance(Instance registeredInstance)
         {
-            var defaultID = CreateID("$default");
+            var defaultID = CreateID('$' + registeredInstance.Info.DefaultIdHint);
             registeredInstance.SetDefaultID(defaultID);
             _createdInstances.Add(registeredInstance.ID, registeredInstance);
         }

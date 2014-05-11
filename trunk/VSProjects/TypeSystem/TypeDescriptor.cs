@@ -128,6 +128,18 @@ namespace TypeSystem
             }
         }
 
+
+        /// <inheritdoc />
+        public override string DefaultIdHint
+        {
+            get
+            {
+                var shortName = PathInfo.GetSignature(this).Split('.').Last();
+                shortName = char.ToLowerInvariant(shortName[0]) + shortName.Substring(1);
+                return shortName;
+            }
+        }
+
         /// <summary>
         /// Create type descriptor of given name and arguments.
         /// </summary>
@@ -268,8 +280,5 @@ namespace TypeSystem
         }
 
         #endregion
-
-
-
     }
 }

@@ -116,6 +116,8 @@ namespace Interoperability
         /// </summary>
         internal void FlushChanges()
         {
+            //clear namespaces because of checking of add/removes
+            _checkedNamespaces.Clear();
             //exception can occur until something is changed - dont need register special handlers
             VS.CodeModelExceptions(() =>
             {
