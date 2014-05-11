@@ -99,9 +99,13 @@ namespace AssemblyProviders.CSharp.Interfaces
         /// </summary>
         INodeAST[] Arguments { get; }
         /// <summary>
-        /// Children node of this node
+        /// Child node of this node in hierarchy
         /// </summary>
         INodeAST Child { get; }
+        /// <summary>
+        /// All children (arguments, hierarchy child... of current node)
+        /// </summary>
+        IEnumerable<INodeAST> AllChildren { get; }
         /// <summary>
         /// Subsequence of this node
         /// </summary>

@@ -29,6 +29,50 @@ namespace AssemblyProviders.CSharp
         }
 
         /// <summary>
+        /// Determine that current node represents constructor call.
+        /// </summary>
+        /// <param name="node">Tested node</param>
+        /// <returns><c>true</c> for constructor nodes, <c>false</c> otherwise</returns>
+        public static bool IsConstructor(this INodeAST node)
+        {
+            while (node != null)
+            {
+                if (node.Value == LanguageDefinitions.CSharpSyntax.NewOperator)
+                    return true;
+
+                node = node.Parent;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determine that current node represents call root.
+        /// </summary>
+        /// <param name="node">Tested node</param>
+        /// <returns><c>true</c> for call root node, <c>false</c> otherwise</returns>
+        public static bool IsCallRoot(this INodeAST node)
+        {
+            var type = node.NodeType;
+
+            if (type != NodeTypes.hierarchy || type != NodeTypes.call)
+                //only hierarchy or call can be root of call
+                return false;
+            
+            var current = node;
+            while (current != null)
+            {
+                if (current.NodeType == NodeTypes.call)
+                    //call hierarchy has to end by call
+                    return true;
+
+                current = current.Child;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Get index of argument in argument list of current node 
         /// </summary>
         /// <param name="call">Call which argument is tested</param>

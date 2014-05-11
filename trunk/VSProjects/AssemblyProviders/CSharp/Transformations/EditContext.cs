@@ -43,13 +43,15 @@ namespace AssemblyProviders.CSharp.Transformations
             Code = toClone.Code;
         }
 
-
+        internal bool IsRemoved(INodeAST node)
+        {
+            return _removedNodes.Contains(node);
+        }
 
         internal void NodeRemoved(INodeAST removedNode)
         {
             _removedNodes.Add(removedNode);
         }
-
 
         protected override void commit()
         {
@@ -134,7 +136,7 @@ namespace AssemblyProviders.CSharp.Transformations
                 }
                 else
                 {
-                    _source.RemoveNode(_view, varUsing, false);
+                    _source.RemoveNode(_view, varUsing);
                 }
             }
 

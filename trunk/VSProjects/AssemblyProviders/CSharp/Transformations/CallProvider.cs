@@ -28,8 +28,14 @@ namespace AssemblyProviders.CSharp.Transformations
 
             return new SourceRemoveProvider((view, source) =>
             {
-                var sideEffect = keepSideEffect && hasSideEffect(argNode);
-                source.RemoveNode(view, argNode, sideEffect);
+                if (keepSideEffect)
+                {
+                    source.ExcludeNode(view, argNode);
+                }
+                else
+                {
+                    source.RemoveNode(view, argNode);
+                }
             }, argNode);
         }
 
@@ -41,9 +47,8 @@ namespace AssemblyProviders.CSharp.Transformations
             var argNode = _call.Arguments[argumentIndex - 1];
 
             return new SourceTransformation((view, source) =>
-            {
-                var keepSideEffect = hasSideEffect(argNode);
-                source.Rewrite(view, argNode, valuePovider(view), keepSideEffect);
+            {              
+                source.Rewrite(view, argNode, valuePovider(view));
             }, _call.Source);
         }
 
@@ -68,7 +73,7 @@ namespace AssemblyProviders.CSharp.Transformations
         {
             return new SourceRemoveProvider((view, source) =>
             {
-                source.RemoveNode(view, _call, false);
+                source.RemoveNode(view, _call);
             }, _call);
         }
 
@@ -96,22 +101,5 @@ namespace AssemblyProviders.CSharp.Transformations
 
             _optionals.Add(index);
         }
-
-        #region Private helpers
-
-        private bool hasSideEffect(INodeAST node)
-        {
-            if (node.Value == "typeof")
-                return false;
-
-            if (node.IsAssign())
-                return true;
-
-            //TODO: calls with namespaces
-            return new NodeTypes[] { NodeTypes.call, NodeTypes.prefixOperator }.Contains(node.NodeType);
-        }
-
-        #endregion
-
     }
 }

@@ -132,6 +132,17 @@ namespace AssemblyProviders.CSharp
             var endStrip = getStrip(endOffset, strip);
             endStrip.Split(endOffset);
 
+            var current = strip;
+            while (current != endStrip)
+            {
+                if (!current.IsOriginal)
+                {
+                    //we dont want to remove inserted strips
+                    strip.Next = current;
+                    strip = current;
+                }
+                current = current.Next;
+            }
             strip.Next = endStrip.Next;
         }
 

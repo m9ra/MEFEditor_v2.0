@@ -138,11 +138,20 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="view">View where transformation is processed</param>
         /// <param name="node">Node that is removed</param>        
-        /// <param name="keepSideEffect">Determine that side effect of given node will be preserved</param>
-        internal void RemoveNode(ExecutionView view, INodeAST node, bool keepSideEffect)
+        internal void RemoveNode(ExecutionView view, INodeAST node)
         {
-            remove(view, node, keepSideEffect);
-            onChildRemoved(view, node);
+            markRemoved(view, node, null);
+        }
+
+        /// <summary>
+        /// Exclude node in given view
+        /// </summary>
+        /// <param name="view">View where transformation is processed</param>
+        /// <param name="node">Node that is excluded</param>        
+        internal void ExcludeNode(ExecutionView view, INodeAST node)
+        {
+            preserveSideEffect(view, node);
+            RemoveNode(view, node);
         }
 
         /// <summary>
@@ -151,11 +160,9 @@ namespace AssemblyProviders.CSharp
         /// <param name="view">View where transformation is processed</param>
         /// <param name="node">Node that is rewritten</param>
         /// <param name="value">Value which rewrite given node</param>
-        /// <param name="keepSideEffect">Determine that side effect of given node will be preserved</param>
-        internal void Rewrite(ExecutionView view, INodeAST node, object value, bool keepSideEffect)
+        internal void Rewrite(ExecutionView view, INodeAST node, object value)
         {
-            if (keepSideEffect)
-                preserveSideEffect(view, node);
+            preserveSideEffect(view, node);
 
             int p1, p2;
             getBorderPositions(node, out p1, out p2);
@@ -241,115 +248,128 @@ namespace AssemblyProviders.CSharp
         #region Remove events handling
 
         /// <summary>
+        /// Mark given node as removed by given child. Marked node has no chance to be
+        /// preserved and has to be removed. It is possible to recursively mark parent
+        /// and let be removed by the parent.
+        /// </summary>
+        /// <param name="view">View where node has been removed</param>
+        /// <param name="removedNode">Node that is removed</param>
+        /// <param name="markingChild">Child that marked its parent as removed</param>
+        private void markRemoved(ExecutionView view, INodeAST removedNode, INodeAST markingChild)
+        {
+            //report parent removing to all children except marking child
+            onNodeRemoved(view, removedNode, markingChild);
+
+            var parent = removedNode.Parent;
+            var parentType = parent == null ? NodeTypes.hierarchy : parent.NodeType;
+
+            //detect that parent has to be marked as removed
+            var removeParent = false;
+            switch (parentType)
+            {
+                case NodeTypes.call:
+                    if (isOptionalArgument(parent, removedNode))
+                    {
+                        removeParent = false;
+
+                        //removed node is optional node of its parent                            
+                        //check only for remaining argument delimiters
+                        var argCount = parent.Arguments.Length;
+                        if (argCount > 1)
+                        {
+                            //there is delimiter that should be also removed                            
+                            var argIndex = parent.GetArgumentIndex(removedNode);
+
+                            //last argument has leading delimiter, non last has trailing delimiter
+                            var isLastArg = argCount - 1 == argIndex;
+                            var delimiterToken = isLastArg ? removedNode.StartingToken.Previous : removedNode.EndingToken.Next;
+                            remove(view, delimiterToken);
+                        }
+                    }
+                    else
+                    {
+                        //non optional argument cannot be removed from parent
+                        //so we will remove parent
+                        removeParent = true;
+                    }
+                    break;
+
+                default:
+                    removeParent = true;
+                    break;
+            }
+
+            //handle removing
+            if (parent != null && removeParent)
+            {
+                markRemoved(view, parent, removedNode);
+            }
+            else
+            {
+                //removedNode is last removed node in hierarchy - remove it from source
+                remove(view, removedNode);
+            }
+        }
+
+        /// <summary>
         /// Handler called for every node that is removed (recursively from removedNode to descendants)
         /// </summary>
         /// <param name="view">View where node has been removed</param>
         /// <param name="removedNode">Node that has been removed</param>
-        private void onNodeRemoved(ExecutionView view, INodeAST removedNode)
+        private void onNodeRemoved(ExecutionView view, INodeAST removedNode, INodeAST alreadyRemovedChild = null)
         {
             if (removedNode == null)
                 return;
 
-            EditContext(view).NodeRemoved(removedNode);
+            var context = EditContext(view);
+            if (context.IsRemoved(removedNode))
+                //we have already registered remove action
+                return;
 
-            foreach (var removedChild in removedNode.Arguments)
+            //report node removing
+            context.NodeRemoved(removedNode);
+
+            //report parent removing to all children
+            foreach (var removedChild in removedNode.AllChildren)
             {
-                onNodeRemoved(view, removedChild);
+                if (removedChild != alreadyRemovedChild)
+                    onParentRemoved(view, removedChild);
             }
-
-            onNodeRemoved(view, removedNode.Child);
         }
 
         /// <summary>
-        /// Handler that is called for every removed node (recursively from removedChild to ancestors). When there is no parent for removed node
-        /// or node parent of node wont be removed, onNodeRemoved cascade is processed. 
+        /// Is called when parent of given node has been removed. If node has side effect it will be preserved
         /// </summary>
-        /// <param name="view">View where node has been removed</param>
-        /// <param name="removedChild">Child that has been removed</param>
-        private void onChildRemoved(ExecutionView view, INodeAST removedChild)
+        /// <param name="view">View where parent has been removed</param>
+        /// <param name="node">Node which parent has been removed</param>
+        private void onParentRemoved(ExecutionView view, INodeAST node)
         {
-            var parent = removedChild.Parent;
-
-            if (parent == null)
-            {
-                //node has been removed and has no parent - handle it
-                onNodeRemoved(view, removedChild);
-
-                //there is no action for keeping parent
+            if (node == null)
                 return;
-            }
 
-            switch (parent.NodeType)
+            if (hasSideEffect(node))
             {
-                case NodeTypes.binaryOperator:
-                    remove(view, parent, false);
-                    onChildRemoved(view, parent);
-                    //let parent report removing
-                    return;
-
-                case NodeTypes.call:
-                    if (isOptionalArgument(parent, removedChild))
-                    {
-                        //check for remaining argument delimiters
-                        var argCount = parent.Arguments.Length;
-                        if (argCount == 1)
-                            //there is no delimiter that should be also removed
-                            //stop propagation
-                            break;
-
-                        //needs removing remaining argument delimiter
-                        var argIndex = parent.GetArgumentIndex(removedChild);
-
-                        //last argument has leading delimiter, non last has trailing delimiter
-                        var isLastArg = argCount - 1 == argIndex;
-                        var delimiterToken = isLastArg ? removedChild.StartingToken.Previous : removedChild.EndingToken.Next;
-                        remove(view, delimiterToken);
-
-                        //stop propagation
-                        break;
-                    }
-                    else
-                    {
-                        var hasSideEffect = removedChild.Value == LanguageDefinitions.CSharpSyntax.NewOperator;
-
-                        remove(view, parent, hasSideEffect);
-                        onChildRemoved(view, parent);
-                        //let parent report removing
-                        return;
-                    }
-
-
-                case NodeTypes.prefixOperator:
-                case NodeTypes.hierarchy:
-                    remove(view, parent, false);
-                    onChildRemoved(view, parent);
-                    //let parent report removing
-                    return;
-
-                default:
-                    throw new NotImplementedException();
+                preserveSideEffect(view, node);
             }
-
-            //BE CAREFULL: Only node which parent is not handled by OnChildRemoved
-            //traverse top down nodes and call removed handler
-            onNodeRemoved(view, removedChild);
+            else
+            {
+                onNodeRemoved(view, node);
+            }
         }
+
 
         #endregion
 
         #region Primitives for source editing
 
         /// <summary>
-        /// Remove node from source in given view.
+        /// Remove node from source in given view. Is only syntactical. Should be called only after
+        /// proper node hierarchy remove handling.
         /// </summary>
         /// <param name="view">View where source node will be removed</param>
         /// <param name="node">Node that will be removed</param>
-        /// <param name="preserveSideEffect">Determine that side effect on node should be preserved</param>
-        private void remove(ExecutionView view, INodeAST node, bool keepSideEffect)
+        private void remove(ExecutionView view, INodeAST node)
         {
-            if (keepSideEffect)
-                preserveSideEffect(view, node);
-
             int p1, p2;
             getBorderPositions(node, out p1, out p2);
 
@@ -375,10 +395,40 @@ namespace AssemblyProviders.CSharp
         /// <param name="node">Node which side effect is preserved</param>
         private void preserveSideEffect(ExecutionView view, INodeAST node)
         {
+            if (!hasSideEffect(node))
+                return;
+
             var keepExpression = getCode(node) + ";\n";
             var insertPos = BeforeStatementOffset(node);
 
             write(view, insertPos, keepExpression);
+        }
+
+        /// <summary>
+        /// Determine that given node represent expression with side effect
+        /// </summary>
+        /// <param name="node">Tested node</param>
+        /// <returns><c>true</c> if node represent expression with side effect, <c>false</c> otherwise</returns>
+        private bool hasSideEffect(INodeAST node)
+        {
+            if (node.Value == "typeof")
+                return false;
+
+            if (node.IsAssign())
+                return true;
+
+            if (node.IsConstructor())
+            {
+                //constructors has side effects only if they are looked at new node
+                return node.Value == LanguageDefinitions.CSharpSyntax.NewOperator;
+            }
+
+            if(node.IsCallRoot()){
+                //calls has side effect only if theire complete - from hierarchy root
+                return true;
+            }
+
+            return new NodeTypes[] { NodeTypes.prefixOperator, NodeTypes.postOperator }.Contains(node.NodeType);
         }
 
         /// <summary>
@@ -665,5 +715,7 @@ namespace AssemblyProviders.CSharp
             }
         }
         #endregion
+
+
     }
 }

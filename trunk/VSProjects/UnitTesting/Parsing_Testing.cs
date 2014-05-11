@@ -1025,9 +1025,9 @@ namespace UnitTesting
         public void Edit_RemoveFromCallCascade()
         {
             AssemblyUtils.Run(@"
-            var toDelete=""toDelete"";                
-            CallWithOptional(CallWithRequired(toDelete));                
-         ")
+                var toDelete=""toDelete"";                
+                CallWithOptional(CallWithRequired(toDelete));                
+            ")
 
             .AddMethod("Test.CallWithOptional", (c) =>
             {
@@ -1045,8 +1045,31 @@ namespace UnitTesting
             .RunRemoveAction("toDelete")
 
             .AssertSourceEquivalence(@"
-            CallWithOptional();         
-         ");
+                CallWithOptional();         
+            ");
+        }
+
+        [TestMethod]
+        public void Edit_RemovePreserveCtor()
+        {
+            AssemblyUtils.Run(@"            
+                var obj=new TestObj(""toDelete"");
+                obj.CallWithRequired(new TestObj(""abc""));                
+            ")
+
+            .AddMethod("TestObj." + Naming.CtorName, (c) => { }, Method.Ctor_StringParam)
+
+            .AddMethod("TestObj.CallWithRequired", (c) =>
+            {
+                var arg = c.CurrentArguments[1];
+                c.Return(arg);
+            }, Method.Void_ObjectParam)
+
+            .RunRemoveAction("obj")
+
+            .AssertSourceEquivalence(@"
+                new TestObj(""abc"");         
+            ");
         }
 
         [TestMethod]
@@ -1058,11 +1081,11 @@ namespace UnitTesting
                 var b=a;
             ")
 
-         .RunRemoveAction("toDelete")
+            .RunRemoveAction("toDelete")
 
-         .AssertSourceEquivalence(@"
+            .AssertSourceEquivalence(@"
                 
-         ");
+            ");
         }
 
 

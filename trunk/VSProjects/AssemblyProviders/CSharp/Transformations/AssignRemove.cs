@@ -19,24 +19,10 @@ namespace AssemblyProviders.CSharp.Transformations
         }
         public override Transformation Remove()
         {
-            var assignOperator = _assignedValue.Parent;
-            if (assignOperator.NodeType == NodeTypes.declaration)
-            {
-                throw new NotImplementedException();
-            }
-
-            if (assignOperator.Parent != null)
-            {
-                throw new NotImplementedException();
-            }
-
-            var variableNode = assignOperator.Arguments[0];
-
             //remove whole statement;
             return new SourceTransformation((view, source) =>
             {
-                source.RemoveNode(view, variableNode, false);
-
+                source.RemoveNode(view, _assignedValue);
             }, _assignedValue.Source);
         }
 

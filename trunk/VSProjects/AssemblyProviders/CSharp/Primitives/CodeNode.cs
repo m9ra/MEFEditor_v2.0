@@ -158,6 +158,20 @@ namespace AssemblyProviders.CSharp.Primitives
             }
         }
 
+
+        public IEnumerable<INodeAST> AllChildren
+        {
+            get {
+                foreach (var arg in Arguments)
+                {
+                    yield return arg;
+                }
+
+                if (Child != null)
+                    yield return Child;
+            }
+        }
+
         /// <summary>
         /// Add argument to current collection
         /// </summary>
