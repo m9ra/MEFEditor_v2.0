@@ -770,7 +770,7 @@ namespace TypeSystem.Core
                 }
             }
 
-            throw new NotSupportedException("For type: " + typeName + " no inheritance chain has been found");
+            return null;
         }
 
         /// <summary>

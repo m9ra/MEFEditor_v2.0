@@ -65,7 +65,7 @@ namespace Drawing.Behaviours
         protected override void accept()
         {
             var acceptTarget = DropTarget.OwnerItem.ID;
-            var lastError = "There is no accept edit";
+            var errors = new List<string>();
             foreach (var accept in DropTarget.OwnerItem.AcceptEdits)
             {
                 //TODO use exclude view
@@ -77,11 +77,12 @@ namespace Drawing.Behaviours
                     return;
                 }
 
-                lastError = accepting.Error;
+                errors.Add(accepting.Error);
             }
 
+            var error = errors.Count == 0 ? "There is no accept edit" : string.Join("' and\n\t'", errors);
             E.Effects = DragDropEffects.None;
-            addHintLine("Cannot accept by '{0}', because of '{1}'", acceptTarget, lastError);
+            addHintLine("Cannot accept by '{0}', because of \n\t'{1}'", acceptTarget, error);
         }
 
         private void addHintLine(string format, params object[] formatArgs)

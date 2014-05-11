@@ -36,6 +36,8 @@ namespace Analyzing.Editing
         protected override void apply()
         {
             ScopeVariable = instanceScopes(_scopeBlock, _instance);
+            if (ScopeVariable == null)
+                View.Abort("Cannot get scope variable for instance " + _instance.ID);
         }
 
         private VariableName instanceScopes(ExecutedBlock scopeBlock, Instance instance)

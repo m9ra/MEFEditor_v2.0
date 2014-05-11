@@ -81,7 +81,7 @@ namespace UnitTesting
         public void Compose_PrerequisityImport_LoadedAssembly()
         {
             var testAssembly = new RuntimeAssembly("test.exe");
-            testAssembly.AddDefinition(new StringExport());
+            testAssembly.AddDefinition(new StringExport2());
 
             AssemblyUtils.Run(@"        
                 var partExport=new StringExport(""PastedExport"");       
@@ -103,18 +103,14 @@ namespace UnitTesting
             .AddDirectToRuntime<List<string>>()
             .AddDirectToRuntime<ICollection<string>>()
             .AddAssembly(testAssembly)
-
-            
             
             //export from pasted export
             .AssertVariable("result2").HasValue("Data:PastedExport")
             
             //export from referenced assembly, filled with pasted export via prerequisity import
-            .AssertVariable("result1").HasValue("Data:Data:PastedExport") 
+            .AssertVariable("result1").HasValue("Data2:DefaultExport") 
 
             ;
-
-
         }
     }
 }

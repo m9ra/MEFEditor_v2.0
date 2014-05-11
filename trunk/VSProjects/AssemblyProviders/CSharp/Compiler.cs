@@ -1273,11 +1273,28 @@ namespace AssemblyProviders.CSharp
                 currentNode = currentNode.Child;
             }
 
-            //TODO consider namespaces - same case as with object construction resolving
-            var info = TypeDescriptor.Create(resultType.ToString());
-
+            var info = resolveTypeDescriptor(resultType.ToString());
             return new LiteralType(info);
         }
+
+        /// <summary>
+        /// Resolve typename according to available namespaces
+        /// </summary>
+        /// <param name="typeName">Type name which is resolved to descriptor</param>
+        /// <returns><see cref="TypeDescriptor"/> resolved from given type name if available, <c>null</c> otherwise</returns>
+        private TypeDescriptor resolveTypeDescriptor(string typeName)
+        {
+            foreach (var ns in _source.Namespaces)
+            {
+                var fullname = ns == "" ? typeName : ns + "." + typeName;
+                var typeDescriptor = TypeDescriptor.Create(fullname);
+                var chain = Context.Services.GetChain(typeDescriptor);
+                if (chain != null)
+                    return typeDescriptor;
+            }
+            return null;
+        }
+
         #endregion
 
         #region Object construction resolving
