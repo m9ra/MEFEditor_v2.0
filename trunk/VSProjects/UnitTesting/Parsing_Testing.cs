@@ -290,6 +290,73 @@ namespace UnitTesting
             .AssertVariable("result").HasValue("input");
         }
 
+
+        [TestMethod]
+        public void Compile_ObjectCreation_Alone()
+        {
+            AssemblyUtils.Run(@"                
+                new TestObj();  
+                var result=""after"";              
+            ")
+
+            .AddMethod("TestObj.#ctor", (c) =>
+            {
+            }, Method.Ctor_NoParam)
+
+            .AssertVariable("result").HasValue("after");
+        }
+
+        [TestMethod]
+        public void Compile_ObjectCreation_Nested()
+        {
+            AssemblyUtils.Run(@"                
+                var x=new TestObj();  
+                x.Nesting(new TestObj());
+                var result=""after"";              
+            ")
+
+            .AddMethod("TestObj.#ctor", (c) => { }, Method.Ctor_NoParam)
+
+            .AddMethod("TestObj.Nesting", (c) => { }, Method.Void_ObjectParam)
+
+            .AssertVariable("result").HasValue("after");
+        }
+
+        [TestMethod]
+        public void Compile_ObjectCreation_Return()
+        {
+            AssemblyUtils.Run(@"                
+                var x=new TestObj();  
+                x.Returning();
+                var result=""after"";              
+            ")
+
+            .AddMethod("TestObj.#ctor", (c) => { }, Method.Ctor_NoParam)
+
+            .AddMethod("TestObj.Returning", @"
+                return new TestObj();
+            ", Method.Object_NoParam)
+
+            .AssertVariable("result").HasValue("after");
+        }
+
+        [TestMethod]
+        public void Compile_ObjectCreation_Setter()
+        {
+            AssemblyUtils.Run(@"                
+                var x=new TestObj();  
+                x.Property=new TestObj();
+                var result=""after"";              
+            ")
+
+            .AddMethod("TestObj.#ctor", (c) => { }, Method.Ctor_NoParam)
+
+            .AddMethod("TestObj.set_Property", (c) => { }, Method.Void_ObjectParam)
+
+            .AssertVariable("result").HasValue("after");
+        }
+
+
         [TestMethod]
         public void Compile_ImplicitThis_Setter()
         {

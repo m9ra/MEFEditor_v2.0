@@ -99,25 +99,14 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void GenerateAssignInto(LValueProvider lValue)
         {
-            var storageProvider = lValue as IStorageReadProvider;
-            if (storageProvider == null)
-            {
-                throw new NotImplementedException("Create temporary variable and reasign");
-            }
-            else
-            {
-                _storage = storageProvider.Storage;
-            }
-
-            lValue.AssignNewObject(_objectType, _newOperator);
-
-            _ctorCall.Generate();
+            generateAssignInto(lValue);
         }
 
         /// </ inheritdoc>
         public override void GenerateReturn()
         {
-            throw new NotImplementedException();
+            var storage = GenerateStorage();
+            E.Return(storage);
         }
 
         /// </ inheritdoc>
@@ -134,7 +123,7 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             if (_storage == null)
             {
-                throw new NotSupportedException("Object hasn't been created yet");
+                generateAssignInto(new TemporaryVariableValue(_objectType, Context));
             }
             return _storage;
         }
@@ -142,12 +131,38 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void Generate()
         {
-            throw new NotImplementedException();
+            GenerateStorage();
         }
 
         internal void SetCtor(RValueProvider ctorCall)
         {
             _ctorCall = ctorCall;
+        }
+
+        private void generateAssignInto(LValueProvider lValue)
+        {
+            if (_storage != null)
+            {
+                //value is already created, reassign it
+                lValue.Assign(_storage, _newOperator);
+                return;
+            }
+
+            var storageProvider = lValue as IStorageReadProvider;
+            if (storageProvider == null)
+            {
+                var temporary = new TemporaryVariableValue(_objectType, Context);
+                _storage = temporary.Storage;
+                temporary.AssignNewObject(_objectType, _newOperator);
+                lValue.Assign(_storage, _newOperator);
+            }
+            else
+            {
+                _storage = storageProvider.Storage;
+                lValue.AssignNewObject(_objectType, _newOperator);
+            }
+            
+            _ctorCall.Generate();
         }
     }
 

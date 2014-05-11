@@ -310,7 +310,9 @@ namespace AssemblyProviders.CSharp
                     }
                     else
                     {
-                        remove(view, parent, false);
+                        var hasSideEffect = removedChild.Value == LanguageDefinitions.CSharpSyntax.NewOperator;
+
+                        remove(view, parent, hasSideEffect);
                         onChildRemoved(view, parent);
                         //let parent report removing
                         return;
@@ -329,7 +331,7 @@ namespace AssemblyProviders.CSharp
             }
 
             //BE CAREFULL: Only node which parent is not handled by OnChildRemoved
-            //travers top down nodes and call removed handler
+            //traverse top down nodes and call removed handler
             onNodeRemoved(view, removedChild);
         }
 
