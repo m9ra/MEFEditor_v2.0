@@ -31,7 +31,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         public abstract void AssignLiteral(object literal, INodeAST literalNode);
 
-        public abstract void AssignReturnValue(TypeDescriptor returnedType);
+        public abstract void AssignReturnValue(TypeDescriptor returnedType, INodeAST callNode);
 
         public abstract void Assign(string variable, INodeAST variableNode);
     }
@@ -83,10 +83,11 @@ namespace AssemblyProviders.CSharp.Compiling
             //TODO set call transformation provider
         }
 
-        public override void AssignReturnValue(TypeDescriptor returnedValueType)
+        public override void AssignReturnValue(TypeDescriptor returnedValueType, INodeAST callNode)
         {
             var storage = E.GetTemporaryVariable("ret");
-            E.AssignReturnValue(storage, returnedValueType);
+            var builder = E.AssignReturnValue(storage, returnedValueType);
+            builder.RemoveProvider = new AssignRemove(callNode);
             generateAssign(storage);
             //TODO set call transformation provider
         }
@@ -157,9 +158,10 @@ namespace AssemblyProviders.CSharp.Compiling
             builder.RemoveProvider = new AssignRemove(literalNode);
         }
 
-        public override void AssignReturnValue(TypeDescriptor returnedType)
+        public override void AssignReturnValue(TypeDescriptor returnedType, INodeAST callNode)
         {
-            E.AssignReturnValue(Storage, returnedType);
+            var builder = E.AssignReturnValue(Storage, returnedType);
+            builder.RemoveProvider = new AssignRemove(callNode);
         }
 
         public override void Assign(string variable, INodeAST variableNode)

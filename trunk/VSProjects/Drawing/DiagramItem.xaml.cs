@@ -213,6 +213,10 @@ namespace Drawing
 
         private void addMenuEdit(ContextMenu menu, EditDefinition edit)
         {
+            if (!edit.IsActive(DiagramContext.Diagram.InitialView))
+                return;
+
+
             switch (edit.Name)
             {
                 case ".exclude":

@@ -294,9 +294,8 @@ namespace Analyzing.Execution
         /// <param name="createdInstances">Enumeration of all instances created during execution</param>
         /// <returns>Result of analysis</returns>
         internal AnalyzingResult GetResult(Dictionary<string, Instance> createdInstances)
-        {
-            var removeProvider = new InstanceRemoveProvider(_entryContext);
-            return new AnalyzingResult(LastReturnValue, _entryContext, removeProvider.Remove, createdInstances, _methods.Keys);
+        {            
+            return new AnalyzingResult(LastReturnValue, _entryContext, createdInstances, _methods.Keys);
         }
 
         /// <summary>

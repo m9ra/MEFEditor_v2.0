@@ -111,6 +111,8 @@
     <Compile Include="CIL\Transcription.cs" />
     <Compile Include="CSharp\Compiling\BlockContext.cs" />
     <Compile Include="CSharp\Compiling\CallHierarchyProcessor.cs" />
+    <Compile Include="CSharp\Transformations\AuxiliarCallProvider.cs" />
+    <Compile Include="CSharp\Transformations\NoRemoveProvider.cs" />
     <Compile Include="DirectDefinitions\MathDirectType.cs" />
     <Compile Include="ProjectAssembly\AttributeInfo.cs" />
     <Compile Include="ProjectAssembly\CodeElementExtensions.cs" />

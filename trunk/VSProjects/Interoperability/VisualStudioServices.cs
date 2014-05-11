@@ -348,6 +348,10 @@ namespace Interoperability
         /// <param name="hint">Hint determining type of change</param>
         private void onLineChanged(TextPoint startPoint, TextPoint endPoint, int hint)
         {
+            //reset change flushing timer
+            _changeWait.Stop();
+            _changeWait.Start();
+
             //represent opened editor window
             var textDocument = startPoint.Parent;
             if (textDocument == null)

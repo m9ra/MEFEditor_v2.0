@@ -18,7 +18,8 @@ namespace Analyzing.Execution.Instructions
         }
 
         public override void Execute(AnalyzingContext context)
-        {            
+        {
+            _literal.CreationBlock = context.CurrentCall.CurrentBlock;
             context.SetValue(_targetVariable, _literal);
         }
 

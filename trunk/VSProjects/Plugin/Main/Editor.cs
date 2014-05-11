@@ -363,6 +363,21 @@ namespace MEFEditor.Plugin.Main
         /// <param name="instance">Instance to be drawn</param>
         private void generalDrawer(DrawedInstance instance)
         {
+            if (instance.WrappedInstance.CreationNavigation != null)
+                instance.Drawing.AddCommand(new CommandDefinition("Navigate to", () => instance.WrappedInstance.CreationNavigation()));
+
+            instance.Drawing.AddEdit(new EditDefinition("Remove", (v) =>
+            {
+                var view = (v as EditView).CopyView();
+                view.Remove(instance.WrappedInstance);
+                return EditView.Wrap(view);
+            }, (v) =>
+            {
+                var view = (v as EditView).CopyView();
+                return view.CanRemove(instance.WrappedInstance);
+            }));
+
+
             var componentInfo = _loader.GetComponentInfo(instance.WrappedInstance.Info);
             GeneralDefinitionProvider.Draw(instance, componentInfo);
         }

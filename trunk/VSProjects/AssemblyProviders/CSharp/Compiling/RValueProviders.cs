@@ -342,7 +342,8 @@ namespace AssemblyProviders.CSharp.Compiling
                 var arg = _args[i];
                 E.AssignLiteral(index, i);
 
-                E.Call(setMethod, tmp, Arguments.Values(index, arg.GenerateStorage()));
+                var builder = E.Call(setMethod, tmp, Arguments.Values(index, arg.GenerateStorage()));
+                builder.SetTransformationProvider(new AuxiliarCallProvider());
             }
             return tmp;
         }
@@ -373,7 +374,7 @@ namespace AssemblyProviders.CSharp.Compiling
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             generateCall();
-            lValue.AssignReturnValue(MethodInfo.ReturnType);
+            lValue.AssignReturnValue(MethodInfo.ReturnType, _activation.CallNode);
         }
 
         /// </ inheritdoc>

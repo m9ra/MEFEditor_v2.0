@@ -22,7 +22,7 @@ namespace Analyzing.Editing
 
         public bool IsCommited { get; private set; }
 
-        private readonly RemoveHandler _removeHandler;
+        private readonly InstanceRemoveProvider _instanceRemoveProvider;
 
         private readonly AnalyzingResult _result;
 
@@ -32,10 +32,10 @@ namespace Analyzing.Editing
 
         public ExecutedBlock EntryBlock { get { return _result.EntryContext.EntryBlock; } }
 
-        internal ExecutionView(AnalyzingResult result, RemoveHandler removeHandler)
+        internal ExecutionView(AnalyzingResult result)
         {
             _result = result;
-            _removeHandler = removeHandler;
+            _instanceRemoveProvider = new InstanceRemoveProvider(result.EntryContext);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Analyzing.Editing
             if (IsCommited)
                 throw new NotSupportedException("Cannot clone commited view");
 
-            var clone = new ExecutionView(_result, _removeHandler);
+            var clone = new ExecutionView(_result);
             clone._appliedTransformations.AddRange(_appliedTransformations);
             clone._viewData.FillFrom(_viewData);
 
@@ -129,7 +129,12 @@ namespace Analyzing.Editing
 
         public bool Remove(Instance instance)
         {
-            return _removeHandler(instance, this);
+            return _instanceRemoveProvider.Remove(instance, this);
+        }
+
+        public bool CanRemove(Instance instance)
+        {
+            return _instanceRemoveProvider.CanRemove(instance, this);
         }
 
         public ExecutedBlock NextBlock(ExecutedBlock block)

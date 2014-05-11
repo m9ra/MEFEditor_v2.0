@@ -53,7 +53,7 @@ namespace TypeSystem
 
         public EditDefinition CreateEditDefinition(Edit edit)
         {
-            return new EditDefinition(edit.Name, (view) => runEdit(edit, view as EditView), () => false);
+            return new EditDefinition(edit.Name, (view) => runEdit(edit, view as EditView), (v) => true);
         }
 
 

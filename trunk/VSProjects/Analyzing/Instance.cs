@@ -40,6 +40,11 @@ namespace Analyzing
         public NavigationAction CreationNavigation { get; private set; }
 
         /// <summary>
+        /// Block where instance has been created if available, <c>null</c> otherwise
+        /// </summary>
+        public ExecutedBlock CreationBlock { get; internal set; }
+
+        /// <summary>
         /// Determine that instnace is dirty. It means that its state may not be correctly analyzed.
         /// This is usually caused by unknown operation processing
         /// </summary>
@@ -50,9 +55,14 @@ namespace Analyzing
         /// </summary>
         public IEnumerable<Edit> Edits { get { return _edits; } }
 
+        /// <summary>
+        /// Instances that has attached edits to current instance
+        /// </summary>
         public IEnumerable<Instance> AttachingInstances { get { return _attachedEdits.Keys; } }
 
-
+        /// <summary>
+        /// Direct value representation of instance when overriden
+        /// </summary>
         public abstract object DirectValue { get; }
 
         internal Instance(InstanceInfo info)
@@ -104,7 +114,7 @@ namespace Analyzing
         internal void HintID(string hint, AnalyzingContext context)
         {
             if (
-                
+
                  hint.StartsWith("$") ||
                  !ID.StartsWith("$")
                 )
@@ -124,5 +134,6 @@ namespace Analyzing
 
             CreationNavigation = navigationAction;
         }
+
     }
 }

@@ -15,7 +15,7 @@ namespace Analyzing.Execution
     {
         private MultiDictionary<Instance, VariableName> _scopeStarts = new MultiDictionary<Instance, VariableName>();
         private MultiDictionary<Instance, VariableName> _scopeEnds = new MultiDictionary<Instance, VariableName>();
-        private MultiDictionary<Instance, RemoveTransformProvider> _removeProviders = new MultiDictionary<Instance, RemoveTransformProvider>();
+        private MultiDictionary<Instance, RemoveTransformProvider> _assignRemoveProviders = new MultiDictionary<Instance, RemoveTransformProvider>();
 
         private HashSet<Instance> _affectedInstances = new HashSet<Instance>();
 
@@ -73,11 +73,14 @@ namespace Analyzing.Execution
 
         public IEnumerable<RemoveTransformProvider> RemoveProviders(Instance instance)
         {
-            foreach (var provider in _removeProviders.Get(instance))
+            //remove from assigns
+            var assignRemoveProviders = _assignRemoveProviders.Get(instance);            
+            foreach (var provider in assignRemoveProviders)
             {
                 yield return provider;
             }
 
+            //remove from calls
             foreach (var call in Calls)
             {
                 for (int i = 0; i < call.ArgumentValues.Length; ++i)
@@ -156,7 +159,7 @@ namespace Analyzing.Execution
                 removeProvider = assignInstruction.RemoveProvider;
             }
 
-            _removeProviders.Add(assignedInstance, removeProvider);
+            _assignRemoveProviders.Add(assignedInstance, removeProvider);
         }
     }
 }

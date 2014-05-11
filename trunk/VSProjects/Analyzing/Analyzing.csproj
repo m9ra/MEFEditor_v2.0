@@ -74,6 +74,7 @@
     <Compile Include="Editing\CallEditInfo.cs" />
     <Compile Include="Editing\CallTransformProvider.cs" />
     <Compile Include="Editing\Transformations\CommonScopeTransformation.cs" />
+    <Compile Include="Editing\Transformations\IdentityTransformation.cs" />
     <Compile Include="Editing\Transformations\ScopeBlockTransformation.cs" />
     <Compile Include="Editing\Edit.cs" />
     <Compile Include="Editing\EmptyRemoveProvider.cs" />

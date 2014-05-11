@@ -999,7 +999,7 @@ namespace AssemblyProviders.CSharp
                     //save copy to storage
                     if (prefixReturn)
                     {
-                        storage.AssignReturnValue(lTypeInfo);
+                        storage.AssignReturnValue(lTypeInfo, operatorNode);
                     }
                     else
                     {
@@ -1013,7 +1013,7 @@ namespace AssemblyProviders.CSharp
                 }
                 else
                 {
-                    target.AssignReturnValue(lTypeInfo);
+                    target.AssignReturnValue(lTypeInfo, operatorNode);
                 }
 
 

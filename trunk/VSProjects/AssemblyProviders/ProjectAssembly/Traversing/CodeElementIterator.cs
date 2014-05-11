@@ -123,7 +123,9 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             var isGetter = searchedName.StartsWith(Naming.GetterPrefix);
 
             var path = PathInfo.Append(_currentPath, searchedName);
-            foreach (CodeElement child in getActualNodes())
+
+            var nodes = getActualNodes();
+            foreach (CodeElement child in nodes)
             {
                 var method = MethodBuilder.Build(child, isGetter, _assembly);
                 if (method == null || method.Info.MethodName != searchedName)
@@ -134,6 +136,31 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                     method = method.Make(path);
 
                 methods.Add(method);
+            }
+
+            if (methods.Count == 0 && _currentNodes != null)
+            {
+                //_currentNodes contains parents of actual nodes - here will
+                //be all classes where ctor has been searched for
+                foreach (var node in _currentNodes)
+                {
+                    var classNode = node as CodeClass2;
+                    if (classNode == null)
+                        continue;
+
+                    if (searchedName == Naming.CtorName)
+                    {
+                        //get implicit ctor of class (we can create it, 
+                        //because there is no other ctor)
+                        methods.Add(MethodBuilder.BuildImplicitCtor(classNode));
+                    }
+                    else if (searchedName == Naming.ClassCtorName)
+                    {
+                        //get implicit cctor of class (we can create it,
+                        //because there is no other cctor)
+                        methods.Add(MethodBuilder.BuildImplicitClassCtor(classNode));
+                    }
+                }
             }
 
             return methods;

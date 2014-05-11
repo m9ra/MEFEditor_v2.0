@@ -15,10 +15,7 @@ namespace MEFAnalyzers.Drawings
     public static class GeneralDefinitionProvider
     {
         public static void Draw(DrawedInstance instance, ComponentInfo info)
-        {
-            if (instance.WrappedInstance.CreationNavigation != null)
-                instance.Drawing.AddCommand(new CommandDefinition("Navigate to", () => instance.WrappedInstance.CreationNavigation()));
-
+        {            
             if (info == null)
                 return;
 

@@ -21,47 +21,63 @@ namespace Analyzing.Editing
 
         internal bool Remove(Instance instance, ExecutionView view)
         {
-            var currBlock = _context.EntryBlock;
-
-            while (currBlock != null)
+            var currentBlock = instance.CreationBlock;
+            if (currentBlock == null)
             {
-                var scopeStarts = currBlock.ScopeStarts(instance);
-                if (scopeStarts.Any())
-                {
-                    //here instance scope starts - begin removing from this block
-                    return remove(instance, currBlock,view);
-                }
-
-                currBlock = view.NextBlock(currBlock);
+                return false;
             }
 
-
-            //instance hasn't been found in scope where removing is allowed/possible
-            return false;
-        }
-
-        private bool remove(Instance instance, ExecutedBlock creationBlock,ExecutionView view)
-        {
-            
-            var currBlock=creationBlock;
-            while (currBlock != null)
+            while (currentBlock != null)
             {
-                var removeProviders = currBlock.RemoveProviders(instance);
-
+                var removeProviders = currentBlock.RemoveProviders(instance);
                 foreach (var removeProvider in removeProviders)
                 {
                     if (removeProvider == null)
                     {
-                        //TODO removing cannot be proceeded
-                        continue;
+                        //removing is not possible
+                        view.Abort("Cannot remove because of missing RemoveProvider");
+                        return false;
                     }
+
                     var transform = removeProvider.Remove();
                     view.Apply(transform);
+                    if (view.IsAborted)
+                        return false;
                 }
-                currBlock = view.NextBlock(currBlock);
+                currentBlock = view.NextBlock(currentBlock);
             }
 
-         //   throw new NotImplementedException();
+            return true;
+        }
+
+        /// <summary>
+        /// Light over approximation test for possibility of instance removing in given view
+        /// </summary>
+        /// <param name="instance">Instance that is tested for removing possibility</param>
+        /// <param name="view">View where removing will be processed</param>
+        /// <returns><c>true</c> if instance can be removed, <c>false</c> otherwise</returns>
+        internal bool CanRemove(Instance instance, ExecutionView view)
+        {
+            var currentBlock = instance.CreationBlock;
+            if (currentBlock == null)
+            {
+                return false;
+            }
+
+            while (currentBlock != null)
+            {
+                var removeProviders = currentBlock.RemoveProviders(instance);
+                foreach (var removeProvider in removeProviders)
+                {
+                    if (removeProvider == null)
+                    {
+                        //removing is not possible
+                        return false;
+                    }
+                }
+
+                currentBlock = view.NextBlock(currentBlock);
+            }
 
             return true;
         }

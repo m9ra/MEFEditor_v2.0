@@ -13,8 +13,6 @@ namespace Analyzing
 
     public class AnalyzingResult
     {
-        private readonly RemoveHandler _removeHandler;
-
         private readonly Dictionary<string, Instance> _createdInstances;
 
         private readonly HashSet<MethodID> _methods;
@@ -29,12 +27,11 @@ namespace Analyzing
 
 
 
-        internal AnalyzingResult(Instance returnValue, CallContext entryContext, RemoveHandler removeHandler, Dictionary<string, Instance> createdInstances, IEnumerable<MethodID> methods)
+        internal AnalyzingResult(Instance returnValue, CallContext entryContext, Dictionary<string, Instance> createdInstances, IEnumerable<MethodID> methods)
         {
             ReturnValue = returnValue;
             EntryContext = entryContext;
             _methods = new HashSet<MethodID>(methods);
-            _removeHandler = removeHandler;
             _createdInstances = createdInstances;
         }
 
@@ -46,7 +43,7 @@ namespace Analyzing
 
         public ExecutionView CreateExecutionView()
         {
-            return new ExecutionView(this, _removeHandler);
+            return new ExecutionView(this);
         }
 
         public Instance GetInstance(string instanceID)

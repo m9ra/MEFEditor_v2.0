@@ -163,10 +163,40 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var ctorGenerator = new DirectGenerator((c) =>
             {
-                //TODO ctor initialization
+                //TODO member initialization
             });
 
             return new MethodItem(ctorGenerator, methodInfo);
+        }
+
+        /// <summary>
+        /// Build implicit class ctor for given declaring class. 
+        /// </summary>   
+        /// <param name="declaringClass">Class that declare implicit class ctor</param>
+        /// <returns>Built method</returns>
+        internal static MethodItem BuildImplicitClassCtor(CodeClass2 declaringClass)
+        {
+            var declaringType = CreateDescriptor(declaringClass);
+            var methodInfo = new TypeMethodInfo(declaringType,
+                Naming.ClassCtorName, TypeDescriptor.Void, ParameterTypeInfo.NoParams,
+                false, TypeDescriptor.NoDescriptors);
+            
+            return BuildImplicitCtor(declaringClass, methodInfo);
+        }
+
+        /// <summary>
+        /// Build implicit class ctor for given declaring class by using specified <see cref="TypeMethodInfo"/>. 
+        /// </summary>   
+        /// <param name="declaringClass">Class that declare implicit class ctor</param>
+        /// <returns>Built method</returns>
+        private static MethodItem BuildImpliciClassCtor(CodeClass declaringClass, TypeMethodInfo methodInfo)
+        {
+            var cctorGenerator = new DirectGenerator((c) =>
+            {
+                //TODO member initialization
+            });
+
+            return new MethodItem(cctorGenerator, methodInfo);
         }
 
         #endregion
@@ -429,8 +459,6 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             return descriptor;
         }
 
-
-
         #endregion
 
         #region Building utilities
@@ -604,10 +632,5 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         }
 
         #endregion
-
-        internal static string ExtractGeneric(string lastPart)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

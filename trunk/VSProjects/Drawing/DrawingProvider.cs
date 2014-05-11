@@ -123,6 +123,9 @@ namespace Drawing
             //add edit entries
             foreach (var edit in diagramDefinition.Edits)
             {
+                if (!edit.IsActive(diagramDefinition.InitialView))
+                    continue;
+
                 var item = new MenuItem();
                 item.Header = edit.Name;
 

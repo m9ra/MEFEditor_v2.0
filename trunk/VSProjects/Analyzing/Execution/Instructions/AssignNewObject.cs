@@ -23,6 +23,8 @@ namespace Analyzing.Execution.Instructions
             if (RemoveProvider != null)
                 newInstance.HintCreationNavigation(RemoveProvider.GetNavigation());
 
+            newInstance.CreationBlock = context.CurrentCall.CurrentBlock;
+
             context.SetValue(_targetVariable, newInstance);
         }
 

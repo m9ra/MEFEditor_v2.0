@@ -10,7 +10,7 @@ namespace Drawing
 {
     public delegate EditViewBase EditAction(EditViewBase initialView);
 
-    public delegate bool IsEditActive();
+    public delegate bool IsEditActive(EditViewBase initialView);
 
     /// <summary>
     /// Definition for displaying edit actions
