@@ -420,16 +420,19 @@ namespace TypeSystem.Core
         /// <returns>Files that are present in directory according to virtual mapping</returns>
         internal IEnumerable<string> GetFiles(string directoryFullPath)
         {
-            var realFiles = Directory.GetFiles(directoryFullPath);
-
-            //get real files filtered by mapped assemblies
-            foreach (var realFile in realFiles)
+            if (Directory.Exists(directoryFullPath))
             {
-                if (_assemblies.ContainsRealFile(realFile))
-                    //assemblies are added according to their mapping
-                    continue;
+                var realFiles = Directory.GetFiles(directoryFullPath);
 
-                yield return realFile;
+                //get real files filtered by mapped assemblies
+                foreach (var realFile in realFiles)
+                {
+                    if (_assemblies.ContainsRealFile(realFile))
+                        //assemblies are added according to their mapping
+                        continue;
+
+                    yield return realFile;
+                }
             }
 
             //get files that are added by virtual mapping

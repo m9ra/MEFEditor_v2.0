@@ -134,7 +134,8 @@ namespace AssemblyProviders.CSharp.Compiling
                     _currentObject = _compiler.CreateImplicitThis(currNode);
                 }
 
-                return new SetterLValue(overloads[0], _currentObject, new RValueProvider[0], Context);
+                var indexArguments = _compiler.GetArguments(currNode);
+                return new SetterLValue(overloads[0], _currentObject, indexArguments, Context);
             }
 
             return null;
@@ -267,11 +268,11 @@ namespace AssemblyProviders.CSharp.Compiling
                     {
                         if (dispatchSetter)
                         {
-                            searcher.Dispatch(Naming.ArrayItemSetter);
+                            searcher.Dispatch(Naming.IndexerSetter);
                         }
                         else
                         {
-                            searcher.Dispatch(Naming.ArrayItemGetter);
+                            searcher.Dispatch(Naming.IndexerGetter);
                         }
                     }
                     break;

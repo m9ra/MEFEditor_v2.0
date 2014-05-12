@@ -41,7 +41,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <summary>
         /// Position specification of set value. Used for indexers.
         /// </summary>
-        private readonly RValueProvider[] _positionArguments;
+        private readonly Argument[] _positionArguments;
 
         /// <summary>
         /// This object if call is not static
@@ -53,7 +53,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </summary>
         private readonly TypeMethodInfo _setter;
 
-        public SetterLValue(TypeMethodInfo setter, RValueProvider thisObject, IEnumerable<RValueProvider> positionalArguments, CompilationContext context)
+        public SetterLValue(TypeMethodInfo setter, RValueProvider thisObject, IEnumerable<Argument> positionalArguments, CompilationContext context)
             : base(context)
         {
             _setter = setter;
@@ -103,7 +103,7 @@ namespace AssemblyProviders.CSharp.Compiling
             var arguments = new List<string>();
             foreach (var position in _positionArguments)
             {
-                var storage = position.GenerateStorage();
+                var storage = position.Value.GenerateStorage();
                 arguments.Add(storage);
             }
 

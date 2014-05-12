@@ -75,12 +75,12 @@ namespace TypeSystem
         /// <summary>
         /// Name of array item setter 
         /// </summary>
-        public const string ArrayItemSetter = SetterPrefix + "Item";
+        public const string IndexerSetter = SetterPrefix + "Item";
 
         /// <summary>
         /// Name of array item getter 
         /// </summary>
-        public const string ArrayItemGetter = GetterPrefix + "Item";
+        public const string IndexerGetter = GetterPrefix + "Item";
 
         /// <summary>
         /// Creates non-generic, non-dynamic MethodID from given name and parameters

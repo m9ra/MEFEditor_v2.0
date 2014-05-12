@@ -102,6 +102,10 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                     if (ctorGenericIndex > 0)
                         expectedName = expectedName.Substring(0, ctorGenericIndex);
                 }
+                else if (expectedName == Naming.IndexerGetter || expectedName == Naming.IndexerSetter)
+                {
+                    expectedName = "this";
+                }
                 else if (expectedName.StartsWith(Naming.GetterPrefix))
                 {
                     expectedName = expectedName.Substring(Naming.GetterPrefix.Length);
@@ -110,6 +114,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 {
                     expectedName = expectedName.Substring(Naming.SetterPrefix.Length);
                 }
+
             }
             else
             {
@@ -125,11 +130,11 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
             if (isGeneric != hasToBeGeneric)
                 //genericity doesnt match
-                return false;   
+                return false;
 
             if (hasToBeGeneric)
             {
-                expectedName=expectedName.Substring(0,genericIndex);
+                expectedName = expectedName.Substring(0, genericIndex);
             }
 
             return expectedName == element.Name();

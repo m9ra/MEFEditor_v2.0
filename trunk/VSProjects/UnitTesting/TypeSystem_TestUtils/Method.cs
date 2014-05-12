@@ -15,6 +15,10 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly static ParameterTypeInfo StringParam1 = ParameterTypeInfo.Create("p", TypeDescriptor.Create<string>());
 
+        public readonly static ParameterTypeInfo StringParam2 = ParameterTypeInfo.Create("p2", TypeDescriptor.Create<string>());
+
+        public readonly static ParameterTypeInfo StringParam3 = ParameterTypeInfo.Create("p3", TypeDescriptor.Create<string>());
+
         public readonly static ParameterTypeInfo ObjectParam1 = ParameterTypeInfo.Create("p", TypeDescriptor.ObjectInfo);
 
         public readonly static ParameterTypeInfo IntParam1 = ParameterTypeInfo.Create("n", TypeDescriptor.Create<int>());
@@ -26,6 +30,8 @@ namespace UnitTesting.TypeSystem_TestUtils
         public readonly static MethodDescription Void_NoParam = new MethodDescription(TypeDescriptor.Void, false);
 
         public readonly static MethodDescription Void_StringParam = new MethodDescription(TypeDescriptor.Void, false, StringParam1);
+
+        public readonly static MethodDescription Void_StringStringStringParam = new MethodDescription(TypeDescriptor.Void, false, StringParam1, StringParam2, StringParam3);
 
         public readonly static MethodDescription Void_ObjectParam = new MethodDescription(TypeDescriptor.Void, false, ObjectParam1);
 

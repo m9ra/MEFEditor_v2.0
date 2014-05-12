@@ -1428,7 +1428,7 @@ namespace AssemblyProviders.CSharp
         {
             var selector = new MethodSelector(methods, Context);
 
-            var arguments = getArguments(callNode);
+            var arguments = GetArguments(callNode);
             var callActivation = selector.CreateCallActivation(arguments);
 
             if (callActivation != null)
@@ -1467,7 +1467,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="node">Node which arguments are needed</param>
         /// <returns>Arguments available for given node</returns>
-        private Argument[] getArguments(INodeAST node)
+        internal Argument[] GetArguments(INodeAST node)
         {
             var argNodes = node.Arguments;
             if (node.NodeType == NodeTypes.hierarchy && node.Indexer != null)

@@ -389,6 +389,38 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Compile_Indexer_Setter()
+        {
+            AssemblyUtils.Run(@"
+                var obj=new TestObj();
+                obj[""a"",""b""]=""c"";
+                var result=obj.Property;
+            ")
+
+            .AddMethod("TestObj.#ctor", (c) => { }, Method.Ctor_NoParam)
+
+            .AddMethod("TestObj.set_Item", (c) =>
+            {
+                var arg1 = c.CurrentArguments[1].DirectValue as string;
+                var arg2 = c.CurrentArguments[2].DirectValue as string;
+                var arg3 = c.CurrentArguments[3].DirectValue as string;
+                var thisObj = c.CurrentArguments[0];
+
+                c.SetField(thisObj, "_property", arg1 + arg2 + arg3);
+
+            }, Method.Void_StringParam)
+
+            .AddMethod("TestObj.get_Property", (c) =>
+            {
+                var thisObj = c.CurrentArguments[0];
+                var data = c.GetField(thisObj, "_property") as string;
+                c.Return(c.Machine.CreateDirectInstance(data));
+            }, Method.String_NoParam)
+
+            .AssertVariable("result").HasValue("abc");
+        }
+
+        [TestMethod]
         public void Compile_Fibonacci()
         {
             //fib(24) Time elapsed: 16s (without caching)

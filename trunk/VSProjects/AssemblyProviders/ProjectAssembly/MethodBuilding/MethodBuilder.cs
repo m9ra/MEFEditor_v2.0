@@ -180,7 +180,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var methodInfo = new TypeMethodInfo(declaringType,
                 Naming.ClassCtorName, TypeDescriptor.Void, ParameterTypeInfo.NoParams,
                 false, TypeDescriptor.NoDescriptors);
-            
+
             return BuildImplicitCtor(declaringClass, methodInfo);
         }
 
@@ -290,8 +290,11 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns>Created <see cref="TypeMethodInfo"/></returns>
         internal static TypeMethodInfo CreateMethodInfo(CodeProperty element, bool buildGetter)
         {
+            //translate name according to naming conventions of type system
+            var isIndexer = element.Name == "this";
+            var elementName = isIndexer ? "Item" : element.Name; //indexer
             var namePrefix = buildGetter ? Naming.GetterPrefix : Naming.SetterPrefix;
-            var name = namePrefix + element.Name;
+            var name = namePrefix + elementName;
 
             var method = buildGetter ? element.Getter : element.Setter;
             var property2 = element as CodeProperty2;
@@ -315,6 +318,13 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             {
                 returnType = TypeDescriptor.Void;
                 parameters = new[] { ParameterTypeInfo.Create("value", variableType) };
+            }
+
+            if (isIndexer)
+            {
+                var indexerBody=buildGetter?element.Getter:element.Setter;
+                var indexParameters = CreateParametersInfo(indexerBody.Parameters);
+                parameters = indexParameters.Concat(parameters).ToArray();
             }
 
             var methodInfo = new TypeMethodInfo(
@@ -595,7 +605,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             {
                 if (undoOpened)
                     dte.UndoContext.Close();
-            }          
+            }
         }
 
         /// <summary>
