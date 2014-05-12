@@ -163,7 +163,7 @@ namespace AssemblyProviders.CSharp.Transformations
 
         private string resolveRedeclarationType(VariableInfo variable, INodeAST assignedVariable, bool canUseImpicit)
         {
-            var variableType = resolveVariableType(variable);
+            var variableType = variable.Type;
             if (variableType == null)
             {
                 throw new NotSupportedException("Cannot redeclare variable, because of missing type info");
@@ -177,46 +177,17 @@ namespace AssemblyProviders.CSharp.Transformations
                 return variableType.TypeName;
             }
 
-            var assignedType = resolveAssignType(assignedVariable);
+            var assignedType = _source.CompilationInfo.ResolveAssignType(assignedVariable);
             if (assignedType == null || assignedType.TypeName != variableType.TypeName)
             {
                 //we don't know type of assignedType, or implicit type is different,
-                //so whole type name is needed
+                //so whole type name is required
                 return variableType.TypeName;
             }
 
             //assigned type matches to variable type and implicit type convetion is used
-            return "var";
+            return LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
         }
-
-        private InstanceInfo resolveVariableType(VariableInfo variable)
-        {
-            if (!variable.IsImplicitlyTyped)
-            {
-                return variable.Type;
-            }
-
-            foreach (var assignedVar in variable.VariableUsings)
-            {
-                var type = resolveAssignType(assignedVar);
-                if (type != null)
-                    //first typed assign determine type
-                    return type;
-            }
-            return null;
-        }
-
-        private InstanceInfo resolveAssignType(INodeAST assignedVariable)
-        {
-            var assignedNode = assignedVariable.Parent.Arguments[1];
-            return resolveNodeType(assignedNode);
-        }
-
-        private InstanceInfo resolveNodeType(INodeAST node)
-        {
-            return _source.CompilationInfo.GetNodeType(node);
-        }
-
 
     }
 }

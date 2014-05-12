@@ -226,6 +226,23 @@ namespace AssemblyProviders.ProjectAssembly
             }
         }
 
+        public static bool IsVirtual(this CodeFunction element)
+        {
+            var fn = element as CodeFunction2;
+            if (fn == null)
+                return false;
+
+            switch (fn.OverrideKind)
+            {
+                case vsCMOverrideKind.vsCMOverrideKindVirtual:
+                case vsCMOverrideKind.vsCMOverrideKindOverride:
+                case vsCMOverrideKind.vsCMOverrideKindAbstract:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public static CodeClass DeclaringClass(this CodeProperty element)
         {
             return element.Parent;

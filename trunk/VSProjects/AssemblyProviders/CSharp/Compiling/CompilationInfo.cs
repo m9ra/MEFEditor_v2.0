@@ -20,7 +20,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <summary>
         /// Mapping of nodes on type that has been resolved during compilation.
         /// </summary>
-        Dictionary<INodeAST, InstanceInfo> _nodeTypes = new Dictionary<INodeAST, InstanceInfo>();
+        Dictionary<INodeAST, TypeDescriptor> _nodeTypes = new Dictionary<INodeAST, TypeDescriptor>();
 
         /// <summary>
         /// Mapping of call providers according to corresponding <see cref="INodeAST"/>.
@@ -44,7 +44,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <param name="callProvider">Registered call provider</param>
         internal void RegisterCallProvider(INodeAST callNode, CallProvider callProvider)
         {
-            _callProviders[callNode]=callProvider;
+            _callProviders[callNode] = callProvider;
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </summary>
         /// <param name="valueNode">Node which value is of given type</param>
         /// <param name="type">Type of value represented by given node</param>
-        internal void RegisterNodeType(INodeAST valueNode, InstanceInfo type)
+        internal void RegisterNodeType(INodeAST valueNode, TypeDescriptor type)
         {
             _nodeTypes.Add(valueNode, type);
         }
@@ -95,11 +95,30 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </summary>
         /// <param name="node">Node which type is needed</param>
         /// <returns>Type of value represented by node if registered, <c>null</c> otherwise</returns>
-        internal InstanceInfo GetNodeType(INodeAST node)
+        internal TypeDescriptor GetNodeType(INodeAST node)
         {
-            InstanceInfo result;
+            TypeDescriptor result;
             _nodeTypes.TryGetValue(node, out result);
             return result;
+        }
+
+        /// <summary>
+        /// Resolve type of value that is assigned into variable
+        /// </summary>
+        /// <param name="variableUsing">Using where variable is assigned</param>
+        /// <returns><see cref="TypeDescriptor"/> of resolved type if available, <c>null</c> otherwise</returns>
+        internal TypeDescriptor ResolveAssignType(INodeAST variableUsing)
+        {
+            if (variableUsing.Parent == null || variableUsing.Parent.Arguments.Length < 2)
+                return null;
+
+            var assignedNode = variableUsing.Parent.Arguments[1];
+            return resolveNodeType(assignedNode);
+        }
+
+        private TypeDescriptor resolveNodeType(INodeAST node)
+        {
+            return GetNodeType(node);
         }
     }
 }

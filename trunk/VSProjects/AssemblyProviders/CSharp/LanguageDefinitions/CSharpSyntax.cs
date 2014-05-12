@@ -31,6 +31,11 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         internal const string ThisVariable = "this";
 
         /// <summary>
+        /// Name of variable where this object is stored
+        /// </summary>
+        internal const string ImplicitVariableType = "var";
+
+        /// <summary>
         /// Operator used for return statement
         /// </summary>
         internal const string ReturnOperator = "return";

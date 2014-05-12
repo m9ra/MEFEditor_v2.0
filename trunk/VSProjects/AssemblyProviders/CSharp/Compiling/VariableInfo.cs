@@ -21,10 +21,38 @@ namespace AssemblyProviders.CSharp.Compiling
         private readonly List<INodeAST> _variableUsings = new List<INodeAST>();
 
         /// <summary>
+        /// Compilation info belonging to context where variable has been declared
+        /// </summary>
+        private readonly CompilationInfo _info;
+
+        /// <summary>
+        /// Type of variable
+        /// </summary>
+        private TypeDescriptor _type;
+
+        /// <summary>
         /// Currently known type of variable. 
         /// <remarks>It may change during time and can be null for implicitly typed variables</remarks>
         /// </summary>
-        public TypeDescriptor Type { get; private set; }
+        public TypeDescriptor Type
+        {
+            get
+            {
+                if (_type == null)
+                {
+                    //find type between usings
+                    foreach (var use in _variableUsings)
+                    {
+                        _type = _info.ResolveAssignType(use);
+                        if (_type != null)
+                            break;
+                    }
+                }
+
+                return _type;
+            }
+            private set { _type = value; }
+        }
 
         /// <summary>
         /// Name of represented variables
@@ -44,24 +72,18 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <summary>
         /// Initialize <see cref="VariableInfo"/> object from variable declaration
         /// </summary>
-        /// <param name="declaration">Node where is variable declared</param>
-        internal VariableInfo(INodeAST declaration)
+        internal VariableInfo(INodeAST declaration, TypeDescriptor declaredType, CompilationInfo info)
         {
+            _info = info;
             Declaration = declaration;
             Name = declaration.Arguments[1].Value;
 
             //TODO chained type names, namespace resolvings,..
-            var typeName = declaration.Arguments[0].Value;
-            if (typeName == "var")
-            {
-                IsImplicitlyTyped = true;
-            }
-            else
-            {
-                //not implicitly typed variable, we can determine type
-                IsImplicitlyTyped = false;
-                Type = TypeDescriptor.Create(typeName);
-            }
+            IsImplicitlyTyped = declaration.Arguments[0].Value == LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
+            Type = declaredType;
+
+            if (!IsImplicitlyTyped && Type == null)
+                throw new NotSupportedException("Cannot create non implicit declaration without type");
         }
 
         /// <summary>
@@ -69,8 +91,9 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <remarks>Declaration node is not available for method arguments</remarks>
         /// </summary>
         /// <param name="argumentName">Name of argument defining current variable</param>
-        internal VariableInfo(string argumentName)
+        internal VariableInfo(string argumentName, CompilationInfo info)
         {
+            _info = info;
             Name = argumentName;
         }
 
@@ -136,5 +159,7 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             _variableUsings.Add(variableUse);
         }
+
+
     }
 }

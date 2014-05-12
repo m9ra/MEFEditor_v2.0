@@ -161,7 +161,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 _storage = storageProvider.Storage;
                 lValue.AssignNewObject(_objectType, _newOperator);
             }
-            
+
             _ctorCall.Generate();
         }
     }
@@ -245,7 +245,7 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             get
             {
-                return E.VariableInfo(_variable.Name) as TypeDescriptor;
+                return _variable.Type;
             }
         }
 

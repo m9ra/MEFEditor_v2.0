@@ -358,11 +358,22 @@ namespace TypeSystem
             return method(typeName + "." + methodName, description, needsDynamicResolution);
         }
 
+        /// <summary>
+        /// Create MethodID from given changeMethod that has dynamic resolution flag set according to
+        /// given needsDynamicResolution 
+        /// </summary>
+        /// <param name="changedMethod">Method which declaring type will be changed</param>
+        /// <param name="needsDynamicResolution">Determine that method needs dynamic resolution</param>
+        /// <returns>Created MethodID</returns>
+        public static MethodID ChangeDynamicity(MethodID changedMethod, bool needsDynamicResolution)
+        {
+            return new MethodID(changedMethod.MethodString, needsDynamicResolution);
+        }
+
         #endregion
 
         #region Private utilities
-
-
+        
         /// <summary>
         /// Creates non-generic MethodID from given methodPath and paramDescription
         /// </summary>
@@ -388,6 +399,7 @@ namespace TypeSystem
         }
 
         #endregion
+
 
     }
 }

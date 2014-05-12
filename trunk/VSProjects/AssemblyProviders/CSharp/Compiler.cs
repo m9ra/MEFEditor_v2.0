@@ -216,7 +216,7 @@ namespace AssemblyProviders.CSharp
             if (MethodInfo.HasThis)
             {
                 E.AssignArgument(CSharpSyntax.ThisVariable, MethodInfo.DeclaringType, 0);
-                var thisVariable = new VariableInfo(CSharpSyntax.ThisVariable);
+                var thisVariable = new VariableInfo(CSharpSyntax.ThisVariable, _source.CompilationInfo);
                 declareVariable(thisVariable);
             }
             else
@@ -230,7 +230,7 @@ namespace AssemblyProviders.CSharp
                 var arg = MethodInfo.Parameters[i];
                 E.AssignArgument(arg.Name, arg.Type, i + 1); //argument 0 is always object which method is called
 
-                var variable = new VariableInfo(arg.Name);
+                var variable = new VariableInfo(arg.Name, _source.CompilationInfo);
                 variable.HintAssignedType(arg.Type);
                 declareVariable(variable);
             }
@@ -675,7 +675,7 @@ namespace AssemblyProviders.CSharp
             {
                 case NodeTypes.declaration:
                     //declaration of new variable
-                    var variable = new VariableInfo(lValue);
+                    var variable = resolveDeclaration(lValue);
                     declareVariable(variable);
                     return new VariableLValue(variable, lValue, Context);
 
@@ -1257,8 +1257,19 @@ namespace AssemblyProviders.CSharp
         /// <returns>Literal representation of typeof</returns>
         private LiteralType resolveTypeofArgument(INodeAST typeofArgument)
         {
+            var info = resolveTypeDescriptor(typeofArgument);
+            return new LiteralType(info);
+        }
+
+        /// <summary>
+        /// Resolve suffix name of type described by root of type hierarchy
+        /// </summary>
+        /// <param name="typeHierarchyRoot">Hierarchy of partly namespaced type</param>
+        /// <returns>Resolved suffix of type name</returns>
+        private static string resolveSuffixTypeName(INodeAST typeHierarchyRoot)
+        {
             var resultType = new StringBuilder();
-            var currentNode = typeofArgument;
+            var currentNode = typeHierarchyRoot;
 
             while (currentNode != null)
             {
@@ -1273,8 +1284,8 @@ namespace AssemblyProviders.CSharp
                 currentNode = currentNode.Child;
             }
 
-            var info = resolveTypeDescriptor(resultType.ToString());
-            return new LiteralType(info);
+            var suffixTypeName = resultType.ToString();
+            return suffixTypeName;
         }
 
         /// <summary>
@@ -1293,6 +1304,41 @@ namespace AssemblyProviders.CSharp
                     return typeDescriptor;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Resolve <see cref="TypeDescriptor"/> of type described by root of type hierarchy
+        /// </summary>
+        /// <param name="typeHierarchyRoot">Hierarchy of partly namespaced type</param>
+        /// <returns>Resolved <see cref="TypeDescriptor"/> if available, <c>null</c> otherwise</returns>
+        private TypeDescriptor resolveTypeDescriptor(INodeAST typeHierarchyRoot)
+        {
+            var suffixTypeName = resolveSuffixTypeName(typeHierarchyRoot);
+            return resolveTypeDescriptor(suffixTypeName);
+        }
+
+        /// <summary>
+        /// Resolve declaration of variable specified by given declaration node
+        /// </summary>
+        /// <param name="declarationNode">Node where is variable declared</param>
+        /// <returns>Declared variable<returns>
+        private VariableInfo resolveDeclaration(INodeAST declarationNode)
+        {
+            Debug.Assert(declarationNode.NodeType == NodeTypes.declaration);
+
+            var typeNode = declarationNode.Arguments[0];
+            var isImplicitlyTyped = typeNode.Value == LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
+
+            //resolve type if needed
+            TypeDescriptor declaredType = null;
+            if (!isImplicitlyTyped)
+            {
+                declaredType = resolveTypeDescriptor(typeNode);
+                if (declaredType == null)
+                    throw parsingException(declarationNode, "Cannot resolve type of variable declaration");
+            }
+
+            return new VariableInfo(declarationNode, declaredType, _source.CompilationInfo);
         }
 
         #endregion

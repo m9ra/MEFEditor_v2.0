@@ -32,7 +32,7 @@ namespace TypeSystem
             }
             else
             {
-                Generator = Info.IsAbstract ? null : generator;
+                Generator =  generator;
             }
         }
 

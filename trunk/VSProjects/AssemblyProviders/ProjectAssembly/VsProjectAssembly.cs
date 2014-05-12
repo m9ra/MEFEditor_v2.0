@@ -399,8 +399,9 @@ namespace AssemblyProviders.ProjectAssembly
                 //create generic specialization 
                 var methodItem = buildGenericMethod(node, methodGenericPath, methodGenericPath.IsGetter);
 
-                if (methodItem.Info.MethodID.Equals(methodID))
-                    //we have found matching generic specialization
+                if (methodItem.Info.MethodID.MethodString==methodID.MethodString)
+                    //we have found matching generic specialization 
+                    //omit dynamic resolution flag, because it is transitive-and it dont need to be handled
                     return methodItem;
 
                 hasAnyMethod = true;

@@ -213,7 +213,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             //collect information from element - note, every call working with element may fail with exception, because of VS doesn't provide determinism
             var name = GetName(element);
             var isShared = element.IsShared;
-            var isAbstract = element.MustImplement;
+            var isAbstract = element.MustImplement || element.IsVirtual();
             var declaringType = CreateDescriptor(element.DeclaringClass());
             var returnType = CreateDescriptor(element.Type);
             var parameters = CreateParametersInfo(element.Parameters);
