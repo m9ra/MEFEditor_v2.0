@@ -101,7 +101,7 @@ namespace AssemblyProviders.ProjectAssembly
             var w = Stopwatch.StartNew();
 
             var source = CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
-            
+
             VS.Log.Message("Parsing time for {0} {1}ms", activation.Method.MethodID, w.ElapsedMilliseconds);
         }
 
@@ -390,31 +390,37 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>null</c> otherwise</returns>
         private MethodItem getMethodItemFromGeneric(MethodID methodID, PathInfo methodGenericPath)
         {
-            //determine that any method has been found according to signature
-            var hasAnyMethod = false;
-
             //from given nodes find the one with matching id
             foreach (var node in findMethodNodes(methodGenericPath.Signature))
             {
                 //create generic specialization 
-                var methodItem = buildGenericMethod(node, methodGenericPath, methodGenericPath.IsGetter);
+                var methodItem = buildGenericMethod(node, methodGenericPath);
 
-                if (methodItem.Info.MethodID.MethodString==methodID.MethodString)
+                if (methodItem.Info.MethodID.MethodString == methodID.MethodString)
                     //we have found matching generic specialization 
                     //omit dynamic resolution flag, because it is transitive-and it dont need to be handled
                     return methodItem;
-
-                hasAnyMethod = true;
             }
 
-            //check if param less ctor is needed
+            //check if param less ctor or cctor is needed
             var needParamLessCtor = Naming.IsParamLessCtor(methodID);
-            if (needParamLessCtor && !hasAnyMethod)
+            var needClassCtor = Naming.IsClassCtor(methodID);
+
+            if (needParamLessCtor || needClassCtor)
             {
                 //there is no ctor defined and we need paramLessCtor - implicit one should be created
                 var declaringClass = _searcher.Search(Naming.GetDeclaringType(methodID)) as CodeClass;
                 if (declaringClass != null)
-                    return MethodBuilder.BuildImplicitCtor(declaringClass);
+                {
+                    if (needParamLessCtor)
+                    {
+                        return MethodBuilder.BuildImplicitCtor(declaringClass);
+                    }
+                    else
+                    {
+                        return MethodBuilder.BuildImplicitClassCtor(declaringClass);
+                    }
+                }
             }
 
             return null;
@@ -454,6 +460,7 @@ namespace AssemblyProviders.ProjectAssembly
                     case vsCMElement.vsCMElementVariable:
                     case vsCMElement.vsCMElementProperty:
                     case vsCMElement.vsCMElementFunction:
+                    case vsCMElement.vsCMElementClass:
                         yield return element;
                         break;
                 }
@@ -495,9 +502,9 @@ namespace AssemblyProviders.ProjectAssembly
         /// <param name="methodNode">Node from which <see cref="MethodItem"/> is builded</param>
         /// <param name="methodGenericPath">Arguments for generic method</param>
         /// <returns>Builded <see cref="MethodItem"/></returns>
-        private MethodItem buildGenericMethod(CodeElement methodNode, PathInfo methodGenericPath, bool needGetter)
+        private MethodItem buildGenericMethod(CodeElement methodNode, PathInfo methodGenericPath)
         {
-            var methodItem = MethodBuilder.Build(methodNode, needGetter, this);
+            var methodItem = MethodBuilder.Build(methodNode, methodGenericPath.LastPart, this);
 
             if (methodGenericPath != null && methodGenericPath.HasGenericArguments)
                 //make generic specialization

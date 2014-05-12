@@ -120,14 +120,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         private IEnumerable<MethodItem> getMethodItems(string searchedName)
         {
             var methods = new List<MethodItem>();
-            var isGetter = searchedName.StartsWith(Naming.GetterPrefix);
-
             var path = PathInfo.Append(_currentPath, searchedName);
 
             var nodes = getActualNodes();
             foreach (CodeElement child in nodes)
             {
-                var method = MethodBuilder.Build(child, isGetter, _assembly);
+                var method = MethodBuilder.Build(child, path.LastPart, _assembly);
                 if (method == null || method.Info.MethodName != searchedName)
                     //not everything could be filtered by CodeFunction testing
                     continue;

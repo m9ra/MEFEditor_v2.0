@@ -365,9 +365,11 @@ namespace UnitTesting
                 var result=obj.Property;
             ")
 
-            .AddMethod("TestObj.#ctor", @"
+            .AddMethod("TestObj." + Naming.CtorName, @"
                 Property=""ValueToSet"";                
             ", Method.Ctor_NoParam)
+
+            .AddMethod("TestObj.#initializer", (c) => { }, Method.Void_NoParam)
 
             .AddMethod("TestObj.set_Property", (c) =>
             {
@@ -562,9 +564,7 @@ namespace UnitTesting
                 var result=test.Generic<Test2>(""GenericCallArg"");
             ")
 
-            .AddMethod("Test." + Naming.CtorName, @"
-                
-            ", Method.Ctor_NoParam)
+            .AddMethod("Test." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
 
             .AddMethod("Test.Generic<T1>", @"
                 var x=new T1(p);

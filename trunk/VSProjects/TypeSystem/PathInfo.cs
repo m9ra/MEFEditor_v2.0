@@ -42,6 +42,15 @@ namespace TypeSystem
             }
         }
 
+        public string LastPart
+        {
+            get
+            {
+                return ShortSignature.Substring(PrePath.Length);
+            }
+        }
+
+
         public PathInfo(string name)
         {
             Name = name;
@@ -179,5 +188,6 @@ namespace TypeSystem
                 return new PathInfo(path, suffix);
             }
         }
+
     }
 }

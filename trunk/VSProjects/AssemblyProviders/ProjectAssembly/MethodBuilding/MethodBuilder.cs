@@ -11,6 +11,7 @@ using Analyzing;
 using TypeSystem;
 using Interoperability;
 
+using AssemblyProviders.CSharp.LanguageDefinitions;
 using AssemblyProviders.ProjectAssembly.Traversing;
 
 namespace AssemblyProviders.ProjectAssembly.MethodBuilding
@@ -31,6 +32,11 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         private bool _needGetter;
 
         /// <summary>
+        /// Name that is requried for method that will be built
+        /// </summary>
+        private string _requiredName;
+
+        /// <summary>
         /// Assembly where built method has been declared
         /// </summary>
         private readonly VsProjectAssembly _declaringAssembly;
@@ -38,12 +44,13 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <summary>
         /// Hide constructor - Static Build method should be used
         /// </summary>
-        private MethodBuilder(bool needGetter, VsProjectAssembly declaringAssembly)
+        private MethodBuilder(string requiredName, VsProjectAssembly declaringAssembly)
         {
             if (declaringAssembly == null)
                 throw new ArgumentNullException("declaringAssembly");
 
-            _needGetter = needGetter;
+            _needGetter = requiredName.StartsWith(Naming.GetterPrefix);
+            _requiredName = requiredName;
             _declaringAssembly = declaringAssembly;
         }
 
@@ -56,9 +63,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <param name="declaringAssembly">Assembly where builded method has been declared</param>
         /// <param name="needGetter">Determine that getter is needed from given element</param>
         /// <returns>Built method</returns>
-        internal static MethodItem Build(CodeElement element, bool needGetter, VsProjectAssembly declaringAssembly)
+        internal static MethodItem Build(CodeElement element, string requiredName, VsProjectAssembly declaringAssembly)
         {
-            var builder = new MethodBuilder(needGetter, declaringAssembly);
+            var builder = new MethodBuilder(requiredName, declaringAssembly);
 
             builder.BaseVisitElement(element);
 
@@ -96,6 +103,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
             var fullname = element.FullName;
             var genericPath = new PathInfo(fullname);
+
             var activation = new ParsingActivation(sourceCode, methodInfo, genericPath.GenericArgs, namespaces);
             registerActivation(activation, element);
 
@@ -118,6 +126,44 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             //variable will generate auto property
             return buildAutoProperty(methodInfo);
         }
+
+        /// <summary>
+        /// Build <see cref="MethodItem"/> from given <see cref="CodeClass2"/> element
+        /// </summary>
+        /// <param name="element">Method definition element</param>
+        /// <param name="buildGetter">Determine that getter or setter should be builded</param>
+        /// <returns>Built method</returns>
+        internal static MethodItem BuildFrom(CodeClass2 element, bool needStatic, VsProjectAssembly declaringAssembly)
+        {
+            var methodInfo = CreateMethodInfo(element, needStatic);
+            var initializerSource = new StringBuilder();
+
+            initializerSource.AppendLine("{");
+            foreach (var child in element.Children)
+            {
+                var initializable = child as CodeVariable2;
+                if (
+                    initializable == null ||
+                    initializable.InitExpression == null ||
+                    initializable.IsShared != needStatic
+                    )
+                    continue;
+
+                initializerSource.Append(initializable.Name);
+                initializerSource.Append(" = ");
+                initializerSource.Append(initializable.InitExpression);
+                initializerSource.AppendLine(";");
+            }
+
+            initializerSource.Append("}");
+            var sourceCode = initializerSource.ToString();
+
+            var activation = new ParsingActivation(sourceCode, methodInfo, new string[0]);
+            var generator = new SourceMethodGenerator(activation, declaringAssembly.ParsingProvider);
+
+            return new MethodItem(generator, methodInfo);
+        }
+
 
         /// <summary>
         /// Build <see cref="MethodItem"/> from given <see cref="CodeProperty"/> element
@@ -174,7 +220,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>   
         /// <param name="declaringClass">Class that declare implicit class ctor</param>
         /// <returns>Built method</returns>
-        internal static MethodItem BuildImplicitClassCtor(CodeClass2 declaringClass)
+        internal static MethodItem BuildImplicitClassCtor(CodeClass declaringClass)
         {
             var declaringType = CreateDescriptor(declaringClass);
             var methodInfo = new TypeMethodInfo(declaringType,
@@ -286,7 +332,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// Creates <see cref="TypeMethodInfo"/> for given element
         /// </summary>
         /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
-        /// <param name="buildGetter"></param>
+        /// <param name="buildGetter">Determine that getter or setter should be built</param>
         /// <returns>Created <see cref="TypeMethodInfo"/></returns>
         internal static TypeMethodInfo CreateMethodInfo(CodeProperty element, bool buildGetter)
         {
@@ -322,7 +368,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
             if (isIndexer)
             {
-                var indexerBody=buildGetter?element.Getter:element.Setter;
+                var indexerBody = buildGetter ? element.Getter : element.Setter;
                 var indexParameters = CreateParametersInfo(indexerBody.Parameters);
                 parameters = indexParameters.Concat(parameters).ToArray();
             }
@@ -339,7 +385,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// Creates <see cref="TypeMethodInfo"/> for given element
         /// </summary>
         /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
-        /// <param name="buildGetter"></param>
+        /// <param name="buildGetter">Determine that getter or setter should be built</param>
         /// <returns>Created <see cref="TypeMethodInfo"/></returns>
         internal static TypeMethodInfo CreateMethodInfo(CodeVariable element, bool buildGetter)
         {
@@ -370,6 +416,25 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var methodInfo = new TypeMethodInfo(
                 declaringType, name, returnType, parameters,
                 isShared, methodTypeArguments, isAbstract
+                );
+
+            return methodInfo;
+        }
+
+        /// <summary>
+        /// Creates <see cref="TypeMethodInfo"/> for given element
+        /// </summary>
+        /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
+        /// <returns>Created <see cref="TypeMethodInfo"/></returns>
+        internal static TypeMethodInfo CreateMethodInfo(CodeClass2 element, bool needStatic)
+        {
+            //TODO: refactor from VsProjectAssembly
+            var name = needStatic ? CSharp.LanguageDefinitions.CSharpSyntax.MemberStaticInitializer : CSharp.LanguageDefinitions.CSharpSyntax.MemberInitializer;
+            var declaringType = CreateDescriptor(element);
+
+            var methodInfo = new TypeMethodInfo(
+                declaringType, name, TypeDescriptor.Void, ParameterTypeInfo.NoParams,
+                false, TypeDescriptor.NoDescriptors, false
                 );
 
             return methodInfo;
@@ -493,12 +558,15 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         private static MethodItem buildAutoProperty(TypeMethodInfo methodInfo)
         {
             var buildGetter = !methodInfo.ReturnType.Equals(TypeDescriptor.Void);
+            var methodName = methodInfo.MethodName;
+            var propertyStorage = buildGetter ? methodName.Substring(Naming.GetterPrefix.Length) : methodName.Substring(Naming.SetterPrefix.Length);
+            propertyStorage = "@" + propertyStorage;
 
             if (buildGetter)
             {
                 var getterGenerator = new DirectGenerator((c) =>
                 {
-                    var fieldValue = c.GetField(c.CurrentArguments[0], methodInfo.MethodName) as Instance;
+                    var fieldValue = c.GetField(c.CurrentArguments[0], propertyStorage) as Instance;
                     c.Return(fieldValue);
                 });
 
@@ -509,7 +577,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
                 var setterGenerator = new DirectGenerator((c) =>
                 {
                     var setValue = c.CurrentArguments[1];
-                    c.SetField(c.CurrentArguments[0], methodInfo.MethodName, setValue);
+                    c.SetField(c.CurrentArguments[0], propertyStorage, setValue);
                 });
 
                 return new MethodItem(setterGenerator, methodInfo);
@@ -533,6 +601,18 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         public override void VisitElement(CodeElement e)
         {
             //This element wont generate method implementation
+        }
+
+        /// <inheritdoc />
+        public override void VisitClass(CodeClass2 e)
+        {
+            var needsInitializer = _requiredName.Contains(CSharpSyntax.MemberInitializer);
+            var needsStaticInitializer = _requiredName.Contains(CSharpSyntax.MemberStaticInitializer);
+
+            if (needsInitializer || needsStaticInitializer)
+            {
+                Result(BuildFrom(e, needsStaticInitializer, _declaringAssembly));
+            }
         }
 
         /// <inheritdoc />

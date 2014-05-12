@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Analyzing;
 using TypeSystem;
 
 namespace AssemblyProviders.ProjectAssembly
@@ -77,8 +78,8 @@ namespace AssemblyProviders.ProjectAssembly
             //create defensive copy
             GenericParameters = genericParameters.ToArray();
 
-            //TODO is defensive copy needed?
-            Namespaces = namespaces;
+            //create defensive copy
+            Namespaces = namespaces.ToArray();
         }
 
         /// <summary>

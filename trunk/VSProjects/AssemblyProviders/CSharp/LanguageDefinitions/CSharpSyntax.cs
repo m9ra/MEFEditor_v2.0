@@ -31,6 +31,16 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         internal const string ThisVariable = "this";
 
         /// <summary>
+        /// Name of member initializer method (virtual method used for implementation purposes)
+        /// </summary>
+        internal const string MemberInitializer = "#initializer";
+
+        /// <summary>
+        /// Name of static member initializer method (virtual method used for implementation purposes)
+        /// </summary>
+        internal const string MemberStaticInitializer = "#static_initializer";
+
+        /// <summary>
         /// Name of variable where this object is stored
         /// </summary>
         internal const string ImplicitVariableType = "var";

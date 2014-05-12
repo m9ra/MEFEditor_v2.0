@@ -168,7 +168,7 @@ namespace AssemblyProviders.CSharp
             var compiler = new Compiler(activation, emitter, services);
 
             compiler.generateInstructions();
-
+            
             return compiler._source;
         }
 
@@ -203,6 +203,9 @@ namespace AssemblyProviders.CSharp
             //generate argument assigns
             generateArgumentsInitialization();
 
+            //can generate initialization routines before method body
+            generatePreBodyRoutines();
+
             //generate method body
             generateSubsequence(_method);
         }
@@ -213,10 +216,11 @@ namespace AssemblyProviders.CSharp
         private void generateArgumentsInitialization()
         {
             //prepare object that is called
+            E.AssignArgument(CSharpSyntax.ThisVariable, MethodInfo.DeclaringType, 0);
+            var thisVariable = new VariableInfo(CSharpSyntax.ThisVariable, _source.CompilationInfo);
+
             if (MethodInfo.HasThis)
-            {
-                E.AssignArgument(CSharpSyntax.ThisVariable, MethodInfo.DeclaringType, 0);
-                var thisVariable = new VariableInfo(CSharpSyntax.ThisVariable, _source.CompilationInfo);
+            {              
                 declareVariable(thisVariable);
             }
             else
@@ -236,6 +240,21 @@ namespace AssemblyProviders.CSharp
             }
         }
 
+        /// <summary>
+        /// Generate instructions required for initialization purposes
+        /// of constructors
+        /// </summary>
+        private void generatePreBodyRoutines()
+        {
+            var needsInitialization = MethodInfo.MethodName == Naming.ClassCtorName || MethodInfo.MethodName == Naming.CtorName;
+            if (!needsInitialization)
+                //there is nothing to do
+                return;
+
+            var initializer=Naming.Method(MethodInfo.DeclaringType, CSharpSyntax.MemberInitializer, false);
+            E.Call(initializer, CSharpSyntax.ThisVariable, Arguments.Values());
+        }
+        
         /// <summary>
         /// Generate instructions from subsequence of given node
         /// </summary>

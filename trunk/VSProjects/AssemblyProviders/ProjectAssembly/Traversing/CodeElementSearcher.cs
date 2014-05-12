@@ -60,6 +60,17 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 //nothing has been found
                 yield break;
 
+            var lastPart = pathParts[pathParts.Length - 1];
+
+            //TODO: refactor out of VsProjectAssembly
+            if (
+                lastPart == CSharp.LanguageDefinitions.CSharpSyntax.MemberInitializer ||
+                lastPart == CSharp.LanguageDefinitions.CSharpSyntax.MemberStaticInitializer
+                )
+            {
+                yield return parentElement;
+                yield break;
+            }
 
             foreach (CodeElement child in parentElement.Children())
             {
