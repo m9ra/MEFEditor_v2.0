@@ -31,6 +31,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         private readonly TypeServices _services;
 
         /// <summary>
+        /// Assembly using current searcher
+        /// </summary>
+        private readonly VsProjectAssembly _assembly;
+
+
+        /// <summary>
         /// Indexes of built components
         /// </summary>
         private Dictionary<CodeClass, ComponentInfoBuilder> _builtComponents = new Dictionary<CodeClass, ComponentInfoBuilder>();
@@ -39,12 +45,17 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// Initialize instance of <see cref="ComponentSearcher"/>
         /// </summary>
         /// <param name="services"><see cref="TypeServices"/> used for resolving types' inheritance</param>
-        internal ComponentSearcher(TypeServices services)
+        /// <param name="assembly">Assembly using current searcher</param>
+        internal ComponentSearcher(VsProjectAssembly assembly, TypeServices services)
         {
             if (services == null)
                 throw new ArgumentNullException("services");
 
+            if (assembly == null)
+                throw new ArgumentNullException("assembly");
+
             _services = services;
+            _assembly = assembly;
         }
 
         #region Visitor overrides
@@ -248,11 +259,26 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 throw new NotImplementedException("Log that method cannot been loaded");
             }
 
-            //TODO handle composition point arguments
             var info = MethodBuilder.CreateMethodInfo(method);
 
             var builder = getOrCreateCurrentBuilder(compositionAttrbiute.Element as CodeElement);
-            builder.AddExplicitCompositionPoint(info.MethodID);
+            builder.AddExplicitCompositionPoint(info.MethodID, createInitializer(compositionAttrbiute, info));
+        }
+
+        private GeneratorBase createInitializer(AttributeInfo compositionAttribute, TypeMethodInfo compositionPointInfo)
+        {
+            //TODO refactor into VsProjectAssembly
+
+
+            if (compositionPointInfo.Parameters.Length == 0)
+                //no arguments are required
+                return null;
+
+            if (compositionPointInfo.Parameters.Length != compositionAttribute.PositionalArgumentsCount)
+                //TODO add special logging
+                _assembly.VS.Log.Error("Detected explicit composition point with wrong argument count for {0}", compositionPointInfo.MethodID);
+
+            return new InitializerGenerator(_assembly, compositionAttribute, compositionPointInfo);
         }
 
         /// <summary>

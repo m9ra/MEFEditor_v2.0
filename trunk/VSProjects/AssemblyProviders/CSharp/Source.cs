@@ -423,7 +423,8 @@ namespace AssemblyProviders.CSharp
                 return node.Value == LanguageDefinitions.CSharpSyntax.NewOperator;
             }
 
-            if(node.IsCallRoot()){
+            if (node.IsCallRoot())
+            {
                 //calls has side effect only if theire complete - from hierarchy root
                 return true;
             }

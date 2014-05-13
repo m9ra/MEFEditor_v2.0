@@ -166,7 +166,7 @@ namespace Analyzing.Execution
 
             var generator = getGenerator(ref name, dynamicInfo);
 
-            pushCall(name, generator, argumentValues);
+            PushCall(name, generator, argumentValues);
         }
 
 
@@ -184,7 +184,7 @@ namespace Analyzing.Execution
             }
         }
 
-        private void pushCall(MethodID name, GeneratorBase generator, Instance[] argumentValues)
+        internal void PushCall(MethodID name, GeneratorBase generator, Instance[] argumentValues)
         {
             var callTransformProvider = Edits == null ? null : Edits.TransformProvider;
             var call = new CallContext(this, name, callTransformProvider, generator, argumentValues);
@@ -243,7 +243,7 @@ namespace Analyzing.Execution
 
             if (dynamicCall != null)
             {
-                pushCall(dynamicCall.Method, dynamicCall.Generator, dynamicCall.Arguments);
+                PushCall(dynamicCall.Method, dynamicCall.Generator, dynamicCall.Arguments);
                 CurrentCall.FollowingDynamicCalls = dynamicCall.NextDynamicCall;
             }
 

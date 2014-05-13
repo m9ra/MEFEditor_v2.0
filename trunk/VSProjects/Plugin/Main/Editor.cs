@@ -238,11 +238,10 @@ namespace MEFEditor.Plugin.Main
         /// <summary>
         /// Show composition based on analysis of given method
         /// </summary>
-        /// <param name="entryMethod">Entry method of analysis</param>
-        /// <param name="entryArguments">Arguments for entry method</param>
-        private void showComposition(MethodID entryMethod, Instance[] entryArguments)
+        /// <param name="compositionPoint">Composition point to be analyzed</param>
+        private void showComposition(CompositionPoint compositionPoint)
         {
-            if (entryMethod == null)
+            if (compositionPoint == null)
             {
                 _guiManager.Display(null);
                 _currentResult = null;
@@ -251,7 +250,7 @@ namespace MEFEditor.Plugin.Main
             {
                 var watch = Stopwatch.StartNew();
 
-                runAnalysis(entryMethod, entryArguments);
+                runAnalysis(compositionPoint);
                 _vs.Log.Message("Executing composition point {0}ms", watch.ElapsedMilliseconds);
 
                 if (_analysisError == null)
@@ -273,14 +272,17 @@ namespace MEFEditor.Plugin.Main
         /// <summary>
         /// Run analysis on given composition point
         /// </summary>
-        /// <param name="entryMethod">Entry method of analysis</param>
-        /// <param name="entryArguments">Arguments for entry method</param>
-        private void runAnalysis(MethodID entryMethod, Instance[] entryArguments)
+        /// <param name="compositionPoint">Composition point to be analyzed</param>
+        private void runAnalysis(CompositionPoint compositionPoint)
         {
             _analysisError = null;
 
             try
             {
+                var entryMethod = compositionPoint.EntryMethod;
+                var entryArguments = getCompositionPointArguments(compositionPoint);
+
+                //run analysis on selected compsition with obtained arguments
                 _currentResult = _machine.Run(_loader, entryMethod, entryArguments);
                 _currentResult.OnViewCommit += (v) =>
                 {
@@ -298,6 +300,41 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
+        /// Get arguments for given composition point
+        /// </summary>
+        /// <param name="compositionPoint">Composition point which arguments are requested</param>
+        /// <returns>Composition point's arguments</returns>
+        private Instance[] getCompositionPointArguments(CompositionPoint compositionPoint)
+        {
+            var entryMethod = compositionPoint.EntryMethod;
+            var entryArguments = new List<Instance>();
+
+            //prepare composition point arguments
+            entryArguments.Add(_machine.CreateInstance(compositionPoint.DeclaringComponent));
+            if (compositionPoint.ArgumentProvider != null)
+            {
+                try
+                {
+                    var result = _machine.Run(_loader, compositionPoint.ArgumentProvider);
+                    var context = result.EntryContext;
+
+                    for (var i = 0; i < Naming.GetMethodParamCount(entryMethod); ++i)
+                    {
+                        var argVariable = "arg" + i;
+                        var entryArgument = context.GetValue(new VariableName(argVariable));
+                        entryArguments.Add(entryArgument);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Preparing composition point arguments failed", ex);
+                }
+            }
+
+            return entryArguments.ToArray();
+        }
+
+        /// <summary>
         /// Refresh drawing according to current composition point
         /// <remarks>Is called only</remarks>
         /// </summary>
@@ -309,22 +346,7 @@ namespace MEFEditor.Plugin.Main
                 return;
 
             var compositionPoint = _guiManager.SelectedCompositionPoint;
-
-            if (compositionPoint == null)
-            {
-                showComposition(null, null);
-            }
-            else
-            {
-                var entryMethod = compositionPoint.EntryMethod;
-
-                //TODO proper arguments resolving
-                var entryArguments = new[]{
-                    _machine.CreateInstance(compositionPoint.DeclaringComponent)
-                };
-
-                showComposition(entryMethod, entryArguments);
-            }
+            showComposition(compositionPoint);
         }
 
         /// <summary>

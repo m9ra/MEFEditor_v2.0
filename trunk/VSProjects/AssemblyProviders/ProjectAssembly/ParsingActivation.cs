@@ -48,6 +48,11 @@ namespace AssemblyProviders.ProjectAssembly
         internal readonly IEnumerable<string> Namespaces;
 
         /// <summary>
+        /// Determine that method has to be compiled inline 
+        /// </summary>
+        internal bool IsInline { get { return Method.MethodName == InlineMethodName; } }
+
+        /// <summary>
         /// Event fired whenever change on this source is commited
         /// </summary>
         public event SourceChangeCommitedEvent SourceChangeCommited;
@@ -57,17 +62,21 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         public event NavigationRequestEvent NavigationRequested;
 
+        /// <summary>
+        /// Name for methods that will be treated as inline ones by compiler
+        /// </summary>
+        public static readonly string InlineMethodName = "#inline";
 
         public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters, IEnumerable<string> namespaces = null)
         {
             if (sourceCode == null)
                 throw new ArgumentNullException("sourceCode");
 
-            if (method == null)
-                throw new ArgumentNullException("method");
-
             if (genericParameters == null)
                 throw new ArgumentNullException("genericParameterrs");
+
+            if (method == null)
+                throw new ArgumentNullException("method");
 
             if (namespaces == null)
                 namespaces = new string[0];

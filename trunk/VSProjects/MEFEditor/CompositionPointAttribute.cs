@@ -8,5 +8,11 @@ namespace MEFEditor
 {
     public class CompositionPointAttribute:Attribute
     {
+        public readonly IEnumerable<object> Arguments;
+
+        public CompositionPointAttribute(params object[] arguments)
+        {
+            Arguments = arguments;
+        }
     }
 }

@@ -214,9 +214,9 @@ namespace TypeSystem
         /// Add explicit composition point of component.
         /// </summary>
         /// <param name="method">Composition point method</param>
-        public void AddExplicitCompositionPoint(MethodID method)
+        public void AddExplicitCompositionPoint(MethodID method, GeneratorBase initializer = null)
         {
-            _explicitCompositionPoints.Add(new CompositionPoint(ComponentType, method, true));
+            _explicitCompositionPoints.Add(new CompositionPoint(ComponentType, method, true, initializer));
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace TypeSystem
         /// </summary>
         public void AddImplicitCompositionPoint()
         {
-            _implicitCompositionPoint = new CompositionPoint(ComponentType, getComponentParamLessCtorID(), false);
+            _implicitCompositionPoint = new CompositionPoint(ComponentType, getComponentParamLessCtorID(), false, null);
         }
 
         /// <summary>

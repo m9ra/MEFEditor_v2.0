@@ -152,6 +152,11 @@ namespace AssemblyProviders.CSharp
         internal TypeMethodInfo MethodInfo { get { return _activation.Method; } }
 
         /// <summary>
+        /// Determine that code will be inlined
+        /// </summary>
+        internal bool IsInlined { get { return _activation.IsInline; } }
+
+        /// <summary>
         /// Namespaces that are available for compiled method
         /// </summary>
         internal IEnumerable<string> Namespaces { get { return _source.Namespaces; } }
@@ -168,7 +173,7 @@ namespace AssemblyProviders.CSharp
             var compiler = new Compiler(activation, emitter, services);
 
             compiler.generateInstructions();
-            
+
             return compiler._source;
         }
 
@@ -195,16 +200,19 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         private void generateInstructions()
         {
-            //information attached to entry block of method preparation
-            var entryBlock = E.StartNewInfoBlock();
-            entryBlock.Comment = EntryComment;
-            entryBlock.BlockTransformProvider = new Transformations.BlockProvider(getFirstLine(), _method.Source);
+            if (!IsInlined)
+            {
+                //information attached to entry block of method preparation
+                var entryBlock = E.StartNewInfoBlock();
+                entryBlock.Comment = EntryComment;
+                entryBlock.BlockTransformProvider = new Transformations.BlockProvider(getFirstLine(), _method.Source);
 
-            //generate argument assigns
-            generateArgumentsInitialization();
+                //generate argument assigns
+                generateArgumentsInitialization();
 
-            //can generate initialization routines before method body
-            generatePreBodyRoutines();
+                //can generate initialization routines before method body
+                generatePreBodyRoutines();
+            }
 
             //generate method body
             generateSubsequence(_method);
@@ -220,7 +228,7 @@ namespace AssemblyProviders.CSharp
             var thisVariable = new VariableInfo(CSharpSyntax.ThisVariable, _source.CompilationInfo);
 
             if (MethodInfo.HasThis)
-            {              
+            {
                 declareVariable(thisVariable);
             }
             else
@@ -251,10 +259,10 @@ namespace AssemblyProviders.CSharp
                 //there is nothing to do
                 return;
 
-            var initializer=Naming.Method(MethodInfo.DeclaringType, CSharpSyntax.MemberInitializer, false);
+            var initializer = Naming.Method(MethodInfo.DeclaringType, CSharpSyntax.MemberInitializer, false);
             E.Call(initializer, CSharpSyntax.ThisVariable, Arguments.Values());
         }
-        
+
         /// <summary>
         /// Generate instructions from subsequence of given node
         /// </summary>

@@ -99,7 +99,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         private static MethodItem BuildFrom(CodeFunction element, TypeMethodInfo methodInfo, VsProjectAssembly declaringAssembly)
         {
             var sourceCode = GetSourceCode(element);
-            var namespaces = declaringAssembly.GetNamespaces(element);
+            var namespaces = declaringAssembly.GetNamespaces(element as CodeElement);
 
             var fullname = element.FullName;
             var genericPath = new PathInfo(fullname);
@@ -157,8 +157,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
             initializerSource.Append("}");
             var sourceCode = initializerSource.ToString();
+            var namespaces = declaringAssembly.GetNamespaces(element as CodeElement);
 
-            var activation = new ParsingActivation(sourceCode, methodInfo, new string[0]);
+            var activation = new ParsingActivation(sourceCode, methodInfo, new string[0], namespaces);
             var generator = new SourceMethodGenerator(activation, declaringAssembly.ParsingProvider);
 
             return new MethodItem(generator, methodInfo);

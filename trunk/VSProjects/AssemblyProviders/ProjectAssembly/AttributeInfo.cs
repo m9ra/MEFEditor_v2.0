@@ -28,7 +28,12 @@ namespace AssemblyProviders.ProjectAssembly
         /// Wrapped <see cref="CodeAttribute2"/>
         /// </summary>
         internal readonly CodeAttribute2 Element;
-        
+
+        /// <summary>
+        /// Number of positional arguments
+        /// </summary>
+        internal int PositionalArgumentsCount { get { return _positionalArguments.Count; } }
+
         /// <summary>
         /// Initialize instance of <see cref="AttributeInfo"/>
         /// </summary>
@@ -37,14 +42,14 @@ namespace AssemblyProviders.ProjectAssembly
         {
             Element = attribute;
 
-            foreach(CodeAttributeArgument arg in attribute.Arguments){
+            foreach (CodeAttributeArgument arg in attribute.Arguments)
+            {
                 var name = arg.Name;
                 var value = arg.Value;
 
-                if (name == null)
+                if (name == null || name == "")
                 {
-                    var position = _positionalArguments.Count;
-                    _positionalArguments[position] = name;
+                    _positionalArguments.Add(value);
                 }
                 else
                 {
@@ -73,7 +78,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns>Value of positioned argument if any, <c>null</c> otherwise</returns>
         internal string GetArgument(int position)
         {
-            if (_positionalArguments.Count >= position)
+            if (_positionalArguments.Count <= position)
             {
                 return null;
             }

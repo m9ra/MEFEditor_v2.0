@@ -338,7 +338,7 @@ namespace AssemblyProviders.CILAssembly
         private void addCompositionPoint(ComponentInfoBuilder infoBuilder, MethodID methodId, CustomAttribute attribute)
         {
             //TODO add composition point arguments
-            infoBuilder.AddExplicitCompositionPoint(methodId);
+            infoBuilder.AddExplicitCompositionPoint(methodId, null);
         }
 
         /// <summary>

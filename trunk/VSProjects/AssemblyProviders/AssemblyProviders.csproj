@@ -113,9 +113,10 @@
     <Compile Include="CSharp\Compiling\CallHierarchyProcessor.cs" />
     <Compile Include="CSharp\Transformations\AuxiliarCallProvider.cs" />
     <Compile Include="CSharp\Transformations\NoRemoveProvider.cs" />
-    <Compile Include="CILAssembly\DirectDefinitions\MathDirectType.cs" />
+    <Compile Include="DirectDefinitions\MathDirectType.cs" />
     <Compile Include="ProjectAssembly\AttributeInfo.cs" />
     <Compile Include="ProjectAssembly\CodeElementExtensions.cs" />
+    <Compile Include="ProjectAssembly\MethodBuilding\InitializerGenerator.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\MethodBuilder.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\SourceMethodGenerator.cs" />
     <Compile Include="ProjectAssembly\ParsingActivation.cs" />

@@ -35,7 +35,7 @@ namespace Plugin.GUI
         /// Gui managed by current manager
         /// </summary>
         private readonly EditorGUI _gui;
-        
+
         /// <summary>
         /// Factory used for diagram drawings
         /// </summary>
@@ -71,7 +71,7 @@ namespace Plugin.GUI
         /// Composition point that is currently selected
         /// </summary>
         private CompositionPoint _selectedCompositionPoint;
-        
+
         /// <summary>
         /// Assembly that is currently hosted
         /// </summary>
@@ -187,7 +187,7 @@ namespace Plugin.GUI
         internal void DisplayEntry(LogEntry entry)
         {
             _gui.Workspace.Clear();
-            _gui.Workspace.Reset();            
+            _gui.Workspace.Reset();
             var entryDrawing = createLogEntryDrawing(entry, true) as Expander;
 
             var heading = entryDrawing.Header as TextBlock;
@@ -331,6 +331,9 @@ namespace Plugin.GUI
             }
             _compositionPointAdds.Clear();
 
+            //composition point could be changed (even no update is processed!)
+            refreshSelectedCompositionPoint();
+
             //refresh selected index
             if (_gui.CompositionPoints.SelectedIndex != selectedIndex)
             {
@@ -339,6 +342,33 @@ namespace Plugin.GUI
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// refresh composition point - because old one and selected have same hash, 
+        /// but they can differ in ArgumentsProvider 
+        /// </summary>
+        private void refreshSelectedCompositionPoint()
+        {
+            if (_selectedCompositionPoint == null)
+                //nothing selected - nothing to do
+                return;
+
+            var component = _appDomain.Loader.GetComponentInfo(_selectedCompositionPoint.DeclaringComponent);
+            if (component == null)
+                //component is no more available
+                return;
+
+            var compositionPoints = component.CompositionPoints;
+            foreach (var compPoint in compositionPoints)
+            {
+                if (_selectedCompositionPoint.Equals(compPoint))
+                {
+                    //refresh composition point
+                    _selectedCompositionPoint = compPoint;
+                    break;
+                }
+            }
         }
 
         private void forceRefresh()

@@ -76,17 +76,59 @@ namespace Analyzing
         }
 
         /// <summary>
-        /// 
-        /// TODO accept entry method ID
-        /// 
         /// Run analysis of program loaded via given loader. Execution starts from loader.EntryPoint
         /// </summary>
         /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
         /// <returns>Result of analysis</returns>
         public AnalyzingResult Run(LoaderBase loader, MethodID entryMethod, params Instance[] arguments)
         {
-            return run(loader, entryMethod, arguments);
+            Settings.FireBeforeInterpretation();
+            try
+            {
+                _createdInstances.Clear();
+                var context = new Execution.AnalyzingContext(this, loader);
+
+                foreach (var argument in arguments)
+                {
+                    if (argument != null)
+                        _createdInstances.Add(argument.ID, argument);
+                }
+                context.FetchCall(entryMethod, arguments);
+
+                return runContext(context);
+            }
+            finally
+            {
+                Settings.FireAfterInterpretation();
+                _createdInstances.Clear();
+            }
         }
+
+
+        /// <summary>
+        /// Run analysis of program loaded via given loader. Execution starts from loader.EntryPoint
+        /// </summary>
+        /// <param name="loader">Loader which provides instrution generation and type/methods resolving</param>
+        /// <returns>Result of analysis</returns>
+        public AnalyzingResult Run(LoaderBase loader, GeneratorBase entryMethodGenerator)
+        {
+            Settings.FireBeforeInterpretation();
+            try
+            {
+                _createdInstances.Clear();
+                var context = new Execution.AnalyzingContext(this, loader);
+
+                context.PushCall(new MethodID("$@.EntryMethod", false), entryMethodGenerator, new Instance[0]);
+
+                return runContext(context);
+            }
+            finally
+            {
+                Settings.FireAfterInterpretation();
+                _createdInstances.Clear();
+            }
+        }
+
 
         internal string CreateID(string hint)
         {
@@ -109,52 +151,35 @@ namespace Analyzing
         }
 
         /// <summary>
-        /// Run instructions present in _cachedLoader
+        /// Run instruction described by given context
         /// </summary>
+        /// <param name="context">Properly initialized context</param>
         /// <returns>Result of analysis</returns>
-        private AnalyzingResult run(LoaderBase loader, MethodID entryMethod, params Instance[] arguments)
+        private AnalyzingResult runContext(AnalyzingContext context)
         {
-            Settings.FireBeforeInterpretation();
-            try
+            var executionLimit = Settings.ExecutionLimit;
+
+            //interpretation processing
+            while (!context.IsExecutionEnd)
             {
-                _createdInstances.Clear();
-                var context = new Execution.AnalyzingContext(this, loader);
+                //limit execution
+                --executionLimit;
+                if (executionLimit < 0)
+                    throw new NotImplementedException("Execution limit has been reached");
 
-                foreach (var argument in arguments)
+                //process instruction
+                var instruction = context.NextInstruction();
+                if (instruction == null)
                 {
-                    _createdInstances.Add(argument.ID, argument);
-                }
-                context.FetchCall(entryMethod, arguments);
-
-                var executionLimit = Settings.ExecutionLimit;
-
-                //interpretation processing
-                while (!context.IsExecutionEnd)
-                {
-                    //limit execution
-                    --executionLimit;
-                    if (executionLimit < 0)
-                        throw new NotImplementedException("Execution limit has been reached");
-
-                    //process instruction
-                    var instruction = context.NextInstruction();
-                    if (instruction == null)
-                    {
-                        break;
-                    }
-
-                    context.Prepare(instruction);
-                    instruction.Execute(context);
+                    break;
                 }
 
-                var result = context.GetResult(new Dictionary<string, Instance>(_createdInstances));
-                return result;
+                context.Prepare(instruction);
+                instruction.Execute(context);
             }
-            finally
-            {
-                Settings.FireAfterInterpretation();
-                _createdInstances.Clear();
-            }
+
+            var result = context.GetResult(new Dictionary<string, Instance>(_createdInstances));
+            return result;
         }
 
         /// <summary>

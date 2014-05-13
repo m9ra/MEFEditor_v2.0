@@ -8,6 +8,7 @@ using Analyzing;
 
 namespace TypeSystem
 {
+
     /// <summary>
     /// Information about composition point.
     /// </summary>
@@ -29,11 +30,17 @@ namespace TypeSystem
         /// </summary>
         public readonly TypeDescriptor DeclaringComponent;
 
-        public CompositionPoint(TypeDescriptor declaringComponent, MethodID entryMethod, bool isExplicit)
+        /// <summary>
+        /// Generator providing values for composition point arguments if available
+        /// </summary>
+        public readonly GeneratorBase ArgumentProvider;
+
+        public CompositionPoint(TypeDescriptor declaringComponent, MethodID entryMethod, bool isExplicit, GeneratorBase argumentProvider)
         {
             IsExplicit = isExplicit;
             EntryMethod = entryMethod;
             DeclaringComponent = declaringComponent;
+            ArgumentProvider = argumentProvider;
         }
 
         public override int GetHashCode()

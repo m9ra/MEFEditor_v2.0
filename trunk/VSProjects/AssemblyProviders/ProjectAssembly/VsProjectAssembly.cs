@@ -102,7 +102,8 @@ namespace AssemblyProviders.ProjectAssembly
 
             var source = CSharp.Compiler.GenerateInstructions(activation, emitter, TypeServices);
 
-            VS.Log.Message("Parsing time for {0} {1}ms", activation.Method.MethodID, w.ElapsedMilliseconds);
+            var methodID = activation.Method == null ? new MethodID("$inline", false) : activation.Method.MethodID;
+            VS.Log.Message("Parsing time for {0} {1}ms", methodID, w.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         /// <param name="method">Method which namespaces will be returned</param>
         /// <returns>Validat namespaces for given method</returns>
-        internal IEnumerable<string> GetNamespaces(CodeFunction method)
+        internal IEnumerable<string> GetNamespaces(CodeElement method)
         {
             var namespaces = VS.GetNamespaces(method.ProjectItem);
             return namespaces;
@@ -175,7 +176,7 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns>Created <see cref="ComponentSearcher"/></returns>
         private ComponentSearcher createComponentSearcher()
         {
-            var searcher = new ComponentSearcher(TypeServices);
+            var searcher = new ComponentSearcher(this, TypeServices);
             searcher.OnNamespaceEntered += reportSearchProgress;
             searcher.OnComponentFound += ComponentDiscovered;
             return searcher;
