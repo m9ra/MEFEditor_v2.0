@@ -334,6 +334,9 @@ namespace Plugin.GUI
             //composition point could be changed (even no update is processed!)
             refreshSelectedCompositionPoint();
 
+            //refresh displayed names of composition points
+            refreshComositionPointNames();
+
             //refresh selected index
             if (_gui.CompositionPoints.SelectedIndex != selectedIndex)
             {
@@ -342,6 +345,53 @@ namespace Plugin.GUI
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Refresh names of composition points, so they are shortest as possible
+        /// </summary>
+        private void refreshComositionPointNames()
+        {
+            var names = new HashSet<string>();
+            foreach (var compositionPointPair in _compositionPoints)
+            {
+                var compositionPoint = compositionPointPair.Key;
+                var item = compositionPointPair.Value;
+
+                var name = distinguishName(names, compositionPoint);
+
+                if (item.Tag as string == name)
+                    //no need to change
+                    continue;
+
+                item.Tag = name;
+
+                var itemContent = new TextBlock();
+                itemContent.Text = name;
+                item.Content = itemContent;
+            }
+
+        }
+        /// <summary>
+        /// Create shortest distinguishing name for given composition point against names.
+        /// </summary>
+        /// <param name="names">Collection of unavailable names.</param>
+        /// <param name="compPointName">Name of composition point to display.</param>
+        /// <returns>Distinguish name.</returns>
+        private string distinguishName(HashSet<string> names, CompositionPoint compositionPoint)
+        {
+            var compPointName = Naming.GetMethodPath(compositionPoint.EntryMethod).Name;
+            var subNames = compPointName.Split('.');
+            subNames = subNames.Reverse().ToArray();
+
+            var distName = subNames[0];
+            for (var i = 1; names.Contains(distName) && subNames.Length > i || i <= 1; i++)
+            {
+                distName = subNames[i] + "." + distName;
+            }
+
+            names.Add(distName);
+            return distName;
         }
 
         /// <summary>
