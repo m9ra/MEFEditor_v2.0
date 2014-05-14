@@ -510,6 +510,20 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         }
 
         /// <summary>
+        /// Create <see cref="TypeDescriptor"/> from given type
+        /// </summary>
+        /// <param name="type">Type representation</param>
+        /// <returns>Created <see cref="TypeDescriptor"/></returns>
+        internal static TypeDescriptor CreateDescriptor(CodeType type)
+        {
+            var fullname = type.FullName;
+            if (fullname == "")
+                return TypeDescriptor.Void;
+
+            return ConvertToDescriptor(fullname);
+        }
+
+        /// <summary>
         /// Creates <see cref="TypeDescriptor"/> from given typeNode        
         /// </summary>
         /// <param name="typeNode">Type node which descriptor is created</param>

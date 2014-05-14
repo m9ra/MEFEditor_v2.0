@@ -917,8 +917,10 @@ namespace AssemblyProviders.CILAssembly
         }
 
         ///<inheritdoc />
-        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
+        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer)
         {
+            alternativeImplementer = null;
+
             //we have info about type, where desired method is implemented
             var implementedMethod = Naming.ChangeDeclaringType(dynamicInfo.TypeName, method, false);
 
@@ -931,8 +933,10 @@ namespace AssemblyProviders.CILAssembly
         }
 
         ///<inheritdoc />
-        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath, out PathInfo alternativeImplementer)
         {
+            alternativeImplementer = null;
+
             //we have info about type, where desired method is implemented
             var implementedMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID, false);
             var path = Naming.GetMethodPath(implementedMethod);

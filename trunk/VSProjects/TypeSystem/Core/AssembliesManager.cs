@@ -112,7 +112,7 @@ namespace TypeSystem.Core
             Loader = loader;
 
             _assemblies = new AssembliesStorage(this);
-            _assemblies.OnRootAdd += _onRootAssemblyAdd;     
+            _assemblies.OnRootAdd += _onRootAssemblyAdd;
             _assemblies.OnRootRemove += _onAssemblyRemove;
             _assemblies.OnRegistered += _onAssemblyRegistered;
 
@@ -503,11 +503,11 @@ namespace TypeSystem.Core
         /// <returns>Assembly where method is defined</returns>
         internal TypeAssembly GetDefiningAssembly(MethodID callerId)
         {
-            var definingAssemblyProvider=Cache.GetCachedDefiningAssembly(callerId, (method) =>
+            var definingAssemblyProvider = Cache.GetCachedDefiningAssembly(callerId, (method) =>
             {
                 foreach (var assemblyProvider in _assemblies.Providers)
                 {
-                    var generator = assemblyProvider.GetMethodGenerator(method);                
+                    var generator = assemblyProvider.GetMethodGenerator(method);
                 }
 
                 return null;
@@ -542,7 +542,7 @@ namespace TypeSystem.Core
 
             _interpetingTransaction = null;
         }
-        
+
         /// <summary>
         /// Given reference has been removed from given <see cref="AssemblyProvider"/>. Removing assembly provider
         /// does not need this reference, however other providers may it still referenced
@@ -802,7 +802,7 @@ namespace TypeSystem.Core
         /// <returns>Resolved method if available, <c>null</c> otherwise</returns>
         private GeneratorBase tryStaticResolve(MethodID method, out AssemblyProvider definingAssembly)
         {
-            var result = tryStaticExplicitResolve(method,out definingAssembly);
+            var result = tryStaticExplicitResolve(method, out definingAssembly);
 
             if (result == null)
             {
@@ -875,16 +875,27 @@ namespace TypeSystem.Core
                 //there is no need for generic resolving
                 return null;
 
+
             var methodSignature = Naming.ChangeDeclaringType(searchPath.Signature, method, true);
             var typePath = new PathInfo(calledObjectDescriptor.TypeName);
 
-            foreach (var assembly in _assemblies.Providers)
+            var implementersQueue = new Queue<PathInfo>();
+            implementersQueue.Enqueue(typePath);
+            while (implementersQueue.Count > 0)
             {
-                var implementation = assembly.GetGenericImplementation(method, searchPath, typePath);
-                if (implementation != null)
+                var implementer = implementersQueue.Dequeue();
+                foreach (var assembly in _assemblies.Providers)
                 {
-                    //implementation has been found
-                    return implementation;
+                    PathInfo alternativeImplementer;
+                    var implementation = assembly.GetGenericImplementation(method, searchPath, implementer, out alternativeImplementer);
+                    if (implementation != null)
+                    {
+                        //implementation has been found
+                        return implementation;
+                    }
+
+                    if (alternativeImplementer != null)
+                        implementersQueue.Enqueue(alternativeImplementer);
                 }
             }
             return null;
@@ -898,13 +909,24 @@ namespace TypeSystem.Core
         /// <returns>Resolved method if available, <c>null</c> othewrise</returns>
         private MethodID tryDynamicExplicitResolve(TypeDescriptor calledObjectDescriptor, MethodID method)
         {
-            foreach (var assembly in _assemblies.Providers)
+            var implementers = new Queue<TypeDescriptor>();
+            implementers.Enqueue(calledObjectDescriptor);
+            while (implementers.Count > 0)
             {
-                var implementation = assembly.GetImplementation(method, calledObjectDescriptor);
-                if (implementation != null)
+                var implementer = implementers.Dequeue();
+
+                foreach (var assembly in _assemblies.Providers)
                 {
-                    //implementation has been found
-                    return implementation;
+                    TypeDescriptor alternativeImplementer;
+                    var implementation = assembly.GetImplementation(method, implementer, out alternativeImplementer);
+                    if (implementation != null)
+                    {
+                        //implementation has been found
+                        return implementation;
+                    }
+
+                    if (alternativeImplementer != null)
+                        implementers.Enqueue(alternativeImplementer);
                 }
             }
             return null;

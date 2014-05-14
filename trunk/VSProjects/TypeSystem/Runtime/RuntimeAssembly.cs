@@ -20,7 +20,6 @@ namespace TypeSystem.Runtime
 
     public class RuntimeAssembly : AssemblyProvider
     {
-
         /// <summary>
         /// Static edits that are available without instance context
         /// </summary>
@@ -223,14 +222,17 @@ namespace TypeSystem.Runtime
         }
 
         /// <inheritdoc />
-        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
+        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer)
         {
+            alternativeImplementer = null;
             return _runtimeMethods.GetImplementation(method, dynamicInfo);
         }
 
         /// <inheritdoc />
-        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath, out PathInfo alternativeImplementer)
         {
+            alternativeImplementer = null;
+
             return _runtimeMethods.GetGenericImplementation(methodID, methodSearchPath, implementingTypePath);
         }
 

@@ -12,8 +12,9 @@ namespace TypeSystem
 {
     public class MethodSearcher
     {
-        LinkedList<SearchIterator> _activeIteartors = new LinkedList<SearchIterator>();
+        LinkedList<SearchIterator> _activeIterators = new LinkedList<SearchIterator>();
         List<TypeMethodInfo> _foundMethods = new List<TypeMethodInfo>();
+        AssemblyProvider[] _assemblies;
 
         public bool HasResults { get { return _foundMethods.Count > 0; } }
         public IEnumerable<TypeMethodInfo> FoundResult { get { return _foundMethods; } }
@@ -21,19 +22,30 @@ namespace TypeSystem
 
         internal MethodSearcher(IEnumerable<AssemblyProvider> assemblies)
         {
-            foreach (var assembly in assemblies)
+            _assemblies = assemblies.ToArray();
+            foreach (var assembly in _assemblies)
             {
-                _activeIteartors.AddLast(assembly.CreateRootIterator());
+                _activeIterators.AddLast(assembly.CreateRootIterator());
             }
         }
 
         /// <summary>
-        /// Extend name according to possible suffixes. Suffixes are searched in paralel        /// 
+        /// Extend name according to possible suffixes. Suffixes are searched in paralel        
         /// </summary>
         /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel</param>
         public void ExtendName(params string[] possibleSuffixes)
         {
-            var currentIterator = _activeIteartors.First;
+            extendName(_activeIterators, possibleSuffixes);
+        }
+
+        /// <summary>
+        /// Extend name according to possible suffixes. Suffixes are searched in paralel        
+        /// </summary>
+        /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel</param>
+        /// <param name="_activeIterators">List of active iterators, where extending is processed</param>
+        private void extendName(LinkedList<SearchIterator> _activeIterators, IEnumerable<string> possibleSuffixes)
+        {
+            var currentIterator = _activeIterators.First;
 
             var partedSuffixes = new List<string[]>();
             foreach (var possibleSuffix in possibleSuffixes)
@@ -57,12 +69,12 @@ namespace TypeSystem
                     }
 
                     if (newIt != null)
-                        _activeIteartors.AddFirst(newIt);
+                        _activeIterators.AddFirst(newIt);
                 }
 
                 var lastIt = currentIterator;
                 currentIterator = currentIterator.Next;
-                _activeIteartors.Remove(lastIt);
+                _activeIterators.Remove(lastIt);
             }
         }
 
@@ -72,11 +84,52 @@ namespace TypeSystem
         /// <param name="searchedMethod">Method that is searched at reached locations</param>
         public void Dispatch(string searchedMethod)
         {
-            foreach (var iterator in _activeIteartors)
+            expandIterators();
+
+            foreach (var iterator in _activeIterators)
             {
                 var methods = iterator.FindMethods(searchedMethod);
                 if (methods != null)
                     _foundMethods.AddRange(methods);
+            }
+        }
+
+        private void expandIterators()
+        {
+            var expandPaths = new List<string>();
+            var toExpand = new List<SearchIterator>(_activeIterators);
+
+            while (toExpand.Count > 0)
+            {
+                foreach (var iterator in toExpand)
+                {
+                    expandPaths.AddRange(iterator.GetExpansions());
+                }
+
+                if (expandPaths.Count == 0)
+                    //no iterator needs to be expanded
+                    break;
+
+                var toExtend = new LinkedList<SearchIterator>();
+                foreach (var assembly in _assemblies)
+                {
+                    toExtend.AddLast(assembly.CreateRootIterator());
+                }
+
+                extendName(toExtend, expandPaths);
+                if (toExtend.Count == 0)
+                    //no iterator needs to be added
+                    break;
+
+                expandPaths.Clear();
+                toExpand.Clear();
+                toExpand.AddRange(toExtend);
+
+                //TODO it could be implement in O(1) with own LinkedList implementation
+                foreach (var extended in toExtend)
+                {
+                    _activeIterators.AddLast(extended);
+                }
             }
         }
 
@@ -109,5 +162,15 @@ namespace TypeSystem
         /// </summary>
         /// <param name="searchedMethod">Method that is searched at reached locations</param>
         public abstract IEnumerable<TypeMethodInfo> FindMethods(string searchedName);
+
+        /// <summary>
+        /// If overriden can cause expanding into multiple iterators
+        /// It is called before <see cref="FindMethods"/>
+        /// </summary>
+        /// <returns>Fullpaths that will be expanded into new iterators (recursively)</returns>
+        public virtual IEnumerable<string> GetExpansions()
+        {
+            yield break;
+        }
     }
 }

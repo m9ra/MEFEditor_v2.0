@@ -329,14 +329,18 @@ namespace UnitTesting.TypeSystem_TestUtils
             return _methods.AccordingGenericId(method, searchPath);
         }
 
-        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
+        public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer)
         {
+            alternativeImplementer = null;
+
             requireBuilded();
             return _methods.GetImplementation(method, dynamicInfo);
         }
 
-        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath, out PathInfo alternativeImplementer)
         {
+            alternativeImplementer = null;
+
             requireBuilded();
             return _methods.GetGenericImplementation(methodID, methodSearchPath, implementingTypePath);
         }

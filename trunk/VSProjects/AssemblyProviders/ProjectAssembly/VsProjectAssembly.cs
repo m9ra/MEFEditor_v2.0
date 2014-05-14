@@ -323,21 +323,34 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <inheritdoc />
-        public override MethodID GetImplementation(MethodID methodID, TypeDescriptor dynamicInfo)
+        public override MethodID GetImplementation(MethodID methodID, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer)
         {
-            //get method implemented on type described by dynamicInfo
-            var implementingMethod = Naming.ChangeDeclaringType(dynamicInfo.TypeName, methodID, false);
+            alternativeImplementer = null;
 
-            var item = getMethodItem(implementingMethod);
-            if (item == null)
+            //get method implemented on type described by dynamicInfo
+            var path = new PathInfo(dynamicInfo.TypeName);
+            var node = getTypeNode(path.Signature);
+            if (node == null)
+                //type is not defined here
                 return null;
 
+            //only base type (not interfaces) could implement the method
+            var implementingMethod = Naming.ChangeDeclaringType(dynamicInfo.TypeName, methodID, false);
+            var item = getMethodItem(implementingMethod);
+            if (item == null)
+            {
+                var baseType = node.Bases.Item(1) as CodeType;
+                alternativeImplementer = MethodBuilder.CreateDescriptor(baseType);
+                return null;
+            }
+                
             return item.Info.MethodID;
         }
 
         /// <inheritdoc />
-        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
+        public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath, out PathInfo alternativeImplementer)
         {
+            alternativeImplementer = null;
             //get method implemented on type described by dynamicInfo
             var implementingMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID, false);
 

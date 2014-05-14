@@ -205,9 +205,9 @@ namespace TypeSystem
 
         public abstract SearchIterator CreateRootIterator();
 
-        public abstract MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo);
+        public abstract MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer);
 
-        public abstract MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath);
+        public abstract MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath, out PathInfo alternativeImplementer);
 
         public abstract InheritanceChain GetInheritanceChain(PathInfo typePath);
 
