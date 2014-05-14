@@ -118,7 +118,7 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         internal void Initialize()
         {
-            var settings = new MachineSettings();
+            var settings = new MachineSettings(true);
             _machine = new Machine(settings);
 
             _loader = new AssemblyLoader(settings,

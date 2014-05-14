@@ -165,6 +165,10 @@ namespace Analyzing
             }
             catch (Exception ex)
             {
+                if (!Settings.CatchExceptions)
+                    //we have to pass the exception to the caller
+                    throw;
+
                 runtimeException = ex;
             }
 

@@ -53,6 +53,12 @@ namespace TypeSystem
         public const char PathDelimiter = '.';
 
         /// <summary>
+        /// Delimiter of parameter in parameter description part.
+        /// Is present behind every parameter
+        /// </summary>
+        public const char ParamDelimiter = '|';
+
+        /// <summary>
         /// Name of constructor method
         /// </summary>
         public const string CtorName = "#ctor";
@@ -92,7 +98,9 @@ namespace TypeSystem
         public static MethodID Method<DefiningType>(string methodName, params Type[] parameters)
         {
             var path = typeof(DefiningType).FullName + "." + methodName;
-            return method(path, paramDescription(parameters), false);
+
+            var parameterTypes = from parameter in parameters select TypeDescriptor.Create(parameter);
+            return method(path, paramDescription(parameterTypes), false);
         }
 
         /// <summary>
@@ -107,7 +115,8 @@ namespace TypeSystem
         {
             var path = declaringType.TypeName + "." + methodName;
 
-            return method(path, paramDescription(parameters), needsDynamicResolution);
+            var parameterTypes = from parameter in parameters select parameter.Type;
+            return method(path, paramDescription(parameterTypes), needsDynamicResolution);
         }
 
         /// <summary>
@@ -195,11 +204,20 @@ namespace TypeSystem
         /// <returns>Number of parameters of given method</returns>
         public static int GetMethodParamCount(MethodID method)
         {
-            string path, paramDescription;
-            GetParts(method, out path, out paramDescription);
+            var parts = method.MethodString;
+            var count = 0;
+            for (var i = parts.Length - 1; i >= 0; --i)
+            {
+                var ch = parts[i];
 
-            //TODO there will be contained detailed info
-            return int.Parse(paramDescription);
+                if (ch == Naming.PartDelimiter)
+                    break;
+
+                if (ch == Naming.ParamDelimiter)
+                    count++;
+            }
+
+            return count;
         }
 
         /// <summary>
@@ -373,7 +391,7 @@ namespace TypeSystem
         #endregion
 
         #region Private utilities
-        
+
         /// <summary>
         /// Creates non-generic MethodID from given methodPath and paramDescription
         /// </summary>
@@ -392,10 +410,17 @@ namespace TypeSystem
         /// </summary>
         /// <param name="parameters">Parameters which description is needed</param>
         /// <returns>Description of parameters</returns>
-        private static string paramDescription(params object[] parameters)
+        private static string paramDescription(IEnumerable<TypeDescriptor> parameters)
         {
-            var parCount = parameters == null ? 0 : parameters.Length;
-            return parCount.ToString();
+            var parameterDescription = new StringBuilder();
+
+            foreach (var parameter in parameters)
+            {
+                parameterDescription.Append(parameter.TypeName);
+                parameterDescription.Append('|');
+            }
+
+            return parameterDescription.ToString();
         }
 
         #endregion

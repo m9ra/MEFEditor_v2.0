@@ -17,12 +17,25 @@ namespace TypeSystem
     public class MachineSettings : MachineSettingsBase
     {
         /// <summary>
+        /// Determine that exceptions will be catched by machine or not
+        /// </summary>
+        private readonly bool _catchExceptions;
+
+        /// <summary>
         /// Runtime that is used with current settings
         /// </summary>
         public readonly RuntimeAssembly Runtime = new RuntimeAssembly();
 
         /// </ inheritdoc>
         public override int ExecutionLimit { get { return 10000; } }
+
+        /// </ inheritdoc>
+        public override bool CatchExceptions { get { return _catchExceptions; } }
+
+        public MachineSettings(bool catchExceptions)
+        {
+            _catchExceptions = catchExceptions;
+        }
 
         /// </ inheritdoc>
         public override InstanceInfo GetNativeInfo(Type literalType)

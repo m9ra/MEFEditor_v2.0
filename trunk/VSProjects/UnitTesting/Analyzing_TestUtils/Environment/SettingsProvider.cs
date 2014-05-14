@@ -46,7 +46,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
 
         internal static TestingAssembly CreateTestingAssembly()
         {
-            var settings = new MachineSettings();
+            var settings = new MachineSettings(false);
             InitializeRuntime(settings.Runtime);
 
             var assembly = new TestingAssembly(settings);
