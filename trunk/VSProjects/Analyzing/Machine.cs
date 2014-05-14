@@ -8,6 +8,13 @@ using Analyzing.Execution;
 
 namespace Analyzing
 {
+
+    /// <summary>
+    /// Initializer used for context initialization
+    /// </summary>
+    /// <param name="context">Context that will be initialized</param>
+    internal delegate void ContextInitializer(AnalyzingContext context);
+
     /// <summary>
     /// Virtual machine that provides analyzing services
     /// NOTE: Is not thread safe
@@ -82,26 +89,15 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         public AnalyzingResult Run(LoaderBase loader, MethodID entryMethod, params Instance[] arguments)
         {
-            Settings.FireBeforeInterpretation();
-            try
+            return contextInvoker(loader, (context) =>
             {
-                _createdInstances.Clear();
-                var context = new Execution.AnalyzingContext(this, loader);
-
                 foreach (var argument in arguments)
                 {
                     if (argument != null)
                         _createdInstances.Add(argument.ID, argument);
                 }
                 context.FetchCall(entryMethod, arguments);
-
-                return runContext(context);
-            }
-            finally
-            {
-                Settings.FireAfterInterpretation();
-                _createdInstances.Clear();
-            }
+            });
         }
 
 
@@ -112,24 +108,17 @@ namespace Analyzing
         /// <returns>Result of analysis</returns>
         public AnalyzingResult Run(LoaderBase loader, GeneratorBase entryMethodGenerator)
         {
-            Settings.FireBeforeInterpretation();
-            try
+            return contextInvoker(loader, (context) =>
             {
-                _createdInstances.Clear();
-                var context = new Execution.AnalyzingContext(this, loader);
-
-                context.PushCall(new MethodID("$@.EntryMethod", false), entryMethodGenerator, new Instance[0]);
-
-                return runContext(context);
-            }
-            finally
-            {
-                Settings.FireAfterInterpretation();
-                _createdInstances.Clear();
-            }
+                context.PushCall(new MethodID(".$@.EntryMethod", false), entryMethodGenerator, new Instance[0]);
+            });
         }
 
-
+        /// <summary>
+        /// Creates unique ID for <see cref="Instance"/> according to given hint
+        /// </summary>
+        /// <param name="hint">Hint for created id</param>
+        /// <returns>Created ID</returns>
         internal string CreateID(string hint)
         {
             var currentID = hint;
@@ -143,6 +132,11 @@ namespace Analyzing
             return currentID;
         }
 
+        /// <summary>
+        /// Report change of <see cref="Instance"/> ID and refresh 
+        /// index according to new ID.
+        /// </summary>
+        /// <param name="oldID">Old ID of instance that has been changed</param>
         internal void ReportIDChange(string oldID)
         {
             var instance = _createdInstances[oldID];
@@ -151,11 +145,43 @@ namespace Analyzing
         }
 
         /// <summary>
+        /// Invoke context that is initialized by given initializer
+        /// </summary>
+        /// <param name="loader">Loader used for invoking</param>
+        /// <param name="initializer">Initializer of context used for invoking</param>
+        /// <returns>Result of analyzing</returns>
+        private AnalyzingResult contextInvoker(LoaderBase loader, ContextInitializer initializer)
+        {
+            Settings.FireBeforeInterpretation();
+
+            _createdInstances.Clear();
+            var context = new AnalyzingContext(this, loader);
+
+            Exception runtimeException = null;
+            try
+            {
+                initializer(context);
+                runContext(context);
+            }
+            catch (Exception ex)
+            {
+                runtimeException = ex;
+            }
+
+            var result = context.GetResult(new Dictionary<string, Instance>(_createdInstances));
+            result.RuntimeException = runtimeException;
+
+            Settings.FireAfterInterpretation();
+            _createdInstances.Clear();
+
+            return result;
+        }
+
+        /// <summary>
         /// Run instruction described by given context
         /// </summary>
-        /// <param name="context">Properly initialized context</param>
-        /// <returns>Result of analysis</returns>
-        private AnalyzingResult runContext(AnalyzingContext context)
+        /// <param name="context">Properly initialized context</param>        
+        private void runContext(AnalyzingContext context)
         {
             var executionLimit = Settings.ExecutionLimit;
 
@@ -177,9 +203,6 @@ namespace Analyzing
                 context.Prepare(instruction);
                 instruction.Execute(context);
             }
-
-            var result = context.GetResult(new Dictionary<string, Instance>(_createdInstances));
-            return result;
         }
 
         /// <summary>

@@ -23,6 +23,11 @@ namespace Analyzing
 
         public IEnumerable<Instance> CreatedInstances { get { return _createdInstances.Values; } }
 
+        /// <summary>
+        /// Exception that has been catched during runtime
+        /// </summary>
+        public Exception RuntimeException { get; internal set; }
+
         public event OnViewCommit OnViewCommit;
 
 

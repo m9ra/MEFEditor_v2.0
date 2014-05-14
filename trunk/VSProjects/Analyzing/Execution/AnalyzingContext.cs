@@ -56,6 +56,7 @@ namespace Analyzing.Execution
         /// Array of arguments available for current call
         /// </summary>
         public Instance[] CurrentArguments { get { return CurrentCall.ArgumentValues; } }
+
         /// <summary>
         /// Determine that execution has ended now
         /// </summary>

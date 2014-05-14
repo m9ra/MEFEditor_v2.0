@@ -288,14 +288,32 @@ namespace MEFEditor.Plugin.Main
                 {
                     _vs.ForceFlushChanges();
                 };
-            }
-            catch (ParsingException parsingException)
-            {
-                _analysisError = _vs.LogErrorEntry(parsingException.Message, parsingException.ToString(), parsingException.Navigate);
+
+                handleRuntimeException(_currentResult.RuntimeException);
             }
             catch (Exception ex)
             {
                 _analysisError = _vs.LogErrorEntry(ex.Message, ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Handle exception that could be thrown at analysis runtime
+        /// </summary>
+        /// <param name="exception">Runtime exception</param>
+        private void handleRuntimeException(Exception exception)
+        {
+            if (exception == null)
+                return;
+
+            var parsingException = exception as ParsingException;
+            if (parsingException != null)
+            {
+                _analysisError = _vs.LogErrorEntry(parsingException.Message, parsingException.ToString(), parsingException.Navigate);
+            }
+            else
+            {
+                _analysisError = _vs.LogErrorEntry(exception.Message, exception.ToString());
             }
         }
 
@@ -313,22 +331,18 @@ namespace MEFEditor.Plugin.Main
             entryArguments.Add(_machine.CreateInstance(compositionPoint.DeclaringComponent));
             if (compositionPoint.ArgumentProvider != null)
             {
-                try
-                {
-                    var result = _machine.Run(_loader, compositionPoint.ArgumentProvider);
-                    var context = result.EntryContext;
+                var result = _machine.Run(_loader, compositionPoint.ArgumentProvider);
+                var context = result.EntryContext;
 
-                    for (var i = 0; i < Naming.GetMethodParamCount(entryMethod); ++i)
-                    {
-                        var argVariable = "arg" + i;
-                        var entryArgument = context.GetValue(new VariableName(argVariable));
-                        entryArguments.Add(entryArgument);
-                    }
-                }
-                catch (Exception ex)
+                for (var i = 0; i < Naming.GetMethodParamCount(entryMethod); ++i)
                 {
-                    throw new InvalidOperationException("Preparing composition point arguments failed", ex);
+                    var argVariable = "arg" + i;
+                    var entryArgument = context.GetValue(new VariableName(argVariable));
+                    entryArguments.Add(entryArgument);
                 }
+
+                if (result.RuntimeException != null)
+                    throw new InvalidOperationException("Preparing composition point arguments failed", result.RuntimeException);
             }
 
             return entryArguments.ToArray();
