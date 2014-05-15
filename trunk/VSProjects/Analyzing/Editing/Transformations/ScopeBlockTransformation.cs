@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Analyzing.Execution;
 
-namespace Analyzing.Editing
+namespace Analyzing.Editing.Transformations
 {
     class ScopeBlockTransformation : Transformation
     {
@@ -36,16 +36,80 @@ namespace Analyzing.Editing
         protected override void apply()
         {
             ScopeVariable = instanceScopes(_scopeBlock, _instance);
-            if (ScopeVariable == null)
+            if (ScopeVariable == null && !View.IsAborted)
                 View.Abort("Cannot get scope variable for instance " + _instance.ID);
         }
 
         private VariableName instanceScopes(ExecutedBlock scopeBlock, Instance instance)
         {
+            //we need to find last call because of keeping semantic of instance
+            var lastCall = View.LastCallBlock(instance);
+            var lastCallSameLevel = View.GetBlockInLevelOf(scopeBlock.Call, lastCall);
+
+            //detect if it is possible to get valid scope with correct semantic
+
+            if (lastCall == scopeBlock)
+                //scope cannot be shifted behind last call
+                return null;
+
+            if (lastCall != null)
+            {
+                if (View.IsBefore(lastCall, scopeBlock))
+                {
+                    //there is no limit caused by lastCall, 
+                    //because lastCall cannot be shifted behind instances scope end
+                    //it is automatical upper limit                    
+                }
+                else
+                {
+                    if (lastCallSameLevel == null)
+                        //last call is in another call tree and after scopeBlock - it cannot be shifted
+                        return null;
+
+                    if (!ShiftBehindTransformation.Shift(scopeBlock, lastCallSameLevel, View))
+                        //scope block cannot be shifted behind last call
+                        return null;
+                }
+            }
+
+            //find scope that is already opened before scopeBlock
+            var scopeVariable = findPreviousValidScope(scopeBlock, instance);
+            if (scopeVariable != null)
+                //we have find scope variable before scopeBlock
+                return scopeVariable;
+
+            //find scope that will be opened afte scope block
+            return findNextValidScope(scopeBlock, instance);
+        }
+
+        private VariableName findNextValidScope(ExecutedBlock scopeBlock, Instance instance)
+        {
+            //find scope start
+            var scopeStartBlock = View.NextBlock(scopeBlock);
+            while (scopeStartBlock != null)
+            {
+                var starts = scopeStartBlock.ScopeStarts(instance);
+                if (starts.Any())
+                {
+                    if (ShiftBehindTransformation.Shift(scopeBlock, scopeStartBlock, View))
+                    {
+                        return starts.First();
+                    }
+                    break;
+                }
+                scopeStartBlock = View.NextBlock(scopeStartBlock);
+            }
+
+            //cannot find valid scope
+            return null;
+        }
+
+        private VariableName findPreviousValidScope(ExecutedBlock scopeBlock, Instance instance)
+        {
             //find variable with valid scope
             var block = View.PreviousBlock(scopeBlock);
             var scopeEnds = new HashSet<VariableName>();
-            ExecutedBlock _firstScopeEnd = null;
+            ExecutedBlock firstScopeEnd = null;
             while (block != null)
             {
                 scopeEnds.UnionWith(block.ScopeEnds(instance));
@@ -59,104 +123,26 @@ namespace Analyzing.Editing
                     }
                 }
 
-                if (_firstScopeEnd == null && scopeEnds.Count > 0)
+                if (firstScopeEnd == null && scopeEnds.Count > 0)
                 {
                     //if there is no valid variable scope with wanted instance,
                     //then we can try to shift first scope end founded
-                    _firstScopeEnd = block;
+                    firstScopeEnd = block;
                 }
 
                 //shift to next block
                 block = View.PreviousBlock(block);
             }
 
-            if (_firstScopeEnd != null)
+            if (firstScopeEnd != null)
             {
-                if (shiftBehind(_firstScopeEnd, scopeBlock, View))
+                if (ShiftBehindTransformation.Shift(firstScopeEnd, scopeBlock, View))
                 {
                     //scope end was shifted
-                    return _firstScopeEnd.ScopeEnds(instance).First();
+                    return firstScopeEnd.ScopeEnds(instance).First();
                 }
             }
-
-            //find scope start
-            var scopeStartBlock = View.NextBlock(scopeBlock);
-            while (scopeStartBlock != null)
-            {
-                var starts = scopeStartBlock.ScopeStarts(instance);
-                if (starts.Any())
-                {
-                    if (shiftBehind(scopeBlock, scopeStartBlock, View))
-                    {
-                        return starts.First();
-                    }
-                    break;
-                }
-                scopeStartBlock = View.NextBlock(scopeStartBlock);
-            }
-
-            //cannot find valid scope
             return null;
-        }
-
-        /// <summary>
-        /// Shift given shiftedBlock behind target, if possible
-        /// </summary>
-        /// <param name="shiftedBlock"></param>
-        /// <param name="target"></param>
-        /// <param name="view"></param>
-        private bool shiftBehind(ExecutedBlock shiftedBlock, ExecutedBlock target, ExecutionView view)
-        {
-            //cumulative list of blocks that has to be shifted
-            //It has reverse ordering of transformations that will be generated            
-            var shiftedBlocks = new List<ExecutedBlock>();
-            shiftedBlocks.Add(shiftedBlock);
-
-            var borderInstances = new HashSet<Instance>();
-            borderInstances.UnionWith(view.AffectedInstances(shiftedBlock));
-
-            //find all colliding blocks, so we can move them with shifted block if possible
-            var currentBlock = shiftedBlock;
-            while (currentBlock != target)
-            {
-                currentBlock = view.NextBlock(currentBlock);
-
-                if (!canCross(currentBlock, borderInstances, view))
-                {
-                    //this block cannot be crossed
-                    borderInstances.UnionWith(view.AffectedInstances(currentBlock));
-                    shiftedBlocks.Add(currentBlock);
-                }
-            }
-
-            //shifting is not possible, due to collisions between blocks
-            if (!canCross(target, borderInstances, view))
-            {
-                return false;
-            }
-
-            shiftedBlocks.Reverse();
-            foreach (var block in shiftedBlocks)
-            {
-                view.ShiftBehind(block, target);
-            }
-
-            return true;
-        }
-
-
-        private bool canCross(ExecutedBlock shiftedBlock, HashSet<Instance> borderInstances, ExecutionView view)
-        {
-            foreach (var instance in view.AffectedInstances(shiftedBlock))
-            {
-                if (borderInstances.Contains(instance))
-                {
-                    //there is collision with border
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

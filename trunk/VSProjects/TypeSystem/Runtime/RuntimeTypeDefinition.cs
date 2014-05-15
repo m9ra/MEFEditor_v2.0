@@ -156,7 +156,7 @@ namespace TypeSystem.Runtime
             }
         }
 
-        internal void RunInContextOf(Instance contextInstance, Action runnedAction)
+        public void RunInContextOf(Instance contextInstance, Action runnedAction)
         {
             var thisSwp = This;
 
@@ -341,17 +341,5 @@ namespace TypeSystem.Runtime
             Edits.AppendArgument(CurrentArguments[0], argIndex, editName, valueProvider);
         }
 
-        internal EditViewBase RunEdit(Instance thisObj, Edit edit, EditView view)
-        {
-            try
-            {
-                This = thisObj;
-                return view.Apply(edit.Transformation);
-            }
-            finally
-            {
-                This = null;
-            }
-        }
     }
 }

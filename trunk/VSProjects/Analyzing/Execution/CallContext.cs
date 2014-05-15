@@ -17,6 +17,8 @@ namespace Analyzing.Execution
 
         private readonly AnalyzingContext _context;
 
+
+
         /// <summary>
         /// Is used by analyzing context. All chained dynamic calls are executed after current call is popped.
         /// Nested dynamic calls are chained separately
@@ -44,6 +46,11 @@ namespace Analyzing.Execution
 
         public readonly ExecutedBlock EntryBlock;
 
+        /// <summary>
+        /// Block from which current call was called
+        /// </summary>
+        public readonly ExecutedBlock CallingBlock;
+
         public readonly MethodID Name;
 
         public readonly InstructionBatch Program;
@@ -59,6 +66,9 @@ namespace Analyzing.Execution
             ArgumentValues = argumentValues;
             Name = name;
             TransformProvider = transformProvider;
+
+            if (Caller != null)
+                CallingBlock = Caller.CurrentBlock;
 
             var emitter = new CallEmitter(context);
             generator.Generate(emitter);
@@ -105,7 +115,7 @@ namespace Analyzing.Execution
 
         public bool IsVariableDefined(string name)
         {
-            var variable=new VariableName(name);
+            var variable = new VariableName(name);
             return _variables.ContainsKey(variable);
         }
 

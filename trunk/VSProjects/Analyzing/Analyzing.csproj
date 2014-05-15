@@ -75,6 +75,7 @@
     <Compile Include="Editing\CallTransformProvider.cs" />
     <Compile Include="Editing\Transformations\CommonScopeTransformation.cs" />
     <Compile Include="Editing\Transformations\IdentityTransformation.cs" />
+    <Compile Include="Editing\Transformations\InstanceScope.cs" />
     <Compile Include="Editing\Transformations\ScopeBlockTransformation.cs" />
     <Compile Include="Editing\Edit.cs" />
     <Compile Include="Editing\EmptyRemoveProvider.cs" />
@@ -87,6 +88,8 @@
     <Compile Include="Editing\Transformations\EmptyTransformation.cs" />
     <Compile Include="Editing\Transformation.cs" />
     <Compile Include="Editing\Transformations\ScopeFrame.cs" />
+    <Compile Include="Editing\Transformations\ScopeMonitor.cs" />
+    <Compile Include="Editing\Transformations\ScopeStepper.cs" />
     <Compile Include="Editing\Transformations\ShiftBehindTransformation.cs" />
     <Compile Include="Editing\TransformProvider.cs" />
     <Compile Include="Editing\EditsProvider.cs" />

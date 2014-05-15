@@ -56,6 +56,12 @@ namespace UnitTesting.TypeSystem_TestUtils
             Source = Compiler.GenerateInstructions(activation, emitter, _services);
         }
 
+        public ParsedGenerator ChangeSource(string newSource)
+        {
+            var newGenerator = new ParsedGenerator(Method, newSource, _genericParameters, _services);
+            return newGenerator;
+        }
+
         public MethodItem Make(PathInfo searchPath, TypeMethodInfo genericMethod)
         {
             var newMethod = genericMethod.MakeGenericMethod(searchPath);

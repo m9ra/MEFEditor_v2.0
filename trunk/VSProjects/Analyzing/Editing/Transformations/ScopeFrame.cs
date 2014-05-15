@@ -30,7 +30,7 @@ namespace Analyzing.Editing.Transformations
         }
     }
 
-    delegate bool ShiftBehind(IEnumerable<ExecutedBlock> shiftedBlocks, ExecutedBlock block);
+    delegate bool BehindShifter(IEnumerable<ExecutedBlock> shiftedBlocks, ExecutedBlock block);
 
     class ScopeFrame
     {
@@ -38,7 +38,7 @@ namespace Analyzing.Editing.Transformations
 
         private readonly ExecutionView _view;
 
-        private readonly ShiftBehind _shiftBehind;
+        private readonly BehindShifter _shiftBehind;
 
         private MultiDictionary<Instance, VariableName> _activeScopes = new MultiDictionary<Instance, VariableName>();
 
@@ -46,7 +46,7 @@ namespace Analyzing.Editing.Transformations
 
         internal InstanceScopes Scopes { get; private set; }
 
-        internal ScopeFrame(ExecutionView view, ShiftBehind shiftBehind, IEnumerable<Instance> trackedInstances)
+        internal ScopeFrame(ExecutionView view, BehindShifter shiftBehind, IEnumerable<Instance> trackedInstances)
         {
             _view = view;
             _shiftBehind = shiftBehind;

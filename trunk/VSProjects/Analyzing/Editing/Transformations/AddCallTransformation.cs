@@ -27,13 +27,13 @@ namespace Analyzing.Editing.Transformations
             var scopeTransform = new CommonScopeTransformation(call.Instances);
             View.Apply(scopeTransform);
 
-            var instanceScopes = scopeTransform.InstanceScopes;
-            if (scopeTransform.InstanceScopes == null)
+            if (View.IsAborted)
             {
-                View.Abort("Can't get instances to same scope");
+                //scope transform failed
                 return;
             }
 
+            var instanceScopes = scopeTransform.InstanceScopes;
             var subsitutedCall = call.Substitute(instanceScopes.InstanceVariables);
             View.AppendCall(instanceScopes.ScopeBlock, subsitutedCall);
         }

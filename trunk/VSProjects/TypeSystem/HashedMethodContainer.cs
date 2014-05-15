@@ -86,6 +86,17 @@ namespace TypeSystem
             return null;
         }
 
+        public void RemoveItem(MethodID method)
+        {
+            MethodItem item;
+            if (!_methodIds.TryGetValue(method, out item))
+                //nothing to remove
+                return;
+
+            _methodIds.Remove(method);
+            _methodPaths.Remove(Naming.GetMethodPath(method).ShortSignature, item);
+        }
+
         public GeneratorBase AccordingGenericId(MethodID method, PathInfo searchPath)
         {
             var overloads = accordingPath(searchPath);

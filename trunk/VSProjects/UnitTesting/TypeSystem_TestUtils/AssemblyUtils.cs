@@ -137,7 +137,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             foreach (var action in assembly.UserActions)
                 action(result);
 
-            var view = processEdits(result, assembly.EditActions);
+            var view = processEdits(assembly.Runtime, result, assembly.EditActions);
 
             return new TestResult(view, result);
         }
@@ -180,7 +180,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             return AssertVariable(assembly, null);
         }
 
-        private static ExecutionView processEdits(AnalyzingResult result, IEnumerable<EditAction> editActions)
+        private static ExecutionView processEdits(RuntimeAssembly runtime, AnalyzingResult result, IEnumerable<EditAction> editActions)
         {
             var view = result.CreateExecutionView();
 
@@ -192,7 +192,7 @@ namespace UnitTesting.TypeSystem_TestUtils
                 }
                 else
                 {
-                    view = processInstanceEdit(result, view, editAction);
+                    view = processInstanceEdit(runtime, result, view, editAction);
                 }
             }
             view.Commit();
@@ -212,16 +212,19 @@ namespace UnitTesting.TypeSystem_TestUtils
             return view;
         }
 
-        private static ExecutionView processInstanceEdit(AnalyzingResult result, ExecutionView view, EditAction editAction)
+        private static ExecutionView processInstanceEdit(RuntimeAssembly runtime, AnalyzingResult result, ExecutionView view, EditAction editAction)
         {
-            var inst = result.EntryContext.GetValue(editAction.Variable);
-            foreach (var edit in inst.Edits)
+            var editOwner = result.EntryContext.GetValue(editAction.Variable);
+            foreach (var edit in editOwner.Edits)
             {
                 if (edit.Name != editAction.Name)
                     continue;
 
-                view.Apply(edit.Transformation);
-                return view;
+                var editView = new EditView(view);
+                var resultView=runtime.RunEdit(edit, editView);
+                editView = (resultView as EditView);
+
+                return editView.CopyView();
             }
 
             throw new KeyNotFoundException("Specified edit hasn't been found");

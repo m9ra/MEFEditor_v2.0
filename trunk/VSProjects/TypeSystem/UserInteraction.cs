@@ -16,6 +16,9 @@ namespace TypeSystem
 
         public static readonly string ExcludeName = ".exclude";
 
-        public static Instance DraggedInstance { get; internal set; }
+        /// <summary>
+        /// TODO: setter is needed for testing purposes
+        /// </summary>
+        public static Instance DraggedInstance { get; set; }
     }
 }

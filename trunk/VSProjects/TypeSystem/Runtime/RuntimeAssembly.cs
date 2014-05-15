@@ -419,5 +419,28 @@ namespace TypeSystem.Runtime
         {
             return new DrawingPipeline(drawer, this, result);
         }
+
+        public EditViewBase RunEdit(Edit edit, EditView view)
+        {
+            var creatorDefinition = GetTypeDefinition(edit.Creator);
+
+            EditViewBase result = null;
+            Action editRun = () =>
+            {
+                result = view.Apply(edit.Transformation);
+            };
+
+            if (creatorDefinition == null)
+            {
+                //there is no available definition
+                editRun();
+            }
+            else
+            {
+                creatorDefinition.RunInContextOf(edit.Creator, editRun);
+            }
+
+            return result;
+        }
     }
 }

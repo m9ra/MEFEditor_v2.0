@@ -287,8 +287,15 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public void SetSource(MethodID method, string sourceCode)
         {
+            var name = Naming.GetMethodPath(method).Name;
+            ReportInvalidation(name);
             var parsedGenerator = _methods.AccordingId(method) as ParsedGenerator;
-            parsedGenerator.SourceCode = sourceCode;
+
+            var newGenerator = parsedGenerator.ChangeSource(sourceCode);
+            var newMethod = new MethodItem(newGenerator, newGenerator.Method);
+
+            _methods.RemoveItem(method);
+            _methods.AddItem(newMethod, TypeDescriptor.NoDescriptors);
         }
 
         #endregion

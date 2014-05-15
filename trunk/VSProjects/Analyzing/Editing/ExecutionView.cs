@@ -28,6 +28,10 @@ namespace Analyzing.Editing
 
         private readonly ExecutionViewDataHandler _viewData = new ExecutionViewDataHandler();
 
+        private readonly Dictionary<ExecutedBlock, ExecutedBlock> _nextChanges = new Dictionary<ExecutedBlock, ExecutedBlock>();
+
+        private readonly Dictionary<ExecutedBlock, ExecutedBlock> _previouChanges = new Dictionary<ExecutedBlock, ExecutedBlock>();
+
         private List<Transformation> _appliedTransformations = new List<Transformation>();
 
         public ExecutedBlock EntryBlock { get { return _result.EntryContext.EntryBlock; } }
@@ -139,12 +143,12 @@ namespace Analyzing.Editing
 
         public ExecutedBlock NextBlock(ExecutedBlock block)
         {
-            return block.NextBlock;
+            return fromChanges(_nextChanges, block, block.NextBlock);
         }
 
         public ExecutedBlock PreviousBlock(ExecutedBlock block)
         {
-            return block.PreviousBlock;
+            return fromChanges(_previouChanges, block, block.PreviousBlock);
         }
 
         public IEnumerable<Instance> AffectedInstances(ExecutedBlock block)
@@ -162,8 +166,118 @@ namespace Analyzing.Editing
             return block.ScopeEnds(instance);
         }
 
+        public ExecutedBlock LastCallBlock(Instance instance)
+        {
+            var current = instance.CreationBlock;
+
+            ExecutedBlock lastCall = null;
+            while (current != null)
+            {
+                foreach (var call in current.Calls)
+                {
+                    if (call.ArgumentValues.Length == 0)
+                        continue;
+
+                    if (call.ArgumentValues[0] == instance)
+                    {
+                        //we have found block where instanc is "called"
+                        lastCall = current;
+                        //break outer foreach, because it is
+                        //not needed to search for next calls in block
+                        break;
+                    }
+                }
+                current = NextBlock(current);
+            }
+
+            return lastCall;
+        }
+
+        /// <summary>
+        /// Determine if block1 is in current view before block2
+        /// </summary>
+        /// <param name="block1"></param>
+        /// <param name="block2"></param>
+        /// <returns></returns>
+        public bool IsBefore(ExecutedBlock block1, ExecutedBlock block2)
+        {
+            if (block1 == null || block2==null)
+                //null is negative infinity in block1
+                return true;
+
+            var commonCall = GetCommonCall(block1, block2);
+
+            var block1_level = GetBlockInLevelOf(commonCall, block1);
+            var block2_level = GetBlockInLevelOf(commonCall, block2);
+
+            var current = block2_level;
+            while (current != null)
+            {
+                if (current == block1_level)
+                    //block1 is before block2
+                    return true;
+
+                //step backword
+                current = PreviousBlock(current);
+            }
+            //we didnt meet block1 when stepping backward from block2
+            return false;
+        }
+
+
+        /// <summary>
+        /// Get last of given blocks in current view ordering
+        /// </summary>
+        /// <param name="blocks">Blocks where last one is searched</param>
+        /// <returns>Last of given blocks</returns>
+        public ExecutedBlock LatestBlock(IEnumerable<ExecutedBlock> blocks)
+        {
+            ExecutedBlock last = null;
+            foreach (var block in blocks)
+            {
+                if (block == null)
+                    continue;
+
+                if (last == null || IsBefore(last, block))
+                    last = block;
+            }
+
+            return last;
+        }
+
+
+        /// <summary>
+        /// Get first of given blocks in current view ordering
+        /// </summary>
+        /// <param name="blocks">Blocks where first one is searched</param>
+        /// <returns>First of given blocks</returns>
+        internal ExecutedBlock EarliestBlock(IEnumerable<ExecutedBlock> blocks)
+        {
+            ExecutedBlock first = null;
+            foreach (var block in blocks)
+            {
+                if (block == null)
+                    continue;
+
+                if (first == null || IsBefore(block,first))
+                    first = block;
+            }
+
+            return first;
+        }
+
         public void ShiftBehind(ExecutedBlock block, ExecutedBlock target)
         {
+            //cut block from current position
+            var nextBlock = NextBlock(block);
+            var previousBlock = PreviousBlock(block);
+            setEdge(previousBlock, nextBlock);
+
+            //paste it behind target
+            var nextTargetBlock = NextBlock(target);
+            setEdge(target, block);
+            setEdge(block, nextTargetBlock);
+
             var shiftTransform = block.Info.BlockTransformProvider.ShiftBehind(target.Info.BlockTransformProvider);
             Apply(shiftTransform);
         }
@@ -178,6 +292,86 @@ namespace Analyzing.Editing
         {
             var prependTransform = block.Info.BlockTransformProvider.PrependCall(call);
             Apply(prependTransform);
+        }
+
+        public ExecutedBlock GetBlockInLevelOf(CallContext call, ExecutedBlock block)
+        {
+            var current = block;
+            while (current != null)
+            {
+                if (call == block.Call)
+                    return block;
+
+                block = block.Call.CallingBlock;
+            }
+
+            //call is not in blocks call hierarchy
+            return null;
+        }
+
+        public CallContext GetCommonCall(ExecutedBlock block1, ExecutedBlock block2)
+        {
+            //table of registered calls used for finding common call
+            var calls = new HashSet<CallContext>();
+
+            //register calls from blocks
+            var current1 = block1.Call;
+            var current2 = block2.Call;
+
+            //common stepping because of optimiztion of same level cases
+            while (current1 != null && current2 != null)
+            {
+                if (current1 != null)
+                    if (calls.Add(current1))
+                    {
+                        return current1;
+                    }
+                    else
+                    {
+                        current1 = current1.Caller;
+                    }
+
+                if (current2 != null)
+                    if (calls.Add(current2))
+                    {
+                        return current2;
+                    }
+                    else
+                    {
+                        current2 = current2.Caller;
+                    }
+            }
+
+            //this could happened only if blocks are from different runs
+            return null;
+        }
+
+        #endregion
+
+
+        #region Private helpers
+
+        private ExecutedBlock fromChanges(Dictionary<ExecutedBlock, ExecutedBlock> changes, ExecutedBlock changedBlock, ExecutedBlock defaultBlock)
+        {
+            ExecutedBlock block;
+            if (!changes.TryGetValue(changedBlock, out block))
+                block = defaultBlock;
+
+            return block;
+        }
+
+        /// <summary>
+        /// Set edge from block1 to block2 into view
+        /// </summary>
+        /// <param name="block1">Block which next will be block2</param>
+        /// <param name="block2">Block which previous will be block1</param>
+        private void setEdge(ExecutedBlock block1, ExecutedBlock block2)
+        {
+            if (block1 != null)
+                _nextChanges[block1] = block2;
+
+            if (block2 != null)
+                _previouChanges[block2] = block1;
         }
 
         #endregion

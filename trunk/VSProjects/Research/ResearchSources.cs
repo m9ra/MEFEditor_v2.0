@@ -26,6 +26,51 @@ namespace Research
 {
     static class ResearchSources
     {
+        static internal TestingAssembly Edit_SemanticEnd_CommonScope()
+        {
+            return AssemblyUtils.Run(@"
+                var catalog=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
+
+                var toAccept=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
+                toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());            
+            ")
+
+           .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
+           .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
+           .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
+           .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+
+            .UserAction((c) =>
+            {
+                UserInteraction.DraggedInstance = c.EntryContext.GetValue(new VariableName("toAccept"));
+            })
+
+            .RunEditAction("catalog", UserInteraction.AcceptName)
+           ;
+        }
+
+        static internal TestingAssembly Edit_SemanticEnd_ScopeBlock()
+        {
+            return AssemblyUtils.Run(@"
+                var container=new System.ComponentModel.Composition.Hosting.CompositionContainer();
+
+                var toAccept=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
+                toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());            
+            ")
+
+           .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
+           .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
+           .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
+           .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+
+            .UserAction((c) =>
+            {
+                UserInteraction.DraggedInstance = c.EntryContext.GetValue(new VariableName("toAccept"));
+            })
+
+            .RunEditAction("container", UserInteraction.AcceptName)
+           ;
+        }
 
         static internal TestingAssembly CECIL_InterfaceResolving()
         {

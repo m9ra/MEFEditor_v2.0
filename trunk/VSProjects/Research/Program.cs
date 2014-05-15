@@ -28,7 +28,7 @@ namespace Research
             ////force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7);
 
-            var assembly = ResearchSources.MEF_Demo();
+            var assembly = ResearchSources.Edit_SemanticEnd_CommonScope();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 

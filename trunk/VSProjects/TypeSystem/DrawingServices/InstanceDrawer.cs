@@ -61,8 +61,7 @@ namespace TypeSystem
         {
             var runtime = Instance.Pipeline.Runtime;
 
-            var contextDefinition = runtime.GetTypeDefinition(edit.Creator);
-            return contextDefinition.RunEdit(Instance.WrappedInstance, edit, view);
+            return runtime.RunEdit(edit, view);
         }
 
 
