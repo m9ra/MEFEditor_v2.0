@@ -39,7 +39,6 @@ namespace Analyzing.Editing.Transformations
 
         private void initializeScopes(ExecutionView view, ExecutedBlock latestStart)
         {
-            var current = latestStart;
 
             //initialize active scope index
             var activeScopes = new Dictionary<Instance, Dictionary<VariableName, ExecutedBlock>>();
@@ -49,6 +48,8 @@ namespace Analyzing.Editing.Transformations
             }
 
             //search block for scopes
+            var current = latestStart;
+            ExecutedBlock lastBlock = null;
             while (current != null)
             {
                 foreach (var instance in _monitoredInstances)
@@ -81,6 +82,7 @@ namespace Analyzing.Editing.Transformations
                     }
                 }
 
+                lastBlock = current;
                 current = view.NextBlock(current);
             }
 
@@ -92,7 +94,11 @@ namespace Analyzing.Editing.Transformations
 
                 foreach (var scopePair in scopesIndex)
                 {
-                    var scope = new InstanceScope(scopePair.Key, instance, scopePair.Value, current);
+                    var scope = new InstanceScope(scopePair.Key, instance, scopePair.Value, lastBlock);
+                    if (scope.Start == scope.End)
+                        //empty scope
+                        continue;
+
                     _scopes.Add(instance, scope);
                 }
             }

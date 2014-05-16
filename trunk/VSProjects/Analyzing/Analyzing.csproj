@@ -87,7 +87,6 @@
     <Compile Include="Editing\EmptyCallTransformProvider.cs" />
     <Compile Include="Editing\Transformations\EmptyTransformation.cs" />
     <Compile Include="Editing\Transformation.cs" />
-    <Compile Include="Editing\Transformations\ScopeFrame.cs" />
     <Compile Include="Editing\Transformations\ScopeMonitor.cs" />
     <Compile Include="Editing\Transformations\ScopeStepper.cs" />
     <Compile Include="Editing\Transformations\ShiftBehindTransformation.cs" />

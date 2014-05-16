@@ -963,7 +963,7 @@ namespace UnitTesting
         }
 
         [TestMethod]
-        public void Edit_AcceptAtSemanticEnd()
+        public void Edit_AcceptAtSemanticEnd_ScopeBlock()
         {
             AssemblyUtils.Run(@"
                 var container=new System.ComponentModel.Composition.Hosting.CompositionContainer();
@@ -992,6 +992,37 @@ namespace UnitTesting
             ");
         }
 
+
+        [TestMethod]
+        public void Edit_AcceptAtSemanticEnd_CommonScope()
+        {
+            AssemblyUtils.Run(@"
+                var catalog=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
+
+                var toAccept=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
+                toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());            
+            ")
+
+            .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
+            .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
+            .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
+            .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+
+            .UserAction((c) =>
+            {
+                UserInteraction.DraggedInstance = c.EntryContext.GetValue(new VariableName("toAccept"));
+            })
+
+            .RunEditAction("catalog", UserInteraction.AcceptName)
+
+            .AssertSourceEquivalence(@"
+                var catalog=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
+
+                var toAccept=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
+                toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());
+                catalog.Catalogs.Add(toAccept);                
+            ");
+        }
 
 
         [TestMethod]

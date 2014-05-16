@@ -42,6 +42,37 @@ namespace Analyzing.Editing.Transformations
             ScopedInstance = scopedInstance;
             Start = start;
             End = end;
+
+            if (Variable == null)
+                throw new ArgumentNullException("variable");
+
+            if (ScopedInstance == null)
+                throw new ArgumentNullException("scopedInstance");
+
+            if (Start == null)
+                throw new ArgumentNullException("start");
+
+            if (End == null)
+                throw new ArgumentNullException("end");
+        }
+    }
+
+    internal class InstanceScopes
+    {
+        /// <summary>
+        /// Variables for instances that has common scope
+        /// </summary>
+        internal readonly Dictionary<Instance, VariableName> InstanceVariables;
+
+        /// <summary>
+        /// Scope where variable names are valid
+        /// </summary>
+        internal readonly ExecutedBlock ScopeBlock;
+
+        public InstanceScopes(Dictionary<Instance, VariableName> variables, ExecutedBlock scopeBlock)
+        {
+            InstanceVariables = variables;
+            ScopeBlock = scopeBlock;
         }
     }
 }

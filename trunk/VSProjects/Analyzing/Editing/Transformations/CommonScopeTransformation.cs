@@ -61,26 +61,29 @@ namespace Analyzing.Editing.Transformations
             IEnumerable<InstanceScope> scopes;
             while ((scopes = scopeStepper.Step(View)) != null)
             {
+                if (!hasCommonCall(scopes))
+                    continue;
+
                 var scopeEnds = from scope in scopes select scope.End;
                 var scopeStarts = from scope in scopes select scope.Start;
 
-                var latestStart = View.LatestBlock(scopeStarts);
-                var earliestEnd = View.EarliestBlock(scopeEnds);
+                //we want to place scope as top as possible 
+                //then all scope ends has to be placed behind that place                
+                var scopeCandidates = scopeStarts.Concat(new[] { lastCall });
+                var scopeCandidate = View.LatestBlock(scopeCandidates);
 
-                //end shouldnt been specified - limiting is last call
-                var scopeBlock = earliestEnd == null ? lastCall : earliestEnd;
-                //if there is no last call, we can use latest start
-                scopeBlock = scopeBlock == null ? latestStart : scopeBlock;
-
-                var transformations = getScopeTransformations(lastCall, scopeBlock, scopes);
-
+                var transformations = getScopeTransformations(scopeCandidate, scopeEnds);
                 if (transformations == null)
+                    //cannot transform so that scope ends will be behind scopeCandidate
                     continue;
+
+                //it is not required to check scopeStarts positions - because shifting only latest 
+                //one it cannot affect other scope starts
 
                 //we have common scope after making all transformations
                 if (transformationAccepter(transformations))
                 {
-                    return createInstanceScopes(scopes, scopeBlock);
+                    return createInstanceScopes(scopes, scopeCandidate);
                 }
             }
 
@@ -88,27 +91,44 @@ namespace Analyzing.Editing.Transformations
             return null;
         }
 
-        private IEnumerable<Transformation> getScopeTransformations(ExecutedBlock lastCall, ExecutedBlock latestStart, IEnumerable<InstanceScope> scopes)
+        private IEnumerable<Transformation> getScopeTransformations(ExecutedBlock scopeCandidate, IEnumerable<ExecutedBlock> scopeEnds)
         {
             var transformations = new List<Transformation>();
-
             var testView = View.Clone();
 
-            //we need to have scope after last call
-            if (!ensurePosition(lastCall, latestStart, testView, transformations))
-                return null;
-
-            //try to get all scope ends behind latestStart
-            foreach (var scope in scopes)
+            foreach (var scopeEnd in scopeEnds)
             {
-                //we need to have all scope ends behind latestStart
-                if (!ensurePosition(scope.End, latestStart, testView, transformations))
-                {
+                //we need to have every scope end behind scopeCandidate
+                if (!ensurePosition(scopeCandidate, scopeEnd, testView, transformations))
                     return null;
-                }
             }
 
             return transformations;
+        }
+
+
+        private bool hasCommonCall(IEnumerable<InstanceScope> scopes)
+        {
+            CallContext pivot = null;
+            foreach (var scope in scopes)
+            {
+                var scopeContext = scope.Start.Call;
+                if (pivot == null)
+                {
+                    pivot = scopeContext;
+                }
+                else
+                {
+                    if (pivot != scopeContext)
+                    {
+                        //there is different call 
+                        return false;
+                    }
+                }
+            }
+
+            //there has not been found scope in another call
+            return true;
         }
 
         private IEnumerable<ExecutedBlock> getLastCalls(IEnumerable<Instance> instances)
