@@ -83,7 +83,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
         /// <inheritdoc />
         public override IEnumerable<TypeMethodInfo> FindMethods(string searchedName)
-        {            
+        {
             var methodItems = getMethodItems(searchedName);
 
             foreach (var methodItem in methodItems)
@@ -100,11 +100,12 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             foreach (var node in _currentNodes)
             {
                 //expand to base classes/interfaces
-                
+
                 switch (node.Kind)
                 {
+                    case vsCMElement.vsCMElementInterface:
                     case vsCMElement.vsCMElementClass:
-                        var cls = node as CodeClass;
+                        var cls = node as CodeType;
 
                         foreach (CodeElement subType in cls.Bases)
                         {
@@ -112,8 +113,6 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                         }
 
                         break;
-                    case vsCMElement.vsCMElementInterface:
-                        throw new NotImplementedException("Interface bases");
 
                     default:
                         break;

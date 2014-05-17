@@ -77,8 +77,8 @@ namespace Analyzing.Editing.Transformations
                     //cannot transform so that scope ends will be behind scopeCandidate
                     continue;
 
-                //it is not required to check scopeStarts positions - because shifting only latest 
-                //one it cannot affect other scope starts
+                //it is not required to check scopeStarts positions - because shifting only 
+                //latest one cannot affect other scope starts
 
                 //we have common scope after making all transformations
                 if (transformationAccepter(transformations))

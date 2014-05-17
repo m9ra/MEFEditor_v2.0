@@ -486,9 +486,9 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         /// <param name="typePathSignature">Path to type in signature form</param>
         /// <returns>Found node if any, <c>null</c> otherwise</returns>
-        private CodeClass getTypeNode(string typePathSignature)
+        private CodeType getTypeNode(string typePathSignature)
         {
-            return _searcher.Search(typePathSignature) as CodeClass;
+            return _searcher.Search(typePathSignature) as CodeType;
         }
 
         /// <summary>
@@ -496,16 +496,20 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         /// <param name="typeNode">Type node which inheritance chain will be created</param>
         /// <returns>Created <see cref="InheritanceChain"/></returns>
-        private InheritanceChain createInheritanceChain(CodeClass typeNode)
+        private InheritanceChain createInheritanceChain(CodeType typeNode)
         {
             var subChains = new List<InheritanceChain>();
 
             var baseChains = createInheritanceChains(typeNode.Bases);
             subChains.AddRange(baseChains);
 
-            var interfaceChains = createInheritanceChains(typeNode.ImplementedInterfaces);
-            subChains.AddRange(interfaceChains);
-
+            var classNode = typeNode as CodeClass;
+            if (classNode != null)
+            {
+                var interfaceChains = createInheritanceChains(classNode.ImplementedInterfaces);
+                subChains.AddRange(interfaceChains);
+            }
+            
             var typeDescriptor = MethodBuilder.CreateDescriptor(typeNode);
             return TypeServices.CreateChain(typeDescriptor, subChains);
         }

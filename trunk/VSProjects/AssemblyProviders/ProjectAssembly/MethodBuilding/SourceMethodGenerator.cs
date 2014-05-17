@@ -54,6 +54,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <inheritdoc />
         protected override void generate(EmitterBase emitter)
         {
+            if (Activation == null)
+                throw new NotSupportedException("Cannot parse abstract method: " + Activation.Method.MethodID);
+
             _parsingProvider(Activation, emitter);
         }
 

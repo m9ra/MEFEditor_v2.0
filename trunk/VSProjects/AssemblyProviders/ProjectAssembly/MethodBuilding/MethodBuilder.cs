@@ -98,7 +98,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns>Built method</returns>
         private static MethodItem BuildFrom(CodeFunction element, TypeMethodInfo methodInfo, VsProjectAssembly declaringAssembly)
         {
-            var sourceCode = GetSourceCode(element);
+            var sourceCode = methodInfo.IsAbstract ? null : GetSourceCode(element);
             var namespaces = declaringAssembly.GetNamespaces(element as CodeElement);
 
             var fullname = element.FullName;
@@ -261,7 +261,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var name = GetName(element);
             var isShared = element.IsShared;
             var isAbstract = element.MustImplement || element.IsVirtual();
-            var declaringType = CreateDescriptor(element.DeclaringClass());
+            var declaringType = CreateDescriptor(element.DeclaringType());
             var returnType = CreateDescriptor(element.Type);
             var parameters = CreateParametersInfo(element.Parameters);
 
@@ -306,8 +306,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             //TODO correctnes
             var name = GetName(element);
-            var parentFullname = element.DeclaringClass().FullName;
+            var declaringType = element.DeclaringType();
 
+            var parentFullname = CreateDescriptor(declaringType).TypeName;
             return parentFullname + "." + name;
         }
 

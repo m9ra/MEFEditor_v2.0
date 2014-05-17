@@ -69,8 +69,8 @@ namespace AssemblyProviders.ProjectAssembly
 
         public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters, IEnumerable<string> namespaces = null)
         {
-            if (sourceCode == null)
-                throw new ArgumentNullException("sourceCode");
+          /*  if (sourceCode == null)
+                throw new ArgumentNullException("sourceCode");*/
 
             if (genericParameters == null)
                 throw new ArgumentNullException("genericParameterrs");

@@ -176,8 +176,8 @@ namespace AssemblyProviders.ProjectAssembly
 
 
         public static CodeClass DeclaringClass(this CodeElement element)
-        {            
-            if (element== null)
+        {
+            if (element == null)
                 return null;
 
             switch (element.Kind)
@@ -198,19 +198,20 @@ namespace AssemblyProviders.ProjectAssembly
             }
         }
 
-        public static CodeClass DeclaringClass(this CodeAttribute element){
+        public static CodeClass DeclaringClass(this CodeAttribute element)
+        {
             var parent = element.Parent as CodeElement;
             if (parent == null)
                 return null;
 
             return parent.DeclaringClass();
         }
-        
+
 
         public static CodeClass DeclaringClass(this CodeFunction element)
         {
             var parent = element.Parent as CodeElement;
-            if(parent==null)
+            if (parent == null)
                 return null;
 
             switch (parent.Kind)
@@ -222,7 +223,29 @@ namespace AssemblyProviders.ProjectAssembly
                     return DeclaringClass(parent as CodeProperty);
 
                 default:
-                    return null;                
+                    return null;
+            }
+        }
+
+        public static CodeType DeclaringType(this CodeFunction element)
+        {
+            var declaringClass = element.DeclaringClass();
+            if (declaringClass != null)
+                return declaringClass as CodeType;
+
+            var parent = element.Parent as CodeElement;
+            if (parent == null)
+                return null;
+
+            switch (parent.Kind)
+            {
+                case vsCMElement.vsCMElementClass:
+                case vsCMElement.vsCMElementEnum:
+                case vsCMElement.vsCMElementInterface:
+                    return parent as CodeType;
+
+                default:
+                    return null;
             }
         }
 
