@@ -180,9 +180,10 @@ namespace AssemblyProviders.CSharp
         private Compiler(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
             _activation = activation;
-            Context = new CompilationContext(emitter, services);
 
             _source = new Source(activation.SourceCode, activation.Method);
+            Context = new CompilationContext(emitter, _source, services);
+
             _source.SourceChangeCommited += activation.OnCommited;
             _source.NavigationRequested += activation.OnNavigated;
 
@@ -1318,19 +1319,13 @@ namespace AssemblyProviders.CSharp
         /// <summary>
         /// Resolve typename according to available namespaces
         /// </summary>
-        /// <param name="typeName">Type name which is resolved to descriptor</param>
-        /// <returns><see cref="TypeDescriptor"/> resolved from given type name if available, <c>null</c> otherwise</returns>
-        private TypeDescriptor resolveTypeDescriptor(string typeName)
+        /// <param name="typeNameSuffix">Type name which is resolved to descriptor</param>
+        /// <returns><see cref="TypeDescriptor"/> resolved from given type name and namespace if available, <c>null</c> otherwise</returns>
+        private TypeDescriptor resolveTypeDescriptor(string typeNameSuffix)
         {
-            foreach (var ns in _source.Namespaces)
-            {
-                var fullname = ns == "" ? typeName : ns + "." + typeName;
-                var typeDescriptor = TypeDescriptor.Create(fullname);
-                var chain = Context.Services.GetChain(typeDescriptor);
-                if (chain != null)
-                    return typeDescriptor;
-            }
-            return null;
+            var translatedTypeName = Context.MapGeneric(typeNameSuffix);
+
+            return Context.DescriptorFromSuffix(typeNameSuffix);
         }
 
         /// <summary>
@@ -1414,11 +1409,11 @@ namespace AssemblyProviders.CSharp
         {
             INodeAST callNode;
             var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
+            var objectType = resolveTypeDescriptor(typeSuffix);
 
             var w = System.Diagnostics.Stopwatch.StartNew();
             var searcher = Context.CreateSearcher();
-            searcher.ExtendName(getNamespaces());
-            searcher.ExtendName(typeSuffix);
+            searcher.SetCalledObject(objectType);
             searcher.Dispatch(Naming.CtorName);
             w.Stop();
 
@@ -1427,8 +1422,6 @@ namespace AssemblyProviders.CSharp
                 throw parsingException(callNode, "Constructor wasn't found");
             }
 
-            //TODO selection can be done more accurate
-            var objectType = searcher.FoundResult.First().DeclaringType;
             var nObject = new NewObjectValue(objectType, newOperand.Parent, Context);
 
             var activation = CreateCallActivation(nObject, callNode, searcher.FoundResult);

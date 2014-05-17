@@ -21,6 +21,13 @@ namespace TypeSystem
     public delegate TypeDescriptor ParameterResolver(Type type);
 
     /// <summary>
+    /// Resolver for substitutions of generic paths
+    /// </summary>
+    /// <param name="genericParameter">Parameter to be substituted</param>
+    /// <returns>Substitution</returns>
+    public delegate string SubstitutionResolver(string genericParameter);
+
+    /// <summary>
     /// InstanceInfo implementation used by TypeSystem
     /// </summary>
     public class TypeDescriptor : InstanceInfo
@@ -179,27 +186,40 @@ namespace TypeSystem
         /// Translate given path according to given substitutions
         /// </summary>
         /// <param name="path">Translated path</param>
-        /// <param name="substitutions">Substitutions used for translation</param>
+        /// <param name="resolver">Resolver used for substitutions</param>
         /// <returns>Translated path</returns>
-        public static string TranslatePath(string path, Dictionary<string, string> substitutions)
+        public static string TranslatePath(string path, SubstitutionResolver resolver)
         {
             var replaced = _typeReplacement.Replace(path, (m) =>
             {
                 var matched = m.ToString();
+                return resolver(matched);
+            });
 
+            return replaced;
+        }
+
+        /// <summary>
+        /// Translate given path according to given substitutions
+        /// </summary>
+        /// <param name="path">Translated path</param>
+        /// <param name="substitutions">Substitutions used for translation</param>
+        /// <returns>Translated path</returns>
+        public static string TranslatePath(string path, Dictionary<string, string> substitutions)
+        {
+            return TranslatePath(path, (pathParameter) =>
+            {
                 string result;
                 if (
-                    substitutions.TryGetValue(matched, out result) ||
-                    substitutions.TryGetValue('@' + matched, out result)
+                    substitutions.TryGetValue(pathParameter, out result) ||
+                    substitutions.TryGetValue('@' + pathParameter, out result)
                     )
                     //substitution is processed
                     return result;
 
                 //no replacement
-                return matched;
+                return pathParameter;
             });
-
-            return replaced;
         }
 
         /// <summary>

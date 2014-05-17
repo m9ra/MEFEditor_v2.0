@@ -47,6 +47,11 @@ namespace AssemblyProviders.CSharp.Compiling
         public readonly TypeServices Services;
 
         /// <summary>
+        /// Soruce of compiled method
+        /// </summary>
+        public readonly Source Source;
+
+        /// <summary>
         /// Context of current active block
         /// </summary>
         public BlockContext CurrentBlock
@@ -94,15 +99,19 @@ namespace AssemblyProviders.CSharp.Compiling
             AliasLookup[alias] = type.FullName;
         }
 
-        internal CompilationContext(EmitterBase emitter, TypeServices services)
+        internal CompilationContext(EmitterBase emitter, Source source, TypeServices services)
         {
             if (emitter == null)
                 throw new ArgumentNullException("emitter");
+
+            if (source == null)
+                throw new ArgumentNullException("source");
 
             if (services == null)
                 throw new ArgumentNullException("services");
 
             Emitter = emitter;
+            Source = source;
             Services = services;
         }
 
@@ -127,40 +136,47 @@ namespace AssemblyProviders.CSharp.Compiling
         }
 
         /// <summary>
-        /// Map given name according to aliases and generic arguments
+        /// Map given path according to aliases and generic arguments
+        /// All generic arguments are expanded to fullname form
         /// </summary>
-        /// <param name="typeName">Name of type that should be mapped</param>
+        /// <param name="path">Path that should be mapped</param>
         /// <returns>Fullname of mapped type if mapping is available, or unchanged type name otherwise</returns>
-        internal string MapGeneric(string typeName)
+        internal string MapGeneric(string path)
         {
-            string result;
-
             //whole name mapping
-            if (AliasLookup.TryGetValue(typeName, out result))
-            {
+            string result;
+            if (
                 //mapped name belongs to alias
-                return result;
-            }
-
-            if (_genericMapping.TryGetValue(typeName, out result))
-            {
+                AliasLookup.TryGetValue(path, out result) ||
                 //mapping has been found between generic arguments
+                _genericMapping.TryGetValue(path, out result)
+                )
+            {
+                //in substitutions there are parameters already translated
                 return result;
             }
 
-            if (!typeName.Contains('<'))
-                //there are no generic parameters
-                return typeName;
-            
-            //TODO fullnames of all types has to be present in typename!
+            //use namespace expansion only for arguments
+            return TypeDescriptor.TranslatePath(path, pathSubstitutions);
+        }
 
-            //TODO this is workaround subsitution
-            var mapped = TypeDescriptor.Create(typeName);
-            mapped = mapped.MakeGeneric(AliasLookup);
-            mapped.MakeGeneric(_genericMapping);
-            
-            //there is no mapping
-            return mapped.TypeName;
+        /// <summary>
+        /// Get <see cref="TypeDescriptor"/> from mapped typeNameSuffix by
+        /// namespace expansion.
+        /// </summary>
+        /// <param name="typeNameSuffix">Mapped suffix of searched type</param>
+        /// <returns><see cref="TypeDescriptor"/> from expanded type name suffix if type is available, <c>null</c> otherwise</returns>
+        internal TypeDescriptor DescriptorFromSuffix(string typeNameSuffix)
+        {
+            foreach (var ns in Source.Namespaces)
+            {
+                var fullname = ns == "" ? typeNameSuffix : ns + "." + typeNameSuffix;
+                var typeDescriptor = TypeDescriptor.Create(fullname);
+                var chain = Services.GetChain(typeDescriptor);
+                if (chain != null)
+                    return typeDescriptor;
+            }
+            return null;
         }
 
         /// <summary>
@@ -181,6 +197,34 @@ namespace AssemblyProviders.CSharp.Compiling
         internal void PopBlock()
         {
             _blockContexts.Pop();
+        }
+
+        /// <summary>
+        /// Substitute given parameter according current aliases, generic mappings and namespaces
+        /// </summary>
+        /// <param name="pathParameter">Parameter to be translated</param>
+        /// <returns>Translated parameter</returns>
+        private string pathSubstitutions(string pathParameter)
+        {
+            //whole parameter mapping
+            string substitution;
+            if (
+                //mapped name belongs to alias
+                AliasLookup.TryGetValue(pathParameter, out substitution) ||
+                //mapping has been found between generic arguments
+                _genericMapping.TryGetValue(pathParameter, out substitution)
+                )
+                return substitution;
+
+            //try to expand parameter
+            var suffixed = DescriptorFromSuffix(pathParameter);
+            if (suffixed != null)
+                //pathParameter is type suffix and can be expanded
+                //by available namespaces
+                return suffixed.TypeName;
+
+                
+            return pathParameter;
         }
     }
 }
