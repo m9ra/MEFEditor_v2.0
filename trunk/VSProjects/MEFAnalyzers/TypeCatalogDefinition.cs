@@ -70,10 +70,14 @@ namespace MEFAnalyzers
         {
             var slot = drawer.AddSlot();
 
-            foreach (var part in Parts.Get())
+            var parts = Parts.Get();
+            if (parts != null)
             {
-                var partDrawing = drawer.GetInstanceDrawing(part);
-                slot.Add(partDrawing.Reference);
+                foreach (var part in parts)
+                {
+                    var partDrawing = drawer.GetInstanceDrawing(part);
+                    slot.Add(partDrawing.Reference);
+                }
             }
 
             drawer.ForceShow();

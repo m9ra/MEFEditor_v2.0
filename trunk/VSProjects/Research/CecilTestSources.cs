@@ -85,6 +85,21 @@ class CecilComponent
     }
 }
 
+class CompositionPointTesting
+{
+    [CompositionPoint("testpath")]
+    public void CompositionPoint_SingleArgument(string path)
+    {
+        var x = new DirectoryCatalog(path);
+    }
+
+    [CompositionPoint(typeof(CecilComponent))]
+    public void CompositionPoint_TypeArgument(Type type)
+    {
+        var x = new TypeCatalog(type);
+    }
+}
+
 interface SimpleIface
 {
     string Test();

@@ -317,13 +317,12 @@ namespace AssemblyProviders.CILAssembly
                 foreach (var attribute in method.CustomAttributes)
                 {
                     var fullname = attribute.AttributeType.FullName;
-                    var methodId = getMethodId(infoBuilder.ComponentType, method);
 
                     //importing constructor  
                     if (fullname == Naming.CompositionPointAttribute)
                     {
                         //explicit composition point has been found
-                        addCompositionPoint(infoBuilder, methodId, attribute);
+                        addCompositionPoint(infoBuilder, method, attribute);
                         hasExplicitCompositionPoint = true;
                     }
                 }
@@ -337,20 +336,25 @@ namespace AssemblyProviders.CILAssembly
                     //there is no implicit ctor
                     return;
 
-                var implicitCompositionPointId = getMethodId(infoBuilder.ComponentType, implicitCtor);
-                addCompositionPoint(infoBuilder, implicitCompositionPointId, null);
+                addCompositionPoint(infoBuilder, implicitCtor, null);
             }
         }
         /// <summary>
         /// Add composition point into infoBuilder
         /// </summary>
         /// <param name="infoBuilder">Info builder where export will be added</param>
-        /// <param name="methodId">MethodID of composition point</param>
+        /// <param name="method">Composition point method</param>
         /// <param name="attribute">Attribute defining composition point</param>
-        private void addCompositionPoint(ComponentInfoBuilder infoBuilder, MethodID methodId, CustomAttribute attribute)
+        private void addCompositionPoint(ComponentInfoBuilder infoBuilder, MethodDefinition method, CustomAttribute attribute)
         {
-            //TODO add composition point arguments
-            infoBuilder.AddExplicitCompositionPoint(methodId, null);
+            GeneratorBase argumentsInitializer = null;
+            if (attribute != null && attribute.HasConstructorArguments)
+            {
+                argumentsInitializer = new ArgumentInitializerGenerator(attribute);
+            }
+
+            var methodID = getMethodId(infoBuilder.ComponentType, method);
+            infoBuilder.AddExplicitCompositionPoint(methodID, argumentsInitializer);
         }
 
         /// <summary>
