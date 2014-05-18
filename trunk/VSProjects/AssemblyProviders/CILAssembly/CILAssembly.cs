@@ -310,7 +310,7 @@ namespace AssemblyProviders.CILAssembly
         /// <param name="infoBuilder">Builder where methods are reported</param>
         private void reportComponentMethods(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
-            //TODO add implicit importing constructor if needed
+            var hasExplicitCompositionPoint = false;
 
             foreach (var method in componentType.Methods)
             {
@@ -322,13 +322,25 @@ namespace AssemblyProviders.CILAssembly
                     //importing constructor  
                     if (fullname == Naming.CompositionPointAttribute)
                     {
-                        //composition point
+                        //explicit composition point has been found
                         addCompositionPoint(infoBuilder, methodId, attribute);
+                        hasExplicitCompositionPoint = true;
                     }
                 }
             }
-        }
 
+            if (!hasExplicitCompositionPoint)
+            {
+                //add implicit composition point if available
+                var implicitCtor = FindParamLessCtor(componentType);
+                if (implicitCtor == null)
+                    //there is no implicit ctor
+                    return;
+
+                var implicitCompositionPointId = getMethodId(infoBuilder.ComponentType, implicitCtor);
+                addCompositionPoint(infoBuilder, implicitCompositionPointId, null);
+            }
+        }
         /// <summary>
         /// Add composition point into infoBuilder
         /// </summary>
@@ -793,6 +805,19 @@ namespace AssemblyProviders.CILAssembly
         internal bool MayInclude(string path)
         {
             return _namespaces.CanContains(path);
+        }
+
+        /// <summary>
+        /// Find param less ctor for given type
+        /// </summary>
+        /// <param name="type">Type which param less ctor is searched</param>
+        /// <returns><see cref="MethodDefinition"/> belonging to param less ctor if available, <c>null</c> otherwise</returns>
+        internal static MethodDefinition FindParamLessCtor(TypeDefinition type)
+        {
+            return type.Methods.FirstOrDefault((method) =>
+            {
+                return method.IsConstructor && method.Parameters.Count == 0;
+            });
         }
 
         #endregion
