@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Utilities;
 using Analyzing;
 
 namespace TypeSystem.Core
@@ -38,6 +39,11 @@ namespace TypeSystem.Core
         private readonly Dictionary<MethodID, AssemblyProvider> _cachedDefiners = new Dictionary<MethodID, AssemblyProvider>();
 
         /// <summary>
+        /// Index used for quick methods invalidation
+        /// </summary>
+        private readonly MethodTrie _methodIdIndex = new MethodTrie();
+
+        /// <summary>
         /// Event fired for every invalidated method
         /// </summary>
         internal event InvalidationEvent MethodInvalidated;
@@ -58,6 +64,7 @@ namespace TypeSystem.Core
                 cached = provider(method, out definingAssembly);
                 if (cached != null)
                 {
+                    _methodIdIndex.Add(method);
                     _cachedMethods[method] = cached;
                     _cachedDefiners[method] = definingAssembly;
                 }
@@ -97,21 +104,30 @@ namespace TypeSystem.Core
             if (prefix == null)
                 return;
 
-            //TODO optimize
-            var toRemove = new List<MethodID>();
-            foreach (var method in _cachedMethods.Keys)
-            {
-                if (method.MethodString.StartsWith(prefix))
-                    toRemove.Add(method);
-            }
-
-            foreach (var method in toRemove)
+            var removed = _methodIdIndex.RemoveWithPrefix(prefix);
+          
+            foreach (var method in removed)
             {
                 _cachedMethods.Remove(method);
                 _cachedDefiners.Remove(method);
                 if (MethodInvalidated != null)
                     MethodInvalidated(method);
             }
+        }
+    }
+
+    class MethodTrie : WordTrie<string, MethodID>
+    {
+        public void Add(MethodID method)
+        {
+            var key = Naming.GetNonGenericPath(method);
+            Add(key, method);
+        }
+
+        protected override IEnumerable<string> wordSpliter(string key)
+        {
+            var signature = PathInfo.GetNonGenericPath(key);
+            return signature.Split(Naming.PathDelimiter);
         }
     }
 }

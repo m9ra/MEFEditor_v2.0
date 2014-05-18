@@ -66,11 +66,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnumerationExtensions.cs" />
     <Compile Include="ExceptionWrapper.cs" />
     <Compile Include="FindFiles.cs" />
     <Compile Include="MultiDictionary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReverseComparer.cs" />
+    <Compile Include="WordTrie.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mefeditor.snk" />

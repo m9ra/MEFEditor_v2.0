@@ -65,7 +65,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var specializedMethod = Activation.Method.MakeGenericMethod(methodPath);
 
-            var activation = new ParsingActivation(Activation.SourceCode, specializedMethod, Activation.GenericParameters);
+            var activation = new ParsingActivation(Activation.SourceCode, specializedMethod, Activation.GenericParameters, Activation.Namespaces);
             var specializedGenerator = new SourceMethodGenerator(activation, _parsingProvider);
 
             return new MethodItem(specializedGenerator, specializedMethod);

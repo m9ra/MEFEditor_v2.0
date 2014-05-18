@@ -1411,6 +1411,9 @@ namespace AssemblyProviders.CSharp
             var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
             var objectType = resolveTypeDescriptor(typeSuffix);
 
+            if (objectType == null)
+                throw parsingException(callNode, "Cannot find type");
+
             var w = System.Diagnostics.Stopwatch.StartNew();
             var searcher = Context.CreateSearcher();
             searcher.SetCalledObject(objectType);

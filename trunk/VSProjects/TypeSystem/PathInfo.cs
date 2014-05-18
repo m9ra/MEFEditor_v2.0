@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Analyzing;
@@ -10,6 +11,16 @@ namespace TypeSystem
 {
     public class PathInfo
     {
+        private static readonly Regex _genericRemover = new Regex(@"
+     <  
+      (?>  [^><]+       | 
+        < (?<Depth>)    |
+        > (?<-Depth>) 
+      )*     
+     (?(Depth)(?!))   # Ensure that depth level is at zero
+     >
+",RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+
         public readonly string Name;
 
         public readonly string Signature;
@@ -85,6 +96,47 @@ namespace TypeSystem
             return parseSignature(typeDescriptor.TypeName, list);
         }
 
+        public static string GetNonGenericPath(string path)
+        {
+            return _genericRemover.Replace(path, "");
+        }
+
+        /// <summary>
+        /// Creates name according to current generic arguments
+        /// </summary>
+        /// <returns>Created name</returns>
+        public string CreateName()
+        {
+            var result = new StringBuilder();
+
+            var argIndex = 0;
+            for (int i = 0; i < Signature.Length; ++i)
+            {
+                var ch = Signature[i];
+
+                result.Append(ch);
+                if (ch == '<' || ch == ',')
+                {
+                    result.Append(GenericArgs[argIndex]);
+                    ++argIndex;
+                }
+            }
+
+            return result.ToString();
+        }
+
+        public static PathInfo Append(PathInfo path, string suffix)
+        {
+            if (path == null)
+            {
+                return new PathInfo(suffix);
+            }
+            else
+            {
+                return new PathInfo(path, suffix);
+            }
+        }
+
         private string getShortSignature(string signature)
         {
             if (!signature.EndsWith(">"))
@@ -151,43 +203,5 @@ namespace TypeSystem
 
             return parsedName.ToString();
         }
-
-
-        /// <summary>
-        /// Creates name according to current generic arguments
-        /// </summary>
-        /// <returns>Created name</returns>
-        public string CreateName()
-        {
-            var result = new StringBuilder();
-
-            var argIndex = 0;
-            for (int i = 0; i < Signature.Length; ++i)
-            {
-                var ch = Signature[i];
-
-                result.Append(ch);
-                if (ch == '<' || ch == ',')
-                {
-                    result.Append(GenericArgs[argIndex]);
-                    ++argIndex;
-                }
-            }
-
-            return result.ToString();
-        }
-
-        public static PathInfo Append(PathInfo path, string suffix)
-        {
-            if (path == null)
-            {
-                return new PathInfo(suffix);
-            }
-            else
-            {
-                return new PathInfo(path, suffix);
-            }
-        }
-
     }
 }

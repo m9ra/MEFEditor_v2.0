@@ -143,6 +143,27 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void PathInfo_NonGenericPath_NoChange()
+        {
+            "Test.Call"
+            .AssertNonGenericPath("Test.Call");
+        }
+
+        [TestMethod]
+        public void PathInfo_NonGenericPath_Ending()
+        {
+            "Test.Call<List<System.String>>"
+            .AssertNonGenericPath("Test.Call");
+        }
+
+        [TestMethod]
+        public void PathInfo_NonGenericPath_Inside()
+        {
+            "Test<Generic>.Test2<Generic<Inside>>.Call<List<System.String>>"
+            .AssertNonGenericPath("Test.Test2.Call");
+        }
+
+        [TestMethod]
         public void InstanceInfo_GenericSingleArgument()
         {
             Tools.AssertName<System.Collections.Generic.List<string>>("System.Collections.Generic.List<System.String>");

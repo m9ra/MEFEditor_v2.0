@@ -360,6 +360,19 @@ namespace TypeSystem
         }
 
         /// <summary>
+        /// Parse out method path without generic arguments/parameters
+        /// </summary>
+        /// <param name="method">MethodID from where path is parsed out</param>
+        /// <returns>Parsed path</returns>
+        internal static string GetNonGenericPath(MethodID method)
+        {
+            string path, paramDescr;
+            Naming.GetParts(method, out path, out paramDescr);
+
+            return PathInfo.GetNonGenericPath(path);
+        }
+
+        /// <summary>
         /// Create MethodID from given changedMethod that has declaring type defined by typeName
         /// </summary>
         /// <param name="typeName">Type that will be declaring type of resulting MethodID</param>
@@ -424,7 +437,6 @@ namespace TypeSystem
         }
 
         #endregion
-
 
     }
 }

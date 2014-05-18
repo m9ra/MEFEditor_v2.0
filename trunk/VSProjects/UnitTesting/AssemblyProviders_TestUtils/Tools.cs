@@ -25,6 +25,13 @@ namespace UnitTesting.AssemblyProviders_TestUtils
             CollectionAssert.AreEquivalent(path.GenericArgs, genericArgs, "Generic arguments parsing");
         }
 
+        public static void AssertNonGenericPath(this string path, string expectedNonGenericName)
+        {
+            var actualNonGenericPath= PathInfo.GetNonGenericPath(path);
+
+            Assert.AreEqual(expectedNonGenericName,actualNonGenericPath, "Non generic path parsing");
+        }
+
         public static void AssertFullname(this Type type, string fullname)
         {
             var descriptor = TypeDescriptor.Create(type);
