@@ -41,7 +41,8 @@ namespace MEFAnalyzers
             var components = new List<Instance>();
             Components.Set(components);
 
-            var assembly = Services.LoadAssembly(path);
+            var fullPath = DirectoryCatalogDefinition.ResolveFullPath(path);
+            var assembly = Services.LoadAssembly(fullPath);
             if (assembly == null)
             {
                 Error.Set("Assembly file hasn't been found");

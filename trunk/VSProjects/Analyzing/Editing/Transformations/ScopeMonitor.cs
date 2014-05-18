@@ -27,9 +27,9 @@ namespace Analyzing.Editing.Transformations
             _monitoredInstances = new HashSet<Instance>(instances);
 
             var instanceStarts = from instance in instances where instance.CreationBlock != null select instance.CreationBlock;
-            var latestStart = view.EarliestBlock(instanceStarts);
+            var earliestStart = view.EarliestBlock(instanceStarts);
 
-            initializeScopes(view, latestStart);
+            initializeScopes(view, earliestStart);
         }
 
         internal ScopeStepper CreateStepper()
@@ -37,18 +37,23 @@ namespace Analyzing.Editing.Transformations
             return new ScopeStepper(_scopes);
         }
 
-        private void initializeScopes(ExecutionView view, ExecutedBlock latestStart)
+        private void initializeScopes(ExecutionView view, ExecutedBlock earliestStart)
         {
+            var current = earliestStart;
 
             //initialize active scope index
             var activeScopes = new Dictionary<Instance, Dictionary<VariableName, ExecutedBlock>>();
             foreach (var instance in _monitoredInstances)
             {
+                if (instance.CreationBlock == null)
+                    //earliest start cannot be determined - we have to traverse from begining
+                    current = view.EntryBlock;
+
                 activeScopes.Add(instance, new Dictionary<VariableName, ExecutedBlock>());
             }
 
             //search block for scopes
-            var current = latestStart;
+
             ExecutedBlock lastBlock = null;
             while (current != null)
             {
@@ -95,9 +100,7 @@ namespace Analyzing.Editing.Transformations
                 foreach (var scopePair in scopesIndex)
                 {
                     var scope = new InstanceScope(scopePair.Key, instance, scopePair.Value, lastBlock);
-                    if (scope.Start == scope.End)
-                        //empty scope
-                        continue;
+                    //empty scope is allowed here, because it is not closed
 
                     _scopes.Add(instance, scope);
                 }

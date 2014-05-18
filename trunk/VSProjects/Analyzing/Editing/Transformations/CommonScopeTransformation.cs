@@ -149,6 +149,9 @@ namespace Analyzing.Editing.Transformations
 
         private InstanceScopes createInstanceScopes(IEnumerable<InstanceScope> scopes, ExecutedBlock scopeBlock)
         {
+            if (scopeBlock == null || scopes.Count()!=_instances.Length)
+                return null;
+
             var scopeIndex = new Dictionary<Instance, VariableName>();
             foreach (var scope in scopes)
             {

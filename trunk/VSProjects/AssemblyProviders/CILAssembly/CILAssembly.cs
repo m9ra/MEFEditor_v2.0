@@ -861,7 +861,12 @@ namespace AssemblyProviders.CILAssembly
 
             //subchain from base class
             var subTypeDescriptor = getDescriptor(type.BaseType);
-            var subTypeChain = TypeServices.GetChain(subTypeDescriptor);
+
+            if (subTypeDescriptor != null)
+            {
+                var subTypeChain = TypeServices.GetChain(subTypeDescriptor);
+                subChains.Add(subTypeChain);
+            }
 
             var typeDescriptor = getDescriptor(type);
             return TypeServices.CreateChain(typeDescriptor, subChains);

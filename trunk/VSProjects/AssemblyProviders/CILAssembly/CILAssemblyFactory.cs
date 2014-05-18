@@ -7,7 +7,7 @@ using TypeSystem;
 
 namespace AssemblyProviders.CILAssembly
 {
-    public class CILAssemblyFactory:AssemblyProviderFactory
+    public class CILAssemblyFactory : AssemblyProviderFactory
     {
         public override AssemblyProvider Create(object assemblyKey)
         {
@@ -16,7 +16,14 @@ namespace AssemblyProviders.CILAssembly
                 //TODO event for path changes can be hooked - or place it into plugin ?
                 return null;
 
-            return new CILAssembly(assemblyPath);
+            if (System.IO.File.Exists(assemblyPath))
+            {
+                return new CILAssembly(assemblyPath);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

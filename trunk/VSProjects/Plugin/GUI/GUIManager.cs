@@ -279,6 +279,8 @@ namespace Plugin.GUI
                 if (HostAssemblyUnLoaded != null)
                     HostAssemblyUnLoaded(_hostAssembly);
 
+                _appDomain.Loader.UnloadRoot(_hostAssembly.FullPath);
+
                 _hostAssembly = null;
             }
 

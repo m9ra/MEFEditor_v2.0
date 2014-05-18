@@ -25,9 +25,12 @@ namespace AssemblyProviders.CIL
         /// Build TypeDescriptor from given TypeReference. Available substitutions are used.
         /// </summary>
         /// <param name="type">TypeReference which descriptor is builded</param>
-        /// <returns>Builded TypeDescriptor</returns>
+        /// <returns>Built TypeDescriptor if available, <c>null</c> otherwise</returns>
         internal TypeDescriptor BuildDescriptor(TypeReference type)
         {
+            if (type == null)
+                return null;
+
             var adapted = new TypeReferenceAdapter(type);
             return TypeHierarchyDirector.BuildDescriptor(adapted, resolveSubstitution);
         }

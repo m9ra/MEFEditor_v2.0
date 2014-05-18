@@ -166,6 +166,7 @@ namespace MEFEditor.Plugin.Main
 
             Runtime.AddDefinition(new CompositionContainerDefinition());
             Runtime.AddDefinition(new AggregateCatalogDefinition());
+            Runtime.AddDefinition(new AssemblyCatalogDefinition());
             Runtime.AddDefinition(new TypeCatalogDefinition());
             Runtime.AddDefinition(new DirectoryCatalogDefinition());
             Runtime.AddDefinition(new ComposablePartCatalogCollectionDefinition());

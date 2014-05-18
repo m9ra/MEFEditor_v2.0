@@ -29,6 +29,9 @@ namespace TypeSystem.TypeParsing
 
         protected TypeAdapterBase(Adapted adaptedType)
         {
+            if (adaptedType == null)
+                throw new ArgumentNullException("adaptedType");
+
             AdaptedType = adaptedType;
         }
 
