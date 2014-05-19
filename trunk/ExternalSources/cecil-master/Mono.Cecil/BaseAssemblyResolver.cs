@@ -33,40 +33,45 @@ using System.Text;
 
 using Mono.Collections.Generic;
 
-namespace Mono.Cecil {
+namespace Mono.Cecil
+{
 
-	public delegate AssemblyDefinition AssemblyResolveEventHandler (object sender, AssemblyNameReference reference);
+    public delegate AssemblyDefinition AssemblyResolveEventHandler(object sender, AssemblyNameReference reference);
 
-	public sealed class AssemblyResolveEventArgs : EventArgs {
+    public sealed class AssemblyResolveEventArgs : EventArgs
+    {
 
-		readonly AssemblyNameReference reference;
+        readonly AssemblyNameReference reference;
 
-		public AssemblyNameReference AssemblyReference {
-			get { return reference; }
-		}
+        public AssemblyNameReference AssemblyReference
+        {
+            get { return reference; }
+        }
 
-		public AssemblyResolveEventArgs (AssemblyNameReference reference)
-		{
-			this.reference = reference;
-		}
-	}
+        public AssemblyResolveEventArgs(AssemblyNameReference reference)
+        {
+            this.reference = reference;
+        }
+    }
 
 #if !SILVERLIGHT && !CF
 	[Serializable]
 #endif
-	public class AssemblyResolutionException : FileNotFoundException {
+    public class AssemblyResolutionException : FileNotFoundException
+    {
 
-		readonly AssemblyNameReference reference;
+        readonly AssemblyNameReference reference;
 
-		public AssemblyNameReference AssemblyReference {
-			get { return reference; }
-		}
+        public AssemblyNameReference AssemblyReference
+        {
+            get { return reference; }
+        }
 
-		public AssemblyResolutionException (AssemblyNameReference reference)
-			: base (string.Format ("Failed to resolve assembly: '{0}'", reference))
-		{
-			this.reference = reference;
-		}
+        public AssemblyResolutionException(AssemblyNameReference reference)
+            : base(string.Format("Failed to resolve assembly: '{0}'", reference))
+        {
+            this.reference = reference;
+        }
 
 #if !SILVERLIGHT && !CF
 		protected AssemblyResolutionException (
@@ -76,78 +81,79 @@ namespace Mono.Cecil {
 		{
 		}
 #endif
-	}
+    }
 
-	public abstract class BaseAssemblyResolver : IAssemblyResolver {
+    public abstract class BaseAssemblyResolver : IAssemblyResolver
+    {
 
-		static readonly bool on_mono = Type.GetType ("Mono.Runtime") != null;
+        static readonly bool on_mono = Type.GetType("Mono.Runtime") != null;
 
-		readonly Collection<string> directories;
+        readonly Collection<string> directories;
 
 #if !SILVERLIGHT && !CF
 		Collection<string> gac_paths;
 #endif
 
-		public void AddSearchDirectory (string directory)
-		{
-			directories.Add (directory);
-		}
+        public void AddSearchDirectory(string directory)
+        {
+            directories.Add(directory);
+        }
 
-		public void RemoveSearchDirectory (string directory)
-		{
-			directories.Remove (directory);
-		}
+        public void RemoveSearchDirectory(string directory)
+        {
+            directories.Remove(directory);
+        }
 
-		public string [] GetSearchDirectories ()
-		{
-			var directories = new string [this.directories.size];
-			Array.Copy (this.directories.items, directories, directories.Length);
-			return directories;
-		}
+        public string[] GetSearchDirectories()
+        {
+            var directories = new string[this.directories.size];
+            Array.Copy(this.directories.items, directories, directories.Length);
+            return directories;
+        }
 
-		public virtual AssemblyDefinition Resolve (string fullName)
-		{
-			return Resolve (fullName, new ReaderParameters ());
-		}
+        public virtual AssemblyDefinition Resolve(string fullName)
+        {
+            return Resolve(fullName, new ReaderParameters());
+        }
 
-		public virtual AssemblyDefinition Resolve (string fullName, ReaderParameters parameters)
-		{
-			if (fullName == null)
-				throw new ArgumentNullException ("fullName");
+        public virtual AssemblyDefinition Resolve(string fullName, ReaderParameters parameters)
+        {
+            if (fullName == null)
+                throw new ArgumentNullException("fullName");
 
-			return Resolve (AssemblyNameReference.Parse (fullName), parameters);
-		}
+            return Resolve(AssemblyNameReference.Parse(fullName), parameters);
+        }
 
-		public event AssemblyResolveEventHandler ResolveFailure;
+        public event AssemblyResolveEventHandler ResolveFailure;
 
-		protected BaseAssemblyResolver ()
-		{
-			directories = new Collection<string> (2) { ".", "bin" };
-		}
+        protected BaseAssemblyResolver()
+        {
+            directories = new Collection<string>(2) { ".", "bin" };
+        }
 
-		AssemblyDefinition GetAssembly (string file, ReaderParameters parameters)
-		{
-			if (parameters.AssemblyResolver == null)
-				parameters.AssemblyResolver = this;
+        AssemblyDefinition GetAssembly(string file, ReaderParameters parameters)
+        {
+            if (parameters.AssemblyResolver == null)
+                parameters.AssemblyResolver = this;
 
-			return ModuleDefinition.ReadModule (file, parameters).Assembly;
-		}
+            return ModuleDefinition.ReadModule(file, parameters).Assembly;
+        }
 
-		public virtual AssemblyDefinition Resolve (AssemblyNameReference name)
-		{
-			return Resolve (name, new ReaderParameters ());
-		}
+        public virtual AssemblyDefinition Resolve(AssemblyNameReference name)
+        {
+            return Resolve(name, new ReaderParameters());
+        }
 
-		public virtual AssemblyDefinition Resolve (AssemblyNameReference name, ReaderParameters parameters)
-		{
-			if (name == null)
-				throw new ArgumentNullException ("name");
-			if (parameters == null)
-				parameters = new ReaderParameters ();
+        public virtual AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+            if (parameters == null)
+                parameters = new ReaderParameters();
 
-			var assembly = SearchDirectory (name, directories, parameters);
-			if (assembly != null)
-				return assembly;
+            var assembly = SearchDirectory(name, directories, parameters);
+            if (assembly != null)
+                return assembly;
 
 #if !SILVERLIGHT && !CF
 			var framework_dir = Path.GetDirectoryName (typeof (object).Module.FullyQualifiedName);
@@ -173,33 +179,37 @@ namespace Mono.Cecil {
 				return assembly;
 #endif
 
-			if (ResolveFailure != null) {
-				assembly = ResolveFailure (this, name);
-				if (assembly != null)
-					return assembly;
-			}
+            if (ResolveFailure != null)
+            {
+                assembly = ResolveFailure(this, name);
+                //CHANGED FROM ORIGINAL MONO IMPLEMENTATION
+                //SO IT DOESNT THROW EXCEPTIONS
+                return assembly;
+            }
 
-			throw new AssemblyResolutionException (name);
-		}
+            throw new AssemblyResolutionException(name);
+        }
 
-		AssemblyDefinition SearchDirectory (AssemblyNameReference name, IEnumerable<string> directories, ReaderParameters parameters)
-		{
-			var extensions = new [] { ".exe", ".dll" };
-			foreach (var directory in directories) {
-				foreach (var extension in extensions) {
-					string file = Path.Combine (directory, name.Name + extension);
-					if (File.Exists (file))
-						return GetAssembly (file, parameters);
-				}
-			}
+        AssemblyDefinition SearchDirectory(AssemblyNameReference name, IEnumerable<string> directories, ReaderParameters parameters)
+        {
+            var extensions = new[] { ".exe", ".dll" };
+            foreach (var directory in directories)
+            {
+                foreach (var extension in extensions)
+                {
+                    string file = Path.Combine(directory, name.Name + extension);
+                    if (File.Exists(file))
+                        return GetAssembly(file, parameters);
+                }
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		static bool IsZero (Version version)
-		{
-			return version == null || (version.Major == 0 && version.Minor == 0 && version.Build == 0 && version.Revision == 0);
-		}
+        static bool IsZero(Version version)
+        {
+            return version == null || (version.Major == 0 && version.Minor == 0 && version.Build == 0 && version.Revision == 0);
+        }
 
 #if !SILVERLIGHT && !CF
 		AssemblyDefinition GetCorlib (AssemblyNameReference reference, ReaderParameters parameters)
@@ -359,5 +369,5 @@ namespace Mono.Cecil {
 				reference.Name + ".dll");
 		}
 #endif
-	}
+    }
 }

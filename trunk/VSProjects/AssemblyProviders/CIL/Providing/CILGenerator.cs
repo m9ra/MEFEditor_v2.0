@@ -22,18 +22,26 @@ namespace AssemblyProviders.CIL.Providing
 
         private readonly TypeServices _services;
 
-        internal CILGenerator(MethodDefinition method, TypeMethodInfo methodInfo, TypeServices services)         
+        internal CILGenerator(MethodDefinition method, TypeMethodInfo methodInfo, TypeServices services)
         {
-       if (services == null)
+            if (services == null)
                 throw new ArgumentNullException("services");
+
+            //method can be null - is used for default implementations
+            /*if(method==null)
+                throw new ArgumentNullException("method");*/
 
             _method = method;
             _info = methodInfo;
             _services = services;
         }
-        
+
         protected override void generate(EmitterBase emitter)
         {
+            if (_method == null)
+                //nothing to emit
+                return;
+
             var method = new CILMethod(_method, _info);
             Compiler.GenerateInstructions(method, _info, emitter, _services);
         }

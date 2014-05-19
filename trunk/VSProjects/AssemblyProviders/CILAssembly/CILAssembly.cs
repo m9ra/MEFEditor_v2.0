@@ -23,6 +23,18 @@ namespace AssemblyProviders.CILAssembly
     public class CILAssembly : AssemblyProvider
     {
         /// <summary>
+        /// Windows path
+        /// </summary>
+        private readonly static string windowsFullpath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        private readonly static string gac_net2 = Path.Combine(windowsFullpath, "assembly");
+        private readonly static string gac_net4 = Path.Combine(windowsFullpath, "Microsoft.NET\\assembly");
+
+        private readonly static string[] gac_paths = new[]{
+            gac_net2,
+            gac_net4
+        };
+
+        /// <summary>
         /// Full path of represented assembly
         /// </summary>
         private readonly string _fullPath;
@@ -50,9 +62,6 @@ namespace AssemblyProviders.CILAssembly
         {
             _fullPath = Path.GetFullPath(assemblyPath);
 
-            //TODO use correct resolvers
-            //probably resolvers are not needed and all desired functionality will be
-            //gained via using TypeSystems resolving
             var pars = new ReaderParameters();
             var resolver = new DefaultAssemblyResolver();
 
@@ -118,14 +127,81 @@ namespace AssemblyProviders.CILAssembly
         {
             foreach (var reference in _assembly.MainModule.AssemblyReferences)
             {
-                //TODO find path of assembly
+                var fullpath = resolveFullPath(reference);
+                if (fullpath == null)
+                    //assembly has not been found
+                    continue;
 
-                /*
-                var refAssembly = _assembly.MainModule.AssemblyResolver.Resolve(reference);
-                var fullPath = refAssembly.MainModule.FullyQualifiedName;
-
-                AddReference(fullPath);*/
+                AddReference(fullpath);
             }
+        }
+
+        private string resolveFullPath(AssemblyNameReference reference)
+        {
+            var gac_assembly = GetAssemblyGac(reference);
+            if (gac_assembly != null)
+                return gac_assembly;
+
+            var root = Directory.GetParent(_fullPath).FullName;
+
+            foreach (var extension in new[] { ".exe", ".dll" })
+            {
+                var assemblyName = reference.Name;
+                var files = Directory.GetFiles(root, assemblyName, SearchOption.AllDirectories);
+
+                if (files.Any())
+                    return files.First();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 
+        /// <remarks>Changed implementation from https://github.com/icsharpcode/ILSpy/blob/master/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs </remarks>
+        /// </summary>
+        /// <param name="reference"></param>
+        /// <returns></returns>
+        string GetAssemblyGac(AssemblyNameReference reference)
+        {
+            var gacs = new[] { "GAC_MSIL", "GAC_32", "GAC" };
+            var prefixes = new[] { string.Empty, "v4.0_" };
+
+            for (var i = 0; i < prefixes.Length; i++)
+            {
+                for (var j = 0; j < gacs.Length; j++)
+                {
+                    var gac = Path.Combine(gac_paths[i], gacs[j]);
+                    var file = GetAssemblyGacFile(reference, prefixes[i], gac);
+                    if (Directory.Exists(gac) && File.Exists(file))
+                        return file;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// <remarks>Changed implementation from https://github.com/icsharpcode/ILSpy/blob/master/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs </remarks>
+        /// </summary>
+        /// <param name="reference"></param>
+        /// <param name="prefix"></param>
+        /// <param name="gac"></param>
+        /// <returns></returns>
+        static string GetAssemblyGacFile(AssemblyNameReference reference, string prefix, string gac)
+        {
+            var gac_folder = new StringBuilder()
+                .Append(prefix)
+                .Append(reference.Version)
+                .Append("__");
+
+            for (int i = 0; i < reference.PublicKeyToken.Length; i++)
+                gac_folder.Append(reference.PublicKeyToken[i].ToString("x2"));
+
+            return Path.Combine(
+                Path.Combine(
+                    Path.Combine(gac, reference.Name), gac_folder.ToString()),
+                reference.Name + ".dll");
         }
 
 

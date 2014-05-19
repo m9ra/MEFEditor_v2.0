@@ -9,6 +9,9 @@ using System.Linq.Expressions;
 using Analyzing;
 using Analyzing.Execution;
 
+using TypeSystem;
+using TypeSystem.Runtime;
+
 namespace AssemblyProviders.CIL
 {
     internal delegate object MathOp(object op1, object op2);
@@ -71,6 +74,18 @@ namespace AssemblyProviders.CIL
 
             var pushed = isLesser ? 1 : 0;
             _stack.Push(createInstance(pushed));
+        }
+
+        /// <summary>
+        /// Pop array size from the stack and push new array on the stack
+        /// </summary>
+        public void NewArr()
+        {
+            var size=(int)Pop().DirectValue;
+            var array = new TypeSystem.Runtime.Array<InstanceWrap>(size);
+
+            var arrayInstance=_context.Machine.CreateDirectInstance(array);
+            Push(arrayInstance);
         }
 
         private Instance createInstance(object obj)

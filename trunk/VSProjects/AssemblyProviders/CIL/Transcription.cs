@@ -47,6 +47,11 @@ namespace AssemblyProviders.CIL
         internal static readonly MethodID Stack_pop = Naming.Method<VMStack>("Pop");
 
         /// <summary>
+        /// Pop array size and Push new array on the stack
+        /// </summary>
+        internal static readonly MethodID Stack_newarr = Naming.Method<VMStack>("NewArr");
+
+        /// <summary>
         /// Add two operands on top of the stack and push its result
         /// </summary>
         internal static readonly MethodID Stack_add = Naming.Method<VMStack>("Add");
@@ -257,7 +262,7 @@ namespace AssemblyProviders.CIL
         {
             emitCall(Instruction.GetterOperand, true);
         }
-
+        
         static void _box()
         {
             //boxing is not needed
@@ -276,6 +281,11 @@ namespace AssemblyProviders.CIL
             {
                 E.Nop();
             }
+        }
+
+        static void _newarr()
+        {
+            E.Call(Stack_newarr, StackStorage, Arguments.Values());
         }
 
         #region Arithmetic instructions
