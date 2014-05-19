@@ -36,7 +36,7 @@ namespace AssemblyProviders.CIL
 
         public static void GenerateInstructions(CILMethod method, TypeMethodInfo info, EmitterBase emitter, TypeServices services)
         {
-         //   Console.WriteLine(method.ToString());
+            //   Console.WriteLine(method.ToString());
 
             var compiler = new Compiler(method, info, emitter, services);
             compiler.generateInstructions();
@@ -92,5 +92,6 @@ namespace AssemblyProviders.CIL
         {
             E.DirectInvoke(VMStack.InitializeStack);
         }
+
     }
 }

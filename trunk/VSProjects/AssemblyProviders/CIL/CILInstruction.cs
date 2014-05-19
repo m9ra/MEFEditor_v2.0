@@ -83,7 +83,7 @@ namespace AssemblyProviders.CIL
         /// Create CILInstruction from runtime .NET representation of instruction.
         /// </summary>
         /// <param name="instruction">Runtime .NET representation of instruction.</param>
-        public CILInstruction(ILInstruction instruction)
+        internal CILInstruction(ILInstruction instruction, TranscriptionContext context)
         {
             Address = instruction.Address;
             Data = instruction.Data;
@@ -101,13 +101,13 @@ namespace AssemblyProviders.CIL
         /// Create CILInstruction from Mono.Cecil instruction representation of instructino.
         /// </summary>
         /// <param name="instruction">Mono.Cecil representation of instruction</param>
-        public CILInstruction(Instruction instruction)
+        internal CILInstruction(Instruction instruction, TranscriptionContext context)
         {
             Address = instruction.Offset;
             Data = instruction.Operand;
 
             OpCode = instruction.OpCode;
-            MethodOperand = CreateMethodInfo(Data as MethodReference, needsDynamicResolving(OpCode));
+            MethodOperand = CreateMethodInfo(Data as MethodReference, needsDynamicResolving(OpCode), context);
             BranchAddressOperand = getBranchOffset(Data as Instruction);
 
             SetterOperand = createSetter(Data as FieldReference);
@@ -120,12 +120,15 @@ namespace AssemblyProviders.CIL
         /// <param name="method"></param>
         /// <param name="needsDynamicResolution"></param>
         /// <returns></returns>
-        internal static TypeMethodInfo CreateMethodInfo(MethodReference method, bool needsDynamicResolution)
+        internal static TypeMethodInfo CreateMethodInfo(MethodReference method, bool needsDynamicResolution, TranscriptionContext context)
         {
             if (method == null)
                 return null;
 
-            var builder = new MethodInfoBuilder(method);
+            //Get available type helper
+            var typeHelper = context == null ? new TypeReferenceHelper() : context.TypeHelper;
+
+            var builder = new MethodInfoBuilder(method, typeHelper);
             builder.NeedsDynamicResolving = needsDynamicResolution;
 
             return builder.Build();
@@ -292,7 +295,7 @@ namespace AssemblyProviders.CIL
                 },
                 true, TypeDescriptor.NoDescriptors);
         }
-        
+
         /// <summary>
         /// Get offset of branch target according to instruction
         /// </summary>

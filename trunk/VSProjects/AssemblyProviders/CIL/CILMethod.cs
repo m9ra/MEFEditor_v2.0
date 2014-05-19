@@ -23,6 +23,11 @@ namespace AssemblyProviders.CIL
     public class CILMethod
     {
         /// <summary>
+        /// Context of transcription if available
+        /// </summary>
+        internal readonly TranscriptionContext Context;
+
+        /// <summary>
         /// Instructions of method.
         /// </summary>
         public readonly IEnumerable<CILInstruction> Instructions;
@@ -42,13 +47,15 @@ namespace AssemblyProviders.CIL
         /// creating methods from runtime .NET methods.
         /// </summary>
         /// <param name="method">Runtime .NET method representation</param>
-        public CILMethod(MethodInfo method)
+        public CILMethod(MethodInfo method, TypeMethodInfo methodInfo)
         {
+            //TODO: Reflection methods doesnt support now context generic parameters
+            Context = new TranscriptionContext(methodInfo, new GenericParameter[0]);
             Name = method.Name;
             MethodDescription = method.ToString();
             var reader = new ILReader(method);
 
-            Instructions = from instruction in reader.Instructions select new CILInstruction(instruction);
+            Instructions = from instruction in reader.Instructions select new CILInstruction(instruction, Context);
         }
 
         /// <summary>
@@ -56,8 +63,12 @@ namespace AssemblyProviders.CIL
         /// creating methods from methods loaded by Mono.Cecil.
         /// </summary>
         /// <param name="method">Mono.Cecil method</param>
-        public CILMethod(MethodDefinition method)
+        public CILMethod(MethodDefinition method, TypeMethodInfo methodInfo)
         {
+            var genericTypeParameters = method.DeclaringType.GenericParameters;
+            var genericMethodParameters = method.GenericParameters;
+
+            Context = new TranscriptionContext(methodInfo, genericTypeParameters.Concat(genericMethodParameters));
             if (method == null)
             {
                 //empty method
@@ -66,10 +77,10 @@ namespace AssemblyProviders.CIL
             else
             {
                 //wrap instructions
-                Instructions = from instruction in method.Body.Instructions select new CILInstruction(instruction);
+                Instructions = from instruction in method.Body.Instructions select new CILInstruction(instruction, Context);
             }
         }
-           
+
         /// <summary>
         /// Human readable description of method.
         /// </summary>

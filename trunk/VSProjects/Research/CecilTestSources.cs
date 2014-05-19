@@ -59,11 +59,20 @@ static class CecilTestSources
         return t.Test<string>(a, "abc");
     }
 
+    [CompositionPoint]
     static void RunGenericIfaceTest()
     {
         var iface = new GenericIfaceImplementation<int>();
         var result = GenericIfaceTest<int>(5, iface);
     }
+
+    [CompositionPoint]
+    static void RunGenericTest()
+    {
+        var impl= new GenericIfaceImplementation<int>();
+        impl.Test2<string>(4, "b", "c");
+    }
+
 
     static T SimpleGenericTest<T>(T input)
     {
@@ -125,11 +134,19 @@ class GenericIfaceImplementation<TImpl> : GenericIface<TImpl>
     {
         return "GenericIfaceImplementation.Test";
     }
+
+    public string Test2<TMethod>(TImpl a, TMethod b, TMethod c)
+    {
+        return "GenericIfaceImplementation.Test";
+    }
 }
 
 [Export("SelfExport")]
 class CECILComponent2
 {
+    [Export("Contract0")]
+    public string ExportField;
+
     [Export("Contract1")]
     public string ExportProperty { get; private set; }
 

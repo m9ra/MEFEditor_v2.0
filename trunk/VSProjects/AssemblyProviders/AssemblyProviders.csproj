@@ -99,6 +99,7 @@
     <Compile Include="CIL\Providing\CILGenerator.cs" />
     <Compile Include="CIL\Providing\GetterGenerator.cs" />
     <Compile Include="CIL\Providing\SetterGenerator.cs" />
+    <Compile Include="CIL\TranscriptionContext.cs" />
     <Compile Include="CIL\TypeReferenceAdapter.cs" />
     <Compile Include="CIL\TypeReferenceHelper.cs" />
     <Compile Include="CIL\VMStack.cs" />

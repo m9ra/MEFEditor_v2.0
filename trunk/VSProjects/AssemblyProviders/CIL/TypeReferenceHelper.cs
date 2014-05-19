@@ -17,7 +17,7 @@ namespace AssemblyProviders.CIL
     class TypeReferenceHelper
     {
         /// <summary>
-        /// Substitutions available for building
+        /// According parameter substitutions available for building
         /// </summary>
         internal readonly Dictionary<GenericParameter, TypeDescriptor> Substitutions = new Dictionary<GenericParameter, TypeDescriptor>();
 

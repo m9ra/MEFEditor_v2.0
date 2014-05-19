@@ -164,7 +164,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             var methodInfo = buildDescription(description, methodPath);
 
-            var source = new CILMethod(sourceMethod);
+            var source = new CILMethod(sourceMethod, methodInfo);
             var method = new CILGenerator(methodInfo, source, TypeServices);
             addMethod(method, methodInfo, description.Implemented);
 
@@ -175,7 +175,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         {
             var methodInfo = buildDescription(description, methodPath);
 
-            var source = new CILMethod(sourceMethod);
+            var source = new CILMethod(sourceMethod, methodInfo);
             var method = new CILGenerator(methodInfo, source, TypeServices);
             addMethod(method, methodInfo, description.Implemented);
 

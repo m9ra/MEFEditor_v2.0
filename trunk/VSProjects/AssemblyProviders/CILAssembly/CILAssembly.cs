@@ -367,7 +367,7 @@ namespace AssemblyProviders.CILAssembly
         {
             var getter = buildAutoGetter(infoBuilder.ComponentType, field);
 
-            var exportType = getter.Info.Parameters[0].Type;
+            var exportType = getter.Info.ReturnType;
             var contract = getExportContract(attribute, exportType);
 
             infoBuilder.AddExport(exportType, getter.Info.MethodID, contract);
@@ -545,7 +545,7 @@ namespace AssemblyProviders.CILAssembly
         /// <returns>Created method info</returns>
         internal TypeMethodInfo CreateMethodInfo(TypeDescriptor declaringType, MethodDefinition method)
         {
-            return CILInstruction.CreateMethodInfo(method, method.IsAbstract);
+            return CILInstruction.CreateMethodInfo(method, method.IsAbstract, null);
         }
 
         /// <summary>

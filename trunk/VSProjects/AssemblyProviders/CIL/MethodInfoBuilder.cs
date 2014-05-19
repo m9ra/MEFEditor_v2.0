@@ -19,7 +19,7 @@ namespace AssemblyProviders.CIL
         /// <summary>
         /// Available substitutions for generic parameters
         /// </summary>
-        internal TypeReferenceHelper TypeBuilder = new TypeReferenceHelper();
+        internal readonly TypeReferenceHelper TypeHelper;
 
         /// <summary>
         /// Type descriptor that is used as declaring type of builded TypeMethodInfo.
@@ -68,8 +68,13 @@ namespace AssemblyProviders.CIL
         /// Create builder for given method
         /// </summary>
         /// <param name="translatedMethod">Method which TypeMethodInfo is builded</param>
-        internal MethodInfoBuilder(MethodReference translatedMethod)
+        internal MethodInfoBuilder(MethodReference translatedMethod, TypeReferenceHelper typeHelper)
         {
+            TypeHelper = typeHelper;
+
+            if (TypeHelper == null)
+                throw new ArgumentNullException("typeHelper");
+
             applyGenericDeclaringType(translatedMethod.DeclaringType as GenericInstanceType);
             applyDeclaringType(translatedMethod.DeclaringType);
 
@@ -85,7 +90,7 @@ namespace AssemblyProviders.CIL
         /// <returns>Created type descriptor</returns>
         internal TypeDescriptor GetDescriptor(TypeReference type)
         {
-            var result = TypeBuilder.BuildDescriptor(type);
+            var result = TypeHelper.BuildDescriptor(type);
             return result;
         }
 
@@ -174,7 +179,7 @@ namespace AssemblyProviders.CIL
             // in applyGenericMethod
             foreach (var par in parameters)
             {
-                var parType = TypeBuilder.BuildDescriptor(par);
+                var parType = TypeHelper.BuildDescriptor(par);
                 TypeArguments.Add(parType);
             }
         }
@@ -196,7 +201,7 @@ namespace AssemblyProviders.CIL
 
             foreach (var par in parameters)
             {
-                var parType = TypeBuilder.BuildDescriptor(par);
+                var parType = TypeHelper.BuildDescriptor(par);
                 TypeArguments.Add(parType);
             }
         }
@@ -233,7 +238,7 @@ namespace AssemblyProviders.CIL
                 ++_genericParamOffset;
 
                 //These default descriptors are used below via GetDescriptor resolving algorithm
-                TypeBuilder.Substitutions[parameter] = parameterDescriptor;
+                TypeHelper.Substitutions[parameter] = parameterDescriptor;
             }
 
             for (var i = 0; i < args.Length; ++i)
@@ -242,7 +247,7 @@ namespace AssemblyProviders.CIL
                 var parameter = pars[i];
 
                 var argumentDescriptor = GetDescriptor(argument);
-                TypeBuilder.Substitutions[parameter] = argumentDescriptor;
+                TypeHelper.Substitutions[parameter] = argumentDescriptor;
             }
         }
 
