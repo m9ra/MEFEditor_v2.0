@@ -44,6 +44,9 @@ namespace AssemblyProviders.CIL
 
         public Instance Pop()
         {
+            if (_stack.Count == 0)
+                throw new ParsingException("No value on stack is present because CIL transcription created incorrect program.", null);
+
             var popped = _stack.Pop();
             return popped;
         }
@@ -77,15 +80,47 @@ namespace AssemblyProviders.CIL
         }
 
         /// <summary>
+        /// Duplicate the value on the top of the stack.
+        /// </summary>
+        public void Dup()
+        {
+            var duplicated = _stack.Peek();
+            Push(duplicated);
+        }
+
+        /// <summary>
         /// Pop array size from the stack and push new array on the stack
         /// </summary>
         public void NewArr()
         {
-            var size=(int)Pop().DirectValue;
+            var size = (int)Pop().DirectValue;
             var array = new TypeSystem.Runtime.Array<InstanceWrap>(size);
 
-            var arrayInstance=_context.Machine.CreateDirectInstance(array);
+            var arrayInstance = _context.Machine.CreateDirectInstance(array);
             Push(arrayInstance);
+        }
+
+        /// <summary>
+        /// Replace array element at index with the value on the stack
+        /// </summary>
+        public void StElem()
+        {
+            var element = Pop();
+            var index = (int)Pop().DirectValue;
+            var array = Pop().DirectValue as Array<InstanceWrap>;
+            array.set_Item(index, new InstanceWrap(element));
+        }
+
+        /// <summary>
+        /// Load the element at index onto the top of the stack.
+        /// </summary>
+        public void LdElem()
+        {
+            var index = (int)Pop().DirectValue;
+            var array = Pop().DirectValue as Array<InstanceWrap>;
+
+            var result = array.get_Item(index);
+            Push(result.Wrapped);
         }
 
         private Instance createInstance(object obj)

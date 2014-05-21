@@ -13,7 +13,7 @@ namespace TypeSystem.Runtime
     public class Array<ItemType>
         where ItemType : InstanceWrap
     {
-        private readonly Dictionary<string, InstanceWrap> _data = new Dictionary<string, InstanceWrap>();
+        private readonly Dictionary<string, ItemType> _data = new Dictionary<string, ItemType>();
 
         public int Length { get; private set; }
 
@@ -26,7 +26,7 @@ namespace TypeSystem.Runtime
                 return Naming.Method(TypeDescriptor.Create("Array<" + item.Type.TypeName + ",1>"), Naming.IndexerSetter, false, index, item);
             }
         }
-        
+
         public Array(int length)
         {
             //TODO multidimensional array
@@ -65,16 +65,23 @@ namespace TypeSystem.Runtime
         {
             var key = getKey(index);
 
-            InstanceWrap value;
+            ItemType value;
             _data.TryGetValue(key, out value);
 
-            return value as ItemType;
+            return value;
+        }
+
+        public IEnumerator<ItemType> GeEnumerator()
+        {
+            return _data.Values.GetEnumerator();
         }
 
         private string getKey(int index)
         {
             return index.ToString();
         }
+
+
 
         internal ResultType Unwrap<ResultType>()
         {

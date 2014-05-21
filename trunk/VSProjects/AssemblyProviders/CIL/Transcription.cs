@@ -52,6 +52,20 @@ namespace AssemblyProviders.CIL
         internal static readonly MethodID Stack_newarr = Naming.Method<VMStack>("NewArr");
 
         /// <summary>
+        /// Pop array size and Push new array on the stack
+        /// </summary>
+        internal static readonly MethodID Stack_stelem = Naming.Method<VMStack>("StElem");
+
+        /// <summary>
+        /// Load the element at index onto the top of the stack.
+        /// </summary>
+        internal static readonly MethodID Stack_ldelem = Naming.Method<VMStack>("LdElem");
+        /// <summary>
+        /// Duplicate the value on the top of the stack.
+        /// </summary>
+        internal static readonly MethodID Stack_dup = Naming.Method<VMStack>("Dup");
+
+        /// <summary>
         /// Add two operands on top of the stack and push its result
         /// </summary>
         internal static readonly MethodID Stack_add = Naming.Method<VMStack>("Add");
@@ -138,7 +152,7 @@ namespace AssemblyProviders.CIL
                 //This requires .NET4.5
                 //var handler = (Action)transcriptor.CreateDelegate(typeof(Action));
 
-                var call=Expression.Call(null,transcriptor);
+                var call = Expression.Call(null, transcriptor);
                 var handler = Expression.Lambda<Action>(call).Compile();
                 transcriptorNaming.Add(name, handler);
             }
@@ -262,7 +276,7 @@ namespace AssemblyProviders.CIL
         {
             emitCall(Instruction.GetterOperand, true);
         }
-        
+
         static void _box()
         {
             //boxing is not needed
@@ -283,21 +297,63 @@ namespace AssemblyProviders.CIL
             }
         }
 
+        static void _ldtoken()
+        {
+            var type = Instruction.TypeOperand;
+            var literalType = new CSharp.LiteralType(type);
+            emitPush<CSharp.LiteralType>(literalType);
+        }
+
+        static void _dup()
+        {
+            stackCall(Stack_dup);
+        }
+
+        #region Object instructions
+
+        static void _ldfld()
+        {
+            var getter = Instruction.GetterOperand;
+            emitCall(getter, getter.IsStatic);
+        }
+
+        static void _stfld()
+        {
+            var setter = Instruction.SetterOperand;
+            emitCall(setter, setter.IsStatic);
+        }
+
+        #endregion
+
+        #region Array instructions
+
         static void _newarr()
         {
-            E.Call(Stack_newarr, StackStorage, Arguments.Values());
+            stackCall(Stack_newarr);
         }
+
+        static void _stelem()
+        {
+            stackCall(Stack_stelem);
+        }
+
+        static void _ldelem()
+        {
+            stackCall(Stack_ldelem);
+        }
+
+        #endregion
 
         #region Arithmetic instructions
 
         static void _add()
         {
-            E.Call(Stack_add, StackStorage, Arguments.Values());
+            stackCall(Stack_add);
         }
 
         static void _clt()
         {
-            E.Call(Stack_clt, StackStorage, Arguments.Values());
+            stackCall(Stack_clt);
         }
 
         #endregion
@@ -504,6 +560,11 @@ namespace AssemblyProviders.CIL
             var tmp = LocalTmpVar;
             E.AssignArgument(tmp, Object_info, (uint)argIndex);
             emitPushFrom(tmp);
+        }
+
+        private static void stackCall(MethodID method)
+        {
+            E.Call(method, StackStorage, Arguments.Values());
         }
 
         #endregion

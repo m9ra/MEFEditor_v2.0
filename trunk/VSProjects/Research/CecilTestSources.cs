@@ -69,7 +69,7 @@ static class CecilTestSources
     [CompositionPoint]
     static void RunGenericTest()
     {
-        var impl= new GenericIfaceImplementation<int>();
+        var impl = new GenericIfaceImplementation<int>();
         impl.Test2<string>(4, "b", "c");
     }
 
@@ -82,6 +82,32 @@ static class CecilTestSources
     static void RunSimpleGenericTest()
     {
         var result = SimpleGenericTest<string>("abcd");
+    }
+
+    static void RunImplicitArrayTest()
+    {
+        var type = typeof(CecilComponent);
+        var typeCat = new TypeCatalog(type);
+
+    }
+
+    static void RunExplicitArrayTest()
+    {
+        var x = new string[]{
+            "abc",
+            "def"
+        };
+
+        var result = x[0] + x[1];
+    }
+
+    static void RunFieldTest()
+    {
+        var obj = new CECILComponent2();
+        var getterTest = obj.ExportField + "abc";
+
+        //setter test
+        obj.ExportField += "def";
     }
 }
 
@@ -145,7 +171,7 @@ class GenericIfaceImplementation<TImpl> : GenericIface<TImpl>
 class CECILComponent2
 {
     [Export("Contract0")]
-    public string ExportField;
+    public string ExportField = "Default";
 
     [Export("Contract1")]
     public string ExportProperty { get; private set; }

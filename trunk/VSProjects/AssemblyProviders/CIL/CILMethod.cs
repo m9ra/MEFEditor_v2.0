@@ -69,7 +69,7 @@ namespace AssemblyProviders.CIL
             var genericMethodParameters = method.GenericParameters;
 
             Context = new TranscriptionContext(methodInfo, genericTypeParameters.Concat(genericMethodParameters));
-            if (method == null)
+            if (method == null || method.Body==null)
             {
                 //empty method
                 Instructions = new CILInstruction[0];

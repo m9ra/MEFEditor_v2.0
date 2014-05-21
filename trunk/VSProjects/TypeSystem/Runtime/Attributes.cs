@@ -9,9 +9,25 @@ using Analyzing;
 namespace TypeSystem.Runtime
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class ParameterTypesAttribute : Attribute
+    {
+        public readonly IEnumerable<TypeDescriptor> ParameterTypes;
+
+        public ParameterTypesAttribute(params Type[] parameterTypes)
+        {
+            ParameterTypes = from parameterType in parameterTypes select TypeDescriptor.Create(parameterType);
+        }
+
+        public ParameterTypesAttribute(params string[] parameterTypes)
+        {
+            ParameterTypes = from parameterType in parameterTypes select TypeDescriptor.Create(parameterType);
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class ReturnTypeAttribute : Attribute
     {
-        public TypeDescriptor ReturnInfo { get; private set; }
+        public readonly TypeDescriptor ReturnInfo;
 
         public ReturnTypeAttribute(Type returnType)
         {

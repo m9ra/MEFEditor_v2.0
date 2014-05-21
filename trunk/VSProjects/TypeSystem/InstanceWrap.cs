@@ -14,9 +14,9 @@ namespace TypeSystem
     /// </summary>
     public class InstanceWrap
     {
-        internal readonly Instance Wrapped;
+        public readonly Instance Wrapped;
 
-        internal InstanceWrap(Instance wrapped)
+        public InstanceWrap(Instance wrapped)
         {
             Wrapped = wrapped;
         }

@@ -28,6 +28,7 @@ namespace MEFAnalyzers
             Simulate<TypeCatalog>();
         }
 
+        [ParameterTypes(typeof(Type[]))]
         public void _method_ctor(params Instance[] types)
         {
             var parts = new List<Instance>();

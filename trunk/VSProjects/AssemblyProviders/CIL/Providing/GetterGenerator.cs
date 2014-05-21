@@ -30,7 +30,7 @@ namespace AssemblyProviders.CIL.Providing
             var fieldValue = context.GetField(This, _fieldName) as Instance;
 
             if (fieldValue == null)
-                throw new NotImplementedException();
+                context.Return(null);
 
             context.Return(fieldValue);
         }

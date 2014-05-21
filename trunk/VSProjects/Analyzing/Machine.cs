@@ -1,10 +1,14 @@
-﻿using System;
+﻿#define PassExceptions //TODO should be defined only for debuging purposes
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using Analyzing.Execution;
+
+
 
 namespace Analyzing
 {
@@ -158,10 +162,14 @@ namespace Analyzing
             var context = new AnalyzingContext(this, loader);
 
             Exception runtimeException = null;
+
+#if !PassExceptions
             try
             {
+#endif
                 initializer(context);
                 runContext(context);
+#if !PassExceptions
             }
             catch (Exception ex)
             {
@@ -171,6 +179,7 @@ namespace Analyzing
 
                 runtimeException = ex;
             }
+#endif
 
             var result = context.GetResult(new Dictionary<string, Instance>(_createdInstances));
             result.RuntimeException = runtimeException;

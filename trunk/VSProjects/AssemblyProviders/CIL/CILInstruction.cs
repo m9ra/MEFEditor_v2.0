@@ -65,6 +65,11 @@ namespace AssemblyProviders.CIL
         /// </summary>
         public readonly TypeMethodInfo GetterOperand;
 
+        /// <summary>
+        /// Descriptor of type operand
+        /// </summary>
+        public readonly TypeDescriptor TypeOperand;
+
         #endregion
 
         /// <summary>
@@ -95,6 +100,9 @@ namespace AssemblyProviders.CIL
             BranchAddressOperand = getBranchOffset(instruction);
             SetterOperand = createSetter(Data as FieldInfo);
             GetterOperand = createGetter(Data as FieldInfo);
+
+            //TODO this is not critical but it should be implemented
+            TypeOperand = null;
         }
 
         /// <summary>
@@ -110,8 +118,9 @@ namespace AssemblyProviders.CIL
             MethodOperand = CreateMethodInfo(Data as MethodReference, needsDynamicResolving(OpCode), context);
             BranchAddressOperand = getBranchOffset(Data as Instruction);
 
-            SetterOperand = createSetter(Data as FieldReference);
-            GetterOperand = createGetter(Data as FieldReference);
+            SetterOperand = createSetter(Data as FieldReference, context);
+            GetterOperand = createGetter(Data as FieldReference, context);
+            TypeOperand = createTypeInfo(Data as TypeReference, context);
         }
 
         /// <summary>
@@ -258,42 +267,54 @@ namespace AssemblyProviders.CIL
         /// Create getter info for given field
         /// </summary>
         /// <param name="field">Field which getter is needed</param>
+        /// <param name="context">Context of transcription</param>
         /// <returns>Created getter</returns>
-        private TypeMethodInfo createGetter(FieldReference field)
+        private TypeMethodInfo createGetter(FieldReference field, TranscriptionContext context)
         {
             if (field == null)
                 return null;
 
             var name = Naming.GetterPrefix + field.Name;
-            var declaringType = getInfo(field.DeclaringType);
-            var fieldType = getInfo(field.FieldType);
+            var declaringType = createTypeInfo(field.DeclaringType, context);
+            var fieldType = createTypeInfo(field.FieldType, context);
+            var isStatic = resolveIsStatic(field, context);
 
-            //TODO resolve if it is static
             return new TypeMethodInfo(declaringType,
                 name, fieldType, ParameterTypeInfo.NoParams,
-                true, TypeDescriptor.NoDescriptors);
+                isStatic, TypeDescriptor.NoDescriptors);
+        }
+
+        private bool resolveIsStatic(FieldReference field, TranscriptionContext context)
+        {
+            var definition = field as FieldDefinition;
+            if (definition == null)
+                throw new NotImplementedException("Resolve shared field");
+
+            return definition.IsStatic;
         }
 
         /// <summary>
         /// Create setter info for given field
         /// </summary>
         /// <param name="field">Field which setter is needed</param>
+        /// <param name="context">Context of transcription</param>
         /// <returns>Created setter</returns>
-        private TypeMethodInfo createSetter(FieldReference field)
+        private TypeMethodInfo createSetter(FieldReference field, TranscriptionContext context)
         {
             if (field == null)
                 return null;
 
             var name = Naming.SetterPrefix + field.Name;
-            var declaringType = getInfo(field.DeclaringType);
-            var fieldType = getInfo(field.FieldType);
 
-            //TODO resolve if it is static
+            var declaringType = createTypeInfo(field.DeclaringType, context);
+            var fieldType = createTypeInfo(field.FieldType, context);
+            var isStatic = resolveIsStatic(field, context);
+
             return new TypeMethodInfo(declaringType,
                 name, TypeDescriptor.Void, new ParameterTypeInfo[]{
                     ParameterTypeInfo.Create("value",fieldType)
                 },
-                true, TypeDescriptor.NoDescriptors);
+                isStatic, TypeDescriptor.NoDescriptors);
         }
 
         /// <summary>
@@ -309,15 +330,18 @@ namespace AssemblyProviders.CIL
         }
 
         /// <summary>
-        /// TODO this should be refactored out into some helper class
+        /// Create type info for given reference in given context
         /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        private static TypeDescriptor getInfo(TypeReference type)
+        /// <param name="typeReference">Reference of created type</param>
+        /// <param name="context">Context of transcription</param>
+        /// <returns>Created type descriptor</returns>
+        private TypeDescriptor createTypeInfo(TypeReference typeReference, TranscriptionContext context)
         {
-            var builder = new TypeReferenceHelper();
-            return builder.BuildDescriptor(type);
+            if (typeReference == null)
+                return null;
+            return context.TypeHelper.BuildDescriptor(typeReference);
         }
+
         #endregion
     }
 }

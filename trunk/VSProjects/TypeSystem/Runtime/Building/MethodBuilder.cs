@@ -151,15 +151,22 @@ namespace TypeSystem.Runtime.Building
             var paramsInfo = new List<ParameterTypeInfo>();
             var parameters = method.GetParameters();
 
+            var parametersAttribute = method.GetCustomAttributes(typeof(ParameterTypesAttribute), false).FirstOrDefault() as ParameterTypesAttribute;
+            var explicitTypes = parametersAttribute == null ? null : parametersAttribute.ParameterTypes.ToArray();
+
             for (var i = 0; i < parameters.Length; ++i)
             {
-                var paramType = Translator.GetTypeDescriptorFromBase(method, (m) => m.GetParameters()[i].ParameterType);
-
                 var param = parameters[i];
+                var paramType = explicitTypes == null || explicitTypes.Length <= i ? null : explicitTypes[i];
 
-                //translate default parameters
-                if (TypeDescriptor.InstanceInfo.Equals(paramType))
-                    paramType = TypeDescriptor.ObjectInfo;
+                if (paramType == null)
+                {
+                    paramType = Translator.GetTypeDescriptorFromBase(method, (m) => m.GetParameters()[i].ParameterType);
+
+                    //translate default parameters
+                    if (TypeDescriptor.InstanceInfo.Equals(paramType))
+                        paramType = TypeDescriptor.ObjectInfo;
+                }
 
                 var paramInfo = ParameterTypeInfo.From(param, paramType);
                 paramsInfo.Add(paramInfo);
@@ -296,7 +303,7 @@ namespace TypeSystem.Runtime.Building
             if (resultType == instanceWrapType)
             {
                 //wrapp as InstanceWrap
-                var ctor = instanceWrapType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
+                var ctor = instanceWrapType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance).First();
                 return Expression.New(ctor, new Expression[] { instanceExpression });
             }
             else

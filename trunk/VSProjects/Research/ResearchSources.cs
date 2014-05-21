@@ -26,6 +26,25 @@ namespace Research
 {
     static class ResearchSources
     {
+
+        static internal TestingAssembly CECIL_Array()
+        {
+            var cilAssembly = new CILAssembly("Research.exe");
+            return AssemblyUtils.RunCECIL("Research.exe", "CecilTestSources.RunExplicitArrayTest")
+                .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+                .AddMethod("System.Type.GetTypeFromHandle", (c) => { c.Return(c.CurrentArguments[1]); },
+                    new MethodDescription(TypeDescriptor.Create<Type>(), false, ParameterTypeInfo.Create("p", TypeDescriptor.Create("System.RuntimeTypeHandle"))
+                    ))
+
+                .AddAssembly(cilAssembly)
+                .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
+                .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
+                .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
+                .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+           ;
+        }
+
+
         static internal TestingAssembly Edit_SemanticEnd_CommonScope()
         {
             return AssemblyUtils.Run(@"
