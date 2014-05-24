@@ -78,6 +78,14 @@ namespace Drawing
             }
         }
 
+        public Point LocalPosition
+        {
+            get
+            {
+                return DiagramCanvas.GetPosition(this);
+            }
+        }
+
         internal Point AsLocalPosition(Point globalPosition)
         {
             var diff = GlobalPosition - globalPosition;

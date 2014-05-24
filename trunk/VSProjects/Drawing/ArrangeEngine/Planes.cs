@@ -17,6 +17,8 @@ namespace Drawing.ArrangeEngine
         /// </summary>
         private readonly SortedList<double, Plane> _planes;
 
+        private readonly Dictionary<DiagramItem, Plane> _itemPlane = new Dictionary<DiagramItem, Plane>();
+
         /// <summary>
         /// Determina that vertical or horizontal planes are stored
         /// </summary>
@@ -53,13 +55,24 @@ namespace Drawing.ArrangeEngine
                 _planes.Add(segmentsPlane.Key, segmentsPlane);
             }
 
+            _itemPlane[item] = segmentsPlane;
             segmentsPlane.AddSegment(item, p1, p2);
+        }
+
+        internal void RemoveSegment(DiagramItem item)
+        {
+            var plane = _itemPlane[item];
+
+            _itemPlane.Remove(item);
+            plane.RemoveSegment(item);
+            if (plane.IsEmpty)
+                //last item form plane has been removed
+                _planes.Remove(plane.Key);
         }
 
         internal DiagramItem GetIntersectedItem(Point from, Point to, out Point intersection)
         {
             var start = getStart(from);
-            var endCoordinate = getPlaneCoordinate(to);
 
             for (var index = start; index < _planes.Count; ++index)
             {
@@ -85,6 +98,25 @@ namespace Drawing.ArrangeEngine
             return null;
         }
 
+
+        internal IEnumerable<Plane> GetOrthoPlanesBetween(Point from, Point to)
+        {
+            var start = getStart(from, true);
+            var startCoordinate = getPlaneCoordinate(from);
+            var endCoordinate = getPlaneCoordinate(to);
+
+            for (var index = start; index < _planes.Count; ++index)
+            {
+                var plane = _planes.Values[index];
+
+                if (isInFrontOf(to, plane))
+                    break;
+
+                yield return plane;
+            }
+        }
+
+
         private Point planeIntersection(Point from, Point to, Plane plane)
         {
             var distance = getPlaneCoordinate(to) - getPlaneCoordinate(from);
@@ -103,20 +135,25 @@ namespace Drawing.ArrangeEngine
             }
         }
 
-        private bool isInFrontOf(Point to, Plane plane)
+        private bool isInFrontOf(Point to, Plane plane, bool canEqual = false)
         {
             var toCoordinate = getPlaneCoordinate(to);
+            var planeCoordinate = plane.Key;
+
+            if (canEqual && toCoordinate == planeCoordinate)
+                return true;
+
             if (IsIncremental)
             {
-                return toCoordinate < plane.Key;
+                return toCoordinate < planeCoordinate;
             }
             else
             {
-                return toCoordinate > plane.Key;
+                return toCoordinate > planeCoordinate;
             }
         }
 
-        internal int getStart(Point from)
+        internal int getStart(Point from, bool canEqual = false)
         {
             //TODO use binary search
 
@@ -124,7 +161,7 @@ namespace Drawing.ArrangeEngine
             for (index = 0; index < _planes.Count; ++index)
             {
                 var plane = _planes.Values[index];
-                if (isInFrontOf(from, plane))
+                if (isInFrontOf(from, plane, canEqual))
                     break;
             }
             return index;
@@ -144,5 +181,6 @@ namespace Drawing.ArrangeEngine
         {
             return Plane.GetPlaneCoordinate(!IsVertical, p);
         }
+
     }
 }

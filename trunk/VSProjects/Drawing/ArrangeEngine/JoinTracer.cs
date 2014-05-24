@@ -8,16 +8,33 @@ using System.Windows;
 
 namespace Drawing.ArrangeEngine
 {
+    /// <summary>
+    /// Tracing functionality implementation for join lines displayed within diagram
+    /// </summary>
     class JoinTracer
     {
-        private readonly SceneNavigator _navigator;
+        /// <summary>
+        /// Engine where is tracer used
+        /// </summary>
+        private readonly DisplayEngine _engine;
+
+        /// <summary>
+        /// Current navigator for registered items
+        /// </summary>
+        protected SceneNavigator Navigator { get { return _engine.Navigator; } }
 
         internal JoinTracer(DisplayEngine engine)
         {
-            //TODO scene navigator will be shared by engine
-            _navigator = new SceneNavigator(engine.Items);
+            _engine = engine;            
         }
 
+        /// <summary>
+        /// Get path between given connectors that doesnt cross any diagram item 
+        /// according to current <see cref="SceneNavigator"/>
+        /// </summary>
+        /// <param name="from">Start of path</param>
+        /// <param name="to">End of path</param>
+        /// <returns>Points that defines bath between connectors</returns>
         internal IEnumerable<Point> GetPath(ConnectorDrawing from, ConnectorDrawing to)
         {
             var fromP = from.OutOfItemPoint;
@@ -43,7 +60,7 @@ namespace Drawing.ArrangeEngine
                 for (var j = i + 2; j < simplified.Count; ++j)
                 {
                     var p2 = simplified[j];
-                    var isClear = _navigator.GetFirstObstacle(p1, p2) == null;
+                    var isClear = Navigator.GetFirstObstacle(p1, p2) == null;
                     if (isClear)
                     {
                         simplified.RemoveRange(i + 1, j - i - 1);
@@ -58,7 +75,7 @@ namespace Drawing.ArrangeEngine
 
         private Point[] getPathRec(Point from, Point to)
         {
-            var obstacle = _navigator.GetFirstObstacle(from, to);
+            var obstacle = Navigator.GetFirstObstacle(from, to);
             if (from == to || obstacle == null)
                 return new[] { from, to };
 
@@ -67,7 +84,7 @@ namespace Drawing.ArrangeEngine
 
             do
             {
-                var corners = _navigator.GetVisibleCorners(from, obstacle);
+                var corners = Navigator.GetVisibleCorners(from, obstacle);
                 if (corners.Contains(nextPoint))
                     break;
 
@@ -75,7 +92,7 @@ namespace Drawing.ArrangeEngine
                 {
                     nextPoint = corner;
 
-                    obstacle = _navigator.GetFirstObstacle(from, nextPoint);
+                    obstacle = Navigator.GetFirstObstacle(from, nextPoint);
                     if (obstacle == null)
                         break;
                 }
@@ -93,18 +110,18 @@ namespace Drawing.ArrangeEngine
                 return new[] { from, to };
 
 
-            var obstacle = _navigator.GetFirstObstacle(from, to);
-            var corners = _navigator.GetVisibleCorners(from, obstacle);
+            var obstacle = Navigator.GetFirstObstacle(from, to);
+            var corners = Navigator.GetVisibleCorners(from, obstacle);
 
-            var avoidPoint = obstacle == null ? to : _navigator.GetNearest(to, corners);
+            var avoidPoint = obstacle == null ? to : Navigator.GetNearest(to, corners);
 
             var path = new List<Point>();
             path.Add(from);
 
             if (fromObstacle != null && avoidPoint != from)
             {
-                var fromObstacleCorners = _navigator.GetVisibleCorners(avoidPoint, fromObstacle);
-                var fromObstacleFlowPoint = _navigator.GetNearest(from, fromObstacleCorners);
+                var fromObstacleCorners = Navigator.GetVisibleCorners(avoidPoint, fromObstacle);
+                var fromObstacleFlowPoint = Navigator.GetNearest(from, fromObstacleCorners);
 
                 //this is safe (because it leads along item edge)
                 path.Add(fromObstacleFlowPoint);
@@ -126,8 +143,8 @@ namespace Drawing.ArrangeEngine
 
         private Point[] getBestAvoidCorner(Point from, Point to, DiagramItem obstacle)
         {
-            var fromVisible = _navigator.GetVisibleCorners(from, obstacle);
-            var toVisible = _navigator.GetVisibleCorners(to, obstacle);
+            var fromVisible = Navigator.GetVisibleCorners(from, obstacle);
+            var toVisible = Navigator.GetVisibleCorners(to, obstacle);
 
             var bothVisible = fromVisible.Intersect(toVisible);
 
@@ -140,8 +157,8 @@ namespace Drawing.ArrangeEngine
             }
             else
             {
-                toCorner = _navigator.GetNearest(to, toVisible);
-                fromCorner = _navigator.GetNearest(from, toVisible);
+                toCorner = Navigator.GetNearest(to, toVisible);
+                fromCorner = Navigator.GetNearest(from, toVisible);
             }
 
             return new[] { fromCorner, toCorner };

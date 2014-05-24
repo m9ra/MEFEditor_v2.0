@@ -32,16 +32,37 @@ namespace Drawing.ArrangeEngine
         private readonly Planes _leftRight = new Planes(true, true);
         private readonly Planes _rightLeft = new Planes(true, false);
 
+        private readonly Dictionary<DiagramItem, Rect> _itemSpans = new Dictionary<DiagramItem, Rect>();
+
+
+        public SceneNavigator()
+        {
+        }
+
         public SceneNavigator(IEnumerable<DiagramItem> items)
         {
             foreach (var item in items)
             {
-                var span = GetSpan(item);
-                _topBottom.AddSegment(item, span.TopLeft, span.TopRight);
-                _bottomUp.AddSegment(item, span.BottomLeft, span.BottomRight);
-                _leftRight.AddSegment(item, span.TopLeft, span.BottomLeft);
-                _rightLeft.AddSegment(item, span.TopRight, span.BottomRight);
+                AddItem(item);
             }
+        }
+
+        public void AddItem(DiagramItem item)
+        {
+            var position = item.GlobalPosition;
+            position = registerItem(item, position);
+        }
+
+        public void SetPosition(DiagramItem item, Point globalPosition)
+        {
+            //remove old position
+            _topBottom.RemoveSegment(item);
+            _bottomUp.RemoveSegment(item);
+            _leftRight.RemoveSegment(item);
+            _rightLeft.RemoveSegment(item);
+
+            //register item at new position
+            registerItem(item, globalPosition);
         }
 
         /// <summary>
@@ -49,11 +70,24 @@ namespace Drawing.ArrangeEngine
         /// </summary>
         /// <param name="item">Diagram item for span</param>
         /// <returns>Surrounding span for item</returns>
-        public static Rect GetSpan(DiagramItem item)
+        public static Rect GetSpan(DiagramItem item, Point position)
         {
             return new Rect(
-                item.GlobalPosition.X - Margin, item.GlobalPosition.Y - Margin,
+                position.X - Margin, position.Y - Margin,
                 item.DesiredSize.Width + 2 * Margin, item.DesiredSize.Height + 2 * Margin);
+        }
+
+
+        internal Rect GetSpan(DiagramItem item)
+        {
+            Rect result;
+            if (_itemSpans.TryGetValue(item, out result))
+            {
+                return result;
+            }
+
+            //else create default span
+            return GetSpan(item, item.GlobalPosition);
         }
 
         /// <summary>
@@ -69,6 +103,63 @@ namespace Drawing.ArrangeEngine
 
             return Math.Abs(dX) + Math.Abs(dY);
         }
+
+        internal IEnumerable<DiagramItem> GetItemsInCollision(DiagramItem item)
+        {
+            var span = GetSpan(item);
+            var collidingItems = new HashSet<DiagramItem>();
+
+            var verticalPlanes = getOrthoPlanesBetween(span.TopLeft, span.TopRight, true);
+            var verticalCollisions = filterItems(verticalPlanes, span.TopLeft, span.BottomLeft);
+            collidingItems.UnionWith(verticalCollisions);
+
+            var horizontalPlanes = getOrthoPlanesBetween(span.TopLeft, span.BottomLeft, false);
+            var horizontalCollisions = filterItems(horizontalPlanes, span.TopLeft, span.TopRight);
+            collidingItems.UnionWith(horizontalCollisions);
+            collidingItems.Remove(item);
+
+            return collidingItems;
+        }
+
+        private Point registerItem(DiagramItem item, Point position)
+        {
+            var span = GetSpan(item, position);
+            _itemSpans[item] = span;
+            _topBottom.AddSegment(item, span.TopLeft, span.TopRight);
+            _bottomUp.AddSegment(item, span.BottomLeft, span.BottomRight);
+            _leftRight.AddSegment(item, span.TopLeft, span.BottomLeft);
+            _rightLeft.AddSegment(item, span.TopRight, span.BottomRight);
+            return position;
+        }
+
+        private IEnumerable<Plane> getOrthoPlanesBetween(Point start, Point end, bool getVertical)
+        {
+            IEnumerable<Plane> planes1, planes2;
+            if (getVertical)
+            {
+                planes1 = _leftRight.GetOrthoPlanesBetween(start, end);
+                planes2 = _rightLeft.GetOrthoPlanesBetween(end, start);
+            }
+            else
+            {
+                planes1 = _topBottom.GetOrthoPlanesBetween(start, end);
+                planes2 = _bottomUp.GetOrthoPlanesBetween(end, start);
+            }
+
+            return planes1.Concat(planes2);
+        }
+
+        private IEnumerable<DiagramItem> filterItems(IEnumerable<Plane> horizontalPlanes, Point start, Point end)
+        {
+            foreach (var plane in horizontalPlanes)
+            {
+                foreach (var item in plane.ItemsBetween(start, end))
+                {
+                    yield return item;
+                }
+            }
+        }
+
 
         public DiagramItem GetFirstObstacle(Point from, Point to)
         {

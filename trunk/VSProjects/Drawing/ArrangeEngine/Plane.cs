@@ -36,6 +36,11 @@ namespace Drawing.ArrangeEngine
         /// </summary>
         internal readonly bool IsVertical;
 
+        /// <summary>
+        /// Determine that plane is empty
+        /// </summary>
+        internal bool IsEmpty { get { return _attachedItems.Count == 0; } }
+
         internal Plane(bool isVertical, Point key)
         {
             IsVertical = isVertical;
@@ -58,6 +63,14 @@ namespace Drawing.ArrangeEngine
             _segmentStarts.Add(c1);
             _segmentEnds.Add(c2);
             _attachedItems.Add(attachedItem);
+        }
+
+        internal void RemoveSegment(DiagramItem item)
+        {
+            var index = _attachedItems.IndexOf(item);
+            _segmentEnds.RemoveAt(index);
+            _segmentStarts.RemoveAt(index);
+            _attachedItems.RemoveAt(index);
         }
 
         /// <summary>
@@ -105,10 +118,33 @@ namespace Drawing.ArrangeEngine
             return null;
         }
 
+        internal IEnumerable<DiagramItem> ItemsBetween(Point from, Point to)
+        {
+            var start = getOrthoCoordinate(from);
+            var end = getOrthoCoordinate(to);
+
+            for (int i = 0; i < _segmentStarts.Count; ++i)
+            {
+                var segmentStart = _segmentStarts[i];
+                var segmentEnd = _segmentEnds[i];
+                var item = _attachedItems[i];
+
+                if (
+                        (segmentStart >= start && segmentStart <= end) ||   //start inside
+                        (segmentEnd >= start && segmentEnd <= end) ||       //end inside
+
+                        (segmentStart <= start && segmentEnd >= end)        //segment outside
+                    )
+                    yield return item;
+            }
+        }
+
         public override string ToString()
         {
             var direction = IsVertical ? "Vertical" : "Horizontal";
             return string.Format("Plane|{0}: {1}", direction, Key);
         }
+
+
     }
 }

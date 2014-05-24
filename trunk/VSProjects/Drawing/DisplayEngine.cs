@@ -37,6 +37,8 @@ namespace Drawing
 
         internal readonly DiagramCanvas Output;
 
+        internal SceneNavigator Navigator { get; private set; }
+
         internal IEnumerable<DiagramItem> Items { get { return _items.Values; } }
 
         internal DisplayEngine(DiagramCanvas output)
@@ -51,6 +53,7 @@ namespace Drawing
 
         public void Display()
         {
+            Navigator = new SceneNavigator(Items);
             _rootCursor = null;
 
             foreach (var item in _rootItems)
@@ -71,10 +74,10 @@ namespace Drawing
 
             _orderingGroup = new ElementGroup();
             _items.Clear();
-            _rootItems.Clear();            
+            _rootItems.Clear();
             Output.Clear();
         }
-        
+
         #endregion
 
         #region Display building methods
@@ -158,8 +161,6 @@ namespace Drawing
         /// <param name="container">Container where children are arranged</param>
         internal void ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
         {
-            var collisionDetector = new ItemCollisionRepairer();
-
             var isRoot = owner == null;
             var children = isRoot ? _rootItems : owner.Children;
             var lastCursor = isRoot ? _rootCursor : owner.PositionCursor;
@@ -191,14 +192,14 @@ namespace Drawing
                     //only slots are limited to borders
                     if (container.DesiredSize.Height > 0 || container.DesiredSize.Width > 0)
                     {
-                        // check only if container is arranged
+                        // check borders only in case that container is arranged
                         checkBorders(child, container);
                     }
                 }
-                collisionDetector.AddItem(child);
             }
 
-            collisionDetector.Arrange(container);
+            var collisionRepairer = new ItemCollisionRepairer();
+            collisionRepairer.Arrange(children);
 
             /*   foreach (var child in children)
                {

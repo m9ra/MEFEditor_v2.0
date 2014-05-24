@@ -45,6 +45,7 @@ namespace Research
         }
 
 
+
         static internal TestingAssembly Edit_SemanticEnd_CommonScope()
         {
             return AssemblyUtils.Run(@"

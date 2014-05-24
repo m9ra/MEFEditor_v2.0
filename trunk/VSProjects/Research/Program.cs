@@ -28,7 +28,7 @@ namespace Research
             ////force JIT to precompile before measuring
             //var entry2 = ResearchSources.Fibonacci(7);
 
-            var assembly = ResearchSources.CECIL_Array();
+            var assembly = ResearchSources.DrawingTester_SinlgeJoin();
             var executor = new AnalyzingResearchExecutor(assembly);
             executor.Execute();
 
