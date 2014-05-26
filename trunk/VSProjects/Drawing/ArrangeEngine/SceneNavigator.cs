@@ -35,6 +35,8 @@ namespace Drawing.ArrangeEngine
         private readonly Dictionary<DiagramItem, Rect> _itemSpans = new Dictionary<DiagramItem, Rect>();
 
 
+        public JoinGraph Graph { get; private set; }
+
         public SceneNavigator()
         {
         }
@@ -51,6 +53,16 @@ namespace Drawing.ArrangeEngine
         {
             var position = item.GlobalPosition;
             position = registerItem(item, position);
+        }
+
+        public void EnsureGraphInitialized()
+        {
+            if (Graph == null)
+            {
+                Graph = new JoinGraph(this);
+                foreach (var item in _itemSpans.Keys)
+                    Graph.AddItem(item);
+            }
         }
 
         public void SetPosition(DiagramItem item, Point globalPosition)

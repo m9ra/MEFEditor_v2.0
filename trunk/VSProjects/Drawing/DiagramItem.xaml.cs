@@ -50,6 +50,38 @@ namespace Drawing
 
         public readonly DiagramItemDefinition Definition;
 
+        public IEnumerable<ConnectorDrawing> TopConnectorDrawings
+        {
+            get
+            {
+                return getConnectorDrawings(ConnectorAlign.Top);
+            }
+        }
+
+        public IEnumerable<ConnectorDrawing> BottomConnectorDrawings
+        {
+            get
+            {
+                return getConnectorDrawings(ConnectorAlign.Bottom);
+            }
+        }
+
+        public IEnumerable<ConnectorDrawing> LeftConnectorDrawings
+        {
+            get
+            {
+                return getConnectorDrawings(ConnectorAlign.Left);
+            }
+        }
+        
+        public IEnumerable<ConnectorDrawing> RightConnectorDrawings
+        {
+            get
+            {
+                return getConnectorDrawings(ConnectorAlign.Right);
+            }
+        }
+
         public IEnumerable<ConnectorDefinition> ConnectorDefinitions
         {
             get
@@ -93,7 +125,7 @@ namespace Drawing
             var localPos = DiagramCanvas.GetPosition(this);
             localPos.X -= diff.X;
             localPos.Y -= diff.Y;
-       
+
             return localPos;
         }
 
@@ -245,7 +277,13 @@ namespace Drawing
             }
         }
 
-        private void addMenuCommand(ContextMenu menu, CommandDefinition command) {
+        private IEnumerable<ConnectorDrawing> getConnectorDrawings(ConnectorAlign align)
+        {
+            return _connectors.Values.Where((connector) => connector.Align == align);
+        }
+
+        private void addMenuCommand(ContextMenu menu, CommandDefinition command)
+        {
             var item = new MenuItem();
             item.Header = command.Name;
             menu.Items.Add(item);

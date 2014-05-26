@@ -25,7 +25,7 @@ namespace Drawing.ArrangeEngine
 
         internal JoinTracer(DisplayEngine engine)
         {
-            _engine = engine;            
+            _engine = engine;
         }
 
         /// <summary>
@@ -37,16 +37,17 @@ namespace Drawing.ArrangeEngine
         /// <returns>Points that defines bath between connectors</returns>
         internal IEnumerable<Point> GetPath(ConnectorDrawing from, ConnectorDrawing to)
         {
-            var fromP = from.OutOfItemPoint;
-            var toP = to.OutOfItemPoint;
+            Navigator.EnsureGraphInitialized();
+            var graph = Navigator.Graph;
 
-            var path = getPath(fromP, toP, null, 0).ToArray();
-            //var path = getPathRec(fromP, toP);
+            graph.Explore(from, to);
+            var result = graph.FindPath(from, to);
 
-            /*   path[0].Y += 40;
-               path[path.Length - 1].Y += 40;*/
+            if (result == null)
+                result = new[] { from.GlobalConnectPoint, to.GlobalConnectPoint };
 
-            return simplifyPath(path);
+            return result;
+
         }
 
         private Point[] simplifyPath(Point[] path)

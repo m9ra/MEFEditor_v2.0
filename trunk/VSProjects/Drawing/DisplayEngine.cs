@@ -53,7 +53,6 @@ namespace Drawing
 
         public void Display()
         {
-            Navigator = new SceneNavigator(Items);
             _rootCursor = null;
 
             foreach (var item in _rootItems)
@@ -74,6 +73,7 @@ namespace Drawing
 
             _orderingGroup = new ElementGroup();
             _items.Clear();
+            _joins.Clear();
             _rootItems.Clear();
             Output.Clear();
         }
@@ -161,6 +161,9 @@ namespace Drawing
         /// <param name="container">Container where children are arranged</param>
         internal void ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
         {
+            //TODO optimize navigator creation
+            Navigator = new SceneNavigator(Items);
+
             var isRoot = owner == null;
             var children = isRoot ? _rootItems : owner.Children;
             var lastCursor = isRoot ? _rootCursor : owner.PositionCursor;
