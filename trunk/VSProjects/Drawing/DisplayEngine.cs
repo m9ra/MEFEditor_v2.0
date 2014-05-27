@@ -161,9 +161,6 @@ namespace Drawing
         /// <param name="container">Container where children are arranged</param>
         internal void ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
         {
-            //TODO optimize navigator creation
-            Navigator = new SceneNavigator(Items);
-
             var isRoot = owner == null;
             var children = isRoot ? _rootItems : owner.Children;
             var lastCursor = isRoot ? _rootCursor : owner.PositionCursor;
@@ -204,21 +201,32 @@ namespace Drawing
             var collisionRepairer = new ItemCollisionRepairer();
             collisionRepairer.Arrange(children);
 
-            /*   foreach (var child in children)
-               {
-                   if (child.HasGlobalPositionChange)
-                   {
-                       UpdateCrossedLines(child);
-                   }
-               }*/
+            refreshJoinPaths();
+        }
+
+
+        /// <summary>
+        /// Recompoute join path for all available joins
+        /// </summary>
+        private void refreshJoinPaths()
+        {
+            //TODO: detect if refresh is necessary
+
+
+            //create navigator after items are positioned
+            Navigator = new SceneNavigator(Items);
+            Navigator.EnsureGraphInitialized();
+            foreach (var join in _joins)
+            {
+                Navigator.Graph.Explore(join.From, join.To);
+            }
 
             foreach (var join in _joins)
             {
-                //TODO: detect if refresh is necessary
-
-                refreshJoinPath(join);
+                join.PointPath = Navigator.Graph.FindPath(join.From, join.To);
             }
         }
+
 
         /// <summary>
         /// Recompoute join path for given join
@@ -226,8 +234,12 @@ namespace Drawing
         /// <param name="join">Join which path will be recomputed</param>
         private void refreshJoinPath(JoinDrawing join)
         {
-            var tracer = new JoinTracer(this);
-            join.PointPath = tracer.GetPath(join.From, join.To);
+            //TODO avoid uneccessary path finding
+            Navigator = new SceneNavigator(Items);
+            Navigator.EnsureGraphInitialized();
+
+            Navigator.Graph.Explore(join.From, join.To);
+            join.PointPath = Navigator.Graph.FindPath(join.From, join.To);
         }
 
         /// <summary>

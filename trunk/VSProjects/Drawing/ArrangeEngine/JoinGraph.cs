@@ -9,231 +9,91 @@ using Utilities;
 
 namespace Drawing.ArrangeEngine
 {
-
-    class GraphPoint
-    {
-        /// <summary>
-        /// Information about edge attempts from current point. Edge can be established (stored value is <c>true</c>),
-        /// forbidden (stored value is <c>false</c>) or unexplored (there is no stored value)
-        /// </summary>
-        private readonly Dictionary<GraphPoint, bool> _edges = new Dictionary<GraphPoint, bool>();
-
-        /// <summary>
-        /// Position of graph point
-        /// </summary>
-        internal readonly Point Position;
-
-        /// <summary>
-        /// Angle limiting reachable points from current point
-        /// </summary>
-        internal readonly ViewAngle View;
-
-        internal IEnumerable<GraphPoint> ExploredNeighbours
-        {
-            get
-            {
-                return _edges.Where((pair) => pair.Value).Select((pair) => pair.Key);
-            }
-        }
-
-        internal GraphPoint(Point position, ViewAngle view)
-        {
-            Position = position;
-            View = view;
-        }
-
-        internal double SquareDistanceTo(GraphPoint other)
-        {
-            var oPosition = other.Position;
-            var xDiff = Position.X - oPosition.X;
-            var yDiff = Position.Y - oPosition.Y;
-            return xDiff * xDiff + yDiff * yDiff;
-        }
-
-        internal bool IsInAngle(GraphPoint toCandidate)
-        {
-            return View.IsInAngle(Position, toCandidate.Position);
-        }
-
-        internal bool HasEdgeStatus(GraphPoint toCandidate)
-        {
-            return _edges.ContainsKey(toCandidate);
-        }
-
-        internal void SetEdge(GraphPoint toCandidate, bool isEdgeValid = true)
-        {
-            _edges[toCandidate] = isEdgeValid;
-            toCandidate._edges[this] = isEdgeValid;
-        }
-
-        public override string ToString()
-        {
-            return "[GraphPoint]" + Position;
-        }
-    }
-
-    abstract class ViewAngle
-    {
-        /// <summary>
-        /// Determine that p1 has p2 in its angle
-        /// </summary>
-        /// <param name="p1">Point from which angle is measured</param>
-        /// <param name="p2">Point to which angle is measured</param>
-        /// <returns><c>true</c> if p2 is in p1's angle, <c>false</c> otherwise</returns>
-        public abstract bool IsInAngle(Point p1, Point p2);
-    }
-
+        
     /// <summary>
-    /// Accept points in specified quadrants
-    /// 2|1
-    /// ---
-    /// 3|4
+    /// Graph used for join path computations. Path finding works in two phases. Firstly is
+    /// required to explore path from source to destination. This process can explore more than one
+    /// possible path for join line. In second phase the best path of all available is searched.
     /// </summary>
-    class QuadrantAngle : ViewAngle
-    {
-        /// <summary>
-        /// Indicator for quadrant 1
-        /// </summary>
-        private readonly bool _q1;
-
-        /// <summary>
-        /// Indicator for quadrant 2
-        /// </summary>
-        private readonly bool _q2;
-
-        /// <summary>
-        /// Indicator for quadrant 3
-        /// </summary>
-        private readonly bool _q3;
-
-        /// <summary>
-        /// Indicator for quadrant 4
-        /// </summary>
-        private readonly bool _q4;
-
-        internal QuadrantAngle(bool q1, bool q2, bool q3, bool q4)
-        {
-            _q1 = q1;
-            _q2 = q2;
-            _q3 = q3;
-            _q4 = q4;
-        }
-
-        /// <inheritdoc />
-        public override bool IsInAngle(Point p1, Point p2)
-        {
-            var isAtRight = p1.X <= p2.X;
-            var isAtTop = p1.Y >= p2.Y;
-            var isAtBottom = p1.Y <= p2.Y;
-
-            if (isAtRight)
-            {
-                return (isAtTop && _q1) || (isAtBottom && _q4);
-
-            }
-            else
-            {
-                return (isAtTop && _q2) || (isAtBottom && _q3);
-            }
-        }
-    }
-
-    class ConusAngle : ViewAngle
-    {
-        private readonly bool _needVertical;
-
-        private readonly bool _needPositive;
-
-        public ConusAngle(bool needVertical, bool needPositive)
-        {
-            _needVertical = needVertical;
-            _needPositive = needPositive;
-        }
-
-        public override bool IsInAngle(Point p1, Point p2)
-        {
-            double main1, main2;
-            double minor1, minor2;
-            if (_needVertical)
-            {
-                main1 = p1.Y;
-                main2 = p2.Y;
-
-                minor1 = p1.X;
-                minor2 = p2.X;
-            }
-            else
-            {
-                main1 = p1.X;
-                main2 = p2.X;
-
-                minor1 = p1.Y;
-                minor2 = p2.Y;
-            }
-
-            var mainDiff = main2 - main1;
-            var minorDiff = Math.Abs(minor2 - minor1);
-
-            if (Math.Abs(mainDiff) < minorDiff)
-                //outside of conus
-                return false;
-
-            var isPositive = mainDiff >= 0;
-            var isNegative = mainDiff <= 0;
-
-            //check correct orientation
-            return (_needPositive && isPositive) || (!_needPositive && isNegative);
-        }
-    }
-
-    struct PathPoint
-    {
-        internal readonly GraphPoint PreviousPoint;
-
-        internal readonly double Distance;
-
-        public PathPoint(GraphPoint previousPoint, double distance)
-        {
-            PreviousPoint = previousPoint;
-            Distance = distance;
-        }
-
-        public override string ToString()
-        {
-            return "[PathPoint]{" + PreviousPoint + ", " + Distance + "}";
-        }
-    }
-
     public class JoinGraph
     {
+        #region View angle singleton definitions
+
+        /// <summary>
+        /// Quadrants angle for top left corner
+        /// </summary>
         private static readonly QuadrantAngle TopLeftCorner = new QuadrantAngle(true, true, true, false);
 
+        /// <summary>
+        /// Quadrants angle for top right corner
+        /// </summary>
         private static readonly QuadrantAngle TopRightCorner = new QuadrantAngle(true, true, false, true);
 
+        /// <summary>
+        /// Quadrants angle for bottom left corner
+        /// </summary>
         private static readonly QuadrantAngle BottomLeftCorner = new QuadrantAngle(false, true, true, true);
 
+        /// <summary>
+        /// Quadrants angle for bottom right corner
+        /// </summary>
         private static readonly QuadrantAngle BottomRightCorner = new QuadrantAngle(true, false, true, true);
 
+        /// <summary>
+        /// Quadrants angle that covers all quadrants
+        /// </summary>
         private static readonly QuadrantAngle AllAngle = new QuadrantAngle(true, true, true, true);
 
+        /// <summary>
+        /// Quadrants angle that doesnt cover any quadrants
+        /// </summary>
         private static readonly QuadrantAngle NoAngle = new QuadrantAngle(false, false, false, false);
 
+        /// <summary>
+        /// Conus angle for top connectors
+        /// </summary>
         private static readonly ConusAngle TopConus = new ConusAngle(true, true);
 
+        /// <summary>
+        /// Conus angle for bottom connectors
+        /// </summary>
         private static readonly ConusAngle BottomConus = new ConusAngle(true, false);
-
+        
+        /// <summary>
+        /// Conus angle for right connectors
+        /// </summary>
         private static readonly ConusAngle RightConus = new ConusAngle(false, true);
 
+        /// <summary>
+        /// Conus angle for left connectors
+        /// </summary>        
         private static readonly ConusAngle LeftConus = new ConusAngle(false, false);
 
+        #endregion
+
+        /// <summary>
+        /// Navigator used for checking presence of obstacles between points
+        /// </summary>
         private readonly SceneNavigator _navigator;
 
+        /// <summary>
+        /// Mapping from diagram item to points that it defines
+        /// </summary>
         private readonly MultiDictionary<DiagramItem, GraphPoint> _itemPoints = new MultiDictionary<DiagramItem, GraphPoint>();
 
+        /// <summary>
+        /// Mapping from connector to corresponding grap points
+        /// </summary>
         private readonly Dictionary<ConnectorDrawing, GraphPoint> _connectorPoints = new Dictionary<ConnectorDrawing, GraphPoint>();
 
+        /// <summary>
+        /// Queue used for candidate points that are tested for ability to connect with target component
+        /// </summary>
         private readonly Queue<GraphPoint> _fromCandidates = new Queue<GraphPoint>();
 
+        /// <summary>
+        /// Set of points that has been already processed during path exploration
+        /// </summary>
         private readonly HashSet<GraphPoint> _processed = new HashSet<GraphPoint>();
 
         internal JoinGraph(SceneNavigator navigator)
@@ -241,6 +101,12 @@ namespace Drawing.ArrangeEngine
             _navigator = navigator;
         }
 
+        #region Public API
+
+        /// <summary>
+        /// Connect item into graph
+        /// </summary>
+        /// <param name="item">Item to be connected</param>
         public void AddItem(DiagramItem item)
         {
             var points = generatePoints(item);
@@ -248,20 +114,28 @@ namespace Drawing.ArrangeEngine
             _itemPoints.Add(item, points);
         }
 
-        #region Graph exploring
-
+        /// <summary>
+        /// Run exploration of path between given connectors
+        /// <remarks>Exploration should be runned before path finding</remarks>
+        /// </summary>
+        /// <param name="from">Connector from which path is explored</param>
+        /// <param name="to">Connector to which path is explored</param>
         public void Explore(ConnectorDrawing from, ConnectorDrawing to)
         {
+            //initialize global buffers
             _processed.Clear();
             _fromCandidates.Clear();
 
+            //get point representation of source connector
             var fromPoint = getPoint(from);
             if (fromPoint == null)
                 return;
 
+            //all points on desired component are possible targets (they all are connected withself)
             var toItem = to.OwningItem;
             var toCandidates = _itemPoints.Get(toItem);
 
+            //run exploration
             tryEnqueue(fromPoint);
             while (_fromCandidates.Count > 0)
             {
@@ -280,15 +154,83 @@ namespace Drawing.ArrangeEngine
             }
         }
 
-        private void tryEnqueue(GraphPoint point)
+        /// <summary>
+        /// Find path beween from and to connectors. 
+        /// <remarks>Path finding is processed on current explored state of graph</remarks>
+        /// </summary>
+        /// <param name="from">Start of desired path</param>
+        /// <param name="to">End of desired path</param>
+        /// <returns>Path if available, <c>null</c> otherwise</returns>
+        public Point[] FindPath(ConnectorDrawing from, ConnectorDrawing to)
         {
-            if (!_processed.Add(point))
+            //get connector representation on graph
+            var fromPoint = getPoint(from);
+            var toPoint = getPoint(to);
+
+            //if there is no connector representation we
+            //cannot construct path
+            if (fromPoint == null || toPoint == null)
+                return null;
+
+            //store points that has been already reached
+            var reachedPoints = new Dictionary<GraphPoint, PathPoint>();
+            reachedPoints.Add(fromPoint, new PathPoint());
+
+            //queue where are stored relaxed graph nodes
+            var workQueue = new Queue<GraphPoint>();
+            workQueue.Enqueue(fromPoint);
+            while (workQueue.Count > 0)
+            {
+                var current = workQueue.Dequeue();
+                var currentDistance = reachedPoints[current].Distance;
+
+                //relax all neigbours of current node
+                foreach (var neighbour in current.ExploredNeighbours)
+                {
+                    var fromCurrentDistance = current.SquareDistanceTo(neighbour);
+                    var toNeighbourDistance = currentDistance + fromCurrentDistance;
+
+                    PathPoint neighbourReachPoint;
+                    if (reachedPoints.TryGetValue(neighbour, out neighbourReachPoint))
+                    {
+                        //we have reached current neighbour already
+                        if (neighbourReachPoint.Distance <= toNeighbourDistance)
+                            //we have already a better path
+                            continue;
+                    }
+
+                    workQueue.Enqueue(neighbour);
+                    reachedPoints[neighbour] = new PathPoint(current, toNeighbourDistance);
+                }
+            }
+
+            //get representation of path that has been found
+            return reconstructPath(toPoint, reachedPoints);
+        }
+
+
+#endregion
+        #region Graph exploring
+
+        /// <summary>
+        /// Try to enqueue point that is candidate of from points
+        /// if it hasn't already been enqueued
+        /// </summary>
+        /// <param name="fromCandidate">Candidate point</param>
+        private void tryEnqueue(GraphPoint fromCandidate)
+        {
+            if (!_processed.Add(fromCandidate))
                 //point is already processed
                 return;
 
-            _fromCandidates.Enqueue(point);
+            _fromCandidates.Enqueue(fromCandidate);
         }
 
+        /// <summary>
+        /// Enqueue edge between from candidate and given obstacle
+        /// </summary>
+        /// <param name="fromCandidate">Candidate from which edge is enqueued</param>
+        /// <param name="obstacle">Obstacle which will be connected</param>
         private void enqueueWithObstacleEdges(GraphPoint fromCandidate, DiagramItem obstacle)
         {
             if (obstacle == null)
@@ -310,6 +252,14 @@ namespace Drawing.ArrangeEngine
             }
         }
 
+        /// <summary>
+        /// Try to add edge between given points if possible
+        /// </summary>
+        /// <param name="fromCandidate">Point where edge should start</param>
+        /// <param name="toCandidate">Point where edge should end</param>
+        /// <param name="target">Target that is not considered to be an obstacle</param>
+        /// <param name="obstacle">Obstacle if any is present between from and to candidate, <c>null</c> otherwise</param>
+        /// <returns><c>true</c> if edge can be added, <c>false</c> otherwise</returns>
         private bool tryAddEdge(GraphPoint fromCandidate, GraphPoint toCandidate, DiagramItem target, out DiagramItem obstacle)
         {
             obstacle = null;
@@ -326,7 +276,7 @@ namespace Drawing.ArrangeEngine
 
             obstacle = _navigator.GetFirstObstacle(fromCandidate.Position, toCandidate.Position);
             var isEdgeValid = obstacle == null || obstacle == target;
-            fromCandidate.SetEdge(toCandidate, isEdgeValid);
+            fromCandidate.SetEdgeStatus(toCandidate, isEdgeValid);
 
             return isEdgeValid;
         }
@@ -334,46 +284,7 @@ namespace Drawing.ArrangeEngine
         #endregion
 
         #region Path finding
-
-        public Point[] FindPath(ConnectorDrawing from, ConnectorDrawing to)
-        {
-            var fromPoint = getPoint(from);
-            var toPoint = getPoint(to);
-
-            if (fromPoint == null || toPoint == null)
-                return null;
-
-            var reachedPoints = new Dictionary<GraphPoint, PathPoint>();
-            reachedPoints.Add(fromPoint, new PathPoint());
-
-            var workQueue = new Queue<GraphPoint>();
-            workQueue.Enqueue(fromPoint);
-            while (workQueue.Count > 0)
-            {
-                var current = workQueue.Dequeue();
-                var currentDistance = reachedPoints[current].Distance;
-
-                foreach (var neighbour in current.ExploredNeighbours)
-                {
-                    var fromCurrentDistance = current.SquareDistanceTo(neighbour);
-                    var toNeighbourDistance = currentDistance + fromCurrentDistance;
-
-                    PathPoint neighbourReachPoint;
-                    if (reachedPoints.TryGetValue(neighbour, out neighbourReachPoint))
-                    {
-                        //we have reached current neighbour already
-                        if (neighbourReachPoint.Distance <= toNeighbourDistance)
-                            //we have already a better path
-                            continue;
-                    }
-                    
-                    workQueue.Enqueue(neighbour);
-                    reachedPoints[neighbour] = new PathPoint(current, toNeighbourDistance);
-                }
-            }
-
-            return reconstructPath(toPoint, reachedPoints);
-        }
+      
 
         private static Point[] reconstructPath(GraphPoint toPoint, Dictionary<GraphPoint, PathPoint> reachedPoints)
         {
@@ -400,6 +311,7 @@ namespace Drawing.ArrangeEngine
 
         #endregion
 
+        #region Private utilities
 
         /// <summary>
         /// Get contact points defined for given item
@@ -416,11 +328,11 @@ namespace Drawing.ArrangeEngine
             var bottomLeft = new GraphPoint(span.BottomLeft, BottomLeftCorner);
             var bottomRight = new GraphPoint(span.BottomRight, BottomRightCorner);
 
-            topLeft.SetEdge(topRight);
-            topLeft.SetEdge(bottomLeft);
+            topLeft.SetEdgeStatus(topRight);
+            topLeft.SetEdgeStatus(bottomLeft);
 
-            bottomRight.SetEdge(topRight);
-            bottomRight.SetEdge(bottomLeft);
+            bottomRight.SetEdgeStatus(topRight);
+            bottomRight.SetEdgeStatus(bottomLeft);
 
             var points = new List<GraphPoint>();
 
@@ -437,6 +349,13 @@ namespace Drawing.ArrangeEngine
             return points;
         }
 
+        /// <summary>
+        /// Generate points for given connectors
+        /// </summary>
+        /// <param name="connectors">Connectors which points will be generated</param>
+        /// <param name="view">View angle of connectors</param>
+        /// <param name="inputPoint"></param>
+        /// <param name="points"></param>
         private void generateConnectorPoints(IEnumerable<ConnectorDrawing> connectors, ViewAngle view, GraphPoint inputPoint, List<GraphPoint> points)
         {
             foreach (var connector in connectors)
@@ -444,18 +363,28 @@ namespace Drawing.ArrangeEngine
                 var point = createPoint(connector, view);
                 _connectorPoints.Add(connector, point);
 
-                inputPoint.SetEdge(point);
+                inputPoint.SetEdgeStatus(point);
                 points.Add(point);
             }
         }
 
-        private IEnumerable<GraphPoint> getContactPoints(DiagramItem obstacle)
+        /// <summary>
+        /// Get points that can be used for connecting given item
+        /// </summary>
+        /// <param name="item">Item which points are requested</param>
+        /// <returns>Contact points of given item</returns>
+        private IEnumerable<GraphPoint> getContactPoints(DiagramItem item)
         {
-            var points = _itemPoints.Get(obstacle);
+            var points = _itemPoints.Get(item);
 
             return points.Take(4);
         }
 
+        /// <summary>
+        /// Get point representing given connector
+        /// </summary>
+        /// <param name="connector">Connector which point is requested</param>
+        /// <returns>Point representing given connector if available, <c>null</c> otherwise</returns>
         private GraphPoint getPoint(ConnectorDrawing connector)
         {
             GraphPoint connectorPoint;
@@ -463,10 +392,18 @@ namespace Drawing.ArrangeEngine
             return connectorPoint;
         }
 
+        /// <summary>
+        /// Create point for given connector with given view angle
+        /// </summary>
+        /// <param name="connector">Connector which point is created</param>
+        /// <param name="view">View angle of created point</param>
+        /// <returns>Created point</returns>
         private GraphPoint createPoint(ConnectorDrawing connector, ViewAngle view)
         {
             var position = connector.GlobalConnectPoint;
             return new GraphPoint(position, view);
         }
+
+        #endregion
     }
 }

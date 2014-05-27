@@ -75,10 +75,11 @@
     <Compile Include="ArrangeEngine\ItemCollisionRepairer.cs" />
     <Compile Include="ArrangeEngine\ItemMoveability.cs" />
     <Compile Include="ArrangeEngine\JoinGraph.cs" />
-    <Compile Include="ArrangeEngine\JoinTracer.cs" />
     <Compile Include="ArrangeEngine\Planes.cs" />
+    <Compile Include="ArrangeEngine\PointRepresentations.cs" />
     <Compile Include="ArrangeEngine\PositionCursor.cs" />
     <Compile Include="ArrangeEngine\SceneNavigator.cs" />
+    <Compile Include="ArrangeEngine\ViewAngles.cs" />
     <Compile Include="Behaviours\ContentShiftable.cs" />
     <Compile Include="Behaviours\ContentZoomable.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
