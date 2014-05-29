@@ -9,7 +9,7 @@ using Utilities;
 
 namespace Drawing.ArrangeEngine
 {
-        
+
     /// <summary>
     /// Graph used for join path computations. Path finding works in two phases. Firstly is
     /// required to explore path from source to destination. This process can explore more than one
@@ -58,7 +58,7 @@ namespace Drawing.ArrangeEngine
         /// Conus angle for bottom connectors
         /// </summary>
         private static readonly ConusAngle BottomConus = new ConusAngle(true, false);
-        
+
         /// <summary>
         /// Conus angle for right connectors
         /// </summary>
@@ -187,7 +187,7 @@ namespace Drawing.ArrangeEngine
                 //relax all neigbours of current node
                 foreach (var neighbour in current.ExploredNeighbours)
                 {
-                    var fromCurrentDistance = current.SquareDistanceTo(neighbour);
+                    var fromCurrentDistance = current.DistanceTo(neighbour);
                     var toNeighbourDistance = currentDistance + fromCurrentDistance;
 
                     PathPoint neighbourReachPoint;
@@ -205,11 +205,45 @@ namespace Drawing.ArrangeEngine
             }
 
             //get representation of path that has been found
-            return reconstructPath(toPoint, reachedPoints);
+            var reconstructed = reconstructPath(toPoint, reachedPoints);
+            var simplified = simplifyPath(reconstructed);
+
+            return simplified;
         }
 
+        /// <summary>
+        /// Try to remove points that are not necessary
+        /// </summary>
+        /// <param name="path">Path that will be simplified</param>
+        /// <returns>Simplified path</returns>
+        private Point[] simplifyPath(GraphPoint[] path)
+        {
+            if (path == null)
+                return null;
 
-#endregion
+            var simplifyFactor = 3;
+            var toSimplify = new List<GraphPoint>(path);
+
+            for (var i = 0; i < toSimplify.Count; ++i)
+            {
+                var skipStart = toSimplify[i];
+                for (var j = Math.Min(i + simplifyFactor, toSimplify.Count); j <= i; --j)
+                {
+                    var skipEnd = toSimplify[j];
+
+                    DiagramItem obstacle;
+                    if (tryAddEdge(skipStart, skipEnd, skipEnd.OwningItem, out obstacle) || obstacle == skipStart.OwningItem)
+                    {
+                        toSimplify.RemoveRange(i + 1, i - j - 1);
+                    }
+                }
+            }
+
+            return toSimplify.Select((p) => p.Position).ToArray();
+        }
+        
+        #endregion
+
         #region Graph exploring
 
         /// <summary>
@@ -284,23 +318,23 @@ namespace Drawing.ArrangeEngine
         #endregion
 
         #region Path finding
-      
 
-        private static Point[] reconstructPath(GraphPoint toPoint, Dictionary<GraphPoint, PathPoint> reachedPoints)
+
+        private static GraphPoint[] reconstructPath(GraphPoint toPoint, Dictionary<GraphPoint, PathPoint> reachedPoints)
         {
             PathPoint currentPathPoint;
             if (!reachedPoints.TryGetValue(toPoint, out currentPathPoint))
                 //path hasn't been found in current graph
                 return null;
 
-            var path = new List<Point>();
-            path.Add(toPoint.Position);
+            var path = new List<GraphPoint>();
+            path.Add(toPoint);
 
             //trace path back from reached table
             while (currentPathPoint.PreviousPoint != null)
             {
                 var current = currentPathPoint.PreviousPoint;
-                path.Add(current.Position);
+                path.Add(current);
 
                 currentPathPoint = reachedPoints[current];
             }
@@ -322,11 +356,11 @@ namespace Drawing.ArrangeEngine
         private IEnumerable<GraphPoint> generatePoints(DiagramItem item)
         {
             var span = SceneNavigator.GetSpan(item, item.GlobalPosition);
-            var topLeft = new GraphPoint(span.TopLeft, TopLeftCorner);
-            var topRight = new GraphPoint(span.TopRight, TopRightCorner);
+            var topLeft = new GraphPoint(span.TopLeft, TopLeftCorner, item);
+            var topRight = new GraphPoint(span.TopRight, TopRightCorner, item);
 
-            var bottomLeft = new GraphPoint(span.BottomLeft, BottomLeftCorner);
-            var bottomRight = new GraphPoint(span.BottomRight, BottomRightCorner);
+            var bottomLeft = new GraphPoint(span.BottomLeft, BottomLeftCorner, item);
+            var bottomRight = new GraphPoint(span.BottomRight, BottomRightCorner, item);
 
             topLeft.SetEdgeStatus(topRight);
             topLeft.SetEdgeStatus(bottomLeft);
@@ -341,10 +375,10 @@ namespace Drawing.ArrangeEngine
             points.Add(bottomLeft);
             points.Add(bottomRight);
 
-            generateConnectorPoints(item.TopConnectorDrawings, TopConus, topLeft, points);
-            generateConnectorPoints(item.LeftConnectorDrawings, LeftConus, bottomLeft, points);
-            generateConnectorPoints(item.BottomConnectorDrawings, BottomConus, bottomRight, points);
-            generateConnectorPoints(item.RightConnectorDrawings, RightConus, topRight, points);
+            generateConnectorPoints(item.TopConnectorDrawings, ConnectorAlign.Top, item, points);
+            generateConnectorPoints(item.LeftConnectorDrawings, ConnectorAlign.Left, item, points);
+            generateConnectorPoints(item.BottomConnectorDrawings, ConnectorAlign.Bottom, item, points);
+            generateConnectorPoints(item.RightConnectorDrawings, ConnectorAlign.Right, item, points);
 
             return points;
         }
@@ -356,16 +390,122 @@ namespace Drawing.ArrangeEngine
         /// <param name="view">View angle of connectors</param>
         /// <param name="inputPoint"></param>
         /// <param name="points"></param>
-        private void generateConnectorPoints(IEnumerable<ConnectorDrawing> connectors, ViewAngle view, GraphPoint inputPoint, List<GraphPoint> points)
+        private void generateConnectorPoints(IEnumerable<ConnectorDrawing> connectors, ConnectorAlign connectorAlign, DiagramItem item, List<GraphPoint> points)
         {
-            foreach (var connector in connectors)
+            //detect conus for connector direction
+            ConusAngle conus;
+            switch (connectorAlign)
             {
-                var point = createPoint(connector, view);
+                case ConnectorAlign.Bottom:
+                    conus = BottomConus;
+                    break;
+                case ConnectorAlign.Right:
+                    conus = RightConus;
+                    break;
+                case ConnectorAlign.Left:
+                    conus = LeftConus;
+                    break;
+                case ConnectorAlign.Top:
+                    conus = TopConus;
+                    break;
+                default:
+                    throw new NotSupportedException("Connector align " + connectorAlign);
+            }
+
+            //create points for connectors
+            var connectorsArray = connectors.ToArray();
+            var connectorsCount = connectorsArray.Length;
+
+            for (var i = 0; i < connectorsCount; ++i)
+            {
+                var connector = connectorsArray[i];
+
+                var point = createPoint(connector, conus);
                 _connectorPoints.Add(connector, point);
 
-                inputPoint.SetEdgeStatus(point);
+                var inputs = getInputSlots(i, connectorsCount, connector, item, points);
+                foreach (var input in inputs)
+                {
+                    point.SetEdgeStatus(input);
+                    points.Add(input);
+                }
+
                 points.Add(point);
             }
+        }
+
+
+        private GraphPoint[] getInputSlots(int connectorIndex, int connectorsCount, ConnectorDrawing connector, DiagramItem item, List<GraphPoint> contactPoints)
+        {
+            var connectorAlign = connector.Align;
+            var tightItemSpan = new Rect(item.GlobalPosition, item.DesiredSize);
+
+            //find positions of slots for inputs according to connector align
+            Point slot1End, slot1Start;
+            Point slot2End;
+
+            ViewAngle slot1View;
+            ViewAngle slot2View;
+
+            GraphPoint slot1Contact;
+            GraphPoint slot2Contact;
+
+            //slots has to be parallel with same length
+            switch (connectorAlign)
+            {
+                case ConnectorAlign.Top:
+                    slot1Contact = contactPoints[2];
+                    slot2Contact = contactPoints[3];
+                    slot1View = TopLeftCorner;
+                    slot2View = TopRightCorner;
+                    slot1End = tightItemSpan.TopLeft;
+                    slot2End = tightItemSpan.TopRight;
+                    slot1Start = new Point(slot1End.X, slot1End.Y + item.TopConnectors.DesiredSize.Height);
+                    break;
+
+                case ConnectorAlign.Bottom:
+                    slot1Contact = contactPoints[0];
+                    slot2Contact = contactPoints[1];
+                    slot1View = BottomLeftCorner;
+                    slot2View = BottomRightCorner;
+                    slot1End = tightItemSpan.BottomLeft;
+                    slot2End = tightItemSpan.BottomRight;
+                    slot1Start = new Point(slot1End.X, slot1End.Y - item.BottomConnectors.DesiredSize.Height);
+                    break;
+
+                case ConnectorAlign.Left:
+                    slot1Contact = contactPoints[1];
+                    slot2Contact = contactPoints[3];
+                    slot1View = TopLeftCorner;
+                    slot2View = BottomLeftCorner;
+                    slot1End = tightItemSpan.TopLeft;
+                    slot2End = tightItemSpan.BottomLeft;
+                    slot1Start = new Point(slot1End.X + item.LeftConnectors.DesiredSize.Width, slot1End.Y);
+                    break;
+
+                case ConnectorAlign.Right:
+                    slot1Contact = contactPoints[0];
+                    slot2Contact = contactPoints[2];
+                    slot1View = TopRightCorner;
+                    slot2View = BottomRightCorner;
+                    slot1End = tightItemSpan.TopRight;
+                    slot2End = tightItemSpan.BottomRight;
+                    slot1Start = new Point(slot1End.X - item.RightConnectors.DesiredSize.Width, slot1End.Y);
+                    break;
+
+                default:
+                    throw new NotSupportedException("Connector align " + connectorAlign);
+            }
+
+            var slotVector = (slot1Start - slot1End) / (connectorsCount + 2);
+
+            var slot1 = new GraphPoint(slot1End + slotVector * connectorIndex, slot1View, item);
+            var slot2 = new GraphPoint(slot2End + slotVector * (connectorsCount - connectorIndex), slot2View, item);
+
+            slot1.SetEdgeStatus(slot1Contact);
+            slot2.SetEdgeStatus(slot2Contact);
+
+            return new[] { slot1, slot2 };
         }
 
         /// <summary>
@@ -401,7 +541,7 @@ namespace Drawing.ArrangeEngine
         private GraphPoint createPoint(ConnectorDrawing connector, ViewAngle view)
         {
             var position = connector.GlobalConnectPoint;
-            return new GraphPoint(position, view);
+            return new GraphPoint(position, view, connector.OwningItem);
         }
 
         #endregion

@@ -41,6 +41,8 @@ namespace Drawing
 
         internal IEnumerable<DiagramItem> Items { get { return _items.Values; } }
 
+        internal IEnumerable<JoinDrawing> Joins { get { return _joins; } }
+
         internal DisplayEngine(DiagramCanvas output)
         {
             Output = output;
@@ -92,9 +94,11 @@ namespace Drawing
 
         internal void RegisterItem(DiagramItem item)
         {
+            ItemHighlighting.Attach(item);
             ZOrdering.Attach(item, _orderingGroup);
             DragAndDrop.Attach(item, GetPosition, SetPosition);
             UpdateGlobalPosition.Attach(item);
+            
 
             _items.Add(item.Definition.ID, item);
 

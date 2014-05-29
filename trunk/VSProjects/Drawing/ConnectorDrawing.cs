@@ -66,7 +66,6 @@ namespace Drawing
             }
         }
 
-
         public Point GlobalConnectPoint
         {
             //TODO try cache this value

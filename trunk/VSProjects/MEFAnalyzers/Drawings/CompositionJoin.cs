@@ -16,8 +16,7 @@ namespace MEFAnalyzers.Drawings
         public CompositionJoin(JoinDefinition definition) :
             base(definition)
         {
-            this.Stroke = Brushes.DimGray;
-            this.StrokeThickness = 2;
+            this.AllowDrop = false;
         }
 
 
@@ -29,6 +28,9 @@ namespace MEFAnalyzers.Drawings
         {
             get
             {
+                this.StrokeThickness = IsHighlighted ? 4 : 2;
+                //this.Stroke = IsHighlighted ? Brushes.Black : Brushes.DimGray;
+
                 var points = PointPath.ToArray();
 
 
@@ -40,8 +42,6 @@ namespace MEFAnalyzers.Drawings
                         drawJoin(points, context);
                     }
                     context.Close();
-
-
                 }
 
                 arrGeom.Freeze();
@@ -57,22 +57,22 @@ namespace MEFAnalyzers.Drawings
             var from = new Point();
             var to = new Point();
 
-            var spline = new BezierSpline(points);
 
-            for (int i = 0; i < spline.FirstControlPoints.Length; ++i)
+            // Get Bezier Spline Control Points.
+            Point[] controlPoints1, controlPoints2;
+            BezierSpline.GetCurveControlPoints(points, out controlPoints1, out controlPoints2);
+
+            for (var i = 0; i < controlPoints1.Length; ++i)
             {
-                if (spline.Knots[i] == spline.Knots[i + 1])
-                    continue;
+                from = points[i];
+                to = points[i + 1];
+                var controlPoint1 = controlPoints1[i];
+                var controlPoint2 = controlPoints2[i];
 
-                from = spline.Knots[i];
-                to = spline.Knots[i + 1];
-
-/*/                var controlPoint1 = spline.FirstControlPoints[i];
-                var controlPoint2 = spline.SecondControlPoints[i];
-                
-                context.BezierTo(controlPoint1, controlPoint2, to, true, true);/*/
-                context.LineTo(to,true,true);
-                
+                /*/
+                context.BezierTo(controlPoint1, controlPoint2, to, true, true);
+                /*/
+                context.LineTo(to, true, true);
                 /**/
             }
 

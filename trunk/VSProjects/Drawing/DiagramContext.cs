@@ -10,11 +10,37 @@ namespace Drawing
 {
     public class DiagramContext
     {
-        public readonly DrawingProvider Provider;
+        private DiagramItem _highlightedItem;
 
         internal readonly DiagramDefinition Diagram;
 
+        internal DiagramItem HighlightedItem
+        {
+            get
+            {
+                return _highlightedItem;
+            }
+
+            set
+            {
+                if (_highlightedItem == value)
+                    return;
+
+                if (_highlightedItem != null)
+                {
+                    setHighlightStatus(_highlightedItem, false);
+                }
+
+                _highlightedItem = value;
+                setHighlightStatus(_highlightedItem, true);
+            }
+        }
+
+        public readonly DrawingProvider Provider;
+
         public IEnumerable<DiagramItem> Items { get { return Provider.Engine.Items; } }
+
+
 
         internal DiagramContext(DrawingProvider provider, DiagramDefinition diagram)
         {
@@ -46,6 +72,15 @@ namespace Drawing
                 }
 
                 return result;
+            }
+        }
+
+        private void setHighlightStatus(DiagramItem item, bool status)
+        {
+            foreach (var join in Provider.Engine.Joins)
+            {
+                if (join.From.OwningItem == item || join.To.OwningItem == item)
+                    join.IsHighlighted = status;
             }
         }
     }

@@ -31,6 +31,11 @@ namespace Drawing.ArrangeEngine
         internal readonly ViewAngle View;
 
         /// <summary>
+        /// Item that owns current graph point
+        /// </summary>
+        internal readonly DiagramItem OwningItem;
+
+        /// <summary>
         /// Neighbours that has already been explored and that are feasible
         /// </summary>
         internal IEnumerable<GraphPoint> ExploredNeighbours
@@ -41,7 +46,7 @@ namespace Drawing.ArrangeEngine
             }
         }
 
-        internal GraphPoint(Point position, ViewAngle view)
+        internal GraphPoint(Point position, ViewAngle view, DiagramItem owningItem)
         {
             Position = position;
             View = view;
@@ -52,12 +57,12 @@ namespace Drawing.ArrangeEngine
         /// </summary>
         /// <param name="other">Other point which distance is determined</param>
         /// <returns>Square part of distance</returns>
-        internal double SquareDistanceTo(GraphPoint other)
+        internal double DistanceTo(GraphPoint other)
         {
             var oPosition = other.Position;
             var xDiff = Position.X - oPosition.X;
             var yDiff = Position.Y - oPosition.Y;
-            return xDiff * xDiff + yDiff * yDiff;
+            return Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
         }
 
         /// <summary>

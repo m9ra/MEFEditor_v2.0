@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Windows;
+using System.Windows.Shapes;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 using Drawing;
@@ -30,6 +32,32 @@ namespace MEFAnalyzers.Drawings
             var block = new TextBlock();
             block.Text = text;
             return block;
+        }
+
+
+        /// <summary>
+        /// Code is extracted from sample usage of <see cref="BezierSpline"/> from 
+        /// http://www.codeproject.com/Articles/31859/Draw-a-Smooth-Curve-through-a-Set-of-D-Points-wit
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static Path GetSmoothPath(Point[] points)
+        {
+            // Get Bezier Spline Control Points.
+            Point[] cp1, cp2;
+            BezierSpline.GetCurveControlPoints(points, out cp1, out cp2);
+
+            // Draw curve by Bezier.
+            PathSegmentCollection lines = new PathSegmentCollection();
+            for (int i = 0; i < cp1.Length; ++i)
+            {
+                lines.Add(new BezierSegment(cp1[i], cp2[i], points[i + 1], true));
+            }
+            PathFigure f = new PathFigure(points[0], lines, false);
+            PathGeometry g = new PathGeometry(new PathFigure[] { f });
+            Path path = new Path() { Stroke = Brushes.Red, StrokeThickness = 1, Data = g };
+
+            return path;
         }
 
         /// <summary>

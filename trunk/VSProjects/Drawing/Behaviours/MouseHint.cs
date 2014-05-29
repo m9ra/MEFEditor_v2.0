@@ -50,7 +50,7 @@ namespace Drawing.Behaviours
             _layer = AdornerLayer.GetAdornerLayer(_mouseScope);
             _layer.Add(this);
 
-            HintText = "Abc";
+            HintText = "";
             Padding = 5;
             CursorMargin = 5;
         }

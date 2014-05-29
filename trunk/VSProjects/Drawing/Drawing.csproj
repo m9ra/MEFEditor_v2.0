@@ -82,6 +82,7 @@
     <Compile Include="ArrangeEngine\ViewAngles.cs" />
     <Compile Include="Behaviours\ContentShiftable.cs" />
     <Compile Include="Behaviours\ContentZoomable.cs" />
+    <Compile Include="Behaviours\ItemHighlighting.cs" />
     <Compile Include="Behaviours\DragAndDrop.cs" />
     <Compile Include="Behaviours\DropStrategy.cs" />
     <Compile Include="Behaviours\FollowConnectorPosition.cs" />

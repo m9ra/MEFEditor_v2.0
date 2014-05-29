@@ -20,6 +20,8 @@ namespace Drawing
     /// </summary>
     public partial class DiagramItem : UserControl
     {
+        private bool _isHighlighted;
+
         private readonly Dictionary<ConnectorDefinition, ConnectorDrawing> _connectors = new Dictionary<ConnectorDefinition, ConnectorDrawing>();
 
         private readonly List<DiagramItem> _children = new List<DiagramItem>();
@@ -49,6 +51,22 @@ namespace Drawing
         public readonly DiagramContext DiagramContext;
 
         public readonly DiagramItemDefinition Definition;
+
+        public bool IsHighlighted
+        {
+            get
+            {
+                return _isHighlighted;
+            }
+
+            internal set
+            {
+                if (_isHighlighted == value)
+                    return;
+
+                DiagramContext.HighlightedItem = this;
+            }
+        }
 
         public IEnumerable<ConnectorDrawing> TopConnectorDrawings
         {
@@ -244,8 +262,7 @@ namespace Drawing
                     addMenuEdit(menu, edit);
                 }
             }
-
-
+            
             ContentDrawing.ContextMenu = menu;
             if (menu.Items.Count == 0)
                 menu.Visibility = System.Windows.Visibility.Hidden;

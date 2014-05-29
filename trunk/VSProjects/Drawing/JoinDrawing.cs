@@ -17,6 +17,11 @@ namespace Drawing
           typeof(JoinDrawing), new FrameworkPropertyMetadata(new Point[0],
           FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public static readonly DependencyProperty IsHighlightedProperty =
+          DependencyProperty.Register("IsHighlighted", typeof(bool),
+          typeof(JoinDrawing), new FrameworkPropertyMetadata(false,
+          FrameworkPropertyMetadataOptions.AffectsRender));
+
         public readonly JoinDefinition Definition;
 
         internal ConnectorDrawing From;
@@ -28,11 +33,29 @@ namespace Drawing
             get { return (Point[])this.GetValue(PointPathProperty); }
         }
 
+        public bool IsHighlighted
+        {
+            get
+            {
+                return (bool)this.GetValue(IsHighlightedProperty);
+            }
+            internal set
+            {
+                this.SetValue(IsHighlightedProperty, value);
+            }
+        }
+
         public IEnumerable<Point> PointPath
         {
             get { return (IEnumerable<Point>)this.GetValue(PointPathProperty); }
 
-            set { this.SetValue(PointPathProperty, value.ToArray()); }
+            set
+            {
+                if (value == null)
+                    value = new[] { From.GlobalConnectPoint, To.GlobalConnectPoint };
+
+                this.SetValue(PointPathProperty, value.ToArray());
+            }
         }
 
         public JoinDrawing(JoinDefinition definition)
