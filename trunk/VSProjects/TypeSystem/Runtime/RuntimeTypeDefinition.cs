@@ -341,5 +341,10 @@ namespace TypeSystem.Runtime
             Edits.AppendArgument(CurrentArguments[0], argIndex, editName, valueProvider);
         }
 
+        protected void AcceptAsLastArgument(ValueProvider valueProvider)
+        {
+            AppendArg(CurrentArguments.Length, UserInteraction.AcceptEditName, valueProvider);
+        }
+
     }
 }

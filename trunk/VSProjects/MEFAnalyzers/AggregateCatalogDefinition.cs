@@ -31,7 +31,7 @@ namespace MEFAnalyzers
             var catalogsInstance = Context.Machine.CreateInstance(TypeDescriptor.Create(ComposablePartCatalogCollectionDefinition.TypeFullname));
             Catalogs.Set(catalogsInstance);
 
-            AddCallEdit(UserInteraction.AcceptName, acceptCatalog);
+            AddCallEdit(UserInteraction.AcceptEditName, acceptCatalog);
 
             //call list constructor
             AsyncCall<Instance>(catalogsInstance, Naming.CtorName, null, This);

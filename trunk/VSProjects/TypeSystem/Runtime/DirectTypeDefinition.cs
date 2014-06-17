@@ -27,7 +27,18 @@ namespace TypeSystem.Runtime
             : base(typeof(DirectType))
         {
         }
-                
+
+        protected DirectType ThisValue
+        {
+            get
+            {
+                var directValue = This.DirectValue;
+                if (directValue == null)
+                    return default(DirectType);
+
+                return (DirectType)directValue;
+            }
+        }
     }
 
     /// <summary>

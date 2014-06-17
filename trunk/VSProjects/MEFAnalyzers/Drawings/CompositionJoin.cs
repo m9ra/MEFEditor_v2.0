@@ -29,6 +29,7 @@ namespace MEFAnalyzers.Drawings
             get
             {
                 this.StrokeThickness = IsHighlighted ? 4 : 2;
+                this.Stroke = Brushes.DimGray;
                 //this.Stroke = IsHighlighted ? Brushes.Black : Brushes.DimGray;
 
                 var points = PointPath.ToArray();

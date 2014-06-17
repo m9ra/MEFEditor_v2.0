@@ -12,7 +12,7 @@ namespace TypeSystem
 {
     public static class UserInteraction
     {
-        public static readonly string AcceptName = ".accept";
+        public static readonly string AcceptEditName = ".accept";
 
         public static readonly string ExcludeName = ".exclude";
 

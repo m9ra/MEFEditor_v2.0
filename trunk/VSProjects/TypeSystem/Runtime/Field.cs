@@ -55,6 +55,21 @@ namespace TypeSystem.Runtime
         }
 
         /// <summary>
+        /// Value of current field
+        /// </summary>
+        public FieldType Value
+        {
+            get
+            {
+                return Get();
+            }
+            set
+            {
+                Set(value);
+            }
+        }
+
+        /// <summary>
         /// Get value of field
         /// </summary>
         /// <returns>Value of property</returns>

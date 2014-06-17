@@ -65,7 +65,7 @@ namespace Research
                 UserInteraction.DraggedInstance = c.EntryContext.GetValue(new VariableName("toAccept"));
             })
 
-            .RunEditAction("catalog", UserInteraction.AcceptName)
+            .RunEditAction("catalog", UserInteraction.AcceptEditName)
            ;
         }
 
@@ -88,7 +88,7 @@ namespace Research
                 UserInteraction.DraggedInstance = c.EntryContext.GetValue(new VariableName("toAccept"));
             })
 
-            .RunEditAction("container", UserInteraction.AcceptName)
+            .RunEditAction("container", UserInteraction.AcceptEditName)
            ;
         }
 
@@ -148,9 +148,9 @@ namespace Research
             testAssembly.AddDefinition(new StringImport());
 
             return AssemblyUtils.Run(@"        
-                var dirCat=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""."");       
-                var assemCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""test.exe"");
-                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+                var c=new System.ComponentModel.Composition.Hosting.DirectoryCatalog(""./Extensions"");       
+                //var assemCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""test.exe"");
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(c);
             
                 var export=new SimpleStringExport();
                 

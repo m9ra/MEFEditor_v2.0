@@ -1003,7 +1003,7 @@ namespace UnitTesting
                 UserInteraction.DraggedInstance = c.EntryContext.GetValue(new VariableName("toAccept"));
             })
 
-            .RunEditAction("container", UserInteraction.AcceptName)
+            .RunEditAction("container", UserInteraction.AcceptEditName)
 
             .AssertSourceEquivalence(@"
                 var toAccept=new System.ComponentModel.Composition.Hosting.AggregateCatalog();
@@ -1034,7 +1034,7 @@ namespace UnitTesting
                 UserInteraction.DraggedInstance = c.EntryContext.GetValue(new VariableName("toAccept"));
             })
 
-            .RunEditAction("catalog", UserInteraction.AcceptName)
+            .RunEditAction("catalog", UserInteraction.AcceptEditName)
 
             .AssertSourceEquivalence(@"
                 var catalog=new System.ComponentModel.Composition.Hosting.AggregateCatalog();

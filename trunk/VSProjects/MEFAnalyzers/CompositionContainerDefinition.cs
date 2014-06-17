@@ -56,7 +56,7 @@ namespace MEFAnalyzers
             Edits.Remove(ComposePartsCreate.Get());
             //so we will accept components to this call
             var e = Edits;
-            AppendArg(constructedParts.Length + 1, UserInteraction.AcceptName, (v) => acceptAppendComponent(e, v));
+            AppendArg(constructedParts.Length + 1, UserInteraction.AcceptEditName, (v) => acceptAppendComponent(e, v));
 
 
             //collect instances for composition
@@ -119,11 +119,11 @@ namespace MEFAnalyzers
             var e = Edits;
             if (acceptCatalog)
             {
-                AppendArg(1, UserInteraction.AcceptName, (v) => acceptPartCatalog(e, v));
+                AppendArg(1, UserInteraction.AcceptEditName, (v) => acceptPartCatalog(e, v));
             }
 
             ComposePartsCreate.Set(
-                AddCallEdit(UserInteraction.AcceptName, (v) => acceptComponent(v))
+                AddCallEdit(UserInteraction.AcceptEditName, (v) => acceptComponent(v))
             );
         }
 
