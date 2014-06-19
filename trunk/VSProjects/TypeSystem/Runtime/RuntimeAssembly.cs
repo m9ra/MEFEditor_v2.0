@@ -206,7 +206,7 @@ namespace TypeSystem.Runtime
         /// <inheritdoc />
         public override SearchIterator CreateRootIterator()
         {
-            return new HashIterator(_runtimeMethods);
+            return new HashedIterator(_runtimeMethods);
         }
 
         /// <inheritdoc />

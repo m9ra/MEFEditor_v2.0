@@ -11,7 +11,7 @@ namespace TypeSystem
     public delegate void EmitDirector(EmitterBase emitter);
 
 
-    class DirectedGenerator : GeneratorBase
+    public class DirectedGenerator : GeneratorBase, GenericMethodGenerator
     {
         private readonly EmitDirector _director;
 
@@ -23,6 +23,11 @@ namespace TypeSystem
         protected override void generate(EmitterBase emitter)
         {
             _director(emitter);
+        }
+        
+        public MethodItem Make(PathInfo methodPath, TypeMethodInfo methodDefinition)
+        {
+            return new MethodItem(this, methodDefinition.MakeGenericMethod(methodPath));
         }
     }
 }

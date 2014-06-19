@@ -321,7 +321,7 @@ namespace UnitTesting.TypeSystem_TestUtils
         public override SearchIterator CreateRootIterator()
         {
             requireBuilded();
-            return new HashIterator(_methods);
+            return new HashedIterator(_methods);
         }
 
         public override GeneratorBase GetMethodGenerator(MethodID method)

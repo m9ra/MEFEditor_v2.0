@@ -107,7 +107,7 @@
     <Compile Include="Runtime\Field.cs" />
     <Compile Include="Runtime\Building\RuntimeMethodGenerator.cs" />
     <Compile Include="Runtime\RuntimeTypeDefinition.cs" />
-    <Compile Include="HashIterator.cs" />
+    <Compile Include="HashedIterator.cs" />
     <Compile Include="AssemblyLoader.cs" />
     <Compile Include="MachineSettings.cs" />
     <Compile Include="MethodSearcher.cs" />

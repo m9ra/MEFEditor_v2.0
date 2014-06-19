@@ -18,8 +18,11 @@ namespace TypeSystem
         readonly private Dictionary<Tuple<TypeDescriptor, MethodID>, MethodID> _explicitImplementations = new Dictionary<Tuple<TypeDescriptor, MethodID>, MethodID>();
         readonly private Dictionary<Tuple<string, string>, MethodItem> _genericImplementations = new Dictionary<Tuple<string, string>, MethodItem>();
 
-        public void AddItem(MethodItem item, IEnumerable<InstanceInfo> implementedTypes)
+        public void AddItem(MethodItem item, IEnumerable<InstanceInfo> implementedTypes = null)
         {
+            if (implementedTypes == null)
+                implementedTypes = new InstanceInfo[0];
+
             registerImplementedMethods(item, implementedTypes);
 
             var itemInfo = item.Info;
