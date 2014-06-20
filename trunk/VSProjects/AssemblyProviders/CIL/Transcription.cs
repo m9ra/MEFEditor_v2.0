@@ -166,6 +166,7 @@ namespace AssemblyProviders.CIL
                     if (opcode.Name.StartsWith(namedTranscriptor.Key))
                     {
                         _transcriptors.Add(opcode.Name, namedTranscriptor.Value);
+                        Console.WriteLine(opcode.Name);
                         break;
                     }
                 }
