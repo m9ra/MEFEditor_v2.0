@@ -19,7 +19,7 @@ using UnitTesting.AssemblyProviders_TestUtils;
 namespace UnitTesting
 {
     [TestClass]
-    public class Parsing_Testing
+    public class Compiler_Testing
     {
         [TestMethod]
         public void Lexer_SimpleGeneric()

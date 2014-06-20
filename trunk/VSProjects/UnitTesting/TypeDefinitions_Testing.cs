@@ -16,7 +16,7 @@ using UnitTesting.RuntimeTypeDefinitions;
 namespace UnitTesting
 {
     [TestClass]
-    public class RuntimeAssembly_Testing
+    public class TypeDefinitions_Testing
     {
         [TestMethod]
         public void RuntimeType_Call()
