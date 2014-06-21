@@ -124,10 +124,10 @@ namespace UserExtensions
 
         private object componentAccepter(ExecutionView view)
         {
-            //instance, kterou uživatel přesunul myší tak, aby byla akceptována
+            //instanci, kterou uživatel přesunul myší, získáme následovně
             var toAccept = UserInteraction.DraggedInstance;
 
-            //zjistíme, zda je akceptovaná instance komponenta
+            //zjistíme, zda se jedná o komponentu
             var componentInfo = Services.GetComponentInfo(toAccept.Info);
             //akceptovat chceme pouze komponenty
             if (componentInfo == null)
@@ -140,10 +140,8 @@ namespace UserExtensions
 
             //pokud akceptujeme komponentu, 
             //získáme proměnnou, ve které je dostupná
-            var toAcceptVariable = Edits.GetVariableFor(toAccept, view);
             //a vrátíme ji jako hodnotu k akceptování
-            return toAcceptVariable;
+            return Edits.GetVariableFor(toAccept, view); ;
         }
-
     }
 }

@@ -4,10 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.ComponentModel.Composition;
+
 using TypeSystem.Runtime;
 
 namespace UserExtensions
 {
+    [Export(typeof(RuntimeTypeDefinition))]
     class StringDefinition : DirectTypeDefinition<string>
     {
         public string _method_ToString()
