@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "..\VSProjects\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFAnalyzers", "..\VSProjects\MEFAnalyzers\MEFAnalyzers.csproj", "{D9591DC4-83D6-477F-A23A-495F65F5B934}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Research", "..\VSProjects\Research\Research.csproj", "{807BE5F4-84D5-4035-8905-9D196A957AF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "..\VSProjects\TestConsole\TestConsole.csproj", "{807BE5F4-84D5-4035-8905-9D196A957AF0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing", "..\VSProjects\Drawing\Drawing.csproj", "{DC23FE88-544C-4751-AC71-CD87BF758095}"
 EndProject
