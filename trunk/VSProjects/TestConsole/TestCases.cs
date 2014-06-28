@@ -31,6 +31,19 @@ namespace TestConsole
     static class TestCases
     {
 
+        static internal TestingAssembly TestExtensions()
+        {
+            return AssemblyUtils.Run(@"
+                var export=new SimpleStringExport();
+                var diagnostic=new MEFEditor.Diagnostic();
+                diagnostic.Start();
+                diagnostic.Stop();          
+            ")
+             .AddToRuntime<UserExtensions.DiagnosticDefinition>()
+             .AddToRuntime<SimpleStringExport>()
+             ;
+        }
+
         static internal TestingAssembly CECIL_Array()
         {
             var cilAssembly = new CILAssembly("TestCases.exe");

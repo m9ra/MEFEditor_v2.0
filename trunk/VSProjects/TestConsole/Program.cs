@@ -11,7 +11,7 @@ using TypeSystem;
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 
-using Mono.Cecil;
+
 
 using AssemblyProviders;
 using AssemblyProviders.CIL;
@@ -25,8 +25,8 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var assembly = TestCases.MEF_Demo();
-            DisplayTestResult(assembly);
+            var testAssembly = TestCases.TestExtensions();
+            DisplayTestResult(testAssembly);
         }
 
         /// <summary>
