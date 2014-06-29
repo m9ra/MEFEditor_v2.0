@@ -191,15 +191,17 @@ namespace TestConsole
         private void showDrawings()
         {
             var form = new TestForm();
-            var factory = new DiagramFactory(
-                new ContentDrawer(null, (item) => new ComponentDrawing(item)),
-                new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.CompositionContainer", (item) => new CompositionTesterDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.DirectoryCatalog", (item) => new DirectoryCatalogDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.AggregateCatalog", (item) => new AggregateCatalogDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.TypeCatalog", (item) => new TypeCatalogDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.AssemblyCatalog", (item) => new AssemblyCatalogDrawing(item))
-                );
+            
+            //default drawers
+            _assembly.RegisterDrawing<ComponentDrawing>(""); //define default drawer
+            _assembly.RegisterDrawing<CompositionTesterDrawing>("CompositionTester");
+            _assembly.RegisterDrawing<CompositionTesterDrawing>("System.ComponentModel.Composition.Hosting.CompositionContainer");
+            _assembly.RegisterDrawing<DirectoryCatalogDrawing>("System.ComponentModel.Composition.Hosting.DirectoryCatalog");
+            _assembly.RegisterDrawing<AggregateCatalogDrawing>("System.ComponentModel.Composition.Hosting.AggregateCatalog");
+            _assembly.RegisterDrawing<TypeCatalogDrawing>("System.ComponentModel.Composition.Hosting.TypeCatalog");
+            _assembly.RegisterDrawing<AssemblyCatalogDrawing>("System.ComponentModel.Composition.Hosting.AssemblyCatalog");
+
+            var factory = new DiagramFactory(_assembly.RegisteredDrawers);                
 
             _guiManager = new GUIManager(_assembly.AppDomain, form.GUI, factory);
             _guiManager.CompositionPointSelected += onCompositionPointSelected;

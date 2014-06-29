@@ -14,7 +14,7 @@ using TypeSystem.Runtime;
 
 namespace UserExtensions
 {
-    class SimpleAssemblyProvider : AssemblyProvider
+    public class SimpleAssemblyProvider : AssemblyProvider
     {
         //jméno reprezentované assembly
         private readonly string _name;

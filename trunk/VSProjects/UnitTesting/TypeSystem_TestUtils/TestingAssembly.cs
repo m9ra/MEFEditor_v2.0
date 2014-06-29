@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Reflection;
+using System.Linq.Expressions;
 
 using Analyzing;
 using Analyzing.Editing;
@@ -25,42 +26,49 @@ namespace UnitTesting.TypeSystem_TestUtils
 {
     public delegate void ResultAction(AnalyzingResult result);
 
+    public delegate Drawing.ContentDrawing DrawingCreator(Drawing.DiagramItem item);
+
     public class TestingAssembly : AssemblyProvider
     {
         /// <summary>
         /// Methods contained in current assembly
         /// </summary>
-        HashedMethodContainer _methods = new HashedMethodContainer();
+        private readonly HashedMethodContainer _methods = new HashedMethodContainer();
 
         /// <summary>
         /// Testing simulation of edit actions
         /// </summary>
-        List<EditAction> _editActions = new List<EditAction>();
+        private readonly List<EditAction> _editActions = new List<EditAction>();
 
         /// <summary>
         /// Testing simulation of user actions
         /// </summary>
-        List<ResultAction> _userActions = new List<ResultAction>();
+        private readonly List<ResultAction> _userActions = new List<ResultAction>();
 
         /// <summary>
         /// Actions that are processed before runtime build
         /// </summary>
-        List<Action> _beforeRuntimeBuildActions = new List<Action>();
+        private readonly List<Action> _beforeRuntimeBuildActions = new List<Action>();
 
         /// <summary>
         /// Actions that are processed after runtime builded
         /// </summary>
-        List<Action> _afterRuntimeActions = new List<Action>();
+        private readonly List<Action> _afterRuntimeActions = new List<Action>();
 
         /// <summary>
         /// Factory which will be used fo "loading" providers
         /// </summary>
-        SimpleAssemblyFactory _factory = new SimpleAssemblyFactory();
+        private readonly SimpleAssemblyFactory _factory = new SimpleAssemblyFactory();
 
         /// <summary>
         /// Inheritance rules that are known within assembly
         /// </summary>
-        Dictionary<TypeDescriptor, TypeDescriptor> _knownInheritance = new Dictionary<TypeDescriptor, TypeDescriptor>();
+        private readonly Dictionary<TypeDescriptor, TypeDescriptor> _knownInheritance = new Dictionary<TypeDescriptor, TypeDescriptor>();
+
+        /// <summary>
+        /// Registered drawing providers according their types
+        /// </summary>
+        public readonly Dictionary<string, DrawingCreator> RegisteredDrawers = new Dictionary<string, DrawingCreator>();
 
         /// <summary>
         /// Method loader used by assembly
@@ -224,6 +232,41 @@ namespace UnitTesting.TypeSystem_TestUtils
 
             return this;
         }
+
+        public TestingAssembly AddToRuntime<T, D>()
+            where T : DataTypeDefinition
+            where D : Drawing.ContentDrawing
+        {
+            beforeRuntimeAction(() =>
+            {
+                var runtimeTypeDef = Activator.CreateInstance<T>();
+                Runtime.AddDefinition(runtimeTypeDef);
+                RegisterDrawing<D>(runtimeTypeDef.TypeInfo.TypeName);
+            });
+
+            return this;
+        }
+
+        public TestingAssembly RegisterDrawing<D>(string registeredTypeName)
+            where D : Drawing.ContentDrawing
+        {
+            //item that is passed as argument constructor
+            var itemType = typeof(Drawing.DiagramItem);
+
+            //parameter for constructor
+            var itemParameter = Expression.Parameter(itemType, "item");
+            //constructor call
+            var newCall = Expression.New(typeof(D).GetConstructor(new[] { itemType }), new[] { itemParameter });
+
+            //compile constructor
+            var provider = Expression.Lambda<DrawingCreator>(newCall, itemParameter).Compile();
+
+            //register provider            
+            RegisteredDrawers.Add(registeredTypeName, provider);
+
+            return this;
+        }
+
 
         public TestingAssembly AddDirectToRuntime<T>()
         {

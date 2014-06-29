@@ -101,6 +101,7 @@ namespace TypeSystem.Runtime
 
         protected void ReportParamChildAdd(int childParamArgIndex, Instance child, string childDescription, bool isOptional = false)
         {
+            ++childParamArgIndex;
             var attachedInstance = This;
 
             addChild(attachedInstance, child);

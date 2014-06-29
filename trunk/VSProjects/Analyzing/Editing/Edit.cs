@@ -16,6 +16,8 @@ namespace Analyzing.Editing
 
         public readonly Instance Provider;
 
+        public readonly EditsProvider Context;
+
         /// <summary>
         /// Instance which caused creation of edit
         /// <remarks>Note that creator can be different from provider because of edit attaching</remarks>
@@ -24,12 +26,13 @@ namespace Analyzing.Editing
 
         internal bool IsEmpty { get { return Transformation is EmptyTransformation; } }
 
-        public Edit(Instance creator, Instance provider, string name, Transformation transformation)
+        public Edit(Instance creator, Instance provider, EditsProvider editContext, string name, Transformation transformation)
         {
             Creator = creator;
             Name = name;
             Transformation = transformation;
             Provider = provider;
+            Context = editContext;
         }
     }
 }

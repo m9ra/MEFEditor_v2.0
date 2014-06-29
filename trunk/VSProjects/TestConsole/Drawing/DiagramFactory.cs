@@ -5,20 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Drawing;
+using UnitTesting.TypeSystem_TestUtils;
 
 using MEFAnalyzers.Drawings;
 
 namespace TestConsole.Drawings
 {
-    class DiagramFactory:AbstractDiagramFactory
+    class DiagramFactory : AbstractDiagramFactory
     {
-        
+
         private ContentDrawer _defaultContentDrawer;
 
         private Dictionary<string, ContentDrawer> _contentDrawers = new Dictionary<string, ContentDrawer>();
 
-        internal DiagramFactory(params ContentDrawer[] drawers)
+        internal DiagramFactory(Dictionary<string, DrawingCreator> providers)
         {
+
+            var drawers = from provider in providers select new ContentDrawer(provider.Key, (i) => provider.Value(i));
+
             foreach (var drawer in drawers)
             {
                 if (drawer.IsDefaultDrawer)
@@ -50,7 +54,7 @@ namespace TestConsole.Drawings
 
         public override ConnectorDrawing CreateConnector(ConnectorDefinition definition, DiagramItem owningItem)
         {
-            var kind=definition.GetProperty("Kind");
+            var kind = definition.GetProperty("Kind");
             switch (kind.Value)
             {
                 case "Import":

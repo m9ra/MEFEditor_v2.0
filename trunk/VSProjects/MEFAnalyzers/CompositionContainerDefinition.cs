@@ -65,7 +65,7 @@ namespace MEFAnalyzers
             ComposedParts.Set(constructedParts);
             for (int i = 0; i < constructedParts.Length; ++i)
             {
-                ReportParamChildAdd(i + 1, constructedParts[i], "Composed part", true);
+                ReportParamChildAdd(i, constructedParts[i], "Composed part", true);
             }
 
             if (catalog == null)

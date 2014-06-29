@@ -18,6 +18,7 @@ using Analyzing.Editing;
 
 using MEFEditor;
 using MEFAnalyzers;
+using UserExtensions;
 
 using AssemblyProviders.CILAssembly;
 using AssemblyProviders.CIL.Providing;
@@ -37,9 +38,10 @@ namespace TestConsole
                 var export=new SimpleStringExport();
                 var diagnostic=new MEFEditor.Diagnostic();
                 diagnostic.Start();
+                diagnostic.Accept();
                 diagnostic.Stop();          
             ")
-             .AddToRuntime<UserExtensions.DiagnosticDefinition>()
+             .AddToRuntime<DiagnosticDefinition, DiagnosticDrawing>()
              .AddToRuntime<SimpleStringExport>()
              ;
         }

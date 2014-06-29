@@ -437,7 +437,7 @@ namespace TypeSystem.Runtime
             }
             else
             {
-                creatorDefinition.RunInContextOf(edit.Creator, editRun);
+                creatorDefinition.RunInContextOf(edit.Creator, editRun, edit.Context);
             }
 
             return result;

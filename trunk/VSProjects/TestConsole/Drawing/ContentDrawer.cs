@@ -8,10 +8,10 @@ using System.Windows;
 
 using Drawing;
 
+using UnitTesting.TypeSystem_TestUtils;
+
 namespace TestConsole.Drawings
 {
-    public delegate ContentDrawing ContentProvider(DiagramItem item);
-
     public class ContentDrawer
     {
         /// <summary>
@@ -22,11 +22,11 @@ namespace TestConsole.Drawings
         /// <summary>
         /// Determine that this drawer is used when no matching drawer for drawed type is found
         /// </summary>
-        public bool IsDefaultDrawer { get { return DrawedType == null; } }
+        public bool IsDefaultDrawer { get { return DrawedType == null || DrawedType == ""; } }
 
-        public readonly ContentProvider Provider;
+        public readonly DrawingCreator Provider;
 
-        public ContentDrawer(string drawedType, ContentProvider provider)
+        public ContentDrawer(string drawedType, DrawingCreator provider)
         {
             DrawedType = drawedType;
             Provider = provider;

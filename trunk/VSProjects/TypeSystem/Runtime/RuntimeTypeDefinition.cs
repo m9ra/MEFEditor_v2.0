@@ -43,7 +43,7 @@ namespace TypeSystem.Runtime
         /// </summary>
         protected TypeServices Services { get; private set; }
 
-        protected EditsProvider Edits { get { return Context.Edits; } }
+        protected EditsProvider Edits { get; private set; }
 
         /// <summary>
         /// Component info of type (null if type is not a component)
@@ -143,6 +143,7 @@ namespace TypeSystem.Runtime
         internal void Invoke(AnalyzingContext context, DirectMethod methodToInvoke)
         {
             Context = context;
+            Edits = context.Edits;
 
             try
             {
@@ -153,20 +154,25 @@ namespace TypeSystem.Runtime
             {
                 This = null;
                 Context = null;
+                Edits = null;
             }
         }
 
-        public void RunInContextOf(Instance contextInstance, Action runnedAction)
+        public void RunInContextOf(Instance contextInstance, Action runnedAction, EditsProvider editContext = null)
         {
+            var editsSwp = Edits;
             var thisSwp = This;
+
+            Edits = editContext;
+            This = contextInstance;
 
             try
             {
-                This = contextInstance;
                 runnedAction();
             }
             finally
             {
+                Edits = editsSwp;
                 This = thisSwp;
             }
         }
@@ -320,7 +326,7 @@ namespace TypeSystem.Runtime
                 return call;
             });
 
-            var edit = new Edit(null, null, editName, creationTransformation);
+            var edit = new Edit(null, null, null, editName, creationTransformation);
             _staticEdits.Add(edit);
 
             return edit;
@@ -343,7 +349,15 @@ namespace TypeSystem.Runtime
 
         protected void AcceptAsLastArgument(ValueProvider valueProvider)
         {
-            AppendArg(CurrentArguments.Length, UserInteraction.AcceptEditName, valueProvider);
+            var index = CurrentArguments.Length;
+            if (CurrentArguments.Length > 0)
+            {
+                var paramArray = CurrentArguments.Last().DirectValue as Array<InstanceWrap>;
+                if (paramArray != null)
+                    index += paramArray.Length - 1;
+            }
+
+            AppendArg(index, UserInteraction.AcceptEditName, valueProvider);
         }
 
     }

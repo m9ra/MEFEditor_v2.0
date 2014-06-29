@@ -11,7 +11,7 @@ using TypeSystem.Runtime;
 namespace UserExtensions
 {
     [Export(typeof(RuntimeTypeDefinition))]
-    class StringDefinition : DirectTypeDefinition<string>
+    public class StringDefinition : DirectTypeDefinition<string>
     {
         public string _method_ToString()
         {
