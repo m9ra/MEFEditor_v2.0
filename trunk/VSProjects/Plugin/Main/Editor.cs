@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
+using System.IO;
+
 using Drawing;
 using Analyzing;
 using TypeSystem;
@@ -11,7 +13,6 @@ using TypeSystem.Runtime;
 using TypeSystem.Transactions;
 using TypeSystem.DrawingServices;
 using Interoperability;
-
 
 using AssemblyProviders.CIL;
 using AssemblyProviders.CSharp;
@@ -164,6 +165,12 @@ namespace MEFEditor.Plugin.Main
                 typeof(double)
             });
 
+
+
+            Runtime.AddDefinition(new ConsoleDefinition());
+            Runtime.AddDefinition(new ObjectDefinition());
+            Runtime.AddDefinition(new TypeDefinition());
+            Runtime.AddDefinition(new AttributedModelServicesDefinition());
             Runtime.AddDefinition(new CompositionContainerDefinition());
             Runtime.AddDefinition(new AggregateCatalogDefinition());
             Runtime.AddDefinition(new AssemblyCatalogDefinition());
@@ -281,6 +288,8 @@ namespace MEFEditor.Plugin.Main
             try
             {
                 var entryMethod = compositionPoint.EntryMethod;
+                _loader.Settings.CodeBaseFullPath = getCodeBase(entryMethod);
+
                 var entryArguments = getCompositionPointArguments(compositionPoint);
 
                 //run analysis on selected compsition with obtained arguments
@@ -296,6 +305,19 @@ namespace MEFEditor.Plugin.Main
             {
                 _analysisError = _vs.LogErrorEntry(ex.Message, ex.ToString());
             }
+        }
+
+        private string getCodeBase(MethodID entryMethod)
+        {
+            var entryAssembly = _loader.AppDomain.GetDefiningAssemblyProvider(entryMethod);
+            if (entryAssembly == null)
+                return "";
+
+            var codeBase =  entryAssembly.FullPathMapping;
+            if (codeBase == null)
+                return "";
+            
+            return Path.GetDirectoryName(codeBase);
         }
 
         /// <summary>

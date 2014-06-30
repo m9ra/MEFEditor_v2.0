@@ -47,6 +47,11 @@ namespace TypeSystem.Runtime.Building
         private readonly string _methodName;
 
         /// <summary>
+        /// Determine that builded method should be forced as static
+        /// </summary>
+        private readonly bool _forceStatic;
+
+        /// <summary>
         /// Expression which can get declaring definition object
         /// </summary>
         internal readonly Expression DeclaringDefinitionConstant;
@@ -84,8 +89,9 @@ namespace TypeSystem.Runtime.Building
         /// </summary>
         /// <param name="declaringDefinition"></param>
         /// <param name="methodName"></param>
-        internal MethodBuilder(RuntimeTypeDefinition declaringDefinition, string methodName)
+        internal MethodBuilder(RuntimeTypeDefinition declaringDefinition, string methodName, bool forceStatic)
         {
+            _forceStatic = forceStatic;
             _declaringDefinition = declaringDefinition;
             DeclaringDefinitionConstant = Expression.Constant(_declaringDefinition);
             _argumentsArray = Expression.Property(DeclaringDefinitionConstant, "CurrentArguments");

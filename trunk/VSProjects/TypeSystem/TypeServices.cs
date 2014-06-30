@@ -41,6 +41,8 @@ namespace TypeSystem
         /// </summary>
         public MachineSettings Settings { get { return _manager.Settings; } }
 
+        public string CodeBaseFullPath { get { return Settings.CodeBaseFullPath; } }
+
         /// <summary>
         /// Initialize <see cref="TypeServices"/> object that provides services from TypeSystem to given owner
         /// </summary>

@@ -95,7 +95,7 @@ namespace MEFAnalyzers.CompositionEngine
         /// <returns></returns>
         internal bool IsOfType(InstanceInfo testedType, string type)
         {
-            return _services.IsAssignable(testedType.TypeName, type);
+            return _services.IsAssignable(type, testedType.TypeName);
         }
 
         internal bool IsOfType(InstanceInfo testedtype, InstanceInfo type)

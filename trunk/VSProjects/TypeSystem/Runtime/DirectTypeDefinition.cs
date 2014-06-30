@@ -180,7 +180,7 @@ namespace TypeSystem.Runtime
 
                 var implementedTypes = implementedTypesMap.Get(wrappedMethod);
 
-                var builder = new MethodBuilder(this, wrappedMethod.Name);
+                var builder = new MethodBuilder(this, wrappedMethod.Name, false);
                 if (wrappedMethod.IsStatic)
                 {
                     builder.ThisObjectExpression = null;

@@ -73,6 +73,7 @@ namespace TypeSystem.Runtime
             _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
             {
                 {"_method_",_createMethod},
+                {"_static_method_",_createStaticMethod},
                 {"_get_",_createProperty},
                 {"_set_",_createProperty},
             };
@@ -348,10 +349,9 @@ namespace TypeSystem.Runtime
         /// <param name="method">Method info defining method</param>
         /// <param name="methodName">Name of defined method</param>
         /// <returns>Builder where method is builded</returns>
-        private RuntimeMethodGenerator buildMethod(RuntimeTypeDefinition definition, MethodInfo method, string methodName)
+        private RuntimeMethodGenerator buildMethod(RuntimeTypeDefinition definition, MethodInfo method, string methodName, bool forceStatic = false)
         {
-
-            var builder = new MethodBuilder(definition, methodName);
+            var builder = new MethodBuilder(definition, methodName, forceStatic);
             builder.ThisObjectExpression = builder.DeclaringDefinitionConstant;
             builder.AdapterFor(method);
             return builder.Build();
@@ -382,10 +382,21 @@ namespace TypeSystem.Runtime
         {
             if (name == "ctor")
             {
-                name = "#ctor";
+                name = Naming.CtorName;
             }
             var generator = buildMethod(definition, method, name);
 
+            return generator;
+        }
+
+        private RuntimeMethodGenerator _createStaticMethod(RuntimeTypeDefinition definition, MethodInfo method, string name)
+        {
+            if (name == "cctor")
+            {
+                name = Naming.ClassCtorName;
+            }
+
+            var generator = buildMethod(definition, method, name, true);
             return generator;
         }
 

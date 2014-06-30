@@ -357,7 +357,7 @@ namespace MEFAnalyzers.CompositionEngine
 
             if (!_context.IsOfType(expType, importItem))
             {
-                setError(imp, string.Format("{0} is of type {1}, so it cannot accept export of type {2}", importId, importItem, expType.TypeName));
+                setError(imp, string.Format("{0} is of type {1}, so it cannot accept export of type {2}", importId, importItem.TypeName, expType.TypeName));
                 setWarning(exp, "Export contract doesn't provide type safe identification");
                 join.IsErrorJoin = true;
                 return false;

@@ -33,11 +33,9 @@ namespace MEFAnalyzers
             AddCreationEdit("Add CompositionContainer", Dialogs.VariableName.GetName);
         }
 
-        /// <summary>
-        /// TODO ComposablePartCatalog restriction is needed
-        /// </summary>
-        /// <param name="composablePartCatalog"></param>
-        public void _method_ctor(Instance composablePartCatalog)
+
+        [ParameterTypes(typeof(ComposablePartCatalog), typeof(ExportProvider[]))]
+        public void _method_ctor(Instance composablePartCatalog, params Instance[] exportProviders)
         {
             initEdits(false);
 

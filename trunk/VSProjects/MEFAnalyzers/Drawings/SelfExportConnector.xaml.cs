@@ -34,7 +34,8 @@ namespace MEFAnalyzers.Drawings
             InitializeComponent();
 
             Contract.Text = definition.GetProperty("Contract").Value;
-            ConnectorTools.SetProperties(this, "Export info", ExportProperties);
+            ConnectorTools.SetProperties(this, "Self Export info", ExportProperties);
+            ConnectorTools.SetMessages(ErrorOutput, definition);
         }
 
         public override Point ConnectPoint

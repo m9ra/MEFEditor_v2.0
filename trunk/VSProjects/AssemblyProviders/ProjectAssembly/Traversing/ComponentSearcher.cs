@@ -127,7 +127,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 return;
             }
 
-            var explicitContract = importAttrbute.GetArgument(0);
+            var explicitContract = parseContract(importAttrbute.GetArgument(0), importAttrbute.Element);
 
             var allowMany = forceMany || importAttrbute.IsTrue("AllowMany");
             var allowDefault = forceMany || importAttrbute.IsTrue("AllowDefault");
@@ -154,7 +154,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 return;
             }
 
-            var explicitContract = exportAttrbiute.GetArgument(0);
+            var explicitContract = parseContract(exportAttrbiute.GetArgument(0), exportAttrbiute.Element);
             var contract = explicitContract == null ? exportTypeDescriptor.TypeName : explicitContract;
             var isSelfExport = exportMethodID == null;
 
@@ -263,6 +263,33 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
             var builder = getOrCreateCurrentBuilder(compositionAttrbiute.Element as CodeElement);
             builder.AddExplicitCompositionPoint(info.MethodID, createInitializer(compositionAttrbiute, info));
+        }
+
+        private string parseContract(string rawContract, CodeAttribute2 attribute)
+        {
+            if (rawContract == null)
+                return null;
+
+            var typePrefix = "typeof(";
+            if (rawContract.StartsWith(typePrefix))
+            {
+                rawContract = rawContract.Substring(typePrefix.Length).Replace(")", "");
+                if (_services.GetChain(TypeDescriptor.Create(rawContract)) != null)
+                    //there is no namespace required
+                    return rawContract;
+
+                //find contracted type
+                var namespaces = _assembly.GetNamespaces(attribute as CodeElement);
+                foreach (var ns in namespaces)
+                {
+
+                    var descriptor = TypeDescriptor.Create(ns + "." + rawContract);
+                    if (_services.GetChain(descriptor) != null)
+                        return descriptor.TypeName;
+                }
+            }
+
+            return rawContract.Replace("\"","");
         }
 
         private GeneratorBase createInitializer(AttributeInfo compositionAttribute, TypeMethodInfo compositionPointInfo)

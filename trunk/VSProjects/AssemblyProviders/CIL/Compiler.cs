@@ -36,12 +36,12 @@ namespace AssemblyProviders.CIL
 
         public static void GenerateInstructions(CILMethod method, TypeMethodInfo info, EmitterBase emitter, TypeServices services)
         {
-            //   Console.WriteLine(method.ToString());
+            Console.WriteLine(method.ToString());
 
             var compiler = new Compiler(method, info, emitter, services);
             compiler.generateInstructions();
 
-            Console.WriteLine(emitter.GetEmittedInstructions().Code);
+            //Console.WriteLine(emitter.GetEmittedInstructions().Code);
         }
 
         private Compiler(CILMethod method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)

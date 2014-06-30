@@ -492,6 +492,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             if (element is CodeClass)
                 return CreateDescriptor(element as CodeClass);
 
+            if (element is CodeInterface)
+                return CreateDescriptor(element as CodeInterface);
+
             var name = element.FullName;
             throw new NotImplementedException();
         }
@@ -530,6 +533,19 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <param name="typeNode">Type node which descriptor is created</param>
         /// <returns>Created <see cref="TypeDescriptor"/></returns>
         internal static TypeDescriptor CreateDescriptor(CodeClass typeNode)
+        {
+            var fullname = typeNode.FullName;
+
+            return ConvertToDescriptor(fullname);
+        }
+
+        
+        /// <summary>
+        /// Creates <see cref="TypeDescriptor"/> from given typeNode        
+        /// </summary>
+        /// <param name="typeNode">Type node which descriptor is created</param>
+        /// <returns>Created <see cref="TypeDescriptor"/></returns>
+        internal static TypeDescriptor CreateDescriptor(CodeInterface typeNode)
         {
             var fullname = typeNode.FullName;
 

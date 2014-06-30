@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AggregateCatalogDefinition.cs" />
+    <Compile Include="AttributedModelServicesDefinition.cs" />
     <Compile Include="ComposablePartCatalogCollectionDefinition.cs" />
     <Compile Include="CompositionContainerDefinition.cs" />
     <Compile Include="CompositionEngine\CompositionContext.cs" />
@@ -86,6 +87,10 @@
     <Compile Include="CompositionEngine\CompositionWorker.cs" />
     <Compile Include="CompositionTesterDefinition.cs" />
     <Compile Include="AssemblyCatalogDefinition.cs" />
+    <Compile Include="ComposablePartCatalogDefinition.cs" />
+    <Compile Include="ConsoleDefinition.cs" />
+    <Compile Include="ObjectDefinition.cs" />
+    <Compile Include="TypeDefinition.cs" />
     <Compile Include="Dialogs\VariableName.xaml.cs">
       <DependentUpon>VariableName.xaml</DependentUpon>
     </Compile>

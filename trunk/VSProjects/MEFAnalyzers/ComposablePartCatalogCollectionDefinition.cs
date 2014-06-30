@@ -35,6 +35,7 @@ namespace MEFAnalyzers
             Parent.Set(parent);
         }
 
+        [ParameterTypes(typeof(ComposablePartCatalog))]
         public void _method_Add(Instance partCatalog)
         {
             Catalogs.Get().Add(partCatalog);

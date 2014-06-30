@@ -13,12 +13,40 @@ namespace MEFAnalyzers.Drawings
 {
     public class CompositionJoin : JoinDrawing
     {
+        public const string ErrorPropertyName = "Error";
+
+        public const string WarningPropertyName = "Warning";
+
+
         public CompositionJoin(JoinDefinition definition) :
             base(definition)
         {
             this.AllowDrop = false;
         }
 
+        public bool IsErrorJoin
+        {
+            get
+            {
+                return isConnectorPropertyDefined(ErrorPropertyName);
+            }
+        }
+
+        public bool IsWarningJoin
+        {
+            get
+            {
+                return isConnectorPropertyDefined(WarningPropertyName);
+            }
+        }
+
+        private bool isConnectorPropertyDefined(string propertyName)
+        {
+            var fromError = Definition.To.GetPropertyValue(propertyName) != null;
+            var toError = Definition.From.GetPropertyValue(propertyName) != null;
+
+            return fromError || toError;
+        }
 
 
         /// <summary>
@@ -28,10 +56,21 @@ namespace MEFAnalyzers.Drawings
         {
             get
             {
+                if (IsErrorJoin)
+                {
+                    Stroke = Brushes.Red;
+                }
+                else if (IsWarningJoin)
+                {
+                    Stroke = Brushes.Orange;
+                }
+                else
+                {
+                    Stroke = Brushes.DimGray;
+                }
+                
                 this.StrokeThickness = IsHighlighted ? 4 : 2;
-                this.Stroke = Brushes.DimGray;
-                //this.Stroke = IsHighlighted ? Brushes.Black : Brushes.DimGray;
-
+                
                 var points = PointPath.ToArray();
 
 

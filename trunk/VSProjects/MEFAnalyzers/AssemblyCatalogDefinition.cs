@@ -41,7 +41,7 @@ namespace MEFAnalyzers
             var components = new List<Instance>();
             Components.Set(components);
 
-            var fullPath = DirectoryCatalogDefinition.ResolveFullPath(path);
+            var fullPath = DirectoryCatalogDefinition.ResolveFullPath(path, Services);
             var assembly = Services.LoadAssembly(fullPath);
             if (assembly == null)
             {

@@ -100,6 +100,7 @@ namespace TypeSystem.Core
         /// </summary>
         internal RuntimeAssembly Runtime { get { return Settings.Runtime; } }
 
+
         /// <summary>
         /// Initialize new instance of <see cref="AssembliesManager"/> object
         /// </summary>
@@ -503,20 +504,32 @@ namespace TypeSystem.Core
         /// <returns>Assembly where method is defined</returns>
         internal TypeAssembly GetDefiningAssembly(MethodID callerId)
         {
+            var definingAssemblyProvider = GetDefiningAssemblyProvider(callerId);
+            if (definingAssemblyProvider == null)
+                return null;
+
+            return _assemblies.GetTypeAssembly(definingAssemblyProvider);
+        }
+
+        /// <summary>
+        /// Get assembly which defines given method.
+        /// </summary>
+        /// <param name="method">Method which assembly is searched</param>
+        /// <returns>Assembly provider where method is defined</returns>
+        internal AssemblyProvider GetDefiningAssemblyProvider(MethodID callerId)
+        {
             var definingAssemblyProvider = Cache.GetCachedDefiningAssembly(callerId, (method) =>
             {
                 foreach (var assemblyProvider in _assemblies.Providers)
                 {
                     var generator = assemblyProvider.GetMethodGenerator(method);
+                    if (generator != null)
+                        return assemblyProvider;
                 }
 
                 return null;
             });
-
-            if (definingAssemblyProvider == null)
-                return null;
-
-            return _assemblies.GetTypeAssembly(definingAssemblyProvider);
+            return definingAssemblyProvider;
         }
 
         #endregion
@@ -952,5 +965,6 @@ namespace TypeSystem.Core
         }
 
         #endregion
+
     }
 }

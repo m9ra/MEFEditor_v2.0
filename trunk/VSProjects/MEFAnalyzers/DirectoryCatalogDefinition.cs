@@ -49,7 +49,7 @@ namespace MEFAnalyzers
 
             try
             {
-                fullPath = ResolveFullPath(path);
+                fullPath = ResolveFullPath(path, Services);
             }
             catch (Exception)
             {
@@ -93,10 +93,9 @@ namespace MEFAnalyzers
 
         #region Private utilities
 
-        public static string ResolveFullPath(string relativePath)
+        public static string ResolveFullPath(string relativePath, TypeServices services)
         {
-            //TODO get real codebase
-            var codeBase = "";
+            var codeBase = services.CodeBaseFullPath;
 
             var combined = Path.Combine(codeBase, relativePath);
             var fullPath = Path.GetFullPath(combined);

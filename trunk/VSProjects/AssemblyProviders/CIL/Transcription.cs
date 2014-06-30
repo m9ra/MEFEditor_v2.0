@@ -385,6 +385,12 @@ namespace AssemblyProviders.CIL
 
         #region Constant loading instructions
 
+        static void _ldnull()
+        {
+            //TODO solve it semanticaly better
+            emitPush<string>("null");
+        }
+
         static void _ldstr()
         {
             emitPush<string>(Data);
@@ -536,7 +542,7 @@ namespace AssemblyProviders.CIL
 
         private static void emitPush<T>(object literal)
         {
-            if (!(literal is T))
+            if ((literal != null) && !(literal is T))
                 throw new NotSupportedException("Wrong literal pushing");
 
             var tmp = LocalTmpVar;

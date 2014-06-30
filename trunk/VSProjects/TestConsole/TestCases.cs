@@ -177,6 +177,9 @@ namespace TestConsole
             ")
 
             .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
+            .AddMethod("System.Type." + Naming.ClassCtorName, (c) => { }, Method.Ctor_NoParam)
+
+            .AddToRuntime<AttributedModelServicesDefinition>()
 
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<DirectoryCatalogDefinition>()

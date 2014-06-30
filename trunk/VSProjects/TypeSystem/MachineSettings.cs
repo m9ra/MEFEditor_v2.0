@@ -26,6 +26,11 @@ namespace TypeSystem
         /// </summary>
         public readonly RuntimeAssembly Runtime = new RuntimeAssembly();
 
+        /// <summary>
+        /// Determine current code base
+        /// </summary>
+        public string CodeBaseFullPath { get; set; }
+
         /// </ inheritdoc>
         public override int ExecutionLimit { get { return 10000; } }
 

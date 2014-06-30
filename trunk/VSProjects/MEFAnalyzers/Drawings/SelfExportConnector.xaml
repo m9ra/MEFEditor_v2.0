@@ -13,6 +13,7 @@
              >
     <DockPanel>
         <TextBlock Name="Contract" DockPanel.Dock="Top" Padding="10 0">System.ICollection[string]</TextBlock>
+        <StackPanel Name="ErrorOutput"  Orientation="Horizontal" HorizontalAlignment="Left" MaxHeight="25" Margin="5 0" DockPanel.Dock="Left"/>
         <Path Name="Glyph"  Stroke="Black" Width="10" Height="20">
             <Path.Fill>
                 <LinearGradientBrush>
