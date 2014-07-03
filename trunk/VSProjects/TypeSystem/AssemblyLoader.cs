@@ -44,7 +44,7 @@ namespace TypeSystem
         /// <param name="assemblyKey">Key used for loading assembly</param>
         public AssemblyProvider LoadRoot(object assemblyKey)
         {
-            var loadedAssembly = CreateAssembly(assemblyKey);
+            var loadedAssembly = CreateOrGetAssembly(assemblyKey);
 
             if (loadedAssembly != null)
                 _manager.LoadRoot(loadedAssembly);
@@ -90,8 +90,12 @@ namespace TypeSystem
         /// </summary>
         /// <param name="assemblyKey">Key of created assembly</param>
         /// <returns>Created assembly if succesful, false otherwise</returns>
-        internal AssemblyProvider CreateAssembly(object assemblyKey)
+        internal AssemblyProvider CreateOrGetAssembly(object assemblyKey)
         {
+            var assembly = _manager.FindLoadedAssemblyProvider(assemblyKey);
+            if (assembly != null)
+                return assembly;
+
             foreach (var factory in _assemblyFactories)
             {
                 var createdAssembly = factory.Create(assemblyKey);

@@ -603,6 +603,8 @@ namespace AssemblyProviders.CILAssembly
             {
                 case "System.String":
                     return contractArgument.Value as string;
+                case "System.Type":
+                    return (contractArgument.Value as MemberReference).FullName;
                 default:
                     //TODO add type argument support
                     throw new NotImplementedException("Missing support for contract argument of type: " + argumentType);

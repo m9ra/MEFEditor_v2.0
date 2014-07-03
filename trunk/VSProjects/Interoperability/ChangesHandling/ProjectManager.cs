@@ -58,13 +58,20 @@ namespace Interoperability
         {
             get
             {
+                var result = new List<ElementNode>();
+
+
+
                 foreach (var file in _watchedItems.Values)
                 {
                     foreach (var node in file.Root.Children)
                     {
-                        yield return node;
+                        //yield return node;
+                        result.Add(node);
                     }
                 }
+
+                return result;
             }
         }
 

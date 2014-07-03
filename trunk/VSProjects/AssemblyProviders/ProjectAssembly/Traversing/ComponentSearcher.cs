@@ -127,7 +127,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 return;
             }
 
-            var explicitContract = parseContract(importAttrbute.GetArgument(0), importAttrbute.Element);
+            var explicitContract = parseContract(importAttrbute.GetArgument(0), builder, importAttrbute.Element);
 
             var allowMany = forceMany || importAttrbute.IsTrue("AllowMany");
             var allowDefault = forceMany || importAttrbute.IsTrue("AllowDefault");
@@ -154,7 +154,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 return;
             }
 
-            var explicitContract = parseContract(exportAttrbiute.GetArgument(0), exportAttrbiute.Element);
+            var explicitContract = parseContract(exportAttrbiute.GetArgument(0), builder, exportAttrbiute.Element);
             var contract = explicitContract == null ? exportTypeDescriptor.TypeName : explicitContract;
             var isSelfExport = exportMethodID == null;
 
@@ -265,7 +265,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             builder.AddExplicitCompositionPoint(info.MethodID, createInitializer(compositionAttrbiute, info));
         }
 
-        private string parseContract(string rawContract, CodeAttribute2 attribute)
+        private string parseContract(string rawContract, ComponentInfoBuilder builder, CodeAttribute2 attribute)
         {
             if (rawContract == null)
                 return null;
@@ -274,22 +274,21 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (rawContract.StartsWith(typePrefix))
             {
                 rawContract = rawContract.Substring(typePrefix.Length).Replace(")", "");
-                if (_services.GetChain(TypeDescriptor.Create(rawContract)) != null)
-                    //there is no namespace required
-                    return rawContract;
 
                 //find contracted type
-                var namespaces = _assembly.GetNamespaces(attribute as CodeElement);
+
+                var implicitNamespaces = _assembly.GetImplicitNamespaces(builder.ComponentType);
+
+                var namespaces = implicitNamespaces.Concat(_assembly.GetNamespaces(attribute as CodeElement));
                 foreach (var ns in namespaces)
                 {
-
                     var descriptor = TypeDescriptor.Create(ns + "." + rawContract);
                     if (_services.GetChain(descriptor) != null)
                         return descriptor.TypeName;
                 }
             }
 
-            return rawContract.Replace("\"","");
+            return rawContract.Replace("\"", "");
         }
 
         private GeneratorBase createInitializer(AttributeInfo compositionAttribute, TypeMethodInfo compositionPointInfo)

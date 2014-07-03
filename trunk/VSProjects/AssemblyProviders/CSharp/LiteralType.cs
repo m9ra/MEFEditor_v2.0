@@ -15,6 +15,9 @@ namespace AssemblyProviders.CSharp
 
         internal LiteralType(InstanceInfo info)
         {
+            if (info == null)
+                throw new ArgumentNullException("info");
+
             _info = info;
         }
 

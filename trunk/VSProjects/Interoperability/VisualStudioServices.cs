@@ -184,6 +184,61 @@ namespace Interoperability
         #region Exposed services
 
         /// <summary>
+        /// Get output path defined for given <see cref="Project"/>
+        /// </summary>
+        /// <param name="project">Project which output path is required</param>
+        /// <returns>Output path if available, <c>null</c> otherwise</returns>
+        public string GetOutputPath(Project project)
+        {
+            return ReadConfigurationProperty(project, "OutputPath");
+        }
+
+        /// <summary>
+        /// Determine whether given <see cref="Project"/> is compiled as library
+        /// </summary>
+        /// <param name="project">Tested project</param>
+        /// <returns><c>true</c> for library, <c>false</c> otherwise</returns>
+        public string GetOutputType(Project project)
+        {
+            return ReadProperty(project, "OutputType");
+        }
+
+        public string ReadProperty(Project project, string propertyName)
+        {
+            if (project.ConfigurationManager == null || project.ConfigurationManager.ActiveConfiguration == null)
+                return null;
+
+            var props = project.ConfigurationManager.ActiveConfiguration.Properties;
+
+            var properties = project.Properties;
+            if (properties == null)
+                return null;
+            
+            var property = properties.Item(propertyName);
+            if (property == null || property.Value == null)
+                return null;
+
+            return property.Value.ToString();
+        }
+
+        public string ReadConfigurationProperty(Project project, string propertyName)
+        {
+            if (project.ConfigurationManager == null || project.ConfigurationManager.ActiveConfiguration == null)
+                return null;
+
+            var props = project.ConfigurationManager.ActiveConfiguration.Properties;
+            if (props == null)
+                return null;
+
+            var property = props.Item(propertyName);
+            if (property == null || property.Value == null)
+                return null;
+
+            return property.Value.ToString();
+        }
+
+
+        /// <summary>
         /// Get namespaces that are valid for given <see cref="ProjectItem"/>        
         /// </summary>
         /// <param name="projectItem">Project item</param>
@@ -208,6 +263,9 @@ namespace Interoperability
         public IEnumerable<ElementNode> GetRootElements(VSProject project)
         {
             var manager = findProjectManager(project.Project);
+            if (manager == null)
+                return new ElementNode[0];
+
             return manager.RootNodes;
         }
 
@@ -219,7 +277,8 @@ namespace Interoperability
         public void RegisterElementAdd(VSProject project, ElementNodeHandler handler)
         {
             var manager = findProjectManager(project.Project);
-            manager.ElementAdded += handler;
+            if (manager != null)
+                manager.ElementAdded += handler;
         }
 
 
@@ -231,7 +290,9 @@ namespace Interoperability
         public void RegisterElementRemove(VSProject project, ElementNodeHandler handler)
         {
             var manager = findProjectManager(project.Project);
-            manager.ElementRemoved += handler;
+
+            if (manager != null)
+                manager.ElementRemoved += handler;
         }
 
         /// <summary>
@@ -242,7 +303,9 @@ namespace Interoperability
         public void RegisterElementChange(VSProject project, ElementNodeHandler handler)
         {
             var manager = findProjectManager(project.Project);
-            manager.ElementChanged += handler;
+
+            if (manager != null)
+                manager.ElementChanged += handler;
         }
 
         #endregion
@@ -255,26 +318,51 @@ namespace Interoperability
         /// <param name="addedProject">Project that has been added</param>
         private void onProjectAdded(Project addedProject)
         {
-            if (isMiscellanaeous(addedProject))
-                //we don't need to handle miscellanaeous projects
+            if (!onProjectAdded_silent(addedProject))
                 return;
 
-            if (_watchedProjects.ContainsKey(addedProject))
-                //project is already contained
-                return;
+            onProjectAdded_report(addedProject);
+        }
 
+        /// <summary>
+        /// Report handler for reporting added project
+        /// </summary>
+        /// <param name="addedProject"></param>
+        private void onProjectAdded_report(Project addedProject)
+        {
             if (ProjectAddingStarted != null)
                 ProjectAddingStarted(addedProject);
-
-            var manager = new ProjectManager(addedProject, this);
-            _watchedProjects.Add(addedProject, manager);
 
             if (ProjectAdded != null)
                 ProjectAdded(addedProject);
 
             //changes are proceeded after manager is registered by above event
+            var manager = _watchedProjects[addedProject];
             manager.RequireRegisterAllItems();
             flushManagerChanges(manager);
+        }
+
+        /// <summary>
+        /// Silent handler that can be used for loading without reporting
+        /// </summary>
+        /// <param name="addedProject">Project that has been added</param>
+        /// <returns><c>True</c> if adding should be reported, <c>false</c> otherwise</returns>
+        private bool onProjectAdded_silent(Project addedProject)
+        {
+            if (isMiscellanaeous(addedProject))
+                //we don't need to handle miscellanaeous projects
+                return false;
+
+            if (_watchedProjects.ContainsKey(addedProject))
+                //project is already contained
+                return false;
+
+
+
+            var manager = new ProjectManager(addedProject, this);
+            _watchedProjects.Add(addedProject, manager);
+
+            return true;
         }
 
         private void flushManagerChanges(ProjectManager manager)
@@ -439,9 +527,16 @@ namespace Interoperability
             if (SolutionOpeningStarted != null)
                 SolutionOpeningStarted();
 
-            //open all projects
+            //add all projects
+            var toReportProjects = new List<Project>();
             foreach (Project project in _dte.Solution.Projects)
-                onProjectAdded(project);
+            {
+                if (onProjectAdded_silent(project))
+                    toReportProjects.Add(project);
+            }
+
+            foreach (var toReportProject in toReportProjects)
+                onProjectAdded_report(toReportProject);
 
             if (SolutionOpened != null)
                 SolutionOpened();
@@ -478,7 +573,7 @@ namespace Interoperability
             ProjectManager manager;
             if (!_watchedProjects.TryGetValue(project, out manager))
             {
-                Log.Message("Manager for project {0} is not known", project.Name);
+                Log.Warning("Manager for project {0} is not known", project.Name);
             }
             return manager;
         }

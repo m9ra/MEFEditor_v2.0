@@ -35,6 +35,14 @@ namespace Analyzing.Editing.Transformations
 
         protected override void apply()
         {
+            if (_instances.Length == 0)
+            {
+                //nothing to transform
+
+                InstanceScopes = new InstanceScopes(new Dictionary<Instance, VariableName>(), View.EntryBlock);
+                return;
+            }
+
             InstanceScopes = getScopes(_instances);
 
             if (InstanceScopes == null)

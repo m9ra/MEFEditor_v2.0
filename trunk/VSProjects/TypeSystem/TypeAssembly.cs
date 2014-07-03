@@ -24,9 +24,14 @@ namespace TypeSystem
             return _manager.GetComponents(_assembly);
         }
 
+        public IEnumerable<ComponentInfo> GetReferencedComponents()
+        {
+            return _manager.GetReferencedComponents(_assembly);
+        }
+
         public override string ToString()
         {
-            return _assembly.ToString();
+            return _assembly.Name.ToString();
         }
     }
 }

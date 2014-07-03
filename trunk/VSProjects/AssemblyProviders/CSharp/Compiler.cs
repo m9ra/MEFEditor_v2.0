@@ -1267,8 +1267,13 @@ namespace AssemblyProviders.CSharp
                     throw parsingException(literalNode, "Operator typeof doesn't have type specified");
                 }
 
-                var type = resolveTypeofArgument(literalNode.Arguments[0]);
-
+                var typeArgumentNode=literalNode.Arguments[0];
+                var type = resolveTypeofArgument(typeArgumentNode);
+                if (type == null)
+                {
+                    throw parsingException(typeArgumentNode, "Type argument of typeof cannot be resolved");
+                }
+                    
                 literal = new LiteralValue(type, literalNode, Context);
                 return true;
             }
@@ -1286,6 +1291,9 @@ namespace AssemblyProviders.CSharp
         private LiteralType resolveTypeofArgument(INodeAST typeofArgument)
         {
             var info = resolveTypeDescriptor(typeofArgument);
+            if (info == null)
+                return null;
+
             return new LiteralType(info);
         }
 

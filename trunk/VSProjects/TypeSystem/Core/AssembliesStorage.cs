@@ -152,6 +152,9 @@ namespace TypeSystem.Core
 
         internal TypeAssembly GetTypeAssembly(AssemblyProvider assemblyProvider)
         {
+            if (assemblyProvider == null)
+                return null;
+
             TypeAssembly typeAssembly;
             _assemblies.TryGetValue(assemblyProvider, out typeAssembly);
 

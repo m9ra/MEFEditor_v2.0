@@ -695,8 +695,15 @@ namespace AssemblyProviders.CSharp
         /// <param name="type">Type that defines implicit namespaces</param>
         private void addImplicitNamespaces(TypeDescriptor type)
         {
+            _implicitNamespaces.UnionWith(GetImplicitNamespaces(type));
+        }
+
+        public static HashSet<string> GetImplicitNamespaces(TypeDescriptor type)
+        {
+            var implicitNamespaces = new HashSet<string>();
+
             //add empty namespace
-            _implicitNamespaces.Add("");
+            implicitNamespaces.Add("");
 
             //each part creates implicit namespace
             var parts = Naming.SplitGenericPath(type.TypeName);
@@ -712,9 +719,12 @@ namespace AssemblyProviders.CSharp
 
                 buffer.Append(part);
 
-                _implicitNamespaces.Add(buffer.ToString());
+                implicitNamespaces.Add(buffer.ToString());
             }
+
+            return implicitNamespaces;
         }
+
         #endregion
 
 

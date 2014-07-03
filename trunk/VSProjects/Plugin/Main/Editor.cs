@@ -489,8 +489,7 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         /// <param name="project">Added project</param>
         private void _vs_ProjectAdded(EnvDTE.Project project)
-        {
-            var assembly = new VsProjectAssembly(project, _vs);
+        {            
             _loader.LoadRoot(project);
 
             _projectAddTransaction.Commit();

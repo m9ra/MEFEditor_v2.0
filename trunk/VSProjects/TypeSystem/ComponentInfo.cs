@@ -197,8 +197,11 @@ namespace TypeSystem
 
         private ImportTypeInfo(TypeDescriptor importType, TypeDescriptor itemType)
         {
+            if (importType == null)
+                throw new ArgumentNullException("importType");
+
             ImportType = importType;
-            ItemType = itemType;
+            ItemType = itemType == null ? importType : itemType;
 
             //TODO check if items are lazy
         }
@@ -214,13 +217,17 @@ namespace TypeSystem
             if (allowMany)
             {
                 var currentChain = services.GetChain(importManyType);
-                var itemType = findManyItemDescriptor(currentChain);
-                return new ImportTypeInfo(importManyType, itemType);
+                if (currentChain == null)
+                {
+                    //TODO Log that there is missing chain info and allowMany cannot be parsed
+                }
+                else
+                {
+                    var itemType = findManyItemDescriptor(currentChain);
+                    return new ImportTypeInfo(importManyType, itemType);
+                }
             }
-            else
-            {
-                return new ImportTypeInfo(importManyType, importManyType);
-            }
+            return new ImportTypeInfo(importManyType, importManyType);
         }
 
         public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeDescriptor itemType)

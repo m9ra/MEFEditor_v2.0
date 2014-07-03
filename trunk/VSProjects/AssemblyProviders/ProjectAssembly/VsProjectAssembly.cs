@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO;
 using System.Diagnostics;
 
 using EnvDTE;
@@ -76,17 +77,6 @@ namespace AssemblyProviders.ProjectAssembly
                 {
                     yield return node.Element;
                 }
-                /*foreach (ProjectItem projectItem in Project.ProjectItems)
-                {
-                    var fileCodeModel = projectItem.FileCodeModel;
-                    if (fileCodeModel == null)
-                        continue;
-
-                    foreach (CodeElement element in fileCodeModel.CodeElements)
-                    {
-                        yield return element;
-                    }
-                }*/
             }
         }
 
@@ -107,15 +97,24 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Get namespaces that are valid for given <see cref="CodeFunction"/>
-        /// <remarks>Note that class where method is defined also belongs to namespace</remarks>
+        /// Get namespaces that are valid for file where given <see cref="CodeElement"/> is defined
         /// </summary>
-        /// <param name="method">Method which namespaces will be returned</param>
-        /// <returns>Validat namespaces for given method</returns>
-        internal IEnumerable<string> GetNamespaces(CodeElement method)
+        /// <param name="element">Element which namespaces will be returned</param>
+        /// <returns>Valida namespaces for file with given element</returns>
+        internal IEnumerable<string> GetNamespaces(CodeElement element)
         {
-            var namespaces = VS.GetNamespaces(method.ProjectItem);
+            var namespaces = VS.GetNamespaces(element.ProjectItem);
             return namespaces;
+        }
+
+        /// <summary>
+        /// Get namespaces that are valid for given <see cref="TypeDescriptor"/>        
+        /// </summary>
+        /// <param name="type">Type which namespaces will be returned</param>
+        /// <returns>Valid namespaces for given method</returns>
+        internal IEnumerable<string> GetImplicitNamespaces(TypeDescriptor type)
+        {
+            return CSharp.Source.GetImplicitNamespaces(type);
         }
 
         /// <summary>
@@ -123,6 +122,14 @@ namespace AssemblyProviders.ProjectAssembly
         /// </summary>
         private void initializeAssembly()
         {
+            var outputType = VS.GetOutputType(_assemblyProject.Project);
+            var extension = outputType == "2" ? ".dll" : ".exe";
+            var name = getAssemblyName();
+            var outputPath = VS.GetOutputPath(_assemblyProject.Project);
+
+            var assemblyDir = Path.GetDirectoryName(getAssemblyFullPath());
+            FullPathMapping = Path.Combine(assemblyDir, outputPath, name + extension);
+
             hookChangesHandler();
             initializeReferences();
         }
@@ -343,7 +350,7 @@ namespace AssemblyProviders.ProjectAssembly
                 alternativeImplementer = MethodBuilder.CreateDescriptor(baseType);
                 return null;
             }
-                
+
             return item.Info.MethodID;
         }
 
@@ -509,7 +516,7 @@ namespace AssemblyProviders.ProjectAssembly
                 var interfaceChains = createInheritanceChains(classNode.ImplementedInterfaces);
                 subChains.AddRange(interfaceChains);
             }
-            
+
             var typeDescriptor = MethodBuilder.CreateDescriptor(typeNode);
             return TypeServices.CreateChain(typeDescriptor, subChains);
         }

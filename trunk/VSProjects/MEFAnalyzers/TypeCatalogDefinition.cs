@@ -55,7 +55,7 @@ namespace MEFAnalyzers
                     var part = Context.Machine.CreateInstance(info);
 
                     edits.SetOptional(index + 1);
-                    edits.AttachRemoveArgument(thisInst, part, index + 1, "Exclude from TypeCatalog");
+                    edits.AttachRemoveArgument(thisInst, part, index + 1, "Remove component type");
 
                     parts.Add(part);
                 });
@@ -102,7 +102,8 @@ namespace MEFAnalyzers
 
         private IEnumerable<ComponentInfo> getComponents(TypeAssembly assembly)
         {
-            var result = new List<ComponentInfo>(assembly.GetComponents());
+            var result = new List<ComponentInfo>(assembly.GetReferencedComponents());
+                       
 
             //runtime is implicitly referenced from every assembly 
             var runtimeComponents = Services.GetComponents(ContainingAssembly);

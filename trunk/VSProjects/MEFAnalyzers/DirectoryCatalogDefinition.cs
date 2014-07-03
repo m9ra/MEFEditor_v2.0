@@ -175,10 +175,10 @@ namespace MEFAnalyzers
 
         private object _pathInput(ExecutionView view)
         {
-            //TODO resolve base path
             var oldPath = FullPath.Get();
-            var path = Dialogs.PathProvider.GetFolderPath(oldPath);
+            if (oldPath == null) oldPath = ResolveFullPath(".", Services);
 
+            var path = Dialogs.PathProvider.GetFolderPath(oldPath);
             if (path == null)
             {
                 view.Abort("Path hasn't been selected");

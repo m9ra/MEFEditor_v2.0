@@ -508,6 +508,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var fullname = typeReference.AsFullName;
             if (fullname == "")
+                fullname = typeReference.AsString;
+
+            if (fullname == "")
                 return TypeDescriptor.Void;
 
             return ConvertToDescriptor(fullname);
@@ -539,7 +542,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             return ConvertToDescriptor(fullname);
         }
 
-        
+
         /// <summary>
         /// Creates <see cref="TypeDescriptor"/> from given typeNode        
         /// </summary>
@@ -561,9 +564,25 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             //every fullname collected from assembly is compile time - thus all generic arguments are parameters
             var convertedName = fullname.Replace("<", "<@").Replace(",", ",@");
+
+            convertedName = arrayResolver(convertedName);
+            convertedName = TypeDescriptor.TranslatePath(convertedName, arrayResolver);
+
             var descriptor = TypeDescriptor.Create(convertedName);
 
             return descriptor;
+        }
+
+        private static string arrayResolver(string genericParameter)
+        {
+            //TODO parse aliases
+            if (genericParameter.EndsWith("[]"))
+            {
+                var itemType = genericParameter.Substring(0,genericParameter.Length - 2);                
+                genericParameter = string.Format("Array<{0},1>", itemType);
+            }
+
+            return genericParameter;
         }
 
         #endregion

@@ -50,7 +50,7 @@ namespace Plugin.GUI
 
         public void AddItem(object key, FrameworkElement item)
         {
-            _items.Children.Add(item);
+            _items.Children.Insert(0,item);
             _itemsIndexes.Add(key, item);
         }
 

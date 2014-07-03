@@ -55,11 +55,8 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 throw new NotSupportedException("Cannot find CodeElement with given path '" + path + "'");
 
             //search for all children with given path on parentElement
-            var parentElement = findElement(pathParts, pathParts.Length - 1);
-            if (parentElement == null)
-                //nothing has been found
-                yield break;
-
+            var parentElements = findElements(pathParts, pathParts.Length - 1);
+            
             var lastPart = pathParts[pathParts.Length - 1];
 
             //TODO: refactor out of VsProjectAssembly
@@ -68,18 +65,20 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 lastPart == CSharp.LanguageDefinitions.CSharpSyntax.MemberStaticInitializer
                 )
             {
-                yield return parentElement;
+                foreach (var element in parentElements)
+                    yield return element;
+
                 yield break;
             }
 
-            foreach (CodeElement child in parentElement.Children())
+            foreach (CodeElement element in parentElements)
             {
-                var name = child.Name();
+                var name = element.Name();
 
                 //match element with last part
-                if (IsCorrespondingElement(child, pathParts, pathParts.Length - 1))
+                if (IsCorrespondingElement(element, pathParts, pathParts.Length - 1))
                 {
-                    yield return child;
+                    yield return element;
                 }
             }
         }
@@ -159,51 +158,82 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <returns>Found <see cref="CodeElement"/> if any, <c>null</c> otherwise</returns>
         private CodeElement findElement(string[] pathParts, int pathLength)
         {
+            if (pathLength == 0)
+                return null;
+
+            var elements = findElements(pathParts, pathLength - 1);
+
+            var lastPart = pathParts[pathLength - 1];
+            if (pathLength > 1 && (lastPart == Naming.ClassCtorName || lastPart == Naming.CtorName))
+            {
+                //change to constructor name
+                lastPart = pathParts[pathLength - 2];
+            }
+
+
+            //find desired element
+            foreach (var element in elements)
+            {
+                var elementName=element.Name;
+                if (lastPart == elementName)
+                {
+                    return element;
+                }
+            }
+
+            //element hasn't been found
+            return null;
+        }
+
+        /// <summary>
+        /// Find enumeration of <see cref="CodeElement"/> specified by first pathLength pathParts
+        /// </summary>
+        /// <param name="pathParts">Parth parts specifiing name of <see cref="CodeElement"/></param>
+        /// <param name="pathLength">Length of prefix in pathParts used for <see cref="CodeElement"/> searching</param>
+        /// <returns>Found <see cref="CodeElement"/> if any, <c>null</c> otherwise</returns>
+        private IEnumerable<CodeElement> findElements(string[] pathParts, int pathLength)
+        {
+            if (pathLength == 0)
+                return new CodeElement[0];
+
             var currentElements = _searchedAssembly.RootElements;
 
             //traverse all allowed part
             for (var i = 0; i < pathLength; ++i)
             {
-                var isLast = pathLength == i + 1;
                 var currentPart = pathParts[i];
 
                 var genericIndex = currentPart.IndexOf('<');
                 if (genericIndex > 0)
                     currentPart = currentPart.Substring(0, genericIndex);
 
-                if (isLast && i > 1 && (currentPart == Naming.ClassCtorName || currentPart == Naming.CtorName))
-                {
-                    //change to constructor name
-                    currentPart = pathParts[i - 1];
-                }
 
-                IEnumerable<CodeElement> nextElements = null;
+                IEnumerable<CodeElement> nextElements = new CodeElement[0];
                 foreach (CodeElement currentChild in currentElements)
                 {
                     var name = currentChild.Name();
                     if (name == currentPart)
                     {
-                        if (isLast)
-                            //we have found element satysfiing the path
-                            return currentChild;
-
                         //current element satysfiing the path - step to its children
-                        nextElements = from CodeElement child in currentChild.Children() select child;
-                        //go to next part
-                        break;
+
+                        var children = from CodeElement child in currentChild.Children() select child;
+                        nextElements = nextElements.Concat(children);
                     }
                 }
 
-                if (nextElements == null)
-                    //no element matches current part
-                    break;
-
                 //shift to next children
                 currentElements = nextElements;
+
+                if (currentElements == null)
+                    //no element matches current part
+                    break;
             }
 
-            //element hasn't been found
-            return null;
+
+            if (currentElements == null)
+                return new CodeElement[0];
+
+            return currentElements;
         }
     }
 }

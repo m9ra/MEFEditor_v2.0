@@ -357,6 +357,8 @@ namespace TypeSystem.Core
                 return true;
 
             var chain = getChain(assignedTypeName);
+            if (chain == null)
+                return false;
             return chain.HasSubChain(targetTypeName);
         }
 
@@ -409,6 +411,23 @@ namespace TypeSystem.Core
         {
             return _assemblyComponents.Get(assembly);
         }
+
+        /// <summary>
+        /// Get components defined within given assembly and its referenced assemblies
+        /// </summary>
+        /// <param name="assembly">Assembly where components are searched</param>
+        /// <returns>Components defined within assembly</returns>
+        internal IEnumerable<ComponentInfo> GetReferencedComponents(AssemblyProvider assembly)
+        {
+            var result = new List<ComponentInfo>();
+            foreach (var reference in resolveKeys(assembly.References))
+            {
+                result.AddRange(GetComponents(reference));
+            }
+
+            return result;
+        }
+
 
         #endregion
 
@@ -530,6 +549,16 @@ namespace TypeSystem.Core
                 return null;
             });
             return definingAssemblyProvider;
+        }
+
+        /// <summary>
+        /// Find assembly provider that is already loaded
+        /// </summary>
+        /// <param name="key">Key defining the assembly provider</param>
+        /// <returns>Loaded assebmly provided if available, <c>null</c> otherwise</returns>
+        internal AssemblyProvider FindLoadedAssemblyProvider(object key)
+        {
+            return _assemblies.FindProviderFromKey(key);
         }
 
         #endregion
@@ -764,7 +793,7 @@ namespace TypeSystem.Core
         /// <returns>Created assembly provider</returns>
         private AssemblyProvider createAssembly(object key)
         {
-            var assembly = Loader.CreateAssembly(key);
+            var assembly = Loader.CreateOrGetAssembly(key);
             return assembly;
         }
 
