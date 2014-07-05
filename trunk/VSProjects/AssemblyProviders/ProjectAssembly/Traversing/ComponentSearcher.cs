@@ -282,7 +282,9 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 var namespaces = implicitNamespaces.Concat(_assembly.GetNamespaces(attribute as CodeElement));
                 foreach (var ns in namespaces)
                 {
-                    var descriptor = TypeDescriptor.Create(ns + "." + rawContract);
+                    var prefix = ns == "" ? "" : ns + ".";
+
+                    var descriptor = TypeDescriptor.Create(prefix + rawContract);
                     if (_services.GetChain(descriptor) != null)
                         return descriptor.TypeName;
                 }

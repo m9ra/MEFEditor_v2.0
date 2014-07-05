@@ -38,6 +38,18 @@ namespace Analyzing.Execution
         /// </summary>
         public IEnumerable<Instance> AffectedInstances { get { return _affectedInstances; } }
 
+        public ExecutedBlock FirstBlock
+        {
+            get
+            {
+                var call = Call;
+                while (call.Caller != null) 
+                    call = call.Caller;
+
+                return call.EntryBlock;
+            }
+        }
+
         public ExecutedBlock NextBlock
         {
             get

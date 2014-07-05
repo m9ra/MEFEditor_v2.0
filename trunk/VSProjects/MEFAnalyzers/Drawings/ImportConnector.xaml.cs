@@ -24,6 +24,7 @@ namespace MEFAnalyzers.Drawings
     {
         private static readonly Dictionary<string, string> ImportProperties = new Dictionary<string, string>()
         {
+             {"Contract","Contract"},
              {"ContractType","Contract type"},
              {"ContractItemType","Item type"},
              {"AllowMany","Allow many"},

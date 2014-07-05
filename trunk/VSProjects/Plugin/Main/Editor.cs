@@ -80,6 +80,11 @@ namespace MEFEditor.Plugin.Main
         private AnalyzingResult _currentResult;
 
         /// <summary>
+        /// Arguments of current result of analysis
+        /// </summary>
+        private Instance[] _currentArguments;
+
+        /// <summary>
         /// Error of last analysis run if any, <c>null</c> otherwise
         /// </summary>
         private LogEntry _analysisError;
@@ -166,7 +171,7 @@ namespace MEFEditor.Plugin.Main
             });
 
 
-
+            Runtime.AddDirectDefinition(new DirectTypeDefinition<ICollection<InstanceWrap>>());
             Runtime.AddDefinition(new ConsoleDefinition());
             Runtime.AddDefinition(new ObjectDefinition());
             Runtime.AddDefinition(new TypeDefinition());
@@ -291,6 +296,7 @@ namespace MEFEditor.Plugin.Main
                 _loader.Settings.CodeBaseFullPath = getCodeBase(entryMethod);
 
                 var entryArguments = getCompositionPointArguments(compositionPoint);
+                _currentArguments = entryArguments;
 
                 //run analysis on selected compsition with obtained arguments
                 _currentResult = _machine.Run(_loader, entryMethod, entryArguments);
@@ -303,6 +309,7 @@ namespace MEFEditor.Plugin.Main
             }
             catch (Exception ex)
             {
+                _currentArguments = null;
                 _analysisError = _vs.LogErrorEntry(ex.Message, ex.ToString());
             }
         }
@@ -392,9 +399,11 @@ namespace MEFEditor.Plugin.Main
         private DiagramDefinition createDrawings(AnalyzingResult result)
         {
             var pipeline = _loader.Settings.Runtime.CreateDrawingPipeline(generalDrawer, result);
+            var entryInstance = _currentArguments == null || _currentArguments.Length == 0 ? null : _currentArguments[0];
 
             foreach (var instance in result.CreatedInstances)
             {
+                var isEntryInstance = instance == entryInstance;
                 var hasDrawer = Runtime.GetDrawer(instance) != null;
                 var hasComponentInfo = _loader.GetComponentInfo(instance.Info) != null;
 

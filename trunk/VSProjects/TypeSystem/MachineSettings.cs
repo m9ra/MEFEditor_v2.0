@@ -22,6 +22,11 @@ namespace TypeSystem
         private readonly bool _catchExceptions;
 
         /// <summary>
+        /// Here is stored value for codebase
+        /// </summary>
+        private string _codeBase = "";
+
+        /// <summary>
         /// Runtime that is used with current settings
         /// </summary>
         public readonly RuntimeAssembly Runtime = new RuntimeAssembly();
@@ -29,7 +34,16 @@ namespace TypeSystem
         /// <summary>
         /// Determine current code base
         /// </summary>
-        public string CodeBaseFullPath { get; set; }
+        public string CodeBaseFullPath
+        {
+            get { return _codeBase; }
+            set{
+                if (value == null)
+                    value = "";
+
+                _codeBase = value;
+            }
+        }
 
         /// </ inheritdoc>
         public override int ExecutionLimit { get { return 10000; } }

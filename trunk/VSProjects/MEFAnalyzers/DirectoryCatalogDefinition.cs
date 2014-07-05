@@ -93,6 +93,29 @@ namespace MEFAnalyzers
 
         #region Private utilities
 
+        /// <summary>
+        /// Return path2, relative to path1.
+        /// </summary>
+        /// <param name="path1">Base path.</param>
+        /// <param name="path2">Path which will be returned relative to base path.</param>
+        /// <returns>Path2 relative to path1.</returns>
+        public static string RelativePath(string path1, string path2)
+        {
+            if (path1 == null || path1=="") return path2;
+            if (path2 == null || path2=="") return path1;
+
+            // Folders must end in a slash
+            if (!path1.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                path1 += Path.DirectorySeparatorChar;
+            }
+
+            var path1Uri = new Uri(path1);
+            var path2Uri = new Uri(path2);
+
+            return Uri.UnescapeDataString(path1Uri.MakeRelativeUri(path2Uri).ToString().Replace('/', Path.DirectorySeparatorChar));
+        }
+
         public static string ResolveFullPath(string relativePath, TypeServices services)
         {
             var codeBase = services.CodeBaseFullPath;
@@ -178,14 +201,19 @@ namespace MEFAnalyzers
             var oldPath = FullPath.Get();
             if (oldPath == null) oldPath = ResolveFullPath(".", Services);
 
-            var path = Dialogs.PathProvider.GetFolderPath(oldPath);
-            if (path == null)
+            var fullpath = Dialogs.PathProvider.GetFolderPath(oldPath);
+            if (fullpath == null)
             {
                 view.Abort("Path hasn't been selected");
                 return null;
             }
 
-            return path;
+            var relative = RelativePath(Services.CodeBaseFullPath, fullpath);
+
+            if (relative.Length > fullpath.Length)
+                return fullpath;
+
+            return relative;
         }
 
         #endregion

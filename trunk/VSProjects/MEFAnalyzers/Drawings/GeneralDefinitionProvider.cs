@@ -15,9 +15,15 @@ namespace MEFAnalyzers.Drawings
     public static class GeneralDefinitionProvider
     {
         public static void Draw(DrawedInstance instance, ComponentInfo info)
-        {            
+        {
             if (info == null)
                 return;
+                        
+            if (instance.WrappedInstance.IsEntryInstance)
+            {
+                //instance that was pasted on analysis start
+                instance.SetProperty("EntryInstance", "");
+            }
 
             foreach (var export in info.Exports)
             {

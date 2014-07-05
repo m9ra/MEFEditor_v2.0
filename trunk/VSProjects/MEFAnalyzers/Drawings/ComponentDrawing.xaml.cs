@@ -23,19 +23,35 @@ namespace MEFAnalyzers.Drawings
     public partial class ComponentDrawing : ContentDrawing
     {
         public ComponentDrawing(DiagramItem item)
-            :base(item)
+            : base(item)
         {
             InitializeComponent();
+
+            DrawingTools.SetIcon(ComponentIcon, Icons.Component);
 
             TypeName.Text = Definition.DrawedType;
             InstanceID.Text = Definition.ID;
 
+            var isEntryInstance = false;
             foreach (var property in Definition.Properties)
             {
                 var propertyBlock = new TextBlock();
-                propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);
+
+                var value = property.Value;
+                var name = property.Name;
+                var prefix = value == null || value == "" ? name : name + ": ";
+
+                propertyBlock.Text = prefix + value;
 
                 Properties.Children.Add(propertyBlock);
+
+                isEntryInstance |= property.Name == "EntryInstance";
+            }
+
+            if (isEntryInstance)
+            {
+                BorderBrush = Brushes.DarkGreen;
+                BorderThickness = new Thickness(6);
             }
         }
     }

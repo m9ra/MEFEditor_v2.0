@@ -128,7 +128,7 @@ namespace AssemblyProviders.ProjectAssembly
             var outputPath = VS.GetOutputPath(_assemblyProject.Project);
 
             var assemblyDir = Path.GetDirectoryName(getAssemblyFullPath());
-            FullPathMapping = Path.Combine(assemblyDir, outputPath, name + extension);
+            FullPathMapping = Path.GetFullPath(Path.Combine(assemblyDir, outputPath, name + extension));
 
             hookChangesHandler();
             initializeReferences();

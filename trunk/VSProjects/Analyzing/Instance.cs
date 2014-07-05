@@ -39,6 +39,11 @@ namespace Analyzing
         public string ID { get; private set; }
 
         /// <summary>
+        /// Determine that instance has been used as argument of entry method
+        /// </summary>
+        public bool IsEntryInstance { get; internal set; }
+
+        /// <summary>
         /// Navigation action at creation instruction if available, <c>null</c> otherwise
         /// </summary>
         public NavigationAction CreationNavigation { get; private set; }

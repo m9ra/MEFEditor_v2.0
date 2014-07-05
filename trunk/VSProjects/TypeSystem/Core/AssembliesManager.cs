@@ -440,6 +440,21 @@ namespace TypeSystem.Core
         /// <returns>Files that are present in directory according to virtual mapping</returns>
         internal IEnumerable<string> GetFiles(string directoryFullPath)
         {
+            var listed = new HashSet<string>();
+
+            //get files that are added by virtual mapping
+            foreach (var assembly in _assemblies.Providers)
+            {
+                if (!assembly.FullPathMapping.StartsWith(directoryFullPath))
+                    //directory has to match begining of path
+                    continue;
+
+                var mappedDirectory = Path.GetDirectoryName(assembly.FullPathMapping);
+                if (mappedDirectory == directoryFullPath && listed.Add(assembly.FullPathMapping))
+                    //virtual mapping match
+                    yield return assembly.FullPathMapping;
+            }
+
             if (Directory.Exists(directoryFullPath))
             {
                 var realFiles = Directory.GetFiles(directoryFullPath);
@@ -451,21 +466,12 @@ namespace TypeSystem.Core
                         //assemblies are added according to their mapping
                         continue;
 
+                    if(listed.Contains(realFile))
+                        //file has been overriden by some mapping
+                        continue;
+
                     yield return realFile;
                 }
-            }
-
-            //get files that are added by virtual mapping
-            foreach (var assembly in _assemblies.Providers)
-            {
-                if (!assembly.FullPathMapping.StartsWith(directoryFullPath))
-                    //directory has to match begining of path
-                    continue;
-
-                var mappedDirectory = Path.GetDirectoryName(assembly.FullPathMapping);
-                if (mappedDirectory == directoryFullPath)
-                    //virtual mapping match
-                    yield return assembly.FullPathMapping;
             }
         }
 

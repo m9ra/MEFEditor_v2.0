@@ -299,9 +299,6 @@ namespace Plugin.GUI
 
         internal bool FlushCompositionPointUpdates()
         {
-            //keep currently selected index
-            var selectedIndex = _gui.CompositionPoints.SelectedIndex;
-
             //apply composition point removings
             foreach (var compositionPoint in _compositionPointRemoves.Values)
             {
@@ -309,13 +306,6 @@ namespace Plugin.GUI
                 _compositionPoints.Remove(compositionPoint);
 
                 _gui.CompositionPoints.Items.Remove(item);
-
-                //exact composition has been removed
-                if (compositionPoint.Equals(SelectedCompositionPoint))
-                {
-                    selectedIndex = 0;
-                }
-
             }
             _compositionPointRemoves.Clear();
 
@@ -324,14 +314,36 @@ namespace Plugin.GUI
             {
                 var item = createCompositionPointItem(compositionPoint);
 
+                if (compositionPoint.IsExplicit)
+                {
+                    //send explicit composition points at list begining
+                    _gui.CompositionPoints.Items.Insert(1, item);
+                }
+                else
+                {
+                    //implicit composition points will remain at bottom
+                    _gui.CompositionPoints.Items.Add(item);
+                }
                 _compositionPoints.Add(compositionPoint, item);
-                _gui.CompositionPoints.Items.Add(item);
-
-                var isDesiredCompositionPoint = _desiredCompositionPointMethod != null && _desiredCompositionPointMethod.Equals(compositionPoint.EntryMethod);
-                if (isDesiredCompositionPoint)
-                    selectedIndex = _gui.CompositionPoints.Items.Count - 1;
             }
             _compositionPointAdds.Clear();
+
+
+            //find desired composition point
+            var selectedIndex = 0;
+            foreach (var compositionPointPair in _compositionPoints)
+            {
+                var compositionPoint = compositionPointPair.Key;
+                var isDesiredCompositionPoint = _desiredCompositionPointMethod != null && _desiredCompositionPointMethod.Equals(compositionPoint.EntryMethod);
+
+                if (isDesiredCompositionPoint)
+                {
+                    var item = compositionPointPair.Value;
+                    selectedIndex = _gui.CompositionPoints.Items.IndexOf(item);
+
+                    break;
+                }
+            }
 
             //composition point could be changed (even no update is processed!)
             refreshSelectedCompositionPoint();
@@ -382,12 +394,17 @@ namespace Plugin.GUI
         /// <returns>Distinguish name.</returns>
         private string distinguishName(HashSet<string> names, CompositionPoint compositionPoint)
         {
-            var compPointName = Naming.GetMethodPath(compositionPoint.EntryMethod).Name;
+            var rawName = Naming.GetMethodPath(compositionPoint.EntryMethod).Name;
+
+            var compPointName = rawName.Replace("." + Naming.CtorName, "").Replace("." + Naming.ClassCtorName, "");
             var subNames = compPointName.Split('.');
             subNames = subNames.Reverse().ToArray();
 
+            //allow single part names for class names
+            var minLength = rawName == compPointName ? 2 : 1;
+
             var distName = subNames[0];
-            for (var i = 1; names.Contains(distName) && subNames.Length > i || i <= 1; i++)
+            for (var i = 1; (names.Contains(distName) || i < minLength) && subNames.Length < i; i++)
             {
                 distName = subNames[i] + "." + distName;
             }

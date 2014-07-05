@@ -120,9 +120,9 @@ namespace Drawing
                 totWidth += measured.Width;
             }
 
-            var scale = 1.2;
+            var scale = 1.1;
             var reqHeight = Math.Max(totHeight * scale, MinHeight);
-            var reqWidth = Math.Max(totWidth * scale, MinWidth);
+            var reqWidth = Math.Max(totWidth * 1, MinWidth);
 
             //canvas doesn't need no place itself
             return new Size(reqWidth, reqHeight);

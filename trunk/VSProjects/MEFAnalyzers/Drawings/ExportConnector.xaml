@@ -40,6 +40,6 @@
         </Path>
         <StackPanel Name="ErrorOutput"  Orientation="Horizontal" HorizontalAlignment="Left" MaxHeight="25" Margin="5 0" Grid.Column="1" Grid.Row="0"/>
 
-        <TextBlock Name="Contract" Padding="10 0"  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">System.ICollection[string]</TextBlock>
+        <TextBlock Name="Contract" Padding="10 0"  Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Left" Grid.Row="1">System.ICollection[string]</TextBlock>
     </Grid>
 </dr:ConnectorDrawing>

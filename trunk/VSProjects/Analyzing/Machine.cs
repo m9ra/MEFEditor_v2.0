@@ -98,7 +98,10 @@ namespace Analyzing
                 foreach (var argument in arguments)
                 {
                     if (argument != null)
+                    {
+                        argument.IsEntryInstance = true;
                         _createdInstances.Add(argument.ID, argument);
+                    }
                 }
                 context.FetchCall(entryMethod, arguments);
             });
