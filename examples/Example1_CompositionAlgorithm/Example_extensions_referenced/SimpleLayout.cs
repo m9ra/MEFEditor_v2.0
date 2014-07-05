@@ -8,7 +8,7 @@ using System.ComponentModel.Composition;
 
 namespace Example_extensions_referenced
 {    
-    [Export(typeof(ILayout))]
+    [Export(typeof(ILayout))] 
     public class SimpleLayout : ILayout
     {
         [ImportMany(typeof(IContent))]

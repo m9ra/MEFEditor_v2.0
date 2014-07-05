@@ -11,7 +11,7 @@ namespace Main
 {
     [ExportMetadata("Output", "Console")]
     [Export(typeof(ILogger))]
-    class ConsoleLogger:ILogger
+    class ConsoleLogger:ILogger 
     { 
         public void Log(string message)
         { 

@@ -13,6 +13,11 @@ using System.ComponentModel.Composition.Hosting;
 
 namespace Main
 {
+
+
+
+
+
     class Program
     {
         [Import]
@@ -24,8 +29,31 @@ namespace Main
         [CompositionPoint]
         void Compose()
         {
+            var wrongLayout = new WrongLayout();
+            var consoleLogger = new ConsoleLogger();
             var typeCatalog = new TypeCatalog(typeof(SimpleLayout));
+            var aggregateCatalog = new AggregateCatalog();
+            var directoryCatalog = new DirectoryCatalog("Extensions");
+            var compositionContainer = new CompositionContainer();
+            aggregateCatalog.Catalogs.Add(directoryCatalog);
+            aggregateCatalog.Catalogs.Add(typeCatalog);
+            compositionContainer.ComposeParts(this, wrongLayout);
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         static void Main(string[] args)
         {
