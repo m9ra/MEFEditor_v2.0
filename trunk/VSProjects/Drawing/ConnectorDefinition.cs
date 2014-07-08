@@ -12,6 +12,8 @@ namespace Drawing
 
         public readonly DrawingReference Reference;
 
+        public IEnumerable<DrawingProperty> Properties { get { return _properties.Values; } }
+
         public ConnectorDefinition(DrawingReference reference)
         {
             Reference = reference;

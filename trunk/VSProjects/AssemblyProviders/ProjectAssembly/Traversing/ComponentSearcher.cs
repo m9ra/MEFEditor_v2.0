@@ -141,22 +141,24 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <summary>
         /// Add export according to given <see cref="CodeAttribute"/>
         /// </summary>
-        /// <param name="exportAttrbiute">Attribute defining export</param>
-        private void addExport(AttributeInfo exportAttrbiute)
+        /// <param name="exportAttribute">Attribute defining export</param>
+        private void addExport(AttributeInfo exportAttribute)
         {
-            var builder = getOrCreateCurrentBuilder(exportAttrbiute.Element as CodeElement);
+            var builder = getOrCreateCurrentBuilder(exportAttribute.Element as CodeElement);
 
             TypeDescriptor exportTypeDescriptor;
             MethodID exportMethodID;
-            if (!getExportTarget(exportAttrbiute.Element, builder.ComponentType, out exportMethodID, out exportTypeDescriptor))
+            if (!getExportTarget(exportAttribute.Element, builder.ComponentType, out exportMethodID, out exportTypeDescriptor))
             {
                 //TODO log that export attribute cannot be handled
                 return;
             }
 
-            var explicitContract = parseContract(exportAttrbiute.GetArgument(0), builder, exportAttrbiute.Element);
+            var explicitContract = parseContract(exportAttribute.GetArgument(0), builder, exportAttribute.Element);
             var contract = explicitContract == null ? exportTypeDescriptor.TypeName : explicitContract;
             var isSelfExport = exportMethodID == null;
+
+            exploreMetaData(exportAttribute, builder);
 
             if (isSelfExport)
             {
@@ -166,6 +168,34 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             {
                 builder.AddExport(exportTypeDescriptor, exportMethodID, contract);
             }
+        }
+
+        private void exploreMetaData(AttributeInfo exportAttribute, ComponentInfoBuilder builder)
+        {
+            var target = exportAttribute.Element.Parent as CodeElement;
+            if (target == null)
+                return;
+
+            //check target attributes whether metadata is exported
+            var attributes = target.GetAttributes();
+            foreach (CodeAttribute2 attribute in attributes)
+            {
+                if (attribute.FullName == Naming.ExportMetadataAttribute)
+                {
+                    var info = new AttributeInfo(attribute);
+                    buildMetaExport(info, builder);
+                }
+            }
+
+        }
+
+        private void buildMetaExport(AttributeInfo info, ComponentInfoBuilder builder)
+        {
+            var isMultiple = info.GetArgument("IsMultiple") == "true";
+            var name = parseString(info.GetArgument("Name", 0));
+            var value = parseObject(info.GetArgument("Value", 1), builder, info.Element);
+
+            builder.AddMeta(name, value, isMultiple);
         }
 
         /// <summary>
@@ -265,15 +295,78 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             builder.AddExplicitCompositionPoint(info.MethodID, createInitializer(compositionAttrbiute, info));
         }
 
+        #region Literal parsing - TODO refactor out
+
         private string parseContract(string rawContract, ComponentInfoBuilder builder, CodeAttribute2 attribute)
         {
             if (rawContract == null)
                 return null;
 
-            var typePrefix = "typeof(";
-            if (rawContract.StartsWith(typePrefix))
+            var type = parseType(rawContract, builder, attribute);
+            if (type != null)
+                return type.TypeName;
+
+            return parseString(rawContract);
+        }
+
+        private string parseString(string data)
+        {
+            if (data.StartsWith("@\"") && data.Length >2)
+                return data.Substring(2, data.Length - 3).Replace("\"\"", "\"");
+
+            if (data.StartsWith("\"") && data.Length > 1)
+                return data.Substring(1, data.Length - 2);
+
+            return null;
+        }
+
+        private object parseObject(string data, ComponentInfoBuilder builder, CodeAttribute2 attribute)
+        {
+            object result;
+            result = parseType(data, builder, attribute);
+
+            if (result == null)
+                result = parseString(data);
+
+            if (result == null)
             {
-                rawContract = rawContract.Substring(typePrefix.Length).Replace(")", "");
+                var value = parseBool(data);
+                if (value.HasValue)
+                    result = value.Value;
+            }
+
+            if (result != null)
+                return result;
+
+            char ch;
+            if (char.TryParse(data, out ch))
+                return ch;
+
+            int intNum;
+            if (int.TryParse(data, out intNum))
+                return intNum;
+
+            double doubNum;
+            if (double.TryParse(data, out doubNum))
+                return doubNum;
+
+            return null;
+        }
+
+        private bool? parseBool(string data)
+        {
+            if (data == "true" || data == "false")
+                return data == "true";
+
+            return null;
+        }
+
+        private TypeDescriptor parseType(string data, ComponentInfoBuilder builder, CodeAttribute2 attribute)
+        {
+            var typePrefix = "typeof(";
+            if (data.StartsWith(typePrefix))
+            {
+                data = data.Substring(typePrefix.Length).Replace(")", "");
 
                 //find contracted type
 
@@ -284,14 +377,16 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 {
                     var prefix = ns == "" ? "" : ns + ".";
 
-                    var descriptor = TypeDescriptor.Create(prefix + rawContract);
+                    var descriptor = TypeDescriptor.Create(prefix + data);
                     if (_services.GetChain(descriptor) != null)
-                        return descriptor.TypeName;
+                        return descriptor;
                 }
             }
 
-            return rawContract.Replace("\"", "");
+            return null;
         }
+
+        #endregion
 
         private GeneratorBase createInitializer(AttributeInfo compositionAttribute, TypeMethodInfo compositionPointInfo)
         {

@@ -34,7 +34,7 @@ namespace Drawing
         public static readonly DependencyProperty PositionProperty =
             DependencyProperty.RegisterAttached("Position", typeof(Point),
             typeof(DiagramCanvasBase), new FrameworkPropertyMetadata(new Point(-1, -1),
-            FrameworkPropertyMetadataOptions.AffectsParentArrange));
+            FrameworkPropertyMetadataOptions.AffectsParentMeasure));
 
         public static void SetPosition(UIElement element, Point position)
         {
@@ -90,13 +90,25 @@ namespace Drawing
             Children.Add(join);
         }
 
+        /// <inheritdoc />
+        protected override void OnDragOver(DragEventArgs e)
+        {
+            PreviewDropStrategy.OnDrop(this, e);
+        }
+
+        /// <inheritdoc />
+        protected override void OnDrop(DragEventArgs e)
+        {
+            DropStrategy.OnDrop(this, e);
+            e.Handled = true;
+        }
+
+        #region Layout handling
+
+        /// <inheritdoc />
         protected override Size ArrangeOverride(Size arrangeSize)
         {
-            if (DiagramContext != null)
-            {
-                DiagramContext.Provider.Engine.ArrangeChildren(OwnerItem, this);
-            }
-
+            //positions has been set during measure
             foreach (FrameworkElement child in Children)
             {
                 var position = GetPosition(child);
@@ -105,40 +117,22 @@ namespace Drawing
             return arrangeSize;
         }
 
+        /// <inheritdoc />
         protected override Size MeasureOverride(Size constraint)
         {
-            var totHeight = 0.0;
-            var totWidth = 0.0;
-
             foreach (UIElement child in Children)
             {
                 //no borders on child size
                 child.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
-
-                var measured = child.DesiredSize;
-                totHeight += measured.Height;
-                totWidth += measured.Width;
             }
 
-            var scale = 1.1;
-            var reqHeight = Math.Max(totHeight * scale, MinHeight);
-            var reqWidth = Math.Max(totWidth * 1, MinWidth);
+            if (DiagramContext == null)
+                return new Size();
 
-            //canvas doesn't need no place itself
-            return new Size(reqWidth, reqHeight);
+            var size = DiagramContext.Provider.Engine.ArrangeChildren(OwnerItem, this);
+            return size;
         }
 
-        protected override void OnDragOver(DragEventArgs e)
-        {
-            PreviewDropStrategy.OnDrop(this, e);
-        }
-
-        protected override void OnDrop(DragEventArgs e)
-        {
-            DropStrategy.OnDrop(this, e);
-            e.Handled = true;
-        }
-
-
+        #endregion
     }
 }

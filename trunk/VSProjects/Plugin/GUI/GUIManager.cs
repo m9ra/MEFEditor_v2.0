@@ -404,7 +404,7 @@ namespace Plugin.GUI
             var minLength = rawName == compPointName ? 2 : 1;
 
             var distName = subNames[0];
-            for (var i = 1; (names.Contains(distName) || i < minLength) && subNames.Length < i; i++)
+            for (var i = 1; (names.Contains(distName) || i < minLength) && subNames.Length > i; i++)
             {
                 distName = subNames[i] + "." + distName;
             }

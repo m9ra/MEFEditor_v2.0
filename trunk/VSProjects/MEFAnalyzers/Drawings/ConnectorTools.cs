@@ -46,7 +46,6 @@ namespace MEFAnalyzers.Drawings
             }
         }
 
-
         internal static void SetProperties(ConnectorDrawing connector, string heading, IEnumerable<KeyValuePair<string, string>> mapping)
         {
             var definition = connector.Definition;
@@ -58,10 +57,27 @@ namespace MEFAnalyzers.Drawings
                 if (property == null || property.Value == null)
                     continue;
 
-                propertiesText.AppendFormat("{0}: {1}\n", map.Value , property.Value);
+                propertiesText.AppendFormat("{0}: {1}\n", map.Value, property.Value);
             }
 
-            var tooltip= DrawingTools.GetHeadingText(heading, propertiesText.ToString());
+            var metaText = new StringBuilder();
+            foreach (var property in definition.Properties)
+            {
+                var prefix = "$Meta";
+                var propertyName = property.Name;
+                if (!propertyName.StartsWith(prefix))
+                    continue;
+
+                var name = propertyName.Substring(propertyName.IndexOf('-') + 1);
+                metaText.AppendFormat("{0}: {1}\n", name, property.Value);
+            }
+
+            var tooltip = DrawingTools.GetHeadingText(heading, propertiesText.ToString());
+
+            if (metaText.Length > 0)
+            {
+                DrawingTools.AppendHeadingText("Metadata", metaText.ToString(), tooltip);
+            }
 
             DrawingTools.SetToolTip(connector, tooltip);
 

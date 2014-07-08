@@ -68,15 +68,22 @@ namespace MEFAnalyzers.Drawings
         /// <returns>StackPanel with heading and text.</returns>
         internal static StackPanel GetHeadingText(string heading, string text)
         {
+            var target = new StackPanel();
+
+            AppendHeadingText(heading, text, target);
+
+            return target;
+        }
+
+        internal static void AppendHeadingText(string heading, string text, StackPanel target)
+        {
             var hblock = GetText(heading);
             hblock.FontWeight = FontWeights.Bold;
 
             var tblock = GetText(text);
 
-            var res = new StackPanel();
-            res.Children.Add(hblock);
-            res.Children.Add(tblock);
-            return res;
+            target.Children.Add(hblock);
+            target.Children.Add(tblock);
         }
 
         /// <summary>

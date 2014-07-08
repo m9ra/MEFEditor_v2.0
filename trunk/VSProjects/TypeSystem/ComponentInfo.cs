@@ -43,11 +43,13 @@ namespace TypeSystem
             ArgumentProvider = argumentProvider;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return EntryMethod.GetHashCode();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             var o = obj as CompositionPoint;
@@ -110,25 +112,70 @@ namespace TypeSystem
     }
 
     /// <summary>
+    /// Item of exported metadata
+    /// </summary>
+    public class MetaItem
+    {
+        /// <summary>
+        /// Exporting key of meta item
+        /// </summary>
+        public readonly string Key;
+        
+        /// <summary>
+        /// Determine if item appeared with multiple indicator.
+        /// IsMultiple values are stored in lists.
+        /// </summary>
+        public readonly bool IsMultiple;
+
+        /// <summary>
+        /// Exported metadata - note that only direct metadata
+        /// can be used for composition
+        /// </summary>
+        public readonly IEnumerable<object> Data;
+
+        public MetaItem(string key, bool isMultiple,IEnumerable<object> items){
+            Key = key;
+            IsMultiple = isMultiple;
+            Data = items.ToArray();
+        }
+    }
+
+    /// <summary>
     /// Exported metadata.
     /// </summary>
     public class MetaExport
     {
         /// <summary>
-        /// Determine if key appeared with multiple indicator.
-        /// IsMultiple values are stored in lists.
-        /// </summary>
-        /// <param name="key">Key for metadata entry</param>
-        /// <returns>True if specified metadata entry is multiple. Otherwise false.</returns>
-        public bool IsMultiple(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// All exported metadata
         /// </summary>
-        public IDictionary<string, IEnumerable<Instance>> Data { get; private set; }
+        private readonly Dictionary<string, MetaItem> _data;
+
+        /// <summary>
+        /// Keys that has been exported
+        /// </summary>
+        public IEnumerable<string> ExportedKeys { get { return _data.Keys; } }
+
+        /// <summary>
+        /// Get <see cref="MetaItem"/> according to given key
+        /// </summary>
+        /// <param name="key">Key of item</param>
+        /// <returns><see cref="MetaItem"/> if available for given key, <c>null</c> otherwise.</returns>
+        public MetaItem GetItem(string key)
+        {
+            MetaItem result;
+            _data.TryGetValue(key, out result);
+            return result;
+        }
+
+        public MetaExport(IEnumerable<MetaItem> items)
+        {
+            _data = new Dictionary<string, MetaItem>();
+
+            foreach (var item in items)
+            {
+                _data.Add(item.Key, item);
+            }
+        }
     }
 
     /// <summary>
@@ -156,11 +203,12 @@ namespace TypeSystem
         /// </summary>
         public readonly TypeDescriptor ExportType;
 
-        public Export(TypeDescriptor exportType, MethodID getter, string contract)
+        public Export(TypeDescriptor exportType, MethodID getter, string contract, MetaExport meta)
         {
             ExportType = exportType;
             Contract = contract;
             Getter = getter;
+            Meta = meta;
         }
     }
 

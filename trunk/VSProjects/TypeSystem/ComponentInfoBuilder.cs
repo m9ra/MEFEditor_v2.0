@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Utilities;
 using Analyzing;
 
 namespace TypeSystem
@@ -32,6 +33,16 @@ namespace TypeSystem
         /// Defined explicit composition points, which has been marked with composition point attribute
         /// </summary>
         private readonly List<CompositionPoint> _explicitCompositionPoints = new List<CompositionPoint>();
+
+        /// <summary>
+        /// Current meta exports
+        /// </summary>
+        private readonly MultiDictionary<string, object> _metaData = new MultiDictionary<string, object>();
+
+        /// <summary>
+        /// Current info about meta multiple flag
+        /// </summary>
+        private readonly Dictionary<string, bool> _metaMultiplicity = new Dictionary<string, bool>();
 
         /// <summary>
         /// Defined implicit composition point if available, <c>null</c> otherwise
@@ -92,6 +103,12 @@ namespace TypeSystem
             AddExport(exportType, getterID, contract);
         }
 
+        public void AddMeta(string key, object data, bool isMultiple)
+        {
+            _metaData.Add(key, data);
+            _metaMultiplicity.Add(key, isMultiple);
+        }
+
         /// <summary>
         /// Add export of given type
         /// </summary>
@@ -105,7 +122,8 @@ namespace TypeSystem
                 contract = exportType.TypeName;
             }
 
-            var export = new Export(exportType, getterID, contract);
+            var meta = buildMeta();
+            var export = new Export(exportType, getterID, contract, meta);
             AddExport(export);
         }
 
@@ -124,7 +142,8 @@ namespace TypeSystem
         /// <param name="contract">Contract of export</param>
         public void AddSelfExport(string contract)
         {
-            var export = new Export(ComponentType, null, contract);
+            var meta = buildMeta();
+            var export = new Export(ComponentType, null, contract, meta);
 
             _selfExports.Add(export);
         }
@@ -266,6 +285,25 @@ namespace TypeSystem
         private MethodID getComponentParamLessCtorID()
         {
             return Naming.Method(ComponentType, Naming.CtorName, false);
+        }
+
+        private MetaExport buildMeta()
+        {
+            var items = new List<MetaItem>();
+            foreach (var key in _metaData.Keys)
+            {
+                var values = _metaData.Get(key);
+                var isMultiple = _metaMultiplicity[key];
+                var item = new MetaItem(key, isMultiple,values);
+
+                items.Add(item);
+            }
+
+            _metaData.Clear();
+            _metaMultiplicity.Clear();
+
+            var meta = new MetaExport(items);
+            return meta;
         }
 
         #endregion

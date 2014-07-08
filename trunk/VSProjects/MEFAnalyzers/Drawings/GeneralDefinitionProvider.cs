@@ -18,7 +18,7 @@ namespace MEFAnalyzers.Drawings
         {
             if (info == null)
                 return;
-                        
+
             if (instance.WrappedInstance.IsEntryInstance)
             {
                 //instance that was pasted on analysis start
@@ -32,6 +32,8 @@ namespace MEFAnalyzers.Drawings
                 setProperty(connector, "Kind", "Export");
                 setProperty(connector, "Contract", export.Contract);
                 setProperty(connector, "ContractType", export.ExportType);
+
+                setMetaProperties(connector, "$Meta", export.Meta);
             }
 
             foreach (var export in info.SelfExports)
@@ -41,6 +43,8 @@ namespace MEFAnalyzers.Drawings
                 setProperty(connector, "Kind", "SelfExport");
                 setProperty(connector, "Contract", export.Contract);
                 setProperty(connector, "ContractType", export.ExportType);
+
+                setMetaProperties(connector, "$Meta", export.Meta);
             }
 
             foreach (var import in info.Imports)
@@ -55,6 +59,26 @@ namespace MEFAnalyzers.Drawings
                 setProperty(connector, "AllowMany", import.AllowMany);
                 setProperty(connector, "AllowDefault", import.AllowDefault);
                 setProperty(connector, "IsPrerequisity", import.IsPrerequisity);
+            }
+        }
+
+        private static void setMetaProperties(ConnectorDefinition connector, string propertyPrefix, MetaExport meta)
+        {
+            foreach (var key in meta.ExportedKeys)
+            {
+                var item = meta.GetItem(key);
+                var index=1;
+                foreach (var value in item.Data)
+                {
+                    var propertyName = propertyPrefix + index + "-" + item.Key;
+                    var valueRepresentation = "'" + value + "'";
+                    if (item.IsMultiple)
+                        valueRepresentation += " | IsMultiple";
+
+                    setProperty(connector, propertyName, valueRepresentation);
+
+                    ++index;
+                }
             }
         }
 

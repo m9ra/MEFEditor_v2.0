@@ -98,7 +98,7 @@ namespace Drawing
             ZOrdering.Attach(item, _orderingGroup);
             DragAndDrop.Attach(item, GetPosition, SetPosition);
             UpdateGlobalPosition.Attach(item);
-            
+
 
             _items.Add(item.Definition.ID, item);
 
@@ -163,51 +163,42 @@ namespace Drawing
         /// </summary>
         /// <param name="owner">Owner which children will be arranged</param>
         /// <param name="container">Container where children are arranged</param>
-        internal void ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
+        internal Size ArrangeChildren(DiagramItem owner, DiagramCanvasBase container)
         {
             var isRoot = owner == null;
             var children = isRoot ? _rootItems : owner.Children;
-            var lastCursor = isRoot ? _rootCursor : owner.PositionCursor;
 
-            var needsInitialPositions = lastCursor == null;
-
-            if (needsInitialPositions)
-            {
-                var cursor = new PositionCursor();
-                if (isRoot)
-                {
-                    _rootCursor = cursor;
-                }
-                else
-                {
-                    owner.PositionCursor = cursor;
-                }
-
-                foreach (var item in children)
-                {
-                    setInitialPosition(cursor, item);
-                }
-            }
-
-            foreach (var child in children)
-            {
-                if (!isRoot)
-                {
-                    //only slots are limited to borders
-                    if (container.DesiredSize.Height > 0 || container.DesiredSize.Width > 0)
-                    {
-                        // check borders only in case that container is arranged
-                        checkBorders(child, container);
-                    }
-                }
-            }
+            setInitialPositions(owner, container, children);
 
             var collisionRepairer = new ItemCollisionRepairer();
             collisionRepairer.Arrange(children);
 
+            //create navigator after items are positioned
+            Navigator = new SceneNavigator(Items);
+
+            var borders = getChildrenBorders(container, children);
+
             refreshJoinPaths();
+
+            return borders;
         }
 
+        private Size getChildrenBorders(DiagramCanvasBase container, IEnumerable<DiagramItem> children)
+        {
+            var maxX = 0.0;
+            var maxY = 0.0;
+
+            foreach (var child in children)
+            {
+                var span = Navigator.GetSpan(child);
+                var position = child.LocalPosition;
+
+                maxX = Math.Max(maxX, position.X + span.Width);
+                maxY = Math.Max(maxY, position.Y + span.Height);
+            }
+
+            return new Size(maxX, maxY);
+        }
 
         /// <summary>
         /// Recompoute join path for all available joins
@@ -215,10 +206,6 @@ namespace Drawing
         private void refreshJoinPaths()
         {
             //TODO: detect if refresh is necessary
-
-
-            //create navigator after items are positioned
-            Navigator = new SceneNavigator(Items);
             Navigator.EnsureGraphInitialized();
             foreach (var join in _joins)
             {
@@ -314,6 +301,46 @@ namespace Drawing
 
         #region Positioning routines
 
+        private void setInitialPositions(DiagramItem owner, DiagramCanvasBase container, IEnumerable<DiagramItem> children)
+        {
+            var isRoot = owner == null;
+            var lastCursor = isRoot ? _rootCursor : owner.PositionCursor;
+
+            var needsInitialPositions = lastCursor == null;
+            if (needsInitialPositions)
+            {
+                var cursor = new PositionCursor();
+                Size lastLayoutSize;
+
+                if (isRoot)
+                {
+                    //root has no owner, because of that has special cursor
+                    _rootCursor = cursor;
+                    lastLayoutSize = container.RenderSize;
+                }
+                else
+                {
+                    //owner should keep their cursors
+                    owner.PositionCursor = cursor;
+                    lastLayoutSize = container.DesiredSize;
+                }
+
+                //inform cursor about items
+                foreach (var child in children)
+                {
+                    setInitialPosition(cursor, child);
+                }
+
+                //update positions of children
+                cursor.UpdatePositions(lastLayoutSize);
+            }
+
+            foreach (var child in children)
+            {
+                child.GlobalPosition = checkBounds(child, child.GlobalPosition);
+            }
+        }
+
         /// <summary>
         /// Set initial position for given item. 
         /// Accordingly old positions, default positions,..
@@ -323,46 +350,40 @@ namespace Drawing
         {
             if (!_oldPositions.ContainsKey(item.ParentID))
             {
-                setDefaultPosition(cursor, item);
+                //there is no old position for item
+                cursor.SetDefault(item);
                 return;
             }
 
             var parentPositions = _oldPositions[item.ParentID];
             if (!parentPositions.ContainsKey(item.ID))
             {
-                setDefaultPosition(cursor, item);
+                //there is no old position for item
+                cursor.SetDefault(item);
                 return;
             }
 
             //keep position from previous display
             var oldPosition = parentPositions[item.ID];
-            cursor.RegisterPosition(oldPosition, item.DesiredSize);
-            SetPosition(item, oldPosition);
+            cursor.RegisterPosition(item, oldPosition);
         }
 
         /// <summary>
-        /// Set default position for given item
+        /// Repair position
         /// </summary>
-        /// <param name="item">Item which position will be set</param>
-        private void setDefaultPosition(PositionCursor cursor, DiagramItem item)
+        /// <param name="globalPosition">Position to repair.</param>
+        /// <returns>Repaired position.</returns>
+        private Point checkBounds(DiagramItem item, Point globalPosition)
         {
-            //TODO refactor
-            if (item.IsRootItem)
-            {
-                //TODO arrange items
-                var currentPos = item.GlobalPosition;
+            var localPosition = item.AsLocalPosition(globalPosition);
 
-                if (currentPos.X == 0 && currentPos.Y == 0)
-                {
-                    var position = cursor.CreateNextPosition(item.DesiredSize);
-                    SetPosition(item, position);
-                }
-                else
-                {
-                    //needed because of tests
-                    SetPosition(item, currentPos);
-                }
-            }
+            var left = globalPosition.X;
+            var top = globalPosition.Y;
+
+            if (localPosition.X < 0) left -= localPosition.X;
+            if (localPosition.Y < 0) top -= localPosition.Y;
+
+            return new Point(left, top);
         }
 
         /// <summary>

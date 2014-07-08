@@ -59,6 +59,20 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
+        /// Get value of named argument with given name or argument at given position
+        /// </summary>
+        /// <param name="name">Name of named argument</param>
+        /// <returns>Value of named argument if any, value of positioned argument otherwise</returns>
+        internal string GetArgument(string name, int position)
+        {
+            var argument = GetArgument(name);
+            if (argument == null)
+                argument = GetArgument(position);
+
+            return argument;
+        }
+
+        /// <summary>
         /// Get value of named argument with given name
         /// </summary>
         /// <param name="name">Name of named argument</param>

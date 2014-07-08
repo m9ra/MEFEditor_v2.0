@@ -23,22 +23,27 @@ namespace TypeSystem
     public static class Naming
     {
         /// <summary>
-        /// Fullname of ExportAttributeType
+        /// Fullname of ExportAttribute type
         /// </summary>
         public static readonly string ExportAttribute = typeof(ExportAttribute).FullName;
 
         /// <summary>
-        /// Fullname of ImportAttributeType
+        /// Fullname of ExportMetadata
+        /// </summary>
+        public static readonly string ExportMetadataAttribute = typeof(ExportMetadataAttribute).FullName;
+
+        /// <summary>
+        /// Fullname of ImportAttribute type
         /// </summary>
         public static readonly string ImportAttribute = typeof(ImportAttribute).FullName;
 
         /// <summary>
-        /// Fullname of ImportAttributeType
+        /// Fullname of ImportAttribute type
         /// </summary>
         public static readonly string ImportManyAttribute = typeof(ImportManyAttribute).FullName;
 
         /// <summary>
-        /// Fullname of CompositionPointattribute
+        /// Fullname of CompositionPointAttribute
         /// </summary>
         public static readonly string CompositionPointAttribute = typeof(MEFEditor.CompositionPointAttribute).FullName;
 

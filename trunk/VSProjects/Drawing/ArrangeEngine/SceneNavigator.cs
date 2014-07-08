@@ -25,7 +25,7 @@ namespace Drawing.ArrangeEngine
 
     public class SceneNavigator
     {
-        private static readonly int Margin = 20;
+        public static readonly int Margin = 20;
 
         private readonly Planes _topBottom = new Planes(false, true);
         private readonly Planes _bottomUp = new Planes(false, false);
