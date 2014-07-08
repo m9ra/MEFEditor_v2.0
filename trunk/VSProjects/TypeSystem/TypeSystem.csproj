@@ -56,14 +56,19 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDomainServices.cs" />
@@ -74,6 +79,9 @@
     <Compile Include="Core\AssembliesStorage.cs" />
     <Compile Include="Core\MethodsCache.cs" />
     <Compile Include="Core\ReferencedAssemblies.cs" />
+    <Compile Include="Dialogs\VariableName.xaml.cs">
+      <DependentUpon>VariableName.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DirectedGenerator.cs" />
     <Compile Include="DirectGenerator.cs" />
     <Compile Include="Core\AssembliesManager.cs" />
@@ -139,6 +147,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="mefeditor.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Dialogs\VariableName.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

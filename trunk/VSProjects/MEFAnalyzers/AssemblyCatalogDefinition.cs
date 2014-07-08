@@ -23,7 +23,7 @@ namespace MEFAnalyzers
         public AssemblyCatalogDefinition()
         {
             Simulate<AssemblyCatalog>();
-            AddCreationEdit("Add AssemblyCatolog", Dialogs.VariableName.GetName, (v) =>
+            AddCreationEdit("Add AssemblyCatolog", (v) =>
             {
                 return new object[]{
                     _pathInput(v)

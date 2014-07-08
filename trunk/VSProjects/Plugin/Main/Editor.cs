@@ -8,6 +8,8 @@ using System.IO;
 
 using Drawing;
 using Analyzing;
+using Analyzing.Editing;
+using Analyzing.Editing.Transformations;
 using TypeSystem;
 using TypeSystem.Runtime;
 using TypeSystem.Transactions;
@@ -320,10 +322,10 @@ namespace MEFEditor.Plugin.Main
             if (entryAssembly == null)
                 return "";
 
-            var codeBase =  entryAssembly.FullPathMapping;
+            var codeBase = entryAssembly.FullPathMapping;
             if (codeBase == null)
                 return "";
-            
+
             return Path.GetDirectoryName(codeBase);
         }
 
@@ -419,9 +421,60 @@ namespace MEFEditor.Plugin.Main
 
             var definition = pipeline.GetOutput();
 
+            definition.AddEditsMenu("Add Component", createComponentEdits);
             definition.AddCommand(new CommandDefinition("Reset workspace", _guiManager.ResetWorkspace));
 
             return definition;
+        }
+
+        private IEnumerable<EditDefinition> createComponentEdits()
+        {
+            var result = new List<EditDefinition>();
+
+            var call = _currentResult.EntryContext.EntryBlock.Call;
+
+            var assembly = _loader.AppDomain.GetDefiningAssembly(call.Name);
+            if (assembly == null)
+                return result;
+
+            var components = assembly.GetReferencedComponents();
+            foreach (var component in components)
+            {
+                if (component.ImportingConstructor == null)
+                    continue;
+
+                if (!Naming.IsParamLessCtor(component.ImportingConstructor))
+                    continue;
+
+                var edit = new EditDefinition("Create " + component.ComponentType.TypeName, (v) =>
+                {
+                    var transformation = new AddCallTransformation((exV) => addComponent(component, exV));
+
+                    var view = (v as EditView).CopyView();
+                    view.Apply(transformation);
+                    return EditView.Wrap(view);
+                }, (v) => true);
+
+                result.Add(edit);
+            }
+
+            return result;
+
+        }
+
+        private CallEditInfo addComponent(ComponentInfo component, ExecutionView v)
+        {
+            var call = new CallEditInfo(component.ComponentType, Naming.CtorName);
+
+            var name = TypeSystem.Dialogs.VariableName.GetName(component.ComponentType, _currentResult.EntryContext);
+            if (name == null)
+            {
+                v.Abort("User aborted component adding");
+                return null;
+            }
+
+            call.ReturnName = name;
+            return call;
         }
 
         /// <summary>
@@ -498,7 +551,7 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         /// <param name="project">Added project</param>
         private void _vs_ProjectAdded(EnvDTE.Project project)
-        {            
+        {
             _loader.LoadRoot(project);
 
             _projectAddTransaction.Commit();

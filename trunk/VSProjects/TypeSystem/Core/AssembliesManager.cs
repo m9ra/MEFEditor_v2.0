@@ -527,9 +527,9 @@ namespace TypeSystem.Core
         /// </summary>
         /// <param name="method">Method which assembly is searched</param>
         /// <returns>Assembly where method is defined</returns>
-        internal TypeAssembly GetDefiningAssembly(MethodID callerId)
+        internal TypeAssembly GetDefiningAssembly(MethodID method)
         {
-            var definingAssemblyProvider = GetDefiningAssemblyProvider(callerId);
+            var definingAssemblyProvider = GetDefiningAssemblyProvider(method);
             if (definingAssemblyProvider == null)
                 return null;
 
@@ -541,9 +541,9 @@ namespace TypeSystem.Core
         /// </summary>
         /// <param name="method">Method which assembly is searched</param>
         /// <returns>Assembly provider where method is defined</returns>
-        internal AssemblyProvider GetDefiningAssemblyProvider(MethodID callerId)
+        internal AssemblyProvider GetDefiningAssemblyProvider(MethodID method)
         {
-            var definingAssemblyProvider = Cache.GetCachedDefiningAssembly(callerId, (method) =>
+            var definingAssemblyProvider = Cache.GetCachedDefiningAssembly(method, (x) =>
             {
                 foreach (var assemblyProvider in _assemblies.Providers)
                 {

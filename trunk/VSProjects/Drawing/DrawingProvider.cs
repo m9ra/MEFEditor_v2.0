@@ -66,10 +66,31 @@ namespace Drawing
             var menu = createContextMenu(diagramDefinition, context);
 
             Engine.Output.ContextMenu = menu;
+            Engine.Output.ContextMenuOpening += (s, e) => menu_ContextMenuOpening(menu, context);
             Engine.Output.SetContext(context);
             Engine.Display();
 
             return context;
+        }
+
+        void menu_ContextMenuOpening(ContextMenu menu, DiagramContext context)
+        {
+            foreach (MenuItem item in menu.Items)
+            {
+                var provider = item.Tag as EditsMenuProvider;                
+                if (provider == null)
+                    continue;
+
+                item.Items.Clear();
+
+                //create edits
+                var edits = provider();
+                foreach (var edit in edits)
+                {
+                    var editItem = createEditItem(edit, context);
+                    item.Items.Add(editItem);
+                }
+            }
         }
 
         /// <summary>
@@ -80,7 +101,7 @@ namespace Drawing
             //force saving old positions
             Engine.Clear();
             //clear saved positoins
-            Engine.ClearOldPositions();            
+            Engine.ClearOldPositions();
         }
 
         /// <summary>
@@ -126,15 +147,22 @@ namespace Drawing
                 if (!edit.IsActive(diagramDefinition.InitialView))
                     continue;
 
-                var item = new MenuItem();
-                item.Header = edit.Name;
+                var item = createEditItem(edit, context);
+                menu.Items.Add(item);
+            }
 
-                item.Click += (e, s) => edit.Commit(context.Diagram.InitialView);
+            foreach (var menuProvider in diagramDefinition.MenuProviders)
+            {
+                var item = new MenuItem();
+                item.Header = menuProvider.Key;
+                item.Tag = menuProvider.Value;
+
                 menu.Items.Add(item);
             }
 
             //add command entries
-            foreach (var command in diagramDefinition.Commands) {
+            foreach (var command in diagramDefinition.Commands)
+            {
                 var item = new MenuItem();
                 item.Header = command.Name;
 
@@ -143,6 +171,15 @@ namespace Drawing
             }
 
             return menu;
+        }
+
+        private static MenuItem createEditItem(EditDefinition edit, DiagramContext context)
+        {
+            var item = new MenuItem();
+            item.Header = edit.Name;
+
+            item.Click += (e, s) => edit.Commit(context.Diagram.InitialView);
+            return item;
         }
 
         /// <summary>

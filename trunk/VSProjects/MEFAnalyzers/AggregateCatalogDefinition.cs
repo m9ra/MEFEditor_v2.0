@@ -23,7 +23,7 @@ namespace MEFAnalyzers
         public AggregateCatalogDefinition()
         {
             Simulate<AggregateCatalog>();
-            AddCreationEdit("Add AggregateCatalog", Dialogs.VariableName.GetName);
+            AddCreationEdit("Add AggregateCatalog");
         }
 
         public void _method_ctor()

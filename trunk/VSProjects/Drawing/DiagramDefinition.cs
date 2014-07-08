@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 namespace Drawing
 {
 
+    public delegate IEnumerable<EditDefinition> EditsMenuProvider();
+
     public delegate void OnDragStart(DiagramItemDefinition item);
 
     public delegate void OnDragEnd();
@@ -26,6 +28,8 @@ namespace Drawing
 
         private readonly List<CommandDefinition> _commands = new List<CommandDefinition>();
 
+        internal readonly Dictionary<string, EditsMenuProvider> MenuProviders = new Dictionary<string, EditsMenuProvider>();
+
         public IEnumerable<DiagramItemDefinition> ItemDefinitions { get { return _definitions.Values; } }
 
         public IEnumerable<JoinDefinition> JoinDefinitions { get { return _joinDefinitions; } }
@@ -33,7 +37,7 @@ namespace Drawing
         public IEnumerable<EditDefinition> Edits { get { return _edits; } }
 
         public IEnumerable<CommandDefinition> Commands { get { return _commands; } }
-
+        
         public event OnDragEnd OnDragEnd;
 
         public event OnDragStart OnDragStart;
@@ -144,6 +148,11 @@ namespace Drawing
         public void AddEdit(EditDefinition edit)
         {
             _edits.Add(edit);
+        }
+
+        public void AddEditsMenu(string editName, EditsMenuProvider provider)
+        {
+            MenuProviders[editName] = provider;
         }
 
         public void AddCommand(CommandDefinition command)

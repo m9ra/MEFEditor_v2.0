@@ -110,9 +110,19 @@ namespace TypeSystem
         /// </summary>
         /// <param name="method">Method which assembly is searched</param>
         /// <returns>Assembly provider where method is defined</returns>
-        public AssemblyProvider GetDefiningAssemblyProvider(MethodID callerId)
+        public AssemblyProvider GetDefiningAssemblyProvider(MethodID method)
         {
-            return _manager.GetDefiningAssemblyProvider(callerId);
+            return _manager.GetDefiningAssemblyProvider(method);
+        }
+
+        /// <summary>
+        /// Get assembly which defines given method.
+        /// </summary>
+        /// <param name="method">Method which assembly is searched</param>
+        /// <returns>Assembly where method is defined</returns>
+        public TypeAssembly GetDefiningAssembly(MethodID method)
+        {
+            return _manager.GetDefiningAssembly(method);
         }
     }
 }

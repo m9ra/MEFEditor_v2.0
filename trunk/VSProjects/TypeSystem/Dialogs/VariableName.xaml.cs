@@ -21,9 +21,7 @@ using Analyzing.Execution;
 using TypeSystem;
 using TypeSystem.Runtime;
 
-using MEFAnalyzers.Drawings;
-
-namespace MEFAnalyzers.Dialogs
+namespace TypeSystem.Dialogs
 {
     /// <summary>
     /// Interaction logic for ComponentTypeDialog.xaml
@@ -83,12 +81,26 @@ namespace MEFAnalyzers.Dialogs
         /// If no name is selected null is returned.</returns>
         public static string GetName(RuntimeTypeDefinition definition, CallContext creationContext)
         {
-            var name = getDefaultName(definition, creationContext);
+            return GetName(definition.TypeInfo, creationContext);
+        }
 
-            var dialog = new VariableName(name, creationContext);
+
+        /// <summary>
+        /// Provide variable name dialog for creation edit of given definition
+        /// </summary>
+        /// <param name="definition">Definition which creation edit is active</param>
+        /// <param name="creationContext">Context of call, where new variable name will be used. Is used for duplicity checking</param>
+        /// <returns>Name of variable that has been selected by user. Name is validated according
+        /// to basic naming rules, context duplicity is checked.
+        /// If no name is selected null is returned.</returns>
+        public static string GetName(InstanceInfo type, CallContext creationContext)
+        {
+            var defaultName = getDefaultName(type, creationContext);
+            var dialog = new VariableName(defaultName, creationContext);
             dialog.ShowDialog();
             return dialog.ResultName;
         }
+
 
         /// <summary>
         /// Create default name hint for given definition
@@ -96,9 +108,9 @@ namespace MEFAnalyzers.Dialogs
         /// <param name="definition">Definition which name is created</param>
         /// <param name="context">Context used for uniqueness guarancy</param>
         /// <returns>Created name</returns>
-        private static string getDefaultName(RuntimeTypeDefinition definition, CallContext context)
+        private static string getDefaultName(InstanceInfo type, CallContext context)
         {
-            var basename = Naming.SplitGenericPath(definition.TypeInfo.TypeName).Last();
+            var basename = Naming.SplitGenericPath(type.TypeName).Last();
             basename = char.ToLowerInvariant(basename[0]) + basename.Substring(1);
 
             var name = basename;

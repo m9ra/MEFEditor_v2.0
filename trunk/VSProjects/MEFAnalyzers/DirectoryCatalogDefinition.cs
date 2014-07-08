@@ -27,7 +27,7 @@ namespace MEFAnalyzers
         public DirectoryCatalogDefinition()
         {
             Simulate<DirectoryCatalog>();
-            AddCreationEdit("Add DirectoryCatolog", Dialogs.VariableName.GetName, (v) =>
+            AddCreationEdit("Add DirectoryCatolog", (v) =>
             {
                 return new object[]{
                     _pathInput(v)

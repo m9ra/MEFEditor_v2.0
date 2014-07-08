@@ -30,7 +30,7 @@ namespace MEFAnalyzers
         public CompositionContainerDefinition()
         {
             Simulate<CompositionContainer>();
-            AddCreationEdit("Add CompositionContainer", Dialogs.VariableName.GetName);
+            AddCreationEdit("Add CompositionContainer");
         }
 
 

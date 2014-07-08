@@ -24,7 +24,7 @@ namespace MEFAnalyzers
 
         public TypeCatalogDefinition()
         {
-            AddCreationEdit("Add TypeCatalog", Dialogs.VariableName.GetName);
+            AddCreationEdit("Add TypeCatalog");
             Simulate<TypeCatalog>();
         }
 
@@ -83,7 +83,7 @@ namespace MEFAnalyzers
 
             drawer.ForceShow();
         }
-        
+
         private object addComponentTypeProvider(TypeAssembly callerAssembly, ExecutionView v)
         {
             var components = getComponents(callerAssembly);
@@ -103,7 +103,7 @@ namespace MEFAnalyzers
         private IEnumerable<ComponentInfo> getComponents(TypeAssembly assembly)
         {
             var result = new List<ComponentInfo>(assembly.GetReferencedComponents());
-                       
+
 
             //runtime is implicitly referenced from every assembly 
             var runtimeComponents = Services.GetComponents(ContainingAssembly);

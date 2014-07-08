@@ -91,9 +91,6 @@
     <Compile Include="ConsoleDefinition.cs" />
     <Compile Include="ObjectDefinition.cs" />
     <Compile Include="TypeDefinition.cs" />
-    <Compile Include="Dialogs\VariableName.xaml.cs">
-      <DependentUpon>VariableName.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialogs\PathProvider.cs" />
     <Compile Include="Dialogs\ValueProvider.cs" />
     <Compile Include="DirectoryCatalogDefinition.cs" />
@@ -159,10 +156,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Dialogs\VariableName.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Drawings\ComponentDrawing.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

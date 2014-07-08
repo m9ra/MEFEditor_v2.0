@@ -36,7 +36,7 @@ namespace TypeSystem.Runtime
         public Type[] ForcedSubTypes { get; set; }
 
 
-        internal IEnumerable<Edit> StaticEdits { get { return _staticEdits; } }
+        internal IEnumerable<Edit> StaticEdits { get { return _globalEdits; } }
 
         /// <summary>
         /// Available type services
@@ -70,7 +70,7 @@ namespace TypeSystem.Runtime
 
         abstract public TypeDescriptor TypeInfo { get; }
 
-        private List<Edit> _staticEdits = new List<Edit>();
+        private List<Edit> _globalEdits = new List<Edit>();
 
         abstract internal IEnumerable<RuntimeMethodGenerator> GetMethods();
 
@@ -296,6 +296,11 @@ namespace TypeSystem.Runtime
             Context.DynamicCall("DirectAsyncCall", callGenerator, This);
         }
 
+        protected Edit AddCreationEdit(string editName, ArgumentsProvider argumentsProvider = null)
+        {
+            return AddCreationEdit(editName, Dialogs.VariableName.GetName, argumentsProvider);
+        }
+
         protected Edit AddCreationEdit(string editName, NameProvider variableNameProvider, ArgumentsProvider argumentsProvider = null)
         {
             var creationTransformation = new AddCallTransformation((v) =>
@@ -327,7 +332,7 @@ namespace TypeSystem.Runtime
             });
 
             var edit = new Edit(null, null, null, editName, creationTransformation);
-            _staticEdits.Add(edit);
+            _globalEdits.Add(edit);
 
             return edit;
         }
