@@ -365,5 +365,10 @@ namespace TypeSystem.Runtime
             AppendArg(index, UserInteraction.AcceptEditName, valueProvider);
         }
 
+        protected void AddActionEdit(string editName, Action action)
+        {
+            Edits.AddEdit(This, editName, new ActionTransformation(action));
+        }
+
     }
 }

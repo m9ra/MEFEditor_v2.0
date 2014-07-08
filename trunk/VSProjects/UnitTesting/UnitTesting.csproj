@@ -91,6 +91,7 @@
     <Compile Include="MEFAnalyzers_Testing.cs" />
     <Compile Include="Compiler_Testing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RuntimeTypeDefinitions\SelfStringExport.cs" />
     <Compile Include="TypeDefinitions_Testing.cs" />
     <Compile Include="RuntimeTypeDefinitions\StringExport2.cs" />
     <Compile Include="RuntimeTypeDefinitions\SimpleStringExport.cs" />

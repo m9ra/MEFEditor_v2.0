@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO;
 using System.ComponentModel.Composition.Hosting;
 
 using Analyzing;
@@ -91,6 +92,9 @@ namespace MEFAnalyzers
         private void setCtorEdits()
         {
             RewriteArg(1, "Change path", _pathInput);
+            AddActionEdit("Open folder", () =>
+                DirectoryCatalogDefinition.OpenPathInExplorer(System.IO.Path.GetDirectoryName(FullPath.Value)
+                ));
         }
 
         private object _pathInput(ExecutionView view)

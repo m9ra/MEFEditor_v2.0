@@ -70,6 +70,7 @@
     <Compile Include="CallBuilder.cs" />
     <Compile Include="Editing\ExecutionViewData.cs" />
     <Compile Include="Editing\ExecutionViewDataHandler.cs" />
+    <Compile Include="Editing\Transformations\ActionTransformation.cs" />
     <Compile Include="Editing\Transformations\AddCallTransformation.cs" />
     <Compile Include="Editing\CallEditInfo.cs" />
     <Compile Include="Editing\CallTransformProvider.cs" />

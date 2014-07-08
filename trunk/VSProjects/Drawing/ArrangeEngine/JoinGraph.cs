@@ -50,6 +50,16 @@ namespace Drawing.ArrangeEngine
         private static readonly QuadrantAngle NoAngle = new QuadrantAngle(false, false, false, false);
 
         /// <summary>
+        /// Quadrants angle for top edge
+        /// </summary>
+        private static readonly QuadrantAngle TopEdge = new QuadrantAngle(true, true, false, false);
+
+        /// <summary>
+        /// Quadrants angle for bottom edge
+        /// </summary>
+        private static readonly QuadrantAngle BottomEdge = new QuadrantAngle(false, false, true, true);
+
+        /// <summary>
         /// Conus angle for top connectors
         /// </summary>
         private static readonly ConusAngle TopConus = new ConusAngle(true, true);
@@ -241,7 +251,7 @@ namespace Drawing.ArrangeEngine
 
             return toSimplify.Select((p) => p.Position).ToArray();
         }
-        
+
         #endregion
 
         #region Graph exploring
@@ -393,20 +403,20 @@ namespace Drawing.ArrangeEngine
         private void generateConnectorPoints(IEnumerable<ConnectorDrawing> connectors, ConnectorAlign connectorAlign, DiagramItem item, List<GraphPoint> points)
         {
             //detect conus for connector direction
-            ConusAngle conus;
+            ViewAngle view;
             switch (connectorAlign)
             {
                 case ConnectorAlign.Bottom:
-                    conus = BottomConus;
+                    view = BottomEdge;
                     break;
                 case ConnectorAlign.Right:
-                    conus = RightConus;
+                    view = RightConus;
                     break;
                 case ConnectorAlign.Left:
-                    conus = LeftConus;
+                    view = LeftConus;
                     break;
                 case ConnectorAlign.Top:
-                    conus = TopConus;
+                    view = TopEdge;
                     break;
                 default:
                     throw new NotSupportedException("Connector align " + connectorAlign);
@@ -420,7 +430,7 @@ namespace Drawing.ArrangeEngine
             {
                 var connector = connectorsArray[i];
 
-                var point = createPoint(connector, conus);
+                var point = createPoint(connector, view);
                 _connectorPoints.Add(connector, point);
 
                 var inputs = getInputSlots(i, connectorsCount, connector, item, points);

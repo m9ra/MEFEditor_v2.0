@@ -50,43 +50,43 @@ namespace Analyzing.Editing
         public void AppendArgument(Instance editProvider, int argIndex, string editName, ValueProvider valueProvider)
         {
             var transformation = TransformProvider.AppendArgument(argIndex, valueProvider);
-            addEdit(editProvider, editName, transformation);
+            AddEdit(editProvider, editName, transformation);
         }
 
         public Edit AddCall(Instance editProvider, string editName, CallProvider callProvider)
         {
             var transformation = new AddCallTransformation(callProvider);
-            return addEdit(editProvider, editName, transformation);
+            return AddEdit(editProvider, editName, transformation);
         }
 
         public void RemoveArgument(Instance editProvider, int argumentIndex, string editName)
         {
             var transformation = TransformProvider.RemoveArgument(argumentIndex, true).Remove();
-            addEdit(editProvider, editName, transformation);
+            AddEdit(editProvider, editName, transformation);
         }
 
         public void AttachRemoveArgument(Instance attachingInstance, Instance editProvider, int argumentIndex, string editName)
         {
             var transformation = TransformProvider.RemoveArgument(argumentIndex, true).Remove();
-            attachEdit(attachingInstance, editProvider, editName, transformation);
+            AttachEdit(attachingInstance, editProvider, editName, transformation);
         }
 
         public void RemoveCall(Instance editProvider, string editName)
         {
             var transform = TransformProvider.Remove().Remove();
-            addEdit(editProvider, editName, transform);
+            AddEdit(editProvider, editName, transform);
         }
 
         public void AttachRemoveCall(Instance attachingInstance, Instance editProvider, string editName)
         {
             var transform = TransformProvider.Remove().Remove();
-            attachEdit(attachingInstance, editProvider, editName, transform);
+            AttachEdit(attachingInstance, editProvider, editName, transform);
         }
 
         public void ChangeArgument(Instance editProvider, int argumentIndex, string editName, ValueProvider valueProvider)
         {
             var transformation = TransformProvider.RewriteArgument(argumentIndex, valueProvider);
-            addEdit(editProvider, editName, transformation);
+            AddEdit(editProvider, editName, transformation);
         }
 
         public void SetOptional(int index)
@@ -102,7 +102,7 @@ namespace Analyzing.Editing
             edit.Provider.RemoveEdit(edit);
         }
 
-        private Edit addEdit(Instance editProvider, string editName, Transformation transformation)
+        public Edit AddEdit(Instance editProvider, string editName, Transformation transformation)
         {
             if (transformation == null)
                 return null;
@@ -112,13 +112,14 @@ namespace Analyzing.Editing
             return edit;
         }
 
-        private void attachEdit(Instance attachingInstance, Instance editProvider, string editName, Transformation transformation)
+        public Edit AttachEdit(Instance attachingInstance, Instance editProvider, string editName, Transformation transformation)
         {
             if (transformation == null)
-                return;
+                return null;
 
             var edit = new Edit(attachingInstance, editProvider, this, editName, transformation);
             editProvider.AttachEdit(attachingInstance, edit);
+            return edit;
         }
 
 

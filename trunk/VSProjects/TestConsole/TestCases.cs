@@ -467,7 +467,35 @@ namespace TestConsole
          ;
         }
 
-        static internal TestingAssembly DrawingTester_SinlgeJoin()
+        static internal TestingAssembly DrawingTester_SingleJoinSelfExport()
+        {
+            return AssemblyUtils.Run(@"        
+                var partImport=new StringImport();       
+                var partExport=new SelfStringExport(""Export1"");
+                              
+                var test=new CompositionTester();   
+                test.Add(partImport);
+                test.Add(partExport);
+                var empty=new SimpleType(""nothing"");
+                test.Add(empty);
+                var empty2=new SimpleType(""nothing"");
+                test.Add(empty2);
+                var empty3=new SimpleType(""nothing"");
+                test.Add(empty3);
+                test.Compose();
+                
+            ")
+
+           .AddToRuntime<CompositionTesterDefinition>()
+           .AddToRuntime<StringImport>()
+           .AddToRuntime<SelfStringExport>()
+           .AddToRuntime<SimpleType>()
+           .AddDirectToRuntime<List<string>>()
+           .AddDirectToRuntime<ICollection<string>>()
+           ;
+        }
+
+        static internal TestingAssembly DrawingTester_SingleJoin()
         {
             return AssemblyUtils.Run(@"        
                 var partImport=new StringImport();       

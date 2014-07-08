@@ -101,8 +101,8 @@ namespace MEFAnalyzers
         /// <returns>Path2 relative to path1.</returns>
         public static string RelativePath(string path1, string path2)
         {
-            if (path1 == null || path1=="") return path2;
-            if (path2 == null || path2=="") return path1;
+            if (path1 == null || path1 == "") return path2;
+            if (path2 == null || path2 == "") return path1;
 
             // Folders must end in a slash
             if (!path1.EndsWith(Path.DirectorySeparatorChar.ToString()))
@@ -124,6 +124,26 @@ namespace MEFAnalyzers
             var fullPath = Path.GetFullPath(combined);
 
             return fullPath;
+        }
+
+
+        /// <summary>
+        /// Open folder in windows explorer.
+        /// </summary>
+        /// <param name="path">Path to be opened.</param>
+        public static void OpenPathInExplorer(string path)
+        {
+            try
+            {
+                if (!Directory.Exists(path))
+                    return;
+
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            }
+            catch
+            {
+                //opening wasnt successfull
+            }
         }
 
         /// <summary>
@@ -177,6 +197,7 @@ namespace MEFAnalyzers
 
         private void setCtorEdits()
         {
+            AddActionEdit("Open folder", () => OpenPathInExplorer(FullPath.Value)); 
             RewriteArg(1, "Change path", _pathInput);
             AppendArg(2, "Add search pattern", _patternInput);
             RewriteArg(2, "Change search pattern", _patternInput);
