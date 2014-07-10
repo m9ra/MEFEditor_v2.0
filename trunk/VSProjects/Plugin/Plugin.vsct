@@ -65,7 +65,7 @@
         <Icon guid="guidImages" id="bmpPic2" />
         <Strings>
           <CommandName>IDMEFEditorV2</CommandName>
-          <ButtonText>MEF Editor V2</ButtonText>
+          <ButtonText>Enhanced MEF Editor</ButtonText>
         </Strings>
       </Button>
 
@@ -102,7 +102,7 @@
     
     
     
-    <GuidSymbol name="guidImages" value="{6856d033-35dd-49ce-9b99-d9744953e79d}">
+    <GuidSymbol name="guidImages" value="{6856d033-35dd-49ce-9b99-d9744953e79e}">
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />
       <IDSymbol name="bmpPicSearch" value="3" />

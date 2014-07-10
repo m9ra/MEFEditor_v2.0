@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Vsix Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
   <Identifier Id="341ff64d-d713-4c3d-a92d-85ac434393fd">
-    <Name>Plugin</Name>
-    <Author>MEFEditor</Author>
-    <Version>1.0</Version>
-    <Description xml:space="preserve">Information about my package</Description>
+    <Name>Enhanced MEF Component Architecture Editor</Name>
+    <Author>Bc. Vodolán Miroslav</Author>
+    <Version>2.0</Version>
+    <Description xml:space="preserve">Enhanced MEF Component Architecture Editor</Description>
     <Locale>1033</Locale>
     <InstalledByMsi>false</InstalledByMsi>
     <SupportedProducts>
