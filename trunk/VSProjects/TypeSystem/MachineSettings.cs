@@ -37,7 +37,8 @@ namespace TypeSystem
         public string CodeBaseFullPath
         {
             get { return _codeBase; }
-            set{
+            set
+            {
                 if (value == null)
                     value = "";
 
@@ -45,10 +46,13 @@ namespace TypeSystem
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override int ExecutionLimit { get { return 10000; } }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
+        public override int InstanceLimit { get { return 1000; } }
+
+        /// <inheritdoc />
         public override bool CatchExceptions { get { return _catchExceptions; } }
 
         public MachineSettings(bool catchExceptions)
@@ -56,7 +60,7 @@ namespace TypeSystem
             _catchExceptions = catchExceptions;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override InstanceInfo GetNativeInfo(Type literalType)
         {
             if (literalType.IsAssignableFrom(typeof(Array<InstanceWrap>)))
@@ -67,7 +71,7 @@ namespace TypeSystem
             return TypeDescriptor.Create(literalType);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override bool IsTrue(Instance condition)
         {
             var dirVal = condition.DirectValue;
@@ -83,7 +87,7 @@ namespace TypeSystem
             return false;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo)
         {
             if (IsDirect(sharedInstanceInfo))
@@ -94,7 +98,7 @@ namespace TypeSystem
             return Naming.Method(sharedInstanceInfo, Naming.ClassCtorName, false, new ParameterTypeInfo[] { });
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override bool IsDirect(InstanceInfo typeInfo)
         {
             return Runtime.IsDirectType(typeInfo);

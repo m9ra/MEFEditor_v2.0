@@ -207,7 +207,7 @@ namespace Analyzing
                 //limit execution
                 --executionLimit;
                 if (executionLimit < 0)
-                    throw new NotImplementedException("Execution limit has been reached");
+                    throw new NotSupportedException("Execution limit has been reached");
 
                 //process instruction
                 var instruction = context.NextInstruction();
@@ -227,6 +227,9 @@ namespace Analyzing
         /// <param name="registeredInstance">Instance that will be created</param>
         private void registerInstance(Instance registeredInstance)
         {
+            if (_createdInstances.Count > Settings.InstanceLimit)
+                throw new NotSupportedException("Maximum number of created instances has been reached");
+
             var defaultID = CreateID('$' + registeredInstance.Info.DefaultIdHint);
             registeredInstance.SetDefaultID(defaultID);
             _createdInstances.Add(registeredInstance.ID, registeredInstance);

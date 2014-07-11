@@ -29,6 +29,11 @@ namespace Analyzing
         public abstract int ExecutionLimit { get; }
 
         /// <summary>
+        /// Limit of instance count that can be created
+        /// </summary>
+        public abstract int InstanceLimit { get; }
+
+        /// <summary>
         /// Determine that machine will catch all exceptions from runtime 
         /// and provide them as part of <see cref="AnalyzingResult"/> or not
         /// </summary>
