@@ -34,10 +34,10 @@ namespace Main
             var typeCatalog = new TypeCatalog(typeof(SimpleLayout));
             var aggregateCatalog = new AggregateCatalog();
             var directoryCatalog = new DirectoryCatalog("Extensions");
-            var compositionContainer = new CompositionContainer();
             aggregateCatalog.Catalogs.Add(directoryCatalog);
             aggregateCatalog.Catalogs.Add(typeCatalog);
-            compositionContainer.ComposeParts(this, wrongLayout);
+            var compositionContainer = new CompositionContainer(aggregateCatalog);
+            compositionContainer.ComposeParts(this);
         }
 
 
