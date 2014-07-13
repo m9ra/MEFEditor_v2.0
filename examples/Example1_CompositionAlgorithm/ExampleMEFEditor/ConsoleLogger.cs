@@ -12,7 +12,7 @@ namespace Main
     [ExportMetadata("Output", "Console")]
     [Export(typeof(ILogger))]
     class ConsoleLogger:ILogger 
-    { 
+    {  
         public void Log(string message)
         { 
             Console.WriteLine(message);

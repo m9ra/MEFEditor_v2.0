@@ -345,6 +345,10 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var name = namePrefix + elementName;
 
             var method = buildGetter ? element.Getter : element.Setter;
+            if (method == null)
+                //TODO this is workaround
+                method = buildGetter ? element.Setter : element.Getter;
+
             var property2 = element as CodeProperty2;
 
             var isShared = property2 != null && property2.IsShared;

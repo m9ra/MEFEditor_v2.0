@@ -65,7 +65,7 @@
         <Icon guid="guidImages" id="bmpPic2" />
         <Strings>
           <CommandName>IDMEFEditorV2</CommandName>
-          <ButtonText>Enhanced MEF Editor</ButtonText>
+          <ButtonText>Enhanced MEF Component Architecture Editor</ButtonText>
         </Strings>
       </Button>
 

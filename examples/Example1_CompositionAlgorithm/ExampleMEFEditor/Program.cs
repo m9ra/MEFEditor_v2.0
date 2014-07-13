@@ -18,27 +18,27 @@ namespace Main
 
 
 
-    class Program
-    {
-        [Import]
-        ILayout compositionResult=null;
+class Program
+{
+    [Import]
+    ILayout compositionResult=null;
 
-        [ImportMany]
-        ILogger[] loggers=null;
+    [ImportMany]
+    ILogger[] loggers=null;
               
-        [CompositionPoint]
-        void Compose()
-        {
-            var wrongLayout = new WrongLayout();
-            var consoleLogger = new ConsoleLogger();
-            var typeCatalog = new TypeCatalog(typeof(SimpleLayout));
-            var aggregateCatalog = new AggregateCatalog();
-            var directoryCatalog = new DirectoryCatalog("Extensions");
-            aggregateCatalog.Catalogs.Add(directoryCatalog);
-            aggregateCatalog.Catalogs.Add(typeCatalog);
-            var compositionContainer = new CompositionContainer(aggregateCatalog);
-            compositionContainer.ComposeParts(this);
-        }
+    [CompositionPoint]
+    void Compose()
+    {
+        var directoryCatalog = new DirectoryCatalog("Extensions");
+        var wrongLayout = new WrongLayout();
+        var consoleLogger = new ConsoleLogger();
+        var aggregateCatalog = new AggregateCatalog();
+        var typeCatalog = new TypeCatalog(typeof(SimpleLayout));
+        aggregateCatalog.Catalogs.Add(typeCatalog);
+        aggregateCatalog.Catalogs.Add(directoryCatalog);
+        var compositionContainer = new CompositionContainer();
+        compositionContainer.ComposeParts(this, wrongLayout);
+    }
 
 
 
