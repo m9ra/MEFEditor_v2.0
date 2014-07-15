@@ -70,6 +70,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleAssemblyProvider.cs" />
     <Compile Include="StringDefinition.cs" />
+    <Compile Include="UserExtensionsExport.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

@@ -107,6 +107,13 @@ namespace TypeSystem
         protected void ExportDefinition<TypeDefiniton>()
             where TypeDefiniton : DataTypeDefinition
         {
+            ExportDefinitionWithDrawing<TypeDefiniton>(null);
+        }
+
+
+        protected void ExportDefinitionWithDrawing<TypeDefiniton>(ExportedDrawingFactory drawing)
+            where TypeDefiniton : DataTypeDefinition
+        {
             DataTypeDefinition definition;
             try
             {
@@ -119,6 +126,8 @@ namespace TypeSystem
             }
 
             ExportDefinition(definition);
+            if (drawing != null)
+                ExportDrawing(definition.FullName, drawing);
         }
 
         protected void ExportDefinition(DirectTypeDefinition definition)

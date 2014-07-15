@@ -31,10 +31,14 @@ namespace UserExtensions
         {
             //nastavíme jméno reprezentovaného typu
             FullName = "MEFEditor.Diagnostic";
+
             //a také nastavíme typ od kterého dědíme
             //poznamenejme, že object je defaultní předek
             //zde je však uveden pro ukázku použití API
             ForcedSubTypes = new[] { typeof(object) };
+
+            //nakonec přidáme editaci na vytvoření typu
+            AddCreationEdit("Add Diagnostic");
         }
 
         public void _method_ctor()
