@@ -39,12 +39,12 @@ namespace Plugin.GUI
         /// <summary>
         /// Factory used for diagram drawings
         /// </summary>
-        private readonly AbstractDiagramFactory _diagramFactory;
+        private AbstractDiagramFactory _diagramFactory;
 
         /// <summary>
         /// Appdomain where analysis is processed
         /// </summary>
-        private readonly AppDomainServices _appDomain;
+        private AppDomainServices _appDomain;
 
         /// <summary>
         /// WPF items according to defining composition points
@@ -80,7 +80,7 @@ namespace Plugin.GUI
         /// <summary>
         /// Access point to drawing services and drawing engine
         /// </summary>
-        private readonly DrawingProvider _drawingProvider;
+        private DrawingProvider _drawingProvider;
 
         /// <summary>
         /// Available services exposed by visual studio
@@ -144,16 +144,27 @@ namespace Plugin.GUI
         /// <summary>
         /// Initialize instance of <see cref="GUIManager"/>
         /// </summary>
-        /// <param name="appDomain">Appdomain where analysis is processed</param>
         /// <param name="gui">Gui managed by current manager</param>
-        /// <param name="diagramFactory">Factory used for diagram drawings</param>
         /// <param name="vs">Available services exposed by visual studio</param>
-        public GUIManager(AppDomainServices appDomain, EditorGUI gui, AbstractDiagramFactory diagramFactory, VisualStudioServices vs = null)
+        public GUIManager(EditorGUI gui, VisualStudioServices vs = null)
+        {
+            _gui = gui;
+            _vs = vs;
+
+            //initialize logging as soon as possible
+            if (_vs != null)
+                _vs.Log.OnLog += logHandler;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="appDomain">Appdomain where analysis is processed</param>
+        /// <param name="diagramFactory">Factory used for diagram drawings</param>
+        public void Initialize(AppDomainServices appDomain, AbstractDiagramFactory diagramFactory)
         {
             _appDomain = appDomain;
-            _gui = gui;
             _diagramFactory = diagramFactory;
-            _vs = vs;
 
             _drawingProvider = new DrawingProvider(_gui.Workspace, _diagramFactory);
 
@@ -204,11 +215,6 @@ namespace Plugin.GUI
         /// </summary>
         private void hookEvents()
         {
-            if (_vs != null)
-            {
-                _vs.Log.OnLog += logHandler;
-            }
-
             _appDomain.ComponentAdded += onComponentAdded;
             _appDomain.ComponentRemoved += onComponentRemoved;
 

@@ -89,6 +89,7 @@
     <Compile Include="DrawingServices\InstanceDrawer.cs" />
     <Compile Include="EditView.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="ExtensionExport.cs" />
     <Compile Include="Runtime\Attributes.cs" />
     <Compile Include="Runtime\ObjectDefinition.cs" />
     <Compile Include="Transactions\Transaction.cs" />

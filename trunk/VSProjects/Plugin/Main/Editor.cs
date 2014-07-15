@@ -57,6 +57,11 @@ namespace MEFEditor.Plugin.Main
         private Machine _machine;
 
         /// <summary>
+        /// Settings used for machine
+        /// </summary>
+        private MachineSettings _settings;
+
+        /// <summary>
         /// Content drawers that were loaded through extensions
         /// </summary>
         private ContentDrawer[] _contentDrawers;
@@ -126,95 +131,20 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         internal void Initialize()
         {
-            var settings = new MachineSettings(true);
-            _machine = new Machine(settings);
-
-            _loader = new AssemblyLoader(settings,
-                new AssemblyProviders.CILAssembly.CILAssemblyFactory(),
-                new AssemblyProviders.ProjectAssembly.ProjectAssemblyFactory(_vs)
-                );
+            _settings = new MachineSettings(true);
+            _machine = new Machine(_settings);
+            _guiManager = new GUIManager(GUI, _vs);
 
             loadUserExtensions();
-            settings.Runtime.BuildAssembly();
+            _settings.Runtime.BuildAssembly();
 
             //TODO draw according to extensions
             var factory = new DiagramFactory(_contentDrawers);
-            _guiManager = new GUIManager(_loader.AppDomain, GUI, factory, _vs);
+            _guiManager.Initialize(_loader.AppDomain, factory);
 
             hookHandlers();
             _vs.Log.Message("EDITOR INITIALIZED");
         }
-
-        /// <summary>
-        /// Load user extensions from extension assemblies
-        /// </summary>
-        private void loadUserExtensions()
-        {
-            //TODO load extensions
-
-            _contentDrawers = new[]{
-                new ContentDrawer(null, (item) => new ComponentDrawing(item)),
-                new ContentDrawer("CompositionTester", (item) => new CompositionTesterDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.CompositionContainer", (item) => new CompositionTesterDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.DirectoryCatalog", (item) => new DirectoryCatalogDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.AggregateCatalog", (item) => new AggregateCatalogDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.TypeCatalog", (item) => new TypeCatalogDrawing(item)),
-                new ContentDrawer("System.ComponentModel.Composition.Hosting.AssemblyCatalog", (item) => new AssemblyCatalogDrawing(item))
-            };
-
-            InitializeRuntime(new[]{
-                typeof(string),
-                typeof(bool),   
-                typeof(VMStack),
-                typeof(LiteralType)
-            }, new[]{
-                typeof(int),
-                typeof(double)
-            });
-
-
-            Runtime.AddDirectDefinition(new DirectTypeDefinition<ICollection<InstanceWrap>>());
-            Runtime.AddDefinition(new ConsoleDefinition());
-            Runtime.AddDefinition(new ObjectDefinition());
-            Runtime.AddDefinition(new TypeDefinition());
-            Runtime.AddDefinition(new AttributedModelServicesDefinition());
-            Runtime.AddDefinition(new CompositionContainerDefinition());
-            Runtime.AddDefinition(new AggregateCatalogDefinition());
-            Runtime.AddDefinition(new AssemblyCatalogDefinition());
-            Runtime.AddDefinition(new TypeCatalogDefinition());
-            Runtime.AddDefinition(new DirectoryCatalogDefinition());
-            Runtime.AddDefinition(new ComposablePartCatalogCollectionDefinition());
-        }
-
-        #region TODO: Methods that are used only for RESEARCH purposes
-
-        internal void InitializeRuntime(Type[] directTypes, Type[] mathTypes)
-        {
-            foreach (var directType in directTypes)
-            {
-                AddDirectType(directType);
-            }
-
-            foreach (var mathType in mathTypes)
-            {
-                AddDirectMathType(mathType);
-            }
-        }
-
-        public void AddDirectMathType(Type mathType)
-        {
-            var type = typeof(MathDirectType<>).MakeGenericType(mathType);
-
-            var typeDefinition = Activator.CreateInstance(type) as DirectTypeDefinition;
-            Runtime.AddDirectDefinition(typeDefinition);
-        }
-
-        public void AddDirectType(Type directType)
-        {
-            var typeDefinition = new DirectTypeDefinition(directType);
-            Runtime.AddDirectDefinition(typeDefinition);
-        }
-        #endregion
 
         /// <summary>
         /// Hook all event handlers that are used for editor interaction
@@ -246,8 +176,91 @@ namespace MEFEditor.Plugin.Main
 
             _loader.AppDomain.MethodInvalidated += methodInvalidated;
         }
+
         #endregion
 
+        #region User extensions loading
+
+        /// <summary>
+        /// Load user extensions from extension assemblies
+        /// </summary>
+        private void loadUserExtensions()
+        {
+            var exports = collectExports();
+
+            //process all exports
+            var exportedProviders = new List<ExportedAssemblyProviderFactory>();
+            var drawingProviders = new List<ContentDrawer>();
+            foreach (var export in exports)
+            {
+                registerExport(export);
+
+                //collect exported providers
+                exportedProviders.AddRange(export.ExportedProviders);
+                drawingProviders.AddRange(createContentDrawers(export));
+            }
+
+            //initialize editor
+            var assembliesFactory = new ExportedProvidersFactory(exportedProviders);
+            _loader = new AssemblyLoader(_settings, assembliesFactory);
+            _contentDrawers = drawingProviders.ToArray();
+        }
+
+        private void registerExport(ExtensionExport export)
+        {
+            hookLogging(export);
+
+            _vs.EditorLoadingExceptions(() => export.LoadExports(_settings.Runtime), "Registering exports");
+        }
+
+        private IEnumerable<ContentDrawer> createContentDrawers(ExtensionExport export)
+        {
+            foreach (var exportedDrawer in export.ExportedDrawers)
+            {
+                yield return new ContentDrawer(exportedDrawer.Key, (i) => exportedDrawer.Value(i));
+            }
+        }
+
+        private void hookLogging(ExtensionExport export)
+        {
+            export.OnLog += (category, message) =>
+            {
+                LogLevels level;
+                switch (category)
+                {
+                    case "ERROR":
+                        level = LogLevels.Error;
+                        break;
+                    case "MESSAGE":
+                        level = LogLevels.Message;
+                        break;
+                    case "":
+                        level = LogLevels.Warning;
+                        break;
+                    default:
+                        level = LogLevels.Notification;
+                        break;
+                }
+
+                var entry = new LogEntry(level, message, null, null);
+                _vs.Log.Entry(entry);
+            };
+        }
+
+        private IEnumerable<ExtensionExport> collectExports()
+        {
+            //TODO load extensions from Extensions directory
+            //TODO remove reference to RecommendedExtensions
+            var providers = new RecommendedExtensions.AssemblyProviders.AssemblyProvidersExport();
+            providers.Services = _vs;
+
+            yield return providers;
+            yield return new RecommendedExtensions.TypeDefinitions.TypeDefinitionsExport();
+            yield return new RecommendedExtensions.DrawingDefinitions.DrawingDefinitionsExport();
+        }
+
+        #endregion
+        
         #region Drawing providing routines
 
         /// <summary>

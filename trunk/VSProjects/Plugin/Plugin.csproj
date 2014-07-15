@@ -148,6 +148,7 @@
     <Compile Include="GUI\GUIManager.cs" />
     <Compile Include="GUI\SettingsSection.cs" />
     <Compile Include="Main\Editor.cs" />
+    <Compile Include="Main\ExportedProvidersFactory.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
     </Compile>
@@ -252,6 +253,18 @@
     <ProjectReference Include="..\MEFAnalyzers\MEFAnalyzers.csproj">
       <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
       <Name>MEFAnalyzers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RecommendedExtensions.AssemblyProviders\RecommendedExtensions.AssemblyProviders.csproj">
+      <Project>{7c687e56-104d-49a5-b781-b23b5173e2d1}</Project>
+      <Name>RecommendedExtensions.AssemblyProviders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RecommendedExtensions.DrawingDefinitions\RecommendedExtensions.DrawingDefinitions.csproj">
+      <Project>{6cdd91e7-0f52-4ed6-a77c-9d0cd7181058}</Project>
+      <Name>RecommendedExtensions.DrawingDefinitions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RecommendedExtensions.TypeDefinitions\RecommendedExtensions.TypeDefinitions.csproj">
+      <Project>{706d14cc-df7e-4f6f-997a-e028f1c0c5e6}</Project>
+      <Name>RecommendedExtensions.TypeDefinitions</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

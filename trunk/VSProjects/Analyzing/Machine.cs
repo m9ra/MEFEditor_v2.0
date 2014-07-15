@@ -33,7 +33,7 @@ namespace Analyzing
         /// <summary>
         /// Settings available for virtual machine
         /// </summary>
-        internal readonly MachineSettingsBase Settings;
+        public readonly MachineSettingsBase Settings;
 
         /// <summary>
         /// Initialize machine with specified settings

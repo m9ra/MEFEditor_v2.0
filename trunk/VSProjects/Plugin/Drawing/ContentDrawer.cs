@@ -22,7 +22,7 @@ namespace MEFEditor.Plugin.Drawing
         /// <summary>
         /// Determine that this drawer is used when no matching drawer for drawed type is found
         /// </summary>
-        public bool IsDefaultDrawer { get { return DrawedType == null; } }
+        public bool IsDefaultDrawer { get { return DrawedType == null || DrawedType == ""; } }
 
         public readonly ContentProvider Provider;
 
