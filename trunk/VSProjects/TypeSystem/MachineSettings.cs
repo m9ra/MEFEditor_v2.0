@@ -11,6 +11,7 @@ using TypeSystem.Runtime;
 
 namespace TypeSystem
 {
+
     /// <summary>
     /// Machine settings used for analysis, configuring machine in the way that TypeSystem expect.
     /// </summary>

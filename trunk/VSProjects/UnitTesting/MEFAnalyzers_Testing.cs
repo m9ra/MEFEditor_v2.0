@@ -15,6 +15,9 @@ using UnitTesting.RuntimeTypeDefinitions;
 
 namespace UnitTesting
 {
+    /// <summary>
+    /// Testing of TypeDefinitions for MEF analysis from Recommended Extensions.
+    /// </summary>
     [TestClass]
     public class MEFAnalyzers_Testing
     {

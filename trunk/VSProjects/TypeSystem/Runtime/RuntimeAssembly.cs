@@ -73,9 +73,11 @@ namespace TypeSystem.Runtime
             _methodGeneratorProviders = new Dictionary<string, GeneratorProvider>()
             {
                 {"_method_",_createMethod},
-                {"_static_method_",_createStaticMethod},
+                {"_static_method_",_createStaticMethod},                
                 {"_get_",_createProperty},
+                {"_static_get",_createStaticProperty},
                 {"_set_",_createProperty},
+                {"_static_set",_createStaticProperty},
             };
 
             var chain = new InheritanceChain(TypeDescriptor.Create<object>(), new InheritanceChain[0]);
@@ -403,6 +405,14 @@ namespace TypeSystem.Runtime
         private RuntimeMethodGenerator _createProperty(RuntimeTypeDefinition definition, MethodInfo method, string name)
         {
             var generator = buildMethod(definition, method, method.Name.Substring(1));
+
+            return generator;
+        }
+
+        private RuntimeMethodGenerator _createStaticProperty(RuntimeTypeDefinition definition, MethodInfo method, string name)
+        {
+            var prefix = "_static_";
+            var generator = buildMethod(definition, method, method.Name.Substring(prefix.Length), true);
 
             return generator;
         }

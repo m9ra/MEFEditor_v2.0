@@ -73,6 +73,11 @@ namespace TypeSystem
         public event Action TransactionStarted;
 
         public event Action TransactionEnded;
+        
+        /// <summary>
+        /// Event fired whenever new message is logged
+        /// </summary>
+        public event OnLogEvent OnLog;
 
         internal AppDomainServices(AssembliesManager manager)
         {
@@ -124,5 +129,43 @@ namespace TypeSystem
         {
             return _manager.GetDefiningAssembly(method);
         }
+
+        #region Logging routines
+
+        /// <summary>
+        /// Method used for logging during extension registering
+        /// </summary>
+        /// <param name="category">Category that is registered</param>
+        /// <param name="format">Format of logged entry</param>
+        /// <param name="args">Format arguments</param>
+        public virtual void Log(string category, string format, params object[] args)
+        {
+            var message = string.Format(format, args);
+            
+            if (OnLog != null)
+                OnLog(category, message);
+        }
+
+        /// <summary>
+        /// Method used for message logging during extension registering
+        /// </summary>
+        /// <param name="format">Format of logged message</param>
+        /// <param name="args">Format arguments</param>
+        public void Warning(string format, params object[] args)
+        {
+            Log("WARNING", format, args);
+        }
+
+        /// <summary>
+        /// Method used for error logging during extension registering
+        /// </summary>
+        /// <param name="format">Format of logged error</param>
+        /// <param name="args">Format arguments</param>
+        public void Error(string format, params object[] args)
+        {
+            Log("ERROR", format, args);
+        }
+
+        #endregion
     }
 }

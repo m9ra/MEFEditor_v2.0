@@ -66,7 +66,7 @@ namespace Analyzing
         /// Determine that instnace is dirty. It means that its state may not be correctly analyzed.
         /// This is usually caused by unknown operation processing
         /// </summary>
-        public bool IsDirty { get; private set; }
+        public bool IsDirty { get; internal set; }
 
         /// <summary>
         /// Available edit actions for current instance

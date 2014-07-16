@@ -185,6 +185,8 @@ namespace TypeSystem
             _exportedProviders.Add(factory);
         }
 
+        #region Logging routines
+
         /// <summary>
         /// Method used for logging during extension registering
         /// </summary>
@@ -199,8 +201,6 @@ namespace TypeSystem
             if (OnLog != null)
                 OnLog(category, message);
         }
-
-        #region Logging routines
 
         /// <summary>
         /// Method used for message logging during extension registering

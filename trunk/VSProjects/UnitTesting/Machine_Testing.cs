@@ -9,6 +9,9 @@ using TypeSystem;
 
 namespace UnitTesting
 {
+    /// <summary>
+    /// Testing of IAL interpretaion by Machine
+    /// </summary>
     [TestClass]
     public class Machine_Testing
     {

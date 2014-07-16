@@ -15,6 +15,9 @@ using UnitTesting.RuntimeTypeDefinitions;
 
 namespace UnitTesting
 {
+    /// <summary>
+    /// Testing of <see cref="RuntimeTypeDefinition"/> handling by <see cref="RuntimeAssembly"/>.
+    /// </summary>
     [TestClass]
     public class TypeDefinitions_Testing
     {

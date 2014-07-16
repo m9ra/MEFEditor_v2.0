@@ -269,7 +269,7 @@ namespace TypeSystem.Core
             var result = Cache.GetCachedGenerator(method, tryStaticResolve);
 
             if (result == null)
-                throw new NotSupportedException("Cannot find method: " + method);
+                Loader.AppDomain.Warning("Cannot find method: {0}", method);
 
             return result;
         }
@@ -287,7 +287,7 @@ namespace TypeSystem.Core
             var methodImplementation = tryDynamicResolve(calledObjectType, method);
 
             if (methodImplementation == null)
-                throw new NotSupportedException("Doesn't have " + calledObjectType + " implementation for: " + method);
+                Loader.AppDomain.Warning("Doesn't have {0} implementation for: {1}", calledObjectType, method);
 
             return methodImplementation;
         }
@@ -466,7 +466,7 @@ namespace TypeSystem.Core
                         //assemblies are added according to their mapping
                         continue;
 
-                    if(listed.Contains(realFile))
+                    if (listed.Contains(realFile))
                         //file has been overriden by some mapping
                         continue;
 

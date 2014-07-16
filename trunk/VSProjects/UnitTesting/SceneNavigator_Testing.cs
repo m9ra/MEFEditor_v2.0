@@ -9,6 +9,9 @@ using UnitTesting.Drawing_TestUtils;
 
 namespace UnitTesting
 {
+    /// <summary>
+    /// Testing of <see cref="SceneNavigator"/> that is important for collision handling.
+    /// </summary>
     [TestClass]
     public class SceneNavigator_Testing
     {

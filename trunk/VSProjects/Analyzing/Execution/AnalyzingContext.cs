@@ -188,6 +188,21 @@ namespace Analyzing.Execution
         internal void PushCall(MethodID name, GeneratorBase generator, Instance[] argumentValues)
         {
             var callTransformProvider = Edits == null ? null : Edits.TransformProvider;
+            var isDirty = generator == null || argumentValues.Any((value) => value.IsDirty);
+
+            if (isDirty)
+            {
+                //For dirty call we will propagate dirty flag
+                foreach (var argumentValue in argumentValues)
+                {
+                    argumentValue.IsDirty = true;
+                }
+                //and call wont be pushed
+                return;
+            }
+
+
+
             var call = new CallContext(this, name, callTransformProvider, generator, argumentValues);
 
             if (_entryContext == null)
@@ -277,6 +292,9 @@ namespace Analyzing.Execution
             {
                 method = _loader.DynamicResolve(method, arguments);
             }
+
+            if (method == null)
+                return null;
 
             GeneratorBase resolved;
             if (!_methods.TryGetValue(method, out resolved))

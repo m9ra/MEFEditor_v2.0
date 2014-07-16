@@ -5,6 +5,9 @@ using UnitTesting.AssemblyProviders_TestUtils;
 
 namespace UnitTesting
 {
+    /// <summary>
+    /// Testing of <see cref="Source"/> correctnes of handling code writing.
+    /// </summary>
     [TestClass]
     public class SourceWriting_Testing
     {

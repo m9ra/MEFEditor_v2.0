@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 
 using Analyzing.Execution;
 
-
-
 namespace Analyzing
 {
 

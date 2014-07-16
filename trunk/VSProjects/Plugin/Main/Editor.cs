@@ -156,6 +156,8 @@ namespace MEFEditor.Plugin.Main
             Transactions.TransactionOpened += (t) => _vs.Log.Message(">> {0}", t.Description);
             Transactions.TransactionCommit += (t) => _vs.Log.Message("<< {0}", t.Description);
 
+            _loader.AppDomain.OnLog += logHandler;
+
             _vs.BeforeFlushingChanges += () => _changesTransaction = _loader.AppDomain.Transactions.StartNew("Handling user changes");
             _vs.AfterFlushingChanges += () => _changesTransaction.Commit();
 
@@ -223,28 +225,7 @@ namespace MEFEditor.Plugin.Main
 
         private void hookLogging(ExtensionExport export)
         {
-            export.OnLog += (category, message) =>
-            {
-                LogLevels level;
-                switch (category)
-                {
-                    case "ERROR":
-                        level = LogLevels.Error;
-                        break;
-                    case "MESSAGE":
-                        level = LogLevels.Message;
-                        break;
-                    case "":
-                        level = LogLevels.Warning;
-                        break;
-                    default:
-                        level = LogLevels.Notification;
-                        break;
-                }
-
-                var entry = new LogEntry(level, message, null, null);
-                _vs.Log.Entry(entry);
-            };
+            export.OnLog += logHandler;
         }
 
         private IEnumerable<ExtensionExport> collectExports()
@@ -260,7 +241,7 @@ namespace MEFEditor.Plugin.Main
         }
 
         #endregion
-        
+
         #region Drawing providing routines
 
         /// <summary>
@@ -532,6 +513,34 @@ namespace MEFEditor.Plugin.Main
         #endregion
 
         #region Event handlers
+
+        /// <summary>
+        /// Handler for log events from TypeSystem
+        /// </summary>
+        /// <param name="category">Category of logged message</param>
+        /// <param name="message">Logged message</param>
+        private void logHandler(string category, string message)
+        {
+            LogLevels level;
+            switch (category)
+            {
+                case "ERROR":
+                    level = LogLevels.Error;
+                    break;
+                case "MESSAGE":
+                    level = LogLevels.Message;
+                    break;
+                case "WARNING":
+                    level = LogLevels.Warning;
+                    break;
+                default:
+                    level = LogLevels.Notification;
+                    break;
+            }
+
+            var entry = new LogEntry(level, message, null, null);
+            _vs.Log.Entry(entry);
+        }
 
         /// <summary>
         /// Handler called for methods that has been invalidated
