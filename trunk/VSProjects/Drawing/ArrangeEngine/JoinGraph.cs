@@ -183,34 +183,44 @@ namespace Drawing.ArrangeEngine
                 return null;
 
             //store points that has been already reached
-            var reachedPoints = new Dictionary<GraphPoint, PathPoint>();
-            reachedPoints.Add(fromPoint, new PathPoint());
+            var reachedPoints = new Dictionary<GraphPoint, GraphPoint>();
+            reachedPoints.Add(fromPoint, null);
 
             //queue where are stored relaxed graph nodes
-            var workQueue = new Queue<GraphPoint>();
-            workQueue.Enqueue(fromPoint);
-            while (workQueue.Count > 0)
+            var toRelax = new Dictionary<GraphPoint, double>();
+            toRelax.Add(fromPoint, 0);
+
+            while (toRelax.Count > 0)
             {
-                var current = workQueue.Dequeue();
-                var currentDistance = reachedPoints[current].Distance;
+                var currentPair = extractMin(toRelax);
+                var current = currentPair.Key;
+                var currentDistance = currentPair.Value;
 
                 //relax all neigbours of current node
                 foreach (var neighbour in current.ExploredNeighbours)
                 {
+                    if (reachedPoints.ContainsKey(neighbour))
+                        continue;
+
                     var fromCurrentDistance = current.DistanceTo(neighbour);
                     var toNeighbourDistance = currentDistance + fromCurrentDistance;
 
-                    PathPoint neighbourReachPoint;
-                    if (reachedPoints.TryGetValue(neighbour, out neighbourReachPoint))
+                    double previousNeighbourDistance;
+                    if (!toRelax.TryGetValue(neighbour, out previousNeighbourDistance))
                     {
-                        //we have reached current neighbour already
-                        if (neighbourReachPoint.Distance <= toNeighbourDistance)
-                            //we have already a better path
-                            continue;
+                        toRelax[neighbour] = previousNeighbourDistance = double.MaxValue;
                     }
 
-                    workQueue.Enqueue(neighbour);
-                    reachedPoints[neighbour] = new PathPoint(current, toNeighbourDistance);
+                    if (previousNeighbourDistance <= toNeighbourDistance)
+                        //we have already a better path
+                        continue;
+
+                    if (neighbour == current)
+                        throw new NotSupportedException();
+
+                    //relax path
+                    reachedPoints[neighbour] = current;
+                    toRelax[neighbour] = toNeighbourDistance;
                 }
             }
 
@@ -219,6 +229,26 @@ namespace Drawing.ArrangeEngine
             var simplified = simplifyPath(reconstructed);
 
             return simplified;
+        }
+
+        private KeyValuePair<GraphPoint, double> extractMin(Dictionary<GraphPoint, double> toRelax)
+        {
+
+            var maxDistance = double.MaxValue;
+            var selected=new KeyValuePair<GraphPoint,double>();
+
+            foreach (var pair in toRelax)
+            {
+                if (maxDistance > pair.Value)
+                {
+                    selected = pair;
+                    maxDistance = pair.Value;
+                }
+            }
+
+            toRelax.Remove(selected.Key);
+
+            return selected;
         }
 
         /// <summary>
@@ -329,11 +359,10 @@ namespace Drawing.ArrangeEngine
 
         #region Path finding
 
-
-        private static GraphPoint[] reconstructPath(GraphPoint toPoint, Dictionary<GraphPoint, PathPoint> reachedPoints)
+        private static GraphPoint[] reconstructPath(GraphPoint toPoint, Dictionary<GraphPoint, GraphPoint> reachedPoints)
         {
-            PathPoint currentPathPoint;
-            if (!reachedPoints.TryGetValue(toPoint, out currentPathPoint))
+            GraphPoint currentPoint;
+            if (!reachedPoints.TryGetValue(toPoint, out currentPoint))
                 //path hasn't been found in current graph
                 return null;
 
@@ -341,12 +370,11 @@ namespace Drawing.ArrangeEngine
             path.Add(toPoint);
 
             //trace path back from reached table
-            while (currentPathPoint.PreviousPoint != null)
+            while (currentPoint != null)
             {
-                var current = currentPathPoint.PreviousPoint;
-                path.Add(current);
+                path.Add(currentPoint);
 
-                currentPathPoint = reachedPoints[current];
+                currentPoint = reachedPoints[currentPoint];
             }
 
             path.Reverse();

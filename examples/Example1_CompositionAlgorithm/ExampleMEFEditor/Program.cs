@@ -25,7 +25,18 @@ class Program
 
     [ImportMany]
     ILogger[] loggers=null;
-              
+
+    [CompositionPoint]
+    void Compose2()
+    {
+        var agr = new AggregateCatalog();
+        var typeCatalog = new TypeCatalog();
+        var agr2 = new AggregateCatalog();
+        agr.Catalogs.Add(agr);
+        agr.Catalogs.Add(typeCatalog);
+        agr2.Catalogs.Add(agr);
+    }
+      
     [CompositionPoint]
     void Compose()
     {

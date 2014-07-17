@@ -92,7 +92,7 @@
                                         <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
                                             <DockPanel Margin="5">
                                                 <TextBlock Width="170" DockPanel.Dock="Left">Auto-refresh enabled :</TextBlock>
-                                                <CheckBox VerticalAlignment="Center"/>
+                                                <CheckBox Name="_AutoRefresh" IsChecked="True" Unchecked="drawingSettings_Changed" Checked="drawingSettings_Changed" VerticalAlignment="Center"/>
                                             </DockPanel>
                                         </DockPanel>
 
@@ -100,21 +100,21 @@
                                         <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
                                             <DockPanel Margin="5">
                                                 <TextBlock Width="170" DockPanel.Dock="Left">Use item collision avoidance :</TextBlock>
-                                                <CheckBox VerticalAlignment="Center"/>
+                                                <CheckBox Name="_UseItemAvoidance" IsChecked="True" Unchecked="drawingSettings_Changed" Checked="drawingSettings_Changed" VerticalAlignment="Center"/>
                                             </DockPanel>
                                         </DockPanel>
 
                                         <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
                                             <DockPanel Margin="5">
                                                 <TextBlock Width="170" DockPanel.Dock="Left">Use join collision avoidance :</TextBlock>
-                                                <CheckBox VerticalAlignment="Center"/>
+                                                <CheckBox Name="_UseJoinAvoidance" IsChecked="True" Unchecked="drawingSettings_Changed" Checked="drawingSettings_Changed" VerticalAlignment="Center"/>
                                             </DockPanel>
                                         </DockPanel>
 
                                         <DockPanel Margin="1" Background="{StaticResource SettingSectionForeground}">
                                             <DockPanel Margin="5">
                                                 <TextBlock Width="170" DockPanel.Dock="Left">Show join lines:</TextBlock>
-                                                <CheckBox VerticalAlignment="Center"/>
+                                                <CheckBox Name="_ShowJoinLines" IsChecked="True" Unchecked="drawingSettings_Changed" Checked="drawingSettings_Changed" VerticalAlignment="Center"/>
                                             </DockPanel>
                                         </DockPanel>
 

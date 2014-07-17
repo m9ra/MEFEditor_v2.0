@@ -24,6 +24,10 @@ namespace UnitTesting.Drawing_TestUtils
         {
             throw new NotImplementedException();
         }
-
+        
+        public override ContentDrawing CreateRecursiveContent(DiagramItem item)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -63,6 +63,60 @@ namespace Plugin.GUI
         /// </summary>
         public event Action RefreshClicked;
 
+        /// <summary>
+        /// Event for handling notices when drawing settings has been changed
+        /// </summary>
+        public event Action DrawingSettingsChanged;
+
+        /// <summary>
+        /// Determine that item avoiding algorithm will be used
+        /// </summary>
+        public bool UseItemAvoidance
+        {
+            get
+            {
+                var value = _UseItemAvoidance.IsChecked;
+                return value.HasValue && value.Value;
+            }
+        }
+
+        /// <summary>
+        /// Determine that join avoiding algorithm will be used
+        /// </summary>
+        public bool UseJoinAvoidance
+        {
+            get
+            {
+                var value = _UseJoinAvoidance.IsChecked;
+                return value.HasValue && value.Value;
+            }
+        }
+
+        /// <summary>
+        /// Determine that composition scheme should be automatically refreshed
+        /// when composition point change is detected
+        /// </summary>
+        public bool AutoRefresh
+        {
+            get
+            {
+                var value = _AutoRefresh.IsChecked;
+                return value.HasValue && value.Value;
+            }
+        }
+
+        /// <summary>
+        /// Determine join lines should be dipslayed in composition scheme
+        /// </summary>
+        public bool ShowJoinLines
+        {
+            get
+            {
+                var value = _ShowJoinLines.IsChecked;
+                return value.HasValue && value.Value;
+            }
+        }
+
         public string HostPath
         {
             set
@@ -112,6 +166,12 @@ namespace Plugin.GUI
         }
 
         #region Basic GUI events handling
+
+        private void drawingSettings_Changed(object sender, RoutedEventArgs e)
+        {
+            if (DrawingSettingsChanged != null)
+                DrawingSettingsChanged();
+        }
 
         private void switch_Click(object sender, RoutedEventArgs e)
         {

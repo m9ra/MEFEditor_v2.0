@@ -52,6 +52,10 @@ namespace Drawing
 
         public readonly DiagramItemDefinition Definition;
 
+        public bool IsRecursive;
+
+        public bool HasPosition { get; private set; }
+
         public bool IsHighlighted
         {
             get
@@ -64,7 +68,9 @@ namespace Drawing
                 if (_isHighlighted == value)
                     return;
 
-                DiagramContext.HighlightedItem = this;
+                _isHighlighted = value;
+                if (_isHighlighted)
+                    DiagramContext.HighlightedItem = this;
             }
         }
 
@@ -91,7 +97,7 @@ namespace Drawing
                 return getConnectorDrawings(ConnectorAlign.Left);
             }
         }
-        
+
         public IEnumerable<ConnectorDrawing> RightConnectorDrawings
         {
             get
@@ -123,6 +129,7 @@ namespace Drawing
 
             internal set
             {
+                HasPosition = true;
                 var localPos = AsLocalPosition(value);
                 DiagramCanvas.SetPosition(this, localPos);
             }
@@ -149,11 +156,24 @@ namespace Drawing
 
         public void FillSlot(SlotCanvas slotCanvas, SlotDefinition slot)
         {
+            //recursive check is required only for diagram items 
+            //filling some slots - only some of its children can be recursive
             slotCanvas.SetOwner(this);
+
+            var ancestors = new HashSet<DiagramItemDefinition>();
+            var current = this;
+            while (current != null)
+            {
+                ancestors.Add(current.Definition);
+                current = current.ParentItem;
+            }
+
             foreach (var itemReference in slot.References)
             {
                 var itemDefinition = DiagramContext.Diagram.GetItemDefinition(itemReference.DefinitionID);
+
                 var item = new DiagramItem(itemDefinition, this, slotCanvas);
+                item.IsRecursive = ancestors.Contains(itemDefinition);
                 DiagramContext.Provider.InitializeItemDrawing(item);
                 slotCanvas.Children.Add(item);
             }
@@ -262,7 +282,7 @@ namespace Drawing
                     addMenuEdit(menu, edit);
                 }
             }
-            
+
             ContentDrawing.ContextMenu = menu;
             if (menu.Items.Count == 0)
                 menu.Visibility = System.Windows.Visibility.Hidden;

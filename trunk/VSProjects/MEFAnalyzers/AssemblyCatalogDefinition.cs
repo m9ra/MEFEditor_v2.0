@@ -18,6 +18,7 @@ namespace MEFAnalyzers
     {
         public readonly Field<List<Instance>> Components;
         public readonly Field<string> Path;
+        public readonly Field<string> AssemblyName;
         public readonly Field<string> FullPath;
         public readonly Field<string> Error;
 
@@ -50,6 +51,7 @@ namespace MEFAnalyzers
             }
             else
             {
+                AssemblyName.Value = assembly.Name;
                 foreach (var componentInfo in assembly.GetComponents())
                 {
                     var component = Context.Machine.CreateInstance(componentInfo.ComponentType);
@@ -116,13 +118,14 @@ namespace MEFAnalyzers
 
         protected override void draw(InstanceDrawer drawer)
         {
-            drawer.SetProperty("Path", Path.Get());
-            drawer.SetProperty("FullPath", FullPath.Get());
-            drawer.SetProperty("Error", Error.Get());
+            drawer.SetProperty("Path", Path.Value);
+            drawer.SetProperty("FullPath", FullPath.Value);
+            drawer.SetProperty("Error", Error.Value);
+            drawer.SetProperty("AssemblyName", AssemblyName.Value);
 
             var slot = drawer.AddSlot();
 
-            foreach (var component in Components.Get())
+            foreach (var component in Components.Value)
             {
                 var componentDrawing = drawer.GetInstanceDrawing(component);
                 slot.Add(componentDrawing.Reference);

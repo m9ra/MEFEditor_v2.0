@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MEFEditor.Plugin</RootNamespace>
-    <AssemblyName>MEFEditor.Plugin_v23</AssemblyName>
+    <AssemblyName>MEFEditor.Plugin</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -140,6 +140,7 @@
   <ItemGroup>
     <Compile Include="Drawing\ContentDrawer.cs" />
     <Compile Include="Drawing\DiagramFactory.cs" />
+    <Compile Include="Drawing\RecursiveDrawing.cs" />
     <Compile Include="GUI\AssemblyItem.cs" />
     <Compile Include="GUI\EditorGUI.xaml.cs">
       <DependentUpon>EditorGUI.xaml</DependentUpon>

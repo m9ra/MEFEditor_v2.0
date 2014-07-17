@@ -77,7 +77,7 @@ namespace Drawing
         {
             foreach (MenuItem item in menu.Items)
             {
-                var provider = item.Tag as EditsMenuProvider;                
+                var provider = item.Tag as EditsMenuProvider;
                 if (provider == null)
                     continue;
 
@@ -124,8 +124,18 @@ namespace Drawing
                 item.Attach(connector);
             }
 
-            var content = _diagramFactory.CreateContent(item);
+            ContentDrawing content;
+            if (item.IsRecursive)
+            {
+                content=_diagramFactory.CreateRecursiveContent(item);
+            }
+            else
+            {
+                content = _diagramFactory.CreateContent(item);
+            }
             item.SetContent(content);
+
+
             Engine.RegisterItem(item);
         }
 
@@ -195,6 +205,10 @@ namespace Drawing
                 InitializeItemDrawing(item);
             }
 
+            if (!diagramDefinition.ShowJoinLines)
+                return;
+
+            //show join lines
             foreach (var joinDefinition in diagramDefinition.JoinDefinitions)
             {
                 foreach (var from in Engine.DefiningItems(joinDefinition.From))

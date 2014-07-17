@@ -142,6 +142,27 @@ namespace Plugin.GUI
         }
 
         /// <summary>
+        /// Determine that item avoiding algorithm will be used
+        /// </summary>
+        public bool UseItemAvoidance { get { return _gui.UseItemAvoidance; } }
+
+        /// <summary>
+        /// Determine that join avoiding algorithm will be used
+        /// </summary>
+        public bool UseJoinAvoidance { get { return _gui.UseJoinAvoidance; } }
+
+        /// <summary>
+        /// Determine join lines should be dipslayed in composition scheme
+        /// </summary>
+        public bool ShowJoinLines { get { return _gui.ShowJoinLines; } }
+
+        /// <summary>
+        /// Determine that composition scheme should be automatically refreshed
+        /// when composition point change is detected
+        /// </summary>
+        public bool AutoRefresh { get { return _gui.AutoRefresh; } }
+
+        /// <summary>
         /// Initialize instance of <see cref="GUIManager"/>
         /// </summary>
         /// <param name="gui">Gui managed by current manager</param>
@@ -223,6 +244,7 @@ namespace Plugin.GUI
 
             _gui.HostPathChanged += onHostPathChanged;
             _gui.RefreshClicked += forceRefresh;
+            _gui.DrawingSettingsChanged += forceRefresh;
             _gui.LogRefresh += logRefresh;
         }
 

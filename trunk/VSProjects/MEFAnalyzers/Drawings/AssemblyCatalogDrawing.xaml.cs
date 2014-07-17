@@ -23,7 +23,7 @@ namespace MEFAnalyzers.Drawings
     public partial class AssemblyCatalogDrawing : ContentDrawing
     {
         public AssemblyCatalogDrawing(DiagramItem item)
-            :base(item)
+            : base(item)
         {
             InitializeComponent();
 
@@ -34,8 +34,17 @@ namespace MEFAnalyzers.Drawings
             var path = Definition.GetPropertyValue("Path");
             var fullPath = Definition.GetPropertyValue("FullPath");
             var error = Definition.GetPropertyValue("Error");
+            var assemblyName = Definition.GetPropertyValue("AssemblyName");
 
             Path.Text = path;
+            if (assemblyName == null)
+            {
+                AssemblyNameDock.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                AssemblyName.Text = assemblyName;
+            }
 
             var fullPathInfo = DrawingTools.GetHeadingText("FullPath", fullPath);
             DrawingTools.SetToolTip(PathDock, fullPath);

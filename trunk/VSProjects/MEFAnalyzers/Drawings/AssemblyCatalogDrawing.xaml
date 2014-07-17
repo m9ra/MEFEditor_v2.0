@@ -32,6 +32,10 @@
                 <TextBlock FontWeight="Bold" Margin="5 0">Path:</TextBlock>
                 <TextBlock Name="Path">No path</TextBlock>
             </DockPanel>
+            <DockPanel Name="AssemblyNameDock">
+                <TextBlock FontWeight="Bold" Margin="5 0">Assembly name:</TextBlock>
+                <TextBlock Name="AssemblyName">No name</TextBlock>
+            </DockPanel>
         </StackPanel>
 
         <dr:SlotCanvas Name="Components" Margin="10" MinHeight="200" MinWidth="200" Background="Transparent"></dr:SlotCanvas>

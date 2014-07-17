@@ -15,5 +15,7 @@ namespace Drawing
         public abstract JoinDrawing CreateJoin(JoinDefinition definition, DiagramContext context);
 
         public abstract ConnectorDrawing CreateConnector(ConnectorDefinition definition, DiagramItem owningItem);
+
+        public abstract ContentDrawing CreateRecursiveContent(DiagramItem item);
     }
 }

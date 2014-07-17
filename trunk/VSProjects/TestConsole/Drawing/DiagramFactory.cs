@@ -67,5 +67,10 @@ namespace TestConsole.Drawings
                     throw new NotSupportedException(kind.Value);
             }
         }
+
+        public override ContentDrawing CreateRecursiveContent(DiagramItem item)
+        {
+            return new MEFEditor.Plugin.Drawing.RecursiveDrawing(item);
+        }
     }
 }

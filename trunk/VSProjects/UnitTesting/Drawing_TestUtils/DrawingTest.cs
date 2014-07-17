@@ -37,7 +37,6 @@ namespace UnitTesting.Drawing_TestUtils
             return this;
         }
 
-
         private DiagramItemDefinition createDef(string name, double x, double y)
         {
             var def = new DiagramItemDefinition(name, "Test");
@@ -47,8 +46,6 @@ namespace UnitTesting.Drawing_TestUtils
 
             return def;
         }
-
-
 
         internal DrawingTest AssertIntersection(Point from, Point to, string intersected)
         {

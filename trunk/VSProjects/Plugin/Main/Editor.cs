@@ -417,6 +417,9 @@ namespace MEFEditor.Plugin.Main
 
             definition.AddEditsMenu("Add Component", createComponentEdits);
             definition.AddCommand(new CommandDefinition("Reset workspace", _guiManager.ResetWorkspace));
+            definition.UseItemAvoidance = _guiManager.UseItemAvoidance;
+            definition.UseJoinAvoidance = _guiManager.UseJoinAvoidance;
+            definition.ShowJoinLines = _guiManager.ShowJoinLines;
 
             return definition;
         }
@@ -549,6 +552,9 @@ namespace MEFEditor.Plugin.Main
         private void methodInvalidated(MethodID invalidatedMethod)
         {
             _vs.Log.Message("Method invalidation {0}", invalidatedMethod);
+
+            if (!_guiManager.AutoRefresh)
+                return;
 
             if (_currentResult == null)
                 return;

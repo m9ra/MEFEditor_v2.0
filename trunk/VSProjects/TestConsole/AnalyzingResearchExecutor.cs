@@ -201,12 +201,17 @@ namespace TestConsole
             _assembly.RegisterDrawing<TypeCatalogDrawing>("System.ComponentModel.Composition.Hosting.TypeCatalog");
             _assembly.RegisterDrawing<AssemblyCatalogDrawing>("System.ComponentModel.Composition.Hosting.AssemblyCatalog");
 
-            var factory = new DiagramFactory(_assembly.RegisteredDrawers);                
+            var factory = new DiagramFactory(_assembly.RegisteredDrawers);
 
-            _guiManager = new GUIManager(_assembly.AppDomain, form.GUI, factory);
+            _guiManager = new GUIManager(form.GUI);
+            _guiManager.Initialize(_assembly.AppDomain, factory);
             _guiManager.CompositionPointSelected += onCompositionPointSelected;
        /*     _guiManager.HostAssemblyLoaded += (a) => _assembly.AddAssembly(a);
             _guiManager.HostAssemblyUnLoaded += (a) => { _assembly.RemoveAssembly(a); };*/
+            _diagramDefinition.ShowJoinLines = _guiManager.ShowJoinLines;
+            _diagramDefinition.UseItemAvoidance=_guiManager.UseItemAvoidance;
+            _diagramDefinition.UseJoinAvoidance=_guiManager.UseJoinAvoidance;
+            
             _guiManager.Display(_diagramDefinition);
 
             form.Show();

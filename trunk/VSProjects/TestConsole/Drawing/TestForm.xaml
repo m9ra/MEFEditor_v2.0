@@ -7,8 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     mc:Ignorable="d" 
     
-    xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
-    xmlns:m="clr-namespace:Plugin.GUI;assembly=Plugin"
+    xmlns:dr="clr-namespace:Drawing;assembly=Drawing"    
+    xmlns:m="clr-namespace:Plugin.GUI;assembly=MEFEditor.Plugin"
     >
 
     <m:EditorGUI x:Name="GUI"></m:EditorGUI>

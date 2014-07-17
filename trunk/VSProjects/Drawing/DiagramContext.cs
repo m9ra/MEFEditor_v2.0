@@ -58,17 +58,26 @@ namespace Drawing
             get
             {
                 var result = new HashSet<DiagramItemDefinition>(Diagram.ItemDefinitions);
-
                 foreach (var item in Diagram.ItemDefinitions)
                 {
+                    if (!result.Contains(item))
+                        //item has already detected parent
+                        //probably due to recursivity
+                        continue;
+
                     foreach (var slot in item.Slots)
                     {
                         foreach (var reference in slot.References)
                         {
                             var referencedItem = Diagram.GetItemDefinition(reference.DefinitionID);
+                            if (referencedItem == item)
+                                //self referenced item 
+                                //could be root item
+                                continue;
+
                             result.Remove(referencedItem);
                         }
-                    }
+                    }                    
                 }
 
                 return result;

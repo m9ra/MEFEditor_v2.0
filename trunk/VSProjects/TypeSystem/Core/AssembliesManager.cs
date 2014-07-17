@@ -709,13 +709,14 @@ namespace TypeSystem.Core
         {
             componentInfo.DefiningAssembly = _assemblies.GetTypeAssembly(assembly);
 
-            _assemblyComponents.Add(assembly, componentInfo);
+            if (!_components.ContainsKey(componentInfo.ComponentType))
+            {
+                _components.Add(componentInfo.ComponentType, componentInfo);
+            }
 
-            if (_components.ContainsKey(componentInfo.ComponentType))
-                //TODO how to handle same components
+            if (!_assemblyComponents.Add(assembly, componentInfo))
+                //nothing has been added
                 return;
-            _components.Add(componentInfo.ComponentType, componentInfo);
-
 
             if (ComponentAdded != null)
                 ComponentAdded(componentInfo);

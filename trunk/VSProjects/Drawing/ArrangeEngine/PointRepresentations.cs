@@ -50,6 +50,7 @@ namespace Drawing.ArrangeEngine
         {
             Position = position;
             View = view;
+            OwningItem = owningItem;
         }
 
         /// <summary>

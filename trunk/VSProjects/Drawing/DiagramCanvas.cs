@@ -56,12 +56,12 @@ namespace Drawing
             }
         }
 
-        protected override Size ArrangeOverride(Size arrangeSize)
+       protected override Size ArrangeOverride(Size arrangeSize)
         {
-            if (DiagramContext != null)
+    /*        if (DiagramContext != null)
             {
                 DiagramContext.Provider.Engine.ArrangeChildren(OwnerItem, this);
-            }
+            }*/
 
             foreach (FrameworkElement child in Children)
             {

@@ -170,8 +170,11 @@ namespace Drawing
 
             setInitialPositions(owner, container, children);
 
-            var collisionRepairer = new ItemCollisionRepairer();
-            collisionRepairer.Arrange(children);
+            if (Output.DiagramContext.Diagram.UseItemAvoidance)
+            {
+                var collisionRepairer = new ItemCollisionRepairer();
+                collisionRepairer.Arrange(children);
+            }
 
             //create navigator after items are positioned
             Navigator = new SceneNavigator(Items);
@@ -206,10 +209,13 @@ namespace Drawing
         private void refreshJoinPaths()
         {
             //TODO: detect if refresh is necessary
-            Navigator.EnsureGraphInitialized();
-            foreach (var join in _joins)
+            if (Output.DiagramContext.Diagram.UseJoinAvoidance)
             {
-                Navigator.Graph.Explore(join.From, join.To);
+                Navigator.EnsureGraphInitialized();
+                foreach (var join in _joins)
+                {
+                    Navigator.Graph.Explore(join.From, join.To);
+                }
             }
 
             foreach (var join in _joins)
@@ -348,23 +354,33 @@ namespace Drawing
         /// <param name="item">Item which position will be set</param>
         private void setInitialPosition(PositionCursor cursor, DiagramItem item)
         {
-            if (!_oldPositions.ContainsKey(item.ParentID))
-            {
-                //there is no old position for item
-                cursor.SetDefault(item);
-                return;
+            Point oldPosition;
+            if (item.HasPosition)
+                {
+                //keep preset position
+                oldPosition = item.GlobalPosition;
             }
-
-            var parentPositions = _oldPositions[item.ParentID];
-            if (!parentPositions.ContainsKey(item.ID))
+            else
             {
-                //there is no old position for item
-                cursor.SetDefault(item);
-                return;
-            }
+                if (!_oldPositions.ContainsKey(item.ParentID))
+                {
+                    //there is no old position for item
+                    cursor.SetDefault(item);
+                    return;
+                }
 
-            //keep position from previous display
-            var oldPosition = parentPositions[item.ID];
+                var parentPositions = _oldPositions[item.ParentID];
+                if (!parentPositions.ContainsKey(item.ID))
+                {
+                    //there is no old position for item
+                    cursor.SetDefault(item);
+                    return;
+                }
+
+                //keep position from previous display
+                oldPosition = parentPositions[item.ID];
+            }
+            
             cursor.RegisterPosition(item, oldPosition);
         }
 

@@ -25,7 +25,7 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var testAssembly = TestCases.MEF_Demo();
+            var testAssembly = TestCases.DrawingTester_SingleJoin();
             DisplayTestResult(testAssembly);
         }
 

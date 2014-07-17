@@ -42,8 +42,14 @@ namespace Drawing
 
         public event OnDragStart OnDragStart;
 
-        public readonly EditViewBase InitialView;
+        public bool UseItemAvoidance;
 
+        public bool UseJoinAvoidance;
+
+        public bool ShowJoinLines;
+
+        public readonly EditViewBase InitialView;
+        
         /// <summary>
         /// Number of defined DrawingDefinitions
         /// </summary>
