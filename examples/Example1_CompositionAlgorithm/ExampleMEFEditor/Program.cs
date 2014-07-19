@@ -15,6 +15,14 @@ namespace Main
 {
 
 
+    [Export(typeof(IContent))]
+    public class TestContent2 : IContent
+    {
+        public string InnerHTML
+        {
+            get { return "Some another interesting content from Example_extensions_dll.TestContent2"; }
+        }
+    }
 
 
 
@@ -29,6 +37,8 @@ class Program
     [CompositionPoint]
     void Compose2()
     {
+        var x = new TestContent2();
+        var dir = new DirectoryCatalog(x.InnerHTML);
         var agr = new AggregateCatalog();
         var typeCatalog = new TypeCatalog();
         var agr2 = new AggregateCatalog();

@@ -61,6 +61,19 @@ namespace TypeSystem
             return _manager.UnloadRoot(assemblyKey);
         }
 
+
+        public void UnloadAssemblies()
+        {
+            var assembliesCopy=_manager.Assemblies.ToArray();
+            foreach (var assembly in assembliesCopy)
+            {
+                if (assembly == _manager.Runtime)
+                    //we dont want to unload runtime
+                    continue;
+                _manager.Unload(assembly);
+            }
+        }
+
         #region LoaderBase implementation
 
         /// </ inheritdoc>

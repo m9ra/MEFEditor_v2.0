@@ -322,7 +322,8 @@ namespace Drawing
                 {
                     //root has no owner, because of that has special cursor
                     _rootCursor = cursor;
-                    lastLayoutSize = container.RenderSize;
+                    //we dont want to limit size of root canvas
+                    lastLayoutSize = new Size(); 
                 }
                 else
                 {
@@ -391,6 +392,9 @@ namespace Drawing
         /// <returns>Repaired position.</returns>
         private Point checkBounds(DiagramItem item, Point globalPosition)
         {
+            if (item.IsRootItem)
+                return globalPosition;
+
             var localPosition = item.AsLocalPosition(globalPosition);
 
             var left = globalPosition.X;

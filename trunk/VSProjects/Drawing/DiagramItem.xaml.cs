@@ -247,7 +247,8 @@ namespace Drawing
 
         private void initialize()
         {
-            GlobalPosition = Definition.GlobalPosition;
+            if (Definition.GlobalPosition.HasValue)
+                GlobalPosition = Definition.GlobalPosition.Value;
 
             if (IsRootItem)
             {

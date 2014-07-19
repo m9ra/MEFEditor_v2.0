@@ -114,7 +114,8 @@ namespace TypeSystem.Core
 
             _assemblies = new AssembliesStorage(this);
             _assemblies.OnRootAdd += _onRootAssemblyAdd;
-            _assemblies.OnRootRemove += _onAssemblyRemove;
+            _assemblies.OnRootRemove += _onRootAssemblyRemoved;
+            _assemblies.OnUnRegistered += _onAssemblyRemoved;
             _assemblies.OnRegistered += _onAssemblyRegistered;
 
             Settings.BeforeInterpretation += _beforeInterpretation;
@@ -511,7 +512,7 @@ namespace TypeSystem.Core
         }
 
         /// <summary>
-        /// Unload root assembly from AppDomain
+        /// Unload assembly from AppDomain roots
         /// </summary>
         /// <param name="unloadedAssemblyKey">Asembly that is unloaded</param>
         internal AssemblyProvider UnloadRoot(object unloadedAssemblyKey)
@@ -520,6 +521,16 @@ namespace TypeSystem.Core
             var provider = _assemblies.FindProviderFromKey(unloadedAssemblyKey);
             _assemblies.RemoveRoot(provider);
             return provider;
+        }
+
+
+        /// <summary>
+        /// Completely unload given assembly
+        /// </summary>
+        /// <param name="assembly">Assembly to unload</param>
+        internal void Unload(AssemblyProvider assembly)
+        {
+            _assemblies.Remove(assembly);
         }
 
         /// <summary>
@@ -677,7 +688,7 @@ namespace TypeSystem.Core
         /// Assembly that has been removed completely from <see cref="AssembliesManager"/>
         /// </summary>
         /// <param name="assembly">Removed assembly</param>
-        private void _onAssemblyRemove(AssemblyProvider assembly)
+        private void _onAssemblyRemoved(AssemblyProvider assembly)
         {
             startTransaction("Unregistering assembly: " + assembly.Name);
 
@@ -1001,6 +1012,5 @@ namespace TypeSystem.Core
         }
 
         #endregion
-
     }
 }

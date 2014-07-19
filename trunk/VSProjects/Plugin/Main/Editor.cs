@@ -168,15 +168,10 @@ namespace MEFEditor.Plugin.Main
             _vs.ProjectAdded += _vs_ProjectAdded;
             _vs.ProjectAddingStarted += _vs_ProjectAddingStarted;
             _vs.ProjectRemoved += _vs_ProjectRemoved;
-
-            if (_vs.IsSolutionOpen)
-            {
-                //force loading solution
-                _vs_SolutionOpeningStarted();
-                _vs_SolutionOpened();
-            }
-
+            
             _loader.AppDomain.MethodInvalidated += methodInvalidated;
+
+            _vs.StartListening();
         }
 
         #endregion
@@ -621,6 +616,7 @@ namespace MEFEditor.Plugin.Main
         private void _vs_SolutionClosed()
         {
             //there is nothing to do, projects are unloaded by ProjectRemoved
+            _loader.UnloadAssemblies();
         }
 
         #endregion

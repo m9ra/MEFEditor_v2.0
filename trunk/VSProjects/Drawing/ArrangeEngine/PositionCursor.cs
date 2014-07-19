@@ -46,16 +46,6 @@ namespace Drawing.ArrangeEngine
 
         internal void SetDefault(DiagramItem item)
         {
-            if (item.IsRootItem)
-            {
-                var currentPos = item.GlobalPosition;
-                var isTestPosition = currentPos.X != 0 || currentPos.Y != 0;
-
-                if (isTestPosition)
-                    //let the item with preseted position
-                    return;
-            }
-
             _requireDefaultPosition.Add(item);
         }
 

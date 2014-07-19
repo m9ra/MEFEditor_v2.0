@@ -44,7 +44,7 @@ namespace TypeSystem.Core
         public IEnumerable<AssemblyProvider> Providers { get { return _assemblies.Keys; } }
 
         internal event AssemblyEvent OnRootRemove;
-
+        
         internal event AssemblyEvent OnRootAdd;
 
         internal event AssemblyEvent OnRegistered;

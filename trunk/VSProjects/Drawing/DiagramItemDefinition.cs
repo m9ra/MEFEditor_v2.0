@@ -48,7 +48,7 @@ namespace Drawing
 
         public IEnumerable<CommandDefinition> Commands { get { return _commands; } }
 
-        public Point GlobalPosition { get; set; }
+        public Point? GlobalPosition;
 
         /// <summary>
         /// Initialize drawing definition

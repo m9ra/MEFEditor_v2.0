@@ -182,6 +182,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
             var method = buildGetter ? element.Getter : element.Setter;
 
+            if (method == null)
+                return null;
+
             return BuildFrom(method, methodInfo, declaringAssembly);
         }
 

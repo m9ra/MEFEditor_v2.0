@@ -71,6 +71,11 @@ namespace Interoperability
         private bool _hasWaitingChanges = false;
 
         /// <summary>
+        /// Determine that last solution has been closed
+        /// </summary>
+        private bool _wasSolutionClosed = true;
+
+        /// <summary>
         /// Determine that change has been registered and not flushed yet
         /// </summary>
         public bool HasWaitingChanges
@@ -104,7 +109,7 @@ namespace Interoperability
         /// <summary>
         /// Determine that solution is opened
         /// </summary>
-        public bool IsSolutionOpen { get { return _dte.Solution != null && _dte.Solution.IsOpen; } }
+        public bool IsSolutionOpened { get { return _dte.Solution != null && _dte.Solution.IsOpen; } }
 
         /// <summary>
         /// Event fired whenever project changes are flushed
@@ -168,8 +173,17 @@ namespace Interoperability
             _events = _dte.Events;
             _textEditorEvents = _events.TextEditorEvents;
             _solutionEvents = _events.SolutionEvents;
-            _projectItemEvents = _events.SolutionItemsEvents;
+            _projectItemEvents = _events.SolutionItemsEvents;          
+        }
 
+        #region Exposed services
+
+
+        /// <summary>
+        /// Starts listening to visual studio events
+        /// </summary>
+        public void StartListening()
+        {
             _textEditorEvents.LineChanged += onLineChanged;
 
             _solutionEvents.Opened += solutionOpened;
@@ -179,9 +193,12 @@ namespace Interoperability
 
             _projectItemEvents.ItemAdded += onProjectItemAdded;
             _projectItemEvents.ItemRemoved += onProjectItemRemoved;
-        }
 
-        #region Exposed services
+            if (IsSolutionOpened)
+            {
+                solutionOpened();
+            }
+        }
 
         /// <summary>
         /// Get output path defined for given <see cref="Project"/>
@@ -491,6 +508,7 @@ namespace Interoperability
         /// </summary>
         private void solutionClosed()
         {
+            _wasSolutionClosed = true;
             //changes can be omitted
             _changes.Clear();
 
@@ -511,6 +529,11 @@ namespace Interoperability
         /// </summary>
         private void solutionOpened()
         {
+            if (!_wasSolutionClosed)
+            {                
+                solutionClosed();
+            }
+
             _solutionWait.Stop();
             _solutionWait.Start();
         }
@@ -523,6 +546,8 @@ namespace Interoperability
         private void solutionOpenedAfterWait(object sender, EventArgs e)
         {
             _solutionWait.Stop();
+
+            _wasSolutionClosed = false;
 
             if (SolutionOpeningStarted != null)
                 SolutionOpeningStarted();

@@ -103,32 +103,4 @@ namespace Drawing.ArrangeEngine
             return "[GraphPoint]" + Position;
         }
     }
-
-    /// <summary>
-    /// Representation of point of join path
-    /// </summary>
-    struct PathPoint
-    {
-        /// <summary>
-        /// Point that precedes current point on path
-        /// </summary>
-        internal readonly GraphPoint PreviousPoint;
-
-        /// <summary>
-        /// Distance from path start to current point
-        /// </summary>
-        internal readonly double Distance;
-
-        public PathPoint(GraphPoint previousPoint, double distance)
-        {
-            PreviousPoint = previousPoint;
-            Distance = distance;
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return "[PathPoint]{" + PreviousPoint + ", " + Distance + "}";
-        }
-    }
 }
