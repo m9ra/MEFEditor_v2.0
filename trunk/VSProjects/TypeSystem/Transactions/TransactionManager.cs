@@ -23,6 +23,8 @@ namespace TypeSystem.Transactions
 
         public event TransactionEvent TransactionOpened;
 
+        public event TransactionEvent TransactionProgressChanged;
+
         public event TransactionEvent TransactionCommit;
 
         public Transaction CurrentTransaction
@@ -87,6 +89,16 @@ namespace TypeSystem.Transactions
 
             if (TransactionCommit != null)
                 TransactionCommit(transaction);
+        }
+
+        /// <summary>
+        /// Reports progress of transaction
+        /// </summary>
+        /// <param name="transaction">Transaction which progress has changed</param>
+        internal void ReportProgress(Transaction transaction)
+        {
+            if (TransactionProgressChanged != null)
+                TransactionProgressChanged(transaction);
         }
 
         private void tryRunRootActions()

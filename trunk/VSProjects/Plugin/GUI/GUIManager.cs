@@ -199,11 +199,28 @@ namespace Plugin.GUI
         /// <param name="diagram">Displayed diagram</param>
         public void Display(DiagramDefinition diagram)
         {
-            DispatchedAction(() =>
+           DispatchedAction(() =>
            {
                _drawingProvider.Display(diagram);
            });
         }
+        
+        public void DisplayLoadingMessage(string message)
+        {
+            DispatchedAction(() =>
+            {
+               _gui.ShowLoadingMessage(message);
+            });
+        }
+
+        public void ShowWorkspace()
+        {
+            DispatchedAction(() =>
+            {
+                _gui.ShowWorkspace();
+            });
+        }
+
 
         /// <summary>
         /// Reset workspace
@@ -245,6 +262,16 @@ namespace Plugin.GUI
                entryDrawing.Margin = new Thickness(20);
                _gui.Workspace.Children.Add(entryDrawing);
            });
+        }
+
+        /// <summary>
+        /// Do events which is compatible with WPF and WinForms.
+        /// </summary>
+        public void DoEvents()
+        {
+            System.Windows.Forms.Application.DoEvents();
+            var idle = System.Windows.Threading.DispatcherPriority.SystemIdle;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { }), idle);
         }
 
         #region Initialization routines
@@ -686,7 +713,6 @@ namespace Plugin.GUI
         }
 
         #endregion
-
 
     }
 }

@@ -96,6 +96,16 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         private LogEntry _analysisError;
 
+        /// <summary>
+        /// Determine that transactions should be displayed in loading
+        /// </summary>
+        private volatile bool _showProgress;
+
+        /// <summary>
+        /// Watches used for filtering too often progress changes
+        /// </summary>
+        private Stopwatch _progressWatch = new Stopwatch();
+
         #endregion
 
         /// <summary>
@@ -153,8 +163,9 @@ namespace MEFEditor.Plugin.Main
         {
             _guiManager.CompositionPointSelected += requireRedraw;
 
-            Transactions.TransactionOpened += (t) => _vs.Log.Message(">> {0}", t.Description);
+            Transactions.TransactionOpened += (t) => { _vs.Log.Message(">> {0}", t.Description); tryShowProgress(t); };
             Transactions.TransactionCommit += (t) => _vs.Log.Message("<< {0}", t.Description);
+            Transactions.TransactionProgressChanged += (t) => tryShowProgress(t);
 
             _loader.AppDomain.OnLog += logHandler;
 
@@ -168,12 +179,13 @@ namespace MEFEditor.Plugin.Main
             _vs.ProjectAdded += _vs_ProjectAdded;
             _vs.ProjectAddingStarted += _vs_ProjectAddingStarted;
             _vs.ProjectRemoved += _vs_ProjectRemoved;
-            
+
             _loader.AppDomain.MethodInvalidated += methodInvalidated;
             _loader.AppDomain.CompositionSchemeInvalidated += requireRedraw;
 
             _vs.StartListening();
         }
+
 
         #endregion
 
@@ -550,6 +562,27 @@ namespace MEFEditor.Plugin.Main
             _vs.Log.Entry(entry);
         }
 
+        private void tryShowProgress(Transaction transaction)
+        {
+            if (!_showProgress)
+                return;
+
+            if (_progressWatch.ElapsedMilliseconds < 100)
+                //prevent progressing too often
+                return;
+
+            _progressWatch.Restart();
+
+            var message = transaction.Description;
+            var progress = transaction.ProgressStatus;
+
+            if (progress != null)
+                message += " (" + progress + ")";
+
+            _guiManager.DisplayLoadingMessage(message);
+            _guiManager.DoEvents();
+        }
+
         /// <summary>
         /// Handler called for methods that has been invalidated
         /// </summary>
@@ -608,6 +641,7 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         void _vs_SolutionOpeningStarted()
         {
+            setProgressVisibility(true);
             _solutionOpenTransaction = Transactions.StartNew("Opening solution");
         }
 
@@ -618,6 +652,8 @@ namespace MEFEditor.Plugin.Main
         {
             _solutionOpenTransaction.Commit();
             _solutionOpenTransaction = null;
+
+            setProgressVisibility(false);
         }
 
         /// <summary>
@@ -627,6 +663,21 @@ namespace MEFEditor.Plugin.Main
         {
             //there is nothing to do, projects are unloaded by ProjectRemoved
             _loader.UnloadAssemblies();
+        }
+
+        private void setProgressVisibility(bool isShown)
+        {
+            if (isShown)
+            {
+                _progressWatch.Start();
+                _showProgress = true;
+            }
+            else
+            {
+                _progressWatch.Stop();
+                _showProgress = false;
+                _guiManager.ShowWorkspace();
+            }
         }
 
         #endregion

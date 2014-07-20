@@ -1019,7 +1019,6 @@ namespace TypeSystem.Core
         }
 
         #endregion
-
-   
+           
     }
 }

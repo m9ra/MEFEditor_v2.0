@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:dr="clr-namespace:Drawing;assembly=Drawing"
              xmlns:m="clr-namespace:Plugin.GUI"
+             xmlns:loading="clr-namespace:MEFEditor.Plugin.GUI.LoadingControl"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              ClipToBounds="True"
@@ -124,6 +125,9 @@
                         </StackPanel>
                     </TabItem>
                 </TabControl>
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <loading:LoadingAnimation  x:Name="_Loading"></loading:LoadingAnimation>
+                </Grid>
             </Grid>
         </AdornerDecorator>
     </DockPanel>

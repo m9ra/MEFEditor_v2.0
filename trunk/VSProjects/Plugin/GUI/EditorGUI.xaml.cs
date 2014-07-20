@@ -17,8 +17,16 @@ using System.IO;
 
 using Drawing;
 
+using MEFEditor.Plugin.GUI.LoadingControl;
+
 namespace Plugin.GUI
 {
+    /// <summary>
+    /// Enumeration of content panels that can be displayed in
+    /// GUI's main area.
+    /// </summary>
+    internal enum ContentPanel { Workspace, Settings, Loading };
+
     /// <summary>
     /// Delagate used for reporting changes in path
     /// </summary>
@@ -52,7 +60,7 @@ namespace Plugin.GUI
         /// List of composition points provided to user
         /// </summary>
         public ComboBox CompositionPoints { get { return _CompositionPoints; } }
-        
+
         /// <summary>
         /// Event for handling changes in host application path
         /// </summary>
@@ -160,9 +168,21 @@ namespace Plugin.GUI
         public EditorGUI()
         {
             InitializeComponent();
-            settingsVisibility(false);
+            setVisibleContent(ContentPanel.Workspace);
 
             logsExpander.IsExpanded = true;
+        }
+
+        public void ShowLoadingMessage(string message)
+        {
+            _Loading.Message.Text = message;
+            if (!isLoadingVisible())
+                setVisibleContent(ContentPanel.Loading);
+        }
+
+        public void ShowWorkspace()
+        {
+            setVisibleContent(ContentPanel.Workspace);
         }
 
         #region Basic GUI events handling
@@ -180,9 +200,9 @@ namespace Plugin.GUI
 
         private void refresh_Click(object sender, RoutedEventArgs e)
         {
-            if (isSettingsVisible())
+            if (!isWorkspaceVisible())
             {
-                settingsVisibility(false);
+                setVisibleContent(ContentPanel.Workspace);
             }
 
             if (RefreshClicked != null)
@@ -247,41 +267,66 @@ namespace Plugin.GUI
 
         #endregion
 
-        #region Settings tab switching
+        #region Content panels switching
 
         private void toggleSettingsVisibility()
         {
-            var isVisible = isSettingsVisible();
+            var isVisible = isWorkspaceVisible();
 
-            settingsVisibility(!isVisible);
+            var toToggle = isVisible ? ContentPanel.Settings : ContentPanel.Workspace;
+            setVisibleContent(toToggle);
         }
 
-        private bool isSettingsVisible()
+        private bool isWorkspaceVisible()
         {
-            return _Settings.Visibility == Visibility.Visible;
+            return _Workspace.Visibility == Visibility.Visible;
         }
 
-        private void settingsVisibility(bool isVisible)
+        private bool isLoadingVisible()
+        {
+            return _Loading.Visibility == Visibility.Visible;
+        }
+
+        private void setVisibleContent(ContentPanel panel)
         {
             string settingsButtonText;
 
-            if (isVisible)
+            switch (panel)
             {
-                _Settings.Visibility = Visibility.Visible;
-                _Workspace.Visibility = Visibility.Hidden;
-                settingsButtonText = "Workspace";
+                case ContentPanel.Loading:
+                    _Loading.Visibility = Visibility.Visible;
+                    _Workspace.Visibility = Visibility.Hidden;
+                    _Settings.Visibility = Visibility.Hidden;
+                    settingsButtonText = null;
+                    break;
+                case ContentPanel.Settings:
+                    _Loading.Visibility = Visibility.Hidden;
+                    _Settings.Visibility = Visibility.Visible;
+                    _Workspace.Visibility = Visibility.Hidden;
+                    settingsButtonText = "Settings";
+                    break;
+                case ContentPanel.Workspace:
+                    _Loading.Visibility = Visibility.Hidden;
+                    _Settings.Visibility = Visibility.Hidden;
+                    _Workspace.Visibility = Visibility.Visible;
+                    settingsButtonText = "Workspace";
+                    break;
+                default:
+                    throw new NotImplementedException("Unsupported content panel" + panel);
+            }
+
+            if (settingsButtonText == null)
+            {
+                ScreenSwitchButton.IsEnabled = false;
             }
             else
             {
-                _Settings.Visibility = Visibility.Hidden;
-                _Workspace.Visibility = Visibility.Visible;
-                settingsButtonText = "Settings";
+                var switchCaption = new TextBlock();
+                switchCaption.Text = settingsButtonText;
+
+                ScreenSwitchButton.Content = switchCaption;
+                ScreenSwitchButton.IsEnabled = true;
             }
-
-            var switchCaption = new TextBlock();
-            switchCaption.Text = settingsButtonText;
-
-            ScreenSwitchButton.Content = switchCaption;
         }
 
         #endregion

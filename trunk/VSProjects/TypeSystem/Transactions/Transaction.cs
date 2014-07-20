@@ -54,6 +54,7 @@ namespace TypeSystem.Transactions
             ensureRunning();
 
             ProgressStatus = statusDescription;
+            _manager.ReportProgress(this);
         }
 
         /// <summary>

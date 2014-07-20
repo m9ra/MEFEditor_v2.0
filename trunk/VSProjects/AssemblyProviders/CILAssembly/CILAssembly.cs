@@ -218,6 +218,7 @@ namespace AssemblyProviders.CILAssembly
         {
             foreach (var type in _assembly.MainModule.GetTypes())
             {
+                ReportProgress(type.FullName);
                 if (isComponent(type))
                 {
                     var info = createComponentInfo(type);

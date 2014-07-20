@@ -71,10 +71,6 @@ namespace TypeSystem
         public event MethodInvalidationEvent MethodInvalidated;
 
         public event Action CompositionSchemeInvalidated;
-
-        public event Action TransactionStarted;
-
-        public event Action TransactionEnded;
         
         /// <summary>
         /// Event fired whenever new message is logged
