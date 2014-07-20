@@ -44,6 +44,7 @@ namespace RecommendedExtensions.TypeDefinitions
             //MEF Essentials
             ExportDefinition<DirectoryCatalogDefinition>();
             ExportDefinition<CompositionContainerDefinition>();
+            ExportDefinition<CompositionBatchDefinition>();
             ExportDefinition<AggregateCatalogDefinition>();
             ExportDefinition<AssemblyCatalogDefinition>();
             ExportDefinition<TypeCatalogDefinition>();

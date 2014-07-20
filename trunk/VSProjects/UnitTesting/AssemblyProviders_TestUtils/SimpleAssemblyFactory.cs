@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.IO;
+
 using TypeSystem;
 
 using AssemblyProviders.CILAssembly;
@@ -29,7 +31,7 @@ namespace UnitTesting.AssemblyProviders_TestUtils
 
 
             var path = assemblyKey as string;
-            if (path != null)
+            if (path != null && File.Exists(path))
                 return new CILAssembly(path);
 
             return null;

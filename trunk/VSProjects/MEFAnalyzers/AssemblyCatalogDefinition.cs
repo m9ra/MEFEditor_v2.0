@@ -45,6 +45,8 @@ namespace MEFAnalyzers
 
             var fullPath = DirectoryCatalogDefinition.ResolveFullPath(path, Services);
             var assembly = Services.LoadAssembly(fullPath);
+
+            //we wont test existence of path in file system, because of mapping
             if (assembly == null)
             {
                 Error.Set("Assembly file hasn't been found");

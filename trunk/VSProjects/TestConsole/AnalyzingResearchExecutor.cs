@@ -143,7 +143,7 @@ namespace TestConsole
             }
             else
             {
-                _guiManager.Display(_diagramDefinition);
+                displayDiagram(_diagramDefinition);
             }
         }
 
@@ -191,11 +191,12 @@ namespace TestConsole
         private void showDrawings()
         {
             var form = new TestForm();
-            
+
             //default drawers
             _assembly.RegisterDrawing<ComponentDrawing>(""); //define default drawer
-            _assembly.RegisterDrawing<CompositionTesterDrawing>("CompositionTester");
-            _assembly.RegisterDrawing<CompositionTesterDrawing>("System.ComponentModel.Composition.Hosting.CompositionContainer");
+            _assembly.RegisterDrawing<CompositionContainerDrawing>("CompositionTester");
+            _assembly.RegisterDrawing<CompositionContainerDrawing>("System.ComponentModel.Composition.Hosting.CompositionContainer");
+            _assembly.RegisterDrawing<CompositionBatchDrawing>("System.ComponentModel.Composition.Hosting.CompositionBatch");
             _assembly.RegisterDrawing<DirectoryCatalogDrawing>("System.ComponentModel.Composition.Hosting.DirectoryCatalog");
             _assembly.RegisterDrawing<AggregateCatalogDrawing>("System.ComponentModel.Composition.Hosting.AggregateCatalog");
             _assembly.RegisterDrawing<TypeCatalogDrawing>("System.ComponentModel.Composition.Hosting.TypeCatalog");
@@ -206,16 +207,21 @@ namespace TestConsole
             _guiManager = new GUIManager(form.GUI);
             _guiManager.Initialize(_assembly.AppDomain, factory);
             _guiManager.CompositionPointSelected += onCompositionPointSelected;
-       /*     _guiManager.HostAssemblyLoaded += (a) => _assembly.AddAssembly(a);
-            _guiManager.HostAssemblyUnLoaded += (a) => { _assembly.RemoveAssembly(a); };*/
-            _diagramDefinition.ShowJoinLines = _guiManager.ShowJoinLines;
-            _diagramDefinition.UseItemAvoidance=_guiManager.UseItemAvoidance;
-            _diagramDefinition.UseJoinAvoidance=_guiManager.UseJoinAvoidance;
-            
-            _guiManager.Display(_diagramDefinition);
+            /*     _guiManager.HostAssemblyLoaded += (a) => _assembly.AddAssembly(a);
+                 _guiManager.HostAssemblyUnLoaded += (a) => { _assembly.RemoveAssembly(a); };*/
+            displayDiagram(_diagramDefinition);
 
             form.Show();
             Dispatcher.Run();
+        }
+
+        private void displayDiagram(DiagramDefinition diagramDefinition)
+        {
+            diagramDefinition.ShowJoinLines = _guiManager.ShowJoinLines;
+            diagramDefinition.UseItemAvoidance = _guiManager.UseItemAvoidance;
+            diagramDefinition.UseJoinAvoidance = _guiManager.UseJoinAvoidance;
+
+            _guiManager.Display(diagramDefinition);
         }
 
         private void onCompositionPointSelected()

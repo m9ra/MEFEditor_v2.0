@@ -32,8 +32,12 @@ namespace MEFAnalyzers.Drawings
             TypeName.Text = Definition.DrawedType;
             InstanceID.Text = Definition.ID;
 
+            var properties = Definition.Properties.OrderBy((prop) => prop.Name);
+
+            string removedBy = null;
             var isEntryInstance = false;
-            foreach (var property in Definition.Properties)
+
+            foreach (var property in properties)
             {
                 var propertyBlock = new TextBlock();
 
@@ -46,6 +50,10 @@ namespace MEFAnalyzers.Drawings
                 Properties.Children.Add(propertyBlock);
 
                 isEntryInstance |= property.Name == "EntryInstance";
+                if (property.Name == "Removed")
+                {
+                    removedBy = property.Value;
+                }
             }
 
             if (isEntryInstance)
@@ -53,6 +61,15 @@ namespace MEFAnalyzers.Drawings
                 BorderBrush = Brushes.DarkGreen;
                 BorderThickness = new Thickness(6);
             }
+
+            var isRemoved = removedBy != null;
+            if (isRemoved)
+            {
+                DrawingTools.SetIcon(RemoveIcon, Icons.Remove);
+                DrawingTools.SetToolTip(RemoveIcon, DrawingTools.GetText("Component has been removed " + removedBy));
+            }
+            RemoveIcon.Visibility = isRemoved ? Visibility.Visible : Visibility.Hidden;
+
         }
     }
 }

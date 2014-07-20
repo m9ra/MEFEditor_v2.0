@@ -161,6 +161,63 @@ namespace TestConsole
              .AddToRuntime<MultiExportImport>();
         }
 
+        static internal TestingAssembly CompositionContainer_CompositionBatch()
+        {
+            var testAssembly = new RuntimeAssembly("C:\\test.exe");
+            testAssembly.AddDefinition(new SimpleStringExport());
+
+            return AssemblyUtils.Run(@"        
+                var dirCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+            
+                var import=new StringImport();
+                var import2=new StringImport();
+                var batch=new System.ComponentModel.Composition.Hosting.CompositionBatch();
+                batch.AddPart(import);         
+                batch.RemovePart(import2);       
+
+                compCont.Compose(batch);                
+            ")
+             
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<CompositionBatchDefinition>()
+            .AddToRuntime<AssemblyCatalogDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+            .AddToRuntime<SimpleStringExport>()
+            .AddToRuntime<StringImport>()
+            .AddWrappedGenericToRuntime(typeof(List<>))
+
+            .AddAssembly(testAssembly)
+            
+            ;
+        }
+
+        static internal TestingAssembly CompositionContainer_SatisfyImportsOnce()
+        {
+            var testAssembly = new RuntimeAssembly("C:\\test.exe");
+            testAssembly.AddDefinition(new SimpleStringExport());
+
+            return AssemblyUtils.Run(@"        
+                var dirCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+            
+                var import=new StringImport();
+                
+                compCont.SatisfyImportsOnce(import);
+                compCont.ComposeParts();
+   
+            ")
+             
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<AssemblyCatalogDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+            .AddToRuntime<SimpleStringExport>()
+            .AddToRuntime<StringImport>()
+
+            .AddAssembly(testAssembly)
+            ;
+        }
+
         static internal TestingAssembly MEF_Demo()
         {
             var testAssembly = new RuntimeAssembly("test.exe");

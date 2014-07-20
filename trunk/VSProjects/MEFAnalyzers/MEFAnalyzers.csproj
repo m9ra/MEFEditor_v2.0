@@ -75,6 +75,7 @@
     <Compile Include="AggregateCatalogDefinition.cs" />
     <Compile Include="AttributedModelServicesDefinition.cs" />
     <Compile Include="ComposablePartCatalogCollectionDefinition.cs" />
+    <Compile Include="CompositionBatchDefinition.cs" />
     <Compile Include="CompositionContainerDefinition.cs" />
     <Compile Include="CompositionEngine\CompositionContext.cs" />
     <Compile Include="CompositionEngine\CompositionGenerator.cs" />
@@ -89,6 +90,9 @@
     <Compile Include="AssemblyCatalogDefinition.cs" />
     <Compile Include="ComposablePartCatalogDefinition.cs" />
     <Compile Include="ConsoleDefinition.cs" />
+    <Compile Include="Drawings\CompositionBatchDrawing.xaml.cs">
+      <DependentUpon>CompositionBatchDrawing.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ObjectDefinition.cs" />
     <Compile Include="TypeDefinition.cs" />
     <Compile Include="Dialogs\PathProvider.cs" />
@@ -98,8 +102,8 @@
     <Compile Include="Drawings\ComponentDrawing.xaml.cs">
       <DependentUpon>ComponentDrawing.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Drawings\CompositionTesterDrawing.xaml.cs">
-      <DependentUpon>CompositionTesterDrawing.xaml</DependentUpon>
+    <Compile Include="Drawings\CompositionContainerDrawing.xaml.cs">
+      <DependentUpon>CompositionContainerDrawing.xaml</DependentUpon>
     </Compile>
     <Compile Include="Drawings\AggregateCatalogDrawing.xaml.cs">
       <DependentUpon>AggregateCatalogDrawing.xaml</DependentUpon>
@@ -164,7 +168,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Drawings\CompositionTesterDrawing.xaml">
+    <Page Include="Drawings\CompositionContainerDrawing.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -179,6 +183,10 @@
     <Page Include="Dialogs\ComponentType.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Drawings\CompositionBatchDrawing.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Drawings\TypeCatalogDrawing.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -227,12 +235,17 @@
     <None Include="Resources\Type.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\error.png" />
+    <None Include="Resources\Error.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\warning.png" />
+    <None Include="Resources\Warning.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\Batch.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Remove.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

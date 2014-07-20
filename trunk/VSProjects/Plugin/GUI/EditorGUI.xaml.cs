@@ -303,13 +303,13 @@ namespace Plugin.GUI
                     _Loading.Visibility = Visibility.Hidden;
                     _Settings.Visibility = Visibility.Visible;
                     _Workspace.Visibility = Visibility.Hidden;
-                    settingsButtonText = "Settings";
+                    settingsButtonText = "Workspace";
                     break;
                 case ContentPanel.Workspace:
                     _Loading.Visibility = Visibility.Hidden;
                     _Settings.Visibility = Visibility.Hidden;
                     _Workspace.Visibility = Visibility.Visible;
-                    settingsButtonText = "Workspace";
+                    settingsButtonText = "Settings";
                     break;
                 default:
                     throw new NotImplementedException("Unsupported content panel" + panel);

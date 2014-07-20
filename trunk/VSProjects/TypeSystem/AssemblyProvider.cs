@@ -243,10 +243,6 @@ namespace TypeSystem
         /// <param name="component">Discovered component</param>
         protected void ComponentDiscovered(ComponentInfo component)
         {
-            var alreadyExists = _services.GetComponentInfo(component.ComponentType) != null;
-            if (alreadyExists)
-                return;
-
             if (ComponentAdded != null)
                 ComponentAdded(component);
         }

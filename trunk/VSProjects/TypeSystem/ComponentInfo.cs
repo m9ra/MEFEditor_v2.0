@@ -109,6 +109,12 @@ namespace TypeSystem
             ImportingConstructor = importingCtor;
             CompositionPoints = compositionPoints;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return "[Component]" + ComponentType.TypeName;
+        }
     }
 
     /// <summary>

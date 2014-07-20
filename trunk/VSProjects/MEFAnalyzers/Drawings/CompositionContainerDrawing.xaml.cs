@@ -20,9 +20,9 @@ namespace MEFAnalyzers.Drawings
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class CompositionTesterDrawing : ContentDrawing
+    public partial class CompositionContainerDrawing : ContentDrawing
     {
-        public CompositionTesterDrawing(DiagramItem item)
+        public CompositionContainerDrawing(DiagramItem item)
             : base(item)
         {
             InitializeComponent();

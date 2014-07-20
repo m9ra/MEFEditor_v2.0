@@ -22,9 +22,12 @@ namespace MEFAnalyzers
     public class CompositionContainerDefinition : DataTypeDefinition
     {
         protected Field<Instance> ComposableCatalog;
-        protected Field<Instance[]> ComposedParts;
+        protected Field<List<Instance>> DirectChildren;
         protected Field<CompositionResult> CompositionResult;
-        protected Field<Edit> ComposePartsCreate;
+        protected Field<Edit> ComposeEdit;
+        protected Field<Edit> ComposeBatchEdit;
+        protected Field<bool> WasComposed;
+        protected Field<string> Error;
 
 
         public CompositionContainerDefinition()
@@ -37,7 +40,7 @@ namespace MEFAnalyzers
         [ParameterTypes(typeof(ComposablePartCatalog), typeof(ExportProvider[]))]
         public void _method_ctor(Instance composablePartCatalog, params Instance[] exportProviders)
         {
-            initEdits(false);
+            _method_ctor();
 
             ReportChildAdd(1, "Composable part catalog", true);
             ComposableCatalog.Set(composablePartCatalog);
@@ -45,52 +48,97 @@ namespace MEFAnalyzers
 
         public void _method_ctor()
         {
+            WasComposed.Value = false;
+            DirectChildren.Value = new List<Instance>();
             initEdits(true);
         }
 
         public void _method_ComposeParts(params Instance[] constructedParts)
         {
             //there is already compose part call 
-            Edits.Remove(ComposePartsCreate.Get());
+            Edits.Remove(ComposeEdit.Get());
             //so we will accept components to this call
             var e = Edits;
             AppendArg(constructedParts.Length + 1, UserInteraction.AcceptEditName, (v) => acceptAppendComponent(e, v));
 
-
-            //collect instances for composition
-            var catalog = ComposableCatalog.Get();
-
-            ComposedParts.Set(constructedParts);
+            DirectChildren.Value.AddRange(constructedParts);
             for (int i = 0; i < constructedParts.Length; ++i)
             {
                 ReportParamChildAdd(i, constructedParts[i], "Composed part", true);
             }
 
+            composeWithCatalog(constructedParts);
+        }
+
+        public void _method_SatisfyImportsOnce(Instance part)
+        {
+            ReportChildAdd(1, "Satisfied component");
+            DirectChildren.Value.Add(part);
+
+            composeWithCatalog(new[] { part });
+        }
+
+        /// <summary>
+        /// Composition batch restriction is needed
+        /// </summary>
+        [ParameterTypes(typeof(CompositionBatch))]
+        public void _method_Compose(Instance batch)
+        {
+            Edits.Remove(ComposeEdit.Get());
+
+            ReportChildAdd(1, "Composition batch");
+            DirectChildren.Value.Add(batch);
+
+            AsyncCall<Instance[]>(batch, "get_PartsToRemove", (toRemove) =>
+            {
+                AsyncCall<Instance[]>(batch, "get_PartsToAdd", (toAdd) =>
+                {
+                    composeWithCatalog(toAdd, toRemove);
+                });
+            });
+        }
+
+        private void composeWithCatalog(Instance[] constructedPartsToAdd, Instance[] constructedPartsToRemove = null)
+        {
+            if (WasComposed.Value)
+            {
+                Error.Value = "CompositionContainer was composed multiple times.";
+                return;
+            }
+
+            WasComposed.Value = true;
+
+            var catalog = ComposableCatalog.Get();
             if (catalog == null)
             {
                 //there is no catalog which parts can be retrieved
-                processComposition(null, constructedParts);
+                processComposition(null, constructedPartsToAdd, constructedPartsToRemove);
             }
             else
             {
+                //collect instances for composition
                 AsyncCall<Instance[]>(catalog, "get_Parts", (catalogParts) =>
                 {
-                    processComposition(catalogParts, constructedParts);
+                    processComposition(catalogParts, constructedPartsToAdd, constructedPartsToRemove);
                 });
             }
         }
 
-        /// <summary>
-        /// TODO composition batch restriction is needed
-        /// </summary>
-        public void _method_Compose(Instance batch)
+        private void processComposition(IEnumerable<Instance> notConstructed, IEnumerable<Instance> constructed, IEnumerable<Instance> toRemove)
         {
-            throw new NotImplementedException();
-        }
+            if (notConstructed == null)
+                notConstructed = new Instance[0];
 
-        private void processComposition(IEnumerable<Instance> notConstructed, IEnumerable<Instance> constructed)
-        {
+            if (constructed == null)
+                constructed = new Instance[0];
+
+            if (toRemove == null)
+                toRemove = new Instance[0];
+
             var composition = new CompositionContext(Services, Context);
+
+            notConstructed = notConstructed.Except(toRemove);
+            constructed = constructed.Except(toRemove);
 
             //add components that needs importing constructor call
             composition.AddNotConstructedComponents(notConstructed);
@@ -120,15 +168,20 @@ namespace MEFAnalyzers
                 AppendArg(1, UserInteraction.AcceptEditName, (v) => acceptPartCatalog(e, v));
             }
 
-            ComposePartsCreate.Set(
-                AddCallEdit(UserInteraction.AcceptEditName, (v) => acceptComponent(v))
+            ComposeEdit.Set(
+                AddCallEdit(UserInteraction.AcceptEditName, (v) => acceptInstance(v))
             );
         }
 
-        private CallEditInfo acceptComponent(ExecutionView view)
+        private CallEditInfo acceptInstance(ExecutionView view)
         {
-            //TODO check for using System.ComponentModel.Composition;
             var toAccept = UserInteraction.DraggedInstance;
+
+            if (Services.IsAssignable(CompositionBatchDefinition.Info, toAccept.Info))
+            {
+                return new CallEditInfo(This, "Compose", toAccept);
+            }
+
             var componentInfo = Services.GetComponentInfo(toAccept.Info);
 
             if (componentInfo == null)
@@ -137,6 +190,7 @@ namespace MEFAnalyzers
                 return null;
             }
 
+            //TODO check for using System.ComponentModel.Composition;
             return new CallEditInfo(This, "ComposeParts", toAccept);
         }
 
@@ -187,11 +241,17 @@ namespace MEFAnalyzers
             var compositionResult = CompositionResult.Get();
 
             CompositionContext context = null;
+
+            var error = Error.Value == null ? "" : Error.Value;
             if (compositionResult != null)
             {
+                if (compositionResult.Error != null)
+                    error = compositionResult.Error + Environment.NewLine + error;
                 context = compositionResult.Context;
-                drawer.SetProperty("Error", compositionResult.Error);
             }
+
+            if (error != "")
+                drawer.SetProperty("Error", error);
 
             if (context != null)
             {
@@ -230,14 +290,10 @@ namespace MEFAnalyzers
                 slot.Add(catalogDrawing.Reference);
             }
 
-            var composedParts = ComposedParts.Get();
-            if (composedParts != null)
+            foreach (var composedPart in DirectChildren.Value)
             {
-                foreach (var composedPart in composedParts)
-                {
-                    var partDrawing = drawer.GetInstanceDrawing(composedPart);
-                    slot.Add(partDrawing.Reference);
-                }
+                var partDrawing = drawer.GetInstanceDrawing(composedPart);
+                slot.Add(partDrawing.Reference);
             }
         }
 

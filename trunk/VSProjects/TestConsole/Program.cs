@@ -25,7 +25,7 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var testAssembly = TestCases.DrawingTester_SingleJoin();
+            var testAssembly = TestCases.CompositionContainer_CompositionBatch();
             DisplayTestResult(testAssembly);
         }
 

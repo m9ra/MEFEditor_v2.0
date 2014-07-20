@@ -16,7 +16,7 @@
                    
                    >
     <DockPanel>
-        <StackPanel Name="Caption" Orientation="Horizontal" DockPanel.Dock="Top" Margin="0 10 0 0" HorizontalAlignment="Center">
+        <StackPanel Name="Caption" Orientation="Horizontal" DockPanel.Dock="Top" Margin="0 10 10 0" HorizontalAlignment="Center">
             <Image Name="CaptionIcon" Width="32" Height="32" Margin="10 0"></Image>
             <TextBlock Name="CaptionText" FontSize="22" Foreground="Black">AssemblyCatalog</TextBlock>
         </StackPanel>

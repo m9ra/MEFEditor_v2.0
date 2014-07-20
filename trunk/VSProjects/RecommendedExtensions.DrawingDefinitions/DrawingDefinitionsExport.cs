@@ -24,7 +24,8 @@ namespace RecommendedExtensions.DrawingDefinitions
             ExportGeneralDrawing((i) => new ComponentDrawing(i));
 
             //Catalogs and containers drawings
-            ExportDrawing<CompositionContainer>((i) => new CompositionTesterDrawing(i));
+            ExportDrawing<CompositionContainer>((i) => new CompositionContainerDrawing(i));
+            ExportDrawing<CompositionBatchDrawing>((i) => new CompositionBatchDrawing(i));
             ExportDrawing<DirectoryCatalog>((i) => new DirectoryCatalogDrawing(i));
             ExportDrawing<AggregateCatalog>((i)=>new AggregateCatalogDrawing(i));
             ExportDrawing<TypeCatalog>((i)=>new TypeCatalogDrawing(i));

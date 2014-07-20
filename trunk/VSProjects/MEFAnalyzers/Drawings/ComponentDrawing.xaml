@@ -21,6 +21,7 @@
 
         <StackPanel Name="Properties" DockPanel.Dock="Top" Margin="0 10"></StackPanel>
 
+        <Image Name="RemoveIcon" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="32" Height="32"></Image>
         <Image Name="ComponentIcon" DockPanel.Dock="Bottom" HorizontalAlignment="Right"  Width="85" Height="51" Margin="10 0"></Image>
         
     </DockPanel>
