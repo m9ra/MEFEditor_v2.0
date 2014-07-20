@@ -312,9 +312,14 @@ namespace TypeSystem
             _services.Invalidate(invalidatedNamePrefix);
         }
 
+        /// <summary>
+        /// Report that whole assembly is invalid
+        /// </summary>
+        protected void ReportAssemblyInvalidation()
+        {
+            _services.InvalidateAssembly(this);
+        }
 
         #endregion
-
-
     }
 }

@@ -46,7 +46,7 @@ namespace TypeSystem.Core
         /// <summary>
         /// Event fired for every invalidated method
         /// </summary>
-        internal event InvalidationEvent MethodInvalidated;
+        internal event MethodInvalidationEvent MethodInvalidated;
 
         /// <summary>
         /// Get generator cached for given method. If it is not cached, provider is used and its result is cached

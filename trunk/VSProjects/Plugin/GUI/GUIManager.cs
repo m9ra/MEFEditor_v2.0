@@ -199,7 +199,10 @@ namespace Plugin.GUI
         /// <param name="diagram">Displayed diagram</param>
         public void Display(DiagramDefinition diagram)
         {
-            _drawingProvider.Display(diagram);
+            DispatchedAction(() =>
+           {
+               _drawingProvider.Display(diagram);
+           });
         }
 
         /// <summary>
@@ -207,9 +210,21 @@ namespace Plugin.GUI
         /// </summary>
         public void ResetWorkspace()
         {
-            _gui.Workspace.Reset();
-            _drawingProvider.ResetPositions();
-            _drawingProvider.Redraw();
+            DispatchedAction(() =>
+           {
+               _gui.Workspace.Reset();
+               _drawingProvider.ResetPositions();
+               _drawingProvider.Redraw();
+           });
+        }
+
+        /// <summary>
+        /// Run given action in context of gui thread
+        /// </summary>
+        /// <param name="action">Action to be runned</param>
+        public void DispatchedAction(Action action)
+        {
+            _gui.Dispatcher.BeginInvoke(action);
         }
 
         /// <summary>
@@ -218,15 +233,18 @@ namespace Plugin.GUI
         /// <param name="entry">Entry to be displayed</param>
         internal void DisplayEntry(LogEntry entry)
         {
-            _gui.Workspace.Clear();
-            _gui.Workspace.Reset();
-            var entryDrawing = createLogEntryDrawing(entry, true) as Expander;
+            DispatchedAction(() =>
+           {
+               _gui.Workspace.Clear();
+               _gui.Workspace.Reset();
+               var entryDrawing = createLogEntryDrawing(entry, true) as Expander;
 
-            var heading = entryDrawing.Header as TextBlock;
-            heading.FontSize = 20;
+               var heading = entryDrawing.Header as TextBlock;
+               heading.FontSize = 20;
 
-            entryDrawing.Margin = new Thickness(20);
-            _gui.Workspace.Children.Add(entryDrawing);
+               entryDrawing.Margin = new Thickness(20);
+               _gui.Workspace.Children.Add(entryDrawing);
+           });
         }
 
         #region Initialization routines
@@ -275,15 +293,21 @@ namespace Plugin.GUI
 
         private void onAssemblyRemoved(AssemblyProvider provider)
         {
-            //TODO remove mapping changed handler
-            _gui.Assemblies.RemoveItem(provider);
+            DispatchedAction(() =>
+            {
+                //TODO remove mapping changed handler
+                _gui.Assemblies.RemoveItem(provider);
+            });
         }
 
         private void onAssemblyAdded(AssemblyProvider provider)
         {
-            var assemblyItem = createAssemblyItem(provider);
-            assemblyItem.MappingChanged += onAssemblyMappingChanged;
-            _gui.Assemblies.AddItem(provider, assemblyItem);
+            DispatchedAction(() =>
+            {
+                var assemblyItem = createAssemblyItem(provider);
+                assemblyItem.MappingChanged += onAssemblyMappingChanged;
+                _gui.Assemblies.AddItem(provider, assemblyItem);
+            });
         }
 
         private AssemblyItem createAssemblyItem(AssemblyProvider assembly)
@@ -475,40 +499,56 @@ namespace Plugin.GUI
 
         private void onComponentAdded(ComponentInfo component)
         {
-            foreach (var compositionPoint in component.CompositionPoints)
+            DispatchedAction(() =>
             {
-                addCompositionPoint(compositionPoint);
-            }
-            requireUpdate();
+                foreach (var compositionPoint in component.CompositionPoints)
+                {
+                    addCompositionPoint(compositionPoint);
+                }
+                requireUpdate();
+            });
         }
 
         private void onComponentRemoved(ComponentInfo component)
         {
-            foreach (var compositionPoint in component.CompositionPoints)
+            DispatchedAction(() =>
             {
-                removeCompositionPoint(compositionPoint);
-            }
-            requireUpdate();
+                foreach (var compositionPoint in component.CompositionPoints)
+                {
+                    removeCompositionPoint(compositionPoint);
+                }
+                requireUpdate();
+            });
         }
 
         private void addCompositionPoint(CompositionPoint compositionPoint)
         {
-            if (!_compositionPoints.ContainsKey(compositionPoint))
-                _compositionPointAdds[compositionPoint.EntryMethod] = compositionPoint;
-            _compositionPointRemoves.Remove(compositionPoint.EntryMethod);
+            DispatchedAction(() =>
+            {
+                if (!_compositionPoints.ContainsKey(compositionPoint))
+                    _compositionPointAdds[compositionPoint.EntryMethod] = compositionPoint;
+                _compositionPointRemoves.Remove(compositionPoint.EntryMethod);
+
+            });
         }
 
         private void removeCompositionPoint(CompositionPoint compositionPoint)
         {
-            if (_compositionPoints.ContainsKey(compositionPoint))
-                _compositionPointRemoves[compositionPoint.EntryMethod] = compositionPoint;
-            _compositionPointAdds.Remove(compositionPoint.EntryMethod);
+            DispatchedAction(() =>
+            {
+                if (_compositionPoints.ContainsKey(compositionPoint))
+                    _compositionPointRemoves[compositionPoint.EntryMethod] = compositionPoint;
+                _compositionPointAdds.Remove(compositionPoint.EntryMethod);
+            });
         }
 
         private void requireUpdate()
         {
-            var action = new TransactionAction(() => FlushCompositionPointUpdates(), "UpdateCompositionPoints", (t) => t.Name == "UpdateCompositionPoints", this);
-            Transactions.AttachAfterAction(null, action);
+            DispatchedAction(() =>
+            {
+                var action = new TransactionAction(() => FlushCompositionPointUpdates(), "UpdateCompositionPoints", (t) => t.Name == "UpdateCompositionPoints", this);
+                Transactions.AttachAfterAction(null, action);
+            });
         }
 
         private ComboBoxItem createCompositionPointItem(CompositionPoint compositionPoint)
@@ -520,7 +560,7 @@ namespace Plugin.GUI
             item.Content = itemContent;
             item.Selected += (e, s) =>
             {
-                dispatchedAction(new Action(() => onCompositionPointSelected(compositionPoint)));
+                onCompositionPointSelected(compositionPoint);
             };
 
             return item;
@@ -548,15 +588,13 @@ namespace Plugin.GUI
         /// <param name="selectedCompositionPoint"></param>
         private void onCompositionPointSelected(CompositionPoint selectedCompositionPoint)
         {
-            SelectedCompositionPoint = selectedCompositionPoint;
+            DispatchedAction(() =>
+            {
+                SelectedCompositionPoint = selectedCompositionPoint;
 
-            if (CompositionPointSelected != null)
-                CompositionPointSelected();
-        }
-
-        private void dispatchedAction(Action action)
-        {
-            _gui._Workspace.Dispatcher.BeginInvoke(action);
+                if (CompositionPointSelected != null)
+                    CompositionPointSelected();
+            });
         }
 
         #endregion
@@ -569,13 +607,16 @@ namespace Plugin.GUI
         /// <param name="entry">Logged entry</param>
         private void logHandler(LogEntry entry)
         {
-            _logQueue.Enqueue(entry);
+            DispatchedAction(() =>
+            {
+                _logQueue.Enqueue(entry);
 
-            while (_logQueue.Count > LogHistorySize)
-                _logQueue.Dequeue();
+                while (_logQueue.Count > LogHistorySize)
+                    _logQueue.Dequeue();
 
-            if (_gui.IsLogVisible)
-                drawLogEntry(entry);
+                if (_gui.IsLogVisible)
+                    drawLogEntry(entry);
+            });
         }
 
         /// <summary>
@@ -643,6 +684,7 @@ namespace Plugin.GUI
 
             return expander;
         }
+
         #endregion
 
 

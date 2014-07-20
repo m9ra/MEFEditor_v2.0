@@ -56,13 +56,13 @@ namespace AssemblyProviders
         private static void setPathWatcher(string desiredFilePath)
         {
             var watchedPath = getObservingPath(desiredFilePath);
+            var fileName = Path.GetFileName(watchedPath);
 
             FileSystemWatcher watcher;
-            if (watchedPath == desiredFilePath)
+            if (watchedPath == desiredFilePath && fileName != "")
             {
                 //file exists we wait for its changes
                 var directory = Path.GetDirectoryName(desiredFilePath) + Path.DirectorySeparatorChar;
-                var fileName = Path.GetFileName(desiredFilePath);
                 watcher = new FileSystemWatcher(directory, fileName);
             }
             else

@@ -21,7 +21,7 @@ namespace TypeSystem
     /// Reports every resolved method that has been invalidated
     /// </summary>
     /// <param name="invalidatedMethod">Method that is invalidated</param>
-    public delegate void InvalidationEvent(MethodID invalidatedMethod);
+    public delegate void MethodInvalidationEvent(MethodID invalidatedMethod);
 
     public class AppDomainServices
     {
@@ -68,7 +68,9 @@ namespace TypeSystem
 
         public event ComponentEvent ComponentRemoved;
 
-        public event InvalidationEvent MethodInvalidated;
+        public event MethodInvalidationEvent MethodInvalidated;
+
+        public event Action CompositionSchemeInvalidated;
 
         public event Action TransactionStarted;
 
@@ -108,6 +110,12 @@ namespace TypeSystem
             {
                 if (MethodInvalidated != null) MethodInvalidated(m);
             };
+        }
+
+        internal void CompositionSchemeInvalidation()
+        {
+            if (CompositionSchemeInvalidated != null)
+                CompositionSchemeInvalidated();
         }
 
         /// <summary>

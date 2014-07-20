@@ -38,7 +38,7 @@ class Program
     void Compose2()
     {
         var x = new TestContent2();
-        var dir = new DirectoryCatalog(x.InnerHTML);
+        var dir = new DirectoryCatalog("C:\\Extensions");
         var agr = new AggregateCatalog();
         var typeCatalog = new TypeCatalog();
         var agr2 = new AggregateCatalog();

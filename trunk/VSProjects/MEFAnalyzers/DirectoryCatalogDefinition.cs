@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.ComponentModel.Composition.Hosting;
 
+using AssemblyProviders;
 
 using Utilities;
 using Analyzing;
@@ -50,13 +51,13 @@ namespace MEFAnalyzers
             try
             {
                 fullPath = ResolveFullPath(path, Services);
+                FileChangesWatcher.WatchFolder(path, Services.CompositionSchemeInvalidation, true);
             }
             catch (Exception)
             {
                 Error.Set("Path is invalid");
             }
-
-
+            
             GivenPath.Set(path);
             FullPath.Set(fullPath);
             Pattern.Set(pattern);

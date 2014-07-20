@@ -91,7 +91,7 @@
     <Compile Include="CILAssembly\ArgumentInitializerGenerator.cs" />
     <Compile Include="CILAssembly\CILAssembly.cs" />
     <Compile Include="CILAssembly\CILAssemblyFactory.cs" />
-    <Compile Include="CILAssembly\FileSystemWatcher.cs" />
+    <Compile Include="FileSystemWatcher.cs" />
     <Compile Include="CILAssembly\NamespaceStorage.cs" />
     <Compile Include="CILAssembly\TypeModuleIterator.cs" />
     <Compile Include="CIL\CILInstruction.cs" />

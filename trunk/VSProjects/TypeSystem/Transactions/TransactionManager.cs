@@ -72,7 +72,8 @@ namespace TypeSystem.Transactions
         {
             var popped = _transactionStack.Pop();
             if (popped != transaction)
-                throw new NotImplementedException("Auto commit transaction stack unwiding");
+                //transaction stack unwiding
+                EndTransaction(popped);
 
             var afterActions = _activeTransactions[transaction];
             _activeTransactions.Remove(transaction);

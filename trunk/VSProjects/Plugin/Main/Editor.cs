@@ -170,6 +170,7 @@ namespace MEFEditor.Plugin.Main
             _vs.ProjectRemoved += _vs_ProjectRemoved;
             
             _loader.AppDomain.MethodInvalidated += methodInvalidated;
+            _loader.AppDomain.CompositionSchemeInvalidated += requireRedraw;
 
             _vs.StartListening();
         }
@@ -245,6 +246,12 @@ namespace MEFEditor.Plugin.Main
         /// <param name="compositionPoint">Composition point to be analyzed</param>
         private void showComposition(CompositionPoint compositionPoint)
         {
+            if (_currentResult != null)
+            {
+                //invalidate result, to free up resources
+                UserInteraction.DisposeResources();
+            }
+
             if (compositionPoint == null)
             {
                 _guiManager.Display(null);
@@ -375,13 +382,16 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         private void refreshDrawing()
         {
-            if (_guiManager.FlushCompositionPointUpdates())
-                //flushing will cause event that refresh drawing again - so 
-                //we dont need to refresh drawing immediately
-                return;
+            _guiManager.DispatchedAction(() =>
+            {
+                if (_guiManager.FlushCompositionPointUpdates())
+                    //flushing will cause event that refresh drawing again - so 
+                    //we dont need to refresh drawing immediately
+                    return;
 
-            var compositionPoint = _guiManager.SelectedCompositionPoint;
-            showComposition(compositionPoint);
+                var compositionPoint = _guiManager.SelectedCompositionPoint;
+                showComposition(compositionPoint);
+            });
         }
 
         /// <summary>
@@ -598,7 +608,7 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         void _vs_SolutionOpeningStarted()
         {
-            _solutionOpenTransaction = Transactions.StartNew("Openining solution");
+            _solutionOpenTransaction = Transactions.StartNew("Opening solution");
         }
 
         /// <summary>

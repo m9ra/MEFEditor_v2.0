@@ -70,6 +70,8 @@ namespace AssemblyProviders.CILAssembly
             _assembly = AssemblyDefinition.ReadAssembly(_fullPath, pars);
 
             OnTypeSystemInitialized += initializeAssembly;
+
+            FileChangesWatcher.WatchFile(_fullPath, ReportAssemblyInvalidation, false);
         }
 
         #region Assembly initialization routines

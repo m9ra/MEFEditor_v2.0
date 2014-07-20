@@ -189,6 +189,14 @@ namespace TypeSystem
 
         #region Assembly API
 
+        /// <summary>
+        /// Reports invalidation of composition scheme
+        /// </summary>
+        public void CompositionSchemeInvalidation()
+        {
+            _manager.CompositionSchemeInvalidation();
+        }
+
 
         /// <summary>
         /// Invalidate all methods/types/begining with given prefix from cache. 
@@ -198,6 +206,7 @@ namespace TypeSystem
         {
             _manager.Cache.Invalidate(invalidatedNamePrefix);
         }
+
 
         /// <summary>
         /// Get files that are present in given directory by taking assemblies mapping into consideration
@@ -220,6 +229,16 @@ namespace TypeSystem
             return _manager.LoadReferenceAssembly(assemblyPath);
         }
 
+
+        /// <summary>
+        /// Unload whole assembly from type system because of invalidation
+        /// </summary>
+        /// <param name="provider">Representation of invalidate assembly</param>
+        internal void InvalidateAssembly(AssemblyProvider provider)
+        {
+            _manager.Unload(provider);
+        }
+
         /// <summary>
         /// Get assembly which defines given method.
         /// </summary>
@@ -231,6 +250,5 @@ namespace TypeSystem
         }
 
         #endregion
-
     }
 }

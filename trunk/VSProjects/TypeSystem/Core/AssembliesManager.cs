@@ -100,7 +100,6 @@ namespace TypeSystem.Core
         /// </summary>
         internal RuntimeAssembly Runtime { get { return Settings.Runtime; } }
 
-
         /// <summary>
         /// Initialize new instance of <see cref="AssembliesManager"/> object
         /// </summary>
@@ -433,6 +432,14 @@ namespace TypeSystem.Core
         #endregion
 
         #region Assembly API
+
+        /// <summary>
+        /// Reports invalidation of composition scheme
+        /// </summary>
+        internal void CompositionSchemeInvalidation()
+        {
+            Loader.AppDomain.CompositionSchemeInvalidation();
+        }
 
         /// <summary>
         /// Get files that are present in given directory by taking assemblies mapping into consideration
@@ -1012,5 +1019,7 @@ namespace TypeSystem.Core
         }
 
         #endregion
+
+   
     }
 }

@@ -71,7 +71,7 @@ namespace Drawing.ArrangeEngine
 
             var items = new List<DiagramItem>();
             //items.AddRange(_registeredItems.Keys);
-            items.Sort(itemEdgeComparer);
+            //items.Sort(itemEdgeComparer);
 
             var defaultItems = new List<DiagramItem>();
             defaultItems.AddRange(_requireDefaultPosition);
@@ -79,7 +79,7 @@ namespace Drawing.ArrangeEngine
 
             items.AddRange(defaultItems);
             var largestSpan = getLocalSpan(items[0]);
-            _nextBottom = largestSpan.Height < largestSpan.Width;
+            _nextBottom = largestSpan.Height > largestSpan.Width;
 
             //then resolve position for new children
             foreach (var item in items)
