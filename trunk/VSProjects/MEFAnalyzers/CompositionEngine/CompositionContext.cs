@@ -126,7 +126,7 @@ namespace MEFAnalyzers.CompositionEngine
                 var arrIndex = e.GetTemporaryVariable("set");
                 for (int i = 0; i < instArray.Length; ++i)
                 {
-                    var instStorage = getStorage(instArray[i]);
+                    var instStorage = GetStorage(instArray[i]);
                     e.AssignLiteral(arrIndex, i);
                     e.Call(setID, arrayStorage, Arguments.Values(arrIndex, instStorage));
                 }
@@ -139,11 +139,13 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
 
-        internal IEnumerable<TypeMethodInfo> GetOverloads(InstanceInfo type, string methodName)
+        internal IEnumerable<TypeMethodInfo> GetOverloads(InstanceInfo type, string methodName = null)
         {
             var searcher = _services.CreateSearcher();
             searcher.SetCalledObject(type);
-            searcher.Dispatch(methodName);
+
+            if (methodName != null)
+                searcher.Dispatch(methodName);
 
             return searcher.FoundResult;
         }
@@ -171,7 +173,7 @@ namespace MEFAnalyzers.CompositionEngine
         internal void Call(InstanceRef calledInstance, MethodID methodID, InstanceRef[] arguments)
         {
             checkNull(methodID);
-            var inst = getStorage(calledInstance);
+            var inst = GetStorage(calledInstance);
             var args = getArgumentStorages(arguments);
 
             emit((e) => e.Call(methodID, inst, args));
@@ -180,7 +182,7 @@ namespace MEFAnalyzers.CompositionEngine
         internal InstanceRef CallWithReturn(InstanceRef calledInstance, MethodID methodID, InstanceRef[] arguments)
         {
             checkNull(methodID);
-            var inst = getStorage(calledInstance);
+            var inst = GetStorage(calledInstance);
             var args = getArgumentStorages(arguments);
 
 
@@ -199,14 +201,32 @@ namespace MEFAnalyzers.CompositionEngine
             return resultInstance;
         }
 
-        private string getStorage(InstanceRef instance)
+
+        internal InstanceRef CallDirectWithReturn(DirectMethod method)
+        {
+            var resultStorage = getFreeStorage("ret");
+            //TODO determine result type
+            var resultInstance = new InstanceRef(this, null, true);
+            _instanceStorages.Add(resultInstance, resultStorage);
+
+            emit((e) =>
+            {
+                e.DirectInvoke(method);
+                e.AssignReturnValue(resultStorage, resultInstance.Type);
+            });
+
+            return resultInstance;
+        }
+
+
+        internal string GetStorage(InstanceRef instance)
         {
             return _instanceStorages[instance];
         }
 
         private Arguments getArgumentStorages(InstanceRef[] arguments)
         {
-            var argVars = (from arg in arguments select getStorage(arg)).ToArray();
+            var argVars = (from arg in arguments select GetStorage(arg)).ToArray();
             return Arguments.Values(argVars);
         }
 

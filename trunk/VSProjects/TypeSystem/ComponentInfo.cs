@@ -257,7 +257,19 @@ namespace TypeSystem
             ImportType = importType;
             ItemType = itemType == null ? importType : itemType;
 
-            //TODO check if items are lazy
+            IsItemLazy = itemType.TypeName.StartsWith("System.Lazy<");
+            if (IsItemLazy)
+            {
+                var lazyTypeArguments=itemType.Arguments.ToArray();
+                //item type wont contain 
+                ItemType = lazyTypeArguments[0];
+
+                if (lazyTypeArguments.Length > 1)
+                {
+                    //there is metadata type for lazy
+                    MetaDataType = lazyTypeArguments[1];
+                }
+            }
         }
 
         /// <summary>
