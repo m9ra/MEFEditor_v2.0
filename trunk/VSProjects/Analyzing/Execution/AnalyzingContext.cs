@@ -155,6 +155,19 @@ namespace Analyzing.Execution
         /// <param name="generator">Generator of fetched instructions</param>
         internal void FetchCall(MethodID name, Instance[] argumentValues)
         {
+            var generator = resolveGenerator(ref name, argumentValues);
+
+            PushCall(name, generator, argumentValues);
+        }
+
+        private GeneratorBase resolveGenerator(ref MethodID name, Instance[] argumentValues)
+        {
+            var overridingGenerator = _loader.GetOverridingGenerator(name, argumentValues);
+            if (overridingGenerator != null)
+                //notice that generator is not cached
+                //for resolving name
+                return overridingGenerator;
+
             InstanceInfo[] dynamicInfo = null;
             if (name.NeedsDynamicResolving)
             {
@@ -166,8 +179,7 @@ namespace Analyzing.Execution
             }
 
             var generator = getGenerator(ref name, dynamicInfo);
-
-            PushCall(name, generator, argumentValues);
+            return generator;
         }
 
 

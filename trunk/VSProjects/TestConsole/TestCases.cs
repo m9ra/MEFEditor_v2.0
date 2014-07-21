@@ -167,8 +167,8 @@ namespace TestConsole
             testAssembly.AddDefinition(new SimpleStringExport());
 
             return AssemblyUtils.Run(@"        
-                var dirCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
-                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+                var cat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(cat);
             
                 var import=new StringImport();
                 var import2=new StringImport();
@@ -198,8 +198,8 @@ namespace TestConsole
             testAssembly.AddDefinition(new SimpleStringExport());
 
             return AssemblyUtils.Run(@"        
-                var dirCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
-                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(dirCat);
+                var cat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(cat);
             
                 var import=new StringImport();
                 
@@ -213,6 +213,59 @@ namespace TestConsole
             .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
             .AddToRuntime<SimpleStringExport>()
             .AddToRuntime<StringImport>()
+
+            .AddAssembly(testAssembly)
+            ;
+        }
+
+
+        static internal TestingAssembly CompositionContainer_LazyMeta()
+        {
+            var testAssembly = new RuntimeAssembly("C:\\test.exe");
+            testAssembly.AddDefinition(new StringMetaExport());
+
+            return AssemblyUtils.Run(@"        
+                var cat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(cat);
+            
+                var import=new LazyStringMetaImport();               
+                
+                compCont.SatisfyImportsOnce(import);  
+
+                var result=import.Import.Metadata.Key1[0];
+            ")
+
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<AssemblyCatalogDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+            .AddToRuntime<LazyStringMetaImport>()
+            .AddToRuntime<MetaInterface>()
+            .AddWrappedGenericToRuntime(typeof(Lazy<,>))
+
+            .AddAssembly(testAssembly)
+            ;
+        }
+
+        static internal TestingAssembly CompositionContainer_Lazy()
+        {
+            var testAssembly = new RuntimeAssembly("C:\\test.exe");
+            testAssembly.AddDefinition(new SimpleStringExport());
+
+            return AssemblyUtils.Run(@"        
+                var cat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""C:\\test.exe"");       
+                var compCont=new System.ComponentModel.Composition.Hosting.CompositionContainer(cat);
+            
+                var import=new LazyStringImport();
+                
+                compCont.SatisfyImportsOnce(import);   
+            ")
+
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<AssemblyCatalogDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
+            .AddToRuntime<SimpleStringExport>()
+            .AddToRuntime<LazyStringImport>()
+            .AddWrappedGenericToRuntime(typeof(Lazy<>))
 
             .AddAssembly(testAssembly)
             ;

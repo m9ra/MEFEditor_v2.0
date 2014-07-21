@@ -160,7 +160,9 @@ namespace TypeSystem
         /// <summary>
         /// Dispatch currently reached locations according to given name
         /// </summary>
-        /// <param name="searchedMethod">Method that is searched at reached locations</param>
+        /// <param name="searchedMethod">Method that is searched at reached locations, 
+        /// <c>null</c> if there is no constraint on searched method. In that case all 
+        /// methods of current type should be listed</param>
         public abstract IEnumerable<TypeMethodInfo> FindMethods(string searchedName);
 
         /// <summary>

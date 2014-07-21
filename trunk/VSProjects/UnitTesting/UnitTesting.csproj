@@ -57,6 +57,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
@@ -93,6 +94,10 @@
     <Compile Include="MEFAnalyzers_Testing.cs" />
     <Compile Include="Compiler_CSharp_Testing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RuntimeTypeDefinitions\StringMetaExport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\LazyStringMetaImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\LazyStringImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\MetaInterface.cs" />
     <Compile Include="RuntimeTypeDefinitions\SelfStringExport.cs" />
     <Compile Include="TypeDefinitions_Testing.cs" />
     <Compile Include="RuntimeTypeDefinitions\StringExport2.cs" />

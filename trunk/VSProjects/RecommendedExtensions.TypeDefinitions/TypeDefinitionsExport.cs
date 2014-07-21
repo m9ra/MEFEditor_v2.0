@@ -30,7 +30,9 @@ namespace RecommendedExtensions.TypeDefinitions
                 typeof(bool), 
                 typeof(byte),
                 typeof(VMStack),
-                typeof(LiteralType)
+                typeof(LiteralType),
+                typeof(Lazy<>),
+                typeof(Lazy<,>),
             }, new[]{
                 typeof(short),        
                 typeof(int),

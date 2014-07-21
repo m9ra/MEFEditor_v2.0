@@ -106,7 +106,11 @@ namespace TypeSystem
         public void AddMeta(string key, object data, bool isMultiple)
         {
             _metaData.Add(key, data);
-            _metaMultiplicity.Add(key, isMultiple);
+
+            if (_metaMultiplicity.ContainsKey(key) && _metaMultiplicity[key])
+                return;
+
+            _metaMultiplicity[key] = isMultiple;
         }
 
         /// <summary>
@@ -294,7 +298,7 @@ namespace TypeSystem
             {
                 var values = _metaData.Get(key);
                 var isMultiple = _metaMultiplicity[key];
-                var item = new MetaItem(key, isMultiple,values);
+                var item = new MetaItem(key, isMultiple, values);
 
                 items.Add(item);
             }

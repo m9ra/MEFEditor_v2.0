@@ -72,6 +72,29 @@ namespace TypeSystem
             return overloads;
         }
 
+        /// <summary>
+        /// Method that is used for searching method info of given type path - method info is NOT instantiated
+        /// according to generic
+        /// </summary>
+        /// <param name="typePath">Path of type which methods are searched</param>
+        /// <returns>Found methods</returns>
+        internal IEnumerable<TypeMethodInfo> AccordingType(PathInfo typePath)
+        {
+            var signature = typePath.ShortSignature;
+            foreach (var key in _methodPaths.Keys)
+            {
+                if (key.Length <= signature.Length)
+                    continue;
+
+                var isSearchedType = key.StartsWith(signature) && !key.Substring(signature.Length + 1).Contains('.');
+                if (isSearchedType)
+                {
+                    foreach (var method in _methodPaths.Get(key))
+                        yield return method.Info;
+                }
+            }
+        }
+
         public GeneratorBase AccordingId(MethodID method)
         {
             MethodItem item;
@@ -164,5 +187,6 @@ namespace TypeSystem
                 return _methodIds.ToArray();
             }
         }
+
     }
 }

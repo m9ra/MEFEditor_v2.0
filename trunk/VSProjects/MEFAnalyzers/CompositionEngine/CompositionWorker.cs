@@ -433,29 +433,30 @@ namespace MEFAnalyzers.CompositionEngine
         /// <returns></returns>
         private bool testMetaData(InstanceInfo metadataType, MetaExport meta)
         {
-            foreach (var setter in _context.GetOverloads(metadataType))
+            foreach (var getter in _context.GetOverloads(metadataType))
             {
-                if (setter.Parameters.Length != 1)
-                    //is not valid setter method
-                    continue;
-
-                var setterType = setter.Parameters[0].Type;
-
-                var name = setter.MethodName;
-                if (!name.StartsWith(Naming.SetterPrefix))
-                    //is not valid setter name
-                    continue;
-
-                name = name.Substring(4);
-
                 if (meta == null)
                     //cannot satisfy metaDataType
                     return false;
 
-                IEnumerable<Instance> data = null;
+                if (getter.Parameters.Length != 0)
+                    //is not valid getter method
+                    continue;
+
+                var name = getter.MethodName;
+                if (!name.StartsWith(Naming.GetterPrefix))
+                    //is not valid getter name
+                    continue;
+
+                name = name.Substring(Naming.GetterPrefix.Length);
+
+                var getterType = getter.ReturnType;
                 var item = meta.GetItem(name);
 
-                var metaToSet = getMetaInst(setterType, data, item.IsMultiple);
+                if (item == null)
+                    return false;
+
+                var metaToSet = findMetaData(getterType, item.Data, item.IsMultiple);
                 if (metaToSet == null)
                     //not matching types
                     return false;
@@ -464,40 +465,44 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
 
-        private Instance getMetaInst(InstanceInfo setterType, IEnumerable<Instance> data, bool isMultiple)
+        private object findMetaData(InstanceInfo getterType, IEnumerable<object> metaData, bool isMultiple)
         {
-            if (data == null)
+            if (metaData == null)
                 return null;
 
             int metaDataCount = 0;
 
-            foreach (var inst in data)
+            foreach (var item in metaData)
             {
                 ++metaDataCount;
-                if (!testTypeArrayMatch(inst.Info, setterType, isMultiple))
+
+                if (item == null)
+                    //null is not supported metadata info
+                    return null;
+
+                var typeInfo = TypeDescriptor.Create(item.GetType());
+                if (!testTypeArrayMatch(typeInfo, getterType, isMultiple))
                     //not matching type
                     return null;
             }
 
             if (metaDataCount != 1 && !isMultiple)
-                //cannot load multiple instances into setter
+                //metadata item is not multiple - we cannot load
+                //multiple matching data
                 return null;
 
             if (!isMultiple)
-                return data.First();
+                return metaData.First();
 
-            throw new NotImplementedException();
-            /*
-            var directLoad = ArrayDirectLoad.FromEnumerable(data);
-            return _context.InstanceCreator.CreateInstance(setterType, directLoad);*/
+            return metaData.ToArray();
         }
 
-        private bool testTypeArrayMatch(InstanceInfo testedType, InstanceInfo setterType, bool arrayTest)
+        private bool testTypeArrayMatch(InstanceInfo testedType, InstanceInfo targetType, bool arrayTest)
         {
             if (arrayTest)
-                return setterType.TypeName.Contains(testedType.TypeName);
+                return _context.IsOfType(targetType, "Array<" + testedType.TypeName + ",1>");
             else
-                return _context.IsOfType(testedType, setterType);
+                return _context.IsOfType(testedType, targetType);
         }
 
 
@@ -619,66 +624,72 @@ namespace MEFAnalyzers.CompositionEngine
                 return exportedInstanceRef;
 
             //we have to create lazy export
-
             if (importInfo.MetaDataType == null)
             {
                 //only wrap instance to lazy object
-                return _context.CallDirectWithReturn((c) =>
+                return _context.CallDirectWithReturn((c, args) =>
                 {
-                    var storage = _context.GetStorage(exportedInstanceRef);
-                    var exportInstance = c.GetValue(new VariableName(storage));
-
+                    //prepare exported data
+                    var exportInstance = args[0];
                     var lazy = new Lazy<InstanceWrap>(() => new InstanceWrap(exportInstance));
-                    var lazyInstance = c.Machine.CreateDirectInstance(lazy);
 
-                    c.Return(lazyInstance);
-                });
+                    //create instance
+                    return c.Machine.CreateDirectInstance(lazy);
+                }, exportedInstanceRef);
             }
 
             //we have to include metadata also
-            return _context.CallDirectWithReturn((c) =>
+            return _context.CallDirectWithReturn((c, args) =>
             {
-                var storage = _context.GetStorage(exportedInstanceRef);
-                var exportInstance = c.GetValue(new VariableName(storage));
-
-                var metaInstance = getMetaInst(importInfo.ItemType, null, false);
+                //prepare exported data
+                var exportInstance = args[0];
+                var metaInstance = createMetaDataInstance(c, importInfo.MetaDataType, exp.Meta);
                 var lazy = new Lazy<InstanceWrap, InstanceWrap>(() => new InstanceWrap(exportInstance), new InstanceWrap(metaInstance));
-            });
 
-            /*   var valMeta = new ValueWithMetadata(loader);
-
-               //generic for created lazy object
-               var lazyParam = importInfo.ItemType.TypeName;
-
-               if (importInfo.MetaDataType != null)
-               {
-                   var metaDataTypeName = importInfo.MetaDataType.TypeName;
-                   lazyParam += "," + metaDataTypeName;
-                   var proxyType = string.Format("System.Proxy<{0}>", metaDataTypeName);
-
-                   _context.CallWithReturn
-                   DirectMethod proxyMethod = (c) => metaDataProxyMethod(c, exp.Meta);
-                   valMeta.Metadata = _context.InstanceCreator.CreateInstance(proxyType, proxyMethod);
-               }
-                
-               var lazyTypeName = string.Format("System.Lazy<{0}>", lazyParam);
-               var lazyItemType = TypeDescriptor.Create(lazyTypeName);
-
-               return _context.CallDirectWithReturn((c)=>{
-
-               });*/
-            throw new NotImplementedException();
+                //create instance
+                return c.Machine.CreateDirectInstance(lazy);
+            }, exportedInstanceRef);
         }
 
-
-        /// <summary>
-        /// Method used for proxiing methods on objects created from meta data info.
-        /// </summary>
-        /// <param name="meta">Proxied meta data object.</param>
-        /// <returns></returns>
-        private void metaDataProxyMethod(AnalyzingContext context, MetaExport meta)
+        private Instance createMetaDataInstance(AnalyzingContext analyzingContext, TypeDescriptor metaDataType, MetaExport metaExport)
         {
-            throw new NotImplementedException();
+            var instance = analyzingContext.Machine.CreateInstance(metaDataType);
+
+            //register call handler for instance, that 
+            //will handle all method calls
+            _context.RegisterCallHandler(instance, (c) =>
+            {
+                var method = Naming.GetMethodName(c.CurrentCall.Name);
+                var key = method.Substring(Naming.GetterPrefix.Length);
+                var item = metaExport.GetItem(key);
+
+                var metaDataInstance = createMetaItemInstance(analyzingContext, item);
+                c.Return(metaDataInstance);
+            });
+
+            return instance;
+        }
+
+        private Instance createMetaItemInstance(AnalyzingContext analyzingContext, MetaItem item)
+        {
+            var metaDataObject = item.IsMultiple ? item.Data.ToArray() : item.Data.First();
+
+            return createInstance(analyzingContext, metaDataObject);
+        }
+
+        private Instance createInstance(AnalyzingContext context, object directObject)
+        {
+            if (directObject is Array)
+            {
+                var enumerable = directObject as System.Collections.IEnumerable;
+                var array = new TypeSystem.Runtime.Array<InstanceWrap>(enumerable, context);
+
+                return context.Machine.CreateDirectInstance(array);
+            }
+            else
+            {
+                return context.Machine.CreateDirectInstance(directObject);
+            }
         }
 
         private InstanceRef callManyExportGetter(JoinPoint import, IEnumerable<JoinPoint> exps)

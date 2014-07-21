@@ -434,6 +434,17 @@ namespace TypeSystem.Core
         #region Assembly API
 
         /// <summary>
+        /// Register call handler that will be called instead of methods on registered <see cref="Instance"/>
+        /// </summary>
+        /// <param name="registeredInstance">Instance that is registered</param>
+        /// <param name="handler">Method that will be called</param>
+        internal void RegisterCallHandler(Instance registeredInstance, DirectMethod handler)
+        {
+            var generator = new DirectGenerator(handler);
+            Loader.RegisterInjectedGenerator(registeredInstance, generator);
+        }
+
+        /// <summary>
         /// Reports invalidation of composition scheme
         /// </summary>
         internal void CompositionSchemeInvalidation()
@@ -1019,6 +1030,5 @@ namespace TypeSystem.Core
         }
 
         #endregion
-           
     }
 }

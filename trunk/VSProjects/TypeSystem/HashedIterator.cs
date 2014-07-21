@@ -67,9 +67,16 @@ namespace TypeSystem
 
         public override IEnumerable<TypeMethodInfo> FindMethods(string searchedName)
         {
-            var path = extendPath(searchedName);
+            if (searchedName == null)
+            {
+                return _methods.AccordingType(_actualPath);
+            }
+            else
+            {
+                var path = extendPath(searchedName);
 
-            return _methods.AccordingPath(path);
+                return _methods.AccordingPath(path);
+            }
         }
 
         private PathInfo extendPath(string suffix)

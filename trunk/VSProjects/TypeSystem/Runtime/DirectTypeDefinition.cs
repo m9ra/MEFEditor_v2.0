@@ -323,7 +323,7 @@ namespace TypeSystem.Runtime
             if (resultType == instanceWrapType)
             {
                 //wrapp as InstanceWrap
-                var ctor = instanceWrapType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
+                var ctor = instanceWrapType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public).First();
                 return Expression.New(ctor, new Expression[] { argumentInstance });
             }
             else

@@ -18,7 +18,15 @@ namespace TypeSystem
         /// </summary>
         private readonly AssembliesManager _manager;
 
-        private readonly List<AssemblyProviderFactory> _assemblyFactories = new List<AssemblyProviderFactory>();
+        /// <summary>
+        /// Currently available factories of <see cref="AssemblyProvider"/>
+        /// </summary>
+        private readonly AssemblyProviderFactory[] _assemblyFactories;
+
+        /// <summary>
+        /// Generators that are registered in current context for given instances
+        /// </summary>
+        private readonly Dictionary<Instance, GeneratorBase> _overridingGenerators = new Dictionary<Instance, GeneratorBase>();
 
         /// <summary>
         /// Services available
@@ -32,11 +40,15 @@ namespace TypeSystem
 
         public AssemblyLoader(MachineSettings settings, params AssemblyProviderFactory[] factories)
         {
-            _manager = new AssembliesManager(this,settings);
-            _assemblyFactories.AddRange(factories);
+            _manager = new AssembliesManager(this, settings);
+            _assemblyFactories = factories.ToArray();
 
             AppDomain = new AppDomainServices(_manager);
+
+            //register cleaning of overriding generators
+            Settings.BeforeInterpretation += () => _overridingGenerators.Clear();
         }
+        #region Public API
 
         /// <summary>
         /// Load assembly defined by give assembly key into application domain
@@ -61,10 +73,9 @@ namespace TypeSystem
             return _manager.UnloadRoot(assemblyKey);
         }
 
-
         public void UnloadAssemblies()
         {
-            var assembliesCopy=_manager.Assemblies.ToArray();
+            var assembliesCopy = _manager.Assemblies.ToArray();
             foreach (var assembly in assembliesCopy)
             {
                 if (assembly == _manager.Runtime)
@@ -73,6 +84,18 @@ namespace TypeSystem
                 _manager.Unload(assembly);
             }
         }
+
+        /// <summary>
+        /// Get <see cref="ComponentInfo"/> for given <see cref="InstanceInfo"/>
+        /// </summary>
+        /// <param name="instanceInfo"><see cref="InstanceInfo"/> which defines type of component</param>
+        /// <returns><see cref="ComponentInfo"/> if available, <c>null</c> otherwise.</returns>
+        public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
+        {
+            return _manager.GetComponentInfo(instanceInfo);
+        }
+
+        #endregion
 
         #region LoaderBase implementation
 
@@ -89,9 +112,25 @@ namespace TypeSystem
         }
 
         /// </ inheritdoc>
-        public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
+        public override GeneratorBase GetOverridingGenerator(MethodID name, Instance[] argumentValues)
         {
-            return _manager.GetComponentInfo(instanceInfo);
+            if (argumentValues.Length == 0)
+                return null;
+
+            GeneratorBase generator;
+            _overridingGenerators.TryGetValue(argumentValues[0], out generator);
+            return generator;
+        }
+
+        /// <summary>
+        /// Register injected generator for given instance. All incomming
+        /// calls will be replaced with instructions of given generator.
+        /// </summary>
+        /// <param name="registeredInstance">Instance which generator is injected</param>
+        /// <param name="generator">Injected generator</param>
+        internal void RegisterInjectedGenerator(Instance registeredInstance, DirectGenerator generator)
+        {
+            _overridingGenerators[registeredInstance] = generator;
         }
 
         #endregion
@@ -124,5 +163,7 @@ namespace TypeSystem
         }
 
         #endregion
+
+
     }
 }

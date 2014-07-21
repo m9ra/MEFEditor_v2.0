@@ -25,7 +25,7 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var testAssembly = TestCases.CompositionContainer_CompositionBatch();
+            var testAssembly = TestCases.CompositionContainer_LazyMeta();
             DisplayTestResult(testAssembly);
         }
 

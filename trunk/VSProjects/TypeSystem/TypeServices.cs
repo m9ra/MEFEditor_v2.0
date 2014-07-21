@@ -190,6 +190,16 @@ namespace TypeSystem
         #region Assembly API
 
         /// <summary>
+        /// Register call handler that will be called instead of methods on registered <see cref="Instance"/>
+        /// </summary>
+        /// <param name="registeredInstance">Instance that is registered</param>
+        /// <param name="handler">Method that will be called</param>
+        public void RegisterCallHandler(Instance registeredInstance, DirectMethod handler)
+        {
+            _manager.RegisterCallHandler(registeredInstance, handler);
+        }
+
+        /// <summary>
         /// Reports invalidation of composition scheme
         /// </summary>
         public void CompositionSchemeInvalidation()
@@ -250,5 +260,6 @@ namespace TypeSystem
         }
 
         #endregion
+
     }
 }

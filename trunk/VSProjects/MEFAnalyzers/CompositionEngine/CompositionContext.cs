@@ -13,6 +13,8 @@ using Utilities;
 namespace MEFAnalyzers.CompositionEngine
 {
 
+    internal delegate Instance DirectCompositionMethod(AnalyzingContext context, Instance[] arguments);
+
     /// <summary>
     /// Context of composition provides access to type and emitting services
     /// </summary>
@@ -126,7 +128,7 @@ namespace MEFAnalyzers.CompositionEngine
                 var arrIndex = e.GetTemporaryVariable("set");
                 for (int i = 0; i < instArray.Length; ++i)
                 {
-                    var instStorage = GetStorage(instArray[i]);
+                    var instStorage = getStorage(instArray[i]);
                     e.AssignLiteral(arrIndex, i);
                     e.Call(setID, arrayStorage, Arguments.Values(arrIndex, instStorage));
                 }
@@ -144,8 +146,8 @@ namespace MEFAnalyzers.CompositionEngine
             var searcher = _services.CreateSearcher();
             searcher.SetCalledObject(type);
 
-            if (methodName != null)
-                searcher.Dispatch(methodName);
+            //for getting all methods we use null constraint
+            searcher.Dispatch(methodName);
 
             return searcher.FoundResult;
         }
@@ -173,7 +175,7 @@ namespace MEFAnalyzers.CompositionEngine
         internal void Call(InstanceRef calledInstance, MethodID methodID, InstanceRef[] arguments)
         {
             checkNull(methodID);
-            var inst = GetStorage(calledInstance);
+            var inst = getStorage(calledInstance);
             var args = getArgumentStorages(arguments);
 
             emit((e) => e.Call(methodID, inst, args));
@@ -182,7 +184,7 @@ namespace MEFAnalyzers.CompositionEngine
         internal InstanceRef CallWithReturn(InstanceRef calledInstance, MethodID methodID, InstanceRef[] arguments)
         {
             checkNull(methodID);
-            var inst = GetStorage(calledInstance);
+            var inst = getStorage(calledInstance);
             var args = getArgumentStorages(arguments);
 
 
@@ -202,31 +204,51 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
 
-        internal InstanceRef CallDirectWithReturn(DirectMethod method)
+        internal InstanceRef CallDirectWithReturn(DirectCompositionMethod method, params InstanceRef[] argumentInstances)
         {
             var resultStorage = getFreeStorage("ret");
             //TODO determine result type
             var resultInstance = new InstanceRef(this, null, true);
             _instanceStorages.Add(resultInstance, resultStorage);
 
+            var argumentStorages=from argumentInstance in argumentInstances select new VariableName(getStorage(argumentInstance));
+
+            //emitting routine
             emit((e) =>
             {
-                e.DirectInvoke(method);
-                e.AssignReturnValue(resultStorage, resultInstance.Type);
+                //wrap method into direct invoke instruction
+                e.DirectInvoke((c) =>
+                {
+                    //fetch arguments
+                    var argumentValues = new List<Instance>();
+                    foreach (var argumentStorage in argumentStorages)
+                    {
+                        var argumentValue=c.GetValue(argumentStorage);
+                        argumentValues.Add(argumentValue);
+                    }
+
+                    var result = method(c, argumentValues.ToArray());
+                    c.SetValue(new VariableName(resultStorage), result);
+                });
             });
 
             return resultInstance;
         }
 
+        internal void RegisterCallHandler(Instance registeredInstance, DirectMethod registeredMethod)
+        {
+            _services.RegisterCallHandler(registeredInstance, registeredMethod);
+        }
 
-        internal string GetStorage(InstanceRef instance)
+
+        private string getStorage(InstanceRef instance)
         {
             return _instanceStorages[instance];
         }
 
         private Arguments getArgumentStorages(InstanceRef[] arguments)
         {
-            var argVars = (from arg in arguments select GetStorage(arg)).ToArray();
+            var argVars = (from arg in arguments select getStorage(arg)).ToArray();
             return Arguments.Values(argVars);
         }
 
