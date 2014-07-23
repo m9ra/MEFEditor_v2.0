@@ -796,11 +796,10 @@ namespace AssemblyProviders.CSharp
                 //setter on explicit object
                 RValueProvider baseObject;
                 tryGetRVariable(hierarchy, out baseObject);
-                var callNode = isIndexerCall ? hierarchy : hierarchy.Child;
 
-                if (!tryGetSetter(callNode, out result, baseObject))
+                if (!tryGetSetter(hierarchy, out result, baseObject))
                 {
-                    throw parsingException(callNode, "Unknown setter on object hierarchy construction", callNode);
+                    throw parsingException(hierarchy, "Unknown setter on object hierarchy construction", hierarchy);
                 }
             }
             else if (!hasBaseObject)
@@ -835,11 +834,10 @@ namespace AssemblyProviders.CSharp
             {
                 //object based call
                 var baseObject = result;
-                var callNode = isIndexerCall ? hierarchy : hierarchy.Child;
 
-                if (!tryGetCall(callNode, out result, baseObject))
+                if (!tryGetCall(hierarchy, out result, baseObject))
                 {
-                    throw parsingException(callNode, "Unknown object call hierarchy construction", callNode);
+                    throw parsingException(hierarchy, "Unknown object call hierarchy construction", hierarchy);
                 }
             }
             else if (!hasBaseObject)
@@ -1267,13 +1265,13 @@ namespace AssemblyProviders.CSharp
                     throw parsingException(literalNode, "Operator typeof doesn't have type specified");
                 }
 
-                var typeArgumentNode=literalNode.Arguments[0];
+                var typeArgumentNode = literalNode.Arguments[0];
                 var type = resolveTypeofArgument(typeArgumentNode);
                 if (type == null)
                 {
                     throw parsingException(typeArgumentNode, "Type argument of typeof cannot be resolved");
                 }
-                    
+
                 literal = new LiteralValue(type, literalNode, Context);
                 return true;
             }
@@ -1459,7 +1457,7 @@ namespace AssemblyProviders.CSharp
         {
             var selector = new MethodSelector(methods, Context);
 
-            var arguments = GetArguments(callNode);
+            var arguments = GetArguments(callNode, selector.IsIndexer);
             var callActivation = selector.CreateCallActivation(arguments);
 
             if (callActivation != null)
@@ -1498,10 +1496,10 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="node">Node which arguments are needed</param>
         /// <returns>Arguments available for given node</returns>
-        internal Argument[] GetArguments(INodeAST node)
+        internal Argument[] GetArguments(INodeAST node, bool isIndexer)
         {
             var argNodes = node.Arguments;
-            if (node.NodeType == NodeTypes.hierarchy && node.Indexer != null)
+            if (isIndexer && node.Indexer != null)
             {
                 argNodes = node.Indexer.Arguments;
             }

@@ -288,7 +288,7 @@ namespace UnitTesting
 
                 c.SetField(thisObj, "_property", arg1 + arg2 + arg3);
 
-            }, Method.Void_StringParam)
+            }, Method.Void_StringStringStringParam)
 
             .AddMethod("TestObj.get_Property", (c) =>
             {

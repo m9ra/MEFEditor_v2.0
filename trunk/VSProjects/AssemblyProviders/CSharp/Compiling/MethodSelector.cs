@@ -16,11 +16,17 @@ namespace AssemblyProviders.CSharp.Compiling
     class MethodSelector
     {
         LinkedList<ArgumentIterator> _argumentIterators = new LinkedList<ArgumentIterator>();
+
+        internal readonly bool IsIndexer;
+
         internal MethodSelector(IEnumerable<TypeMethodInfo> overloads, CompilationContext context)
         {
             foreach (var overload in overloads)
             {
                 _argumentIterators.AddFirst(new ArgumentIterator(overload, context));
+
+                var name=overload.MethodName;
+                IsIndexer |= name== Naming.IndexerSetter || name==Naming.IndexerGetter;
             }
         }
 

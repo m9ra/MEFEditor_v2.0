@@ -35,6 +35,11 @@ namespace AssemblyProviders.CSharp.Compiling
         private RValueProvider _currentObject;
 
         /// <summary>
+        /// Current setter where hierarchy is resolved, if available
+        /// </summary>
+        private SetterLValue _currentSetter;
+
+        /// <summary>
         /// Context available from compiler that uses current processor
         /// </summary>
         protected CompilationContext Context { get { return _compiler.Context; } }
@@ -58,10 +63,8 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise</returns>
         internal bool TryGetSetter(out LValueProvider call, RValueProvider calledObject)
         {
-            _currentObject = calledObject;
-            _searcher = createMethodSearcher();
+            var currNode = initializeCallSearch(calledObject, _entryNode.Child == null);
 
-            var currNode = _entryNode;
             while (currNode != null)
             {
                 if (currNode.Child == null)
@@ -75,11 +78,27 @@ namespace AssemblyProviders.CSharp.Compiling
                     break;
 
                 currNode = currNode.Child;
+
+                //there is indexer on last child - get it as rvalue
+                if (currNode.Child == null && currNode.Indexer != null && !processRNode(currNode))
+                    //indexer setters are handled in 
+                    //different way than getters
+                    break;
             }
 
             //setter hasnt been found
             call = null;
             return false;
+        }
+
+        private INodeAST initializeCallSearch(RValueProvider calledObject, bool dispatchSetter)
+        {
+            _searcher = createMethodSearcher(calledObject);
+            setCurrentObject(calledObject, _entryNode, dispatchSetter && _entryNode.Child == null);
+
+            //if there is a called object, entry node has been already used for it
+            var currNode = calledObject == null || dispatchSetter ? _entryNode : _entryNode.Child;
+            return currNode;
         }
 
         /// <summary>
@@ -90,10 +109,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise</returns>
         internal bool TryGetCall(out RValueProvider call, RValueProvider calledObject)
         {
-            _currentObject = calledObject;
-            _searcher = createMethodSearcher();
-
-            var currNode = _entryNode;
+            var currNode = initializeCallSearch(calledObject, false);
             while (currNode != null)
             {
                 if (!processRNode(currNode))
@@ -111,34 +127,38 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private SetterLValue processLNode(INodeAST currNode)
         {
-
             dispatchByNode(_searcher, currNode, true);
 
             if (_searcher.HasResults)
             {
-                //overloading on setters is not supported
-                var overloads = _searcher.FoundResult.ToArray();
-                //TODO indexer arguments
-                if (overloads.Length > 1)
-                    throw CSharpSyntax.ParsingException(currNode, "Cannot select setter overload for {0}", currNode.Value);
-
-                var overload = overloads[0];
-                if (!overload.IsStatic && _currentObject == null)
-                {
-                    if (!_compiler.MethodInfo.HasThis)
-                    {
-                        //cannot get implicit this object
-                        return null;
-                    }
-
-                    _currentObject = _compiler.CreateImplicitThis(currNode);
-                }
-
-                var indexArguments = _compiler.GetArguments(currNode);
-                return new SetterLValue(overloads[0], _currentObject, indexArguments, Context);
+                return createSetterValue(currNode, _searcher.FoundResult);
             }
 
             return null;
+        }
+
+        private SetterLValue createSetterValue(INodeAST currNode, IEnumerable<TypeMethodInfo> overloadMethods)
+        {
+            var overloads = overloadMethods.ToArray();
+            //overloading on setters is not supported
+            if (overloads.Length > 1)
+                throw CSharpSyntax.ParsingException(currNode, "Cannot select setter overload for {0}", currNode.Value);
+
+            var overload = overloads[0];
+            if (!overload.IsStatic && _currentObject == null)
+            {
+                if (!_compiler.MethodInfo.HasThis)
+                {
+                    //cannot get implicit this object
+                    return null;
+                }
+
+                var implicitThis = _compiler.CreateImplicitThis(currNode);
+                setCurrentObject(implicitThis, currNode, true);
+            }
+
+            var indexArguments = _compiler.GetArguments(currNode, currNode.Indexer != null);
+            return new SetterLValue(overloads[0], _currentObject, indexArguments, Context);
         }
 
         private bool processRNode(INodeAST node)
@@ -152,7 +172,7 @@ namespace AssemblyProviders.CSharp.Compiling
                     //in current state - hierarchy has to be continuous
                     return false;
 
-                _searcher = createMethodSearcher();
+                _searcher = createMethodSearcher(_currentObject);
             }
 
             //search within the searcher
@@ -161,7 +181,7 @@ namespace AssemblyProviders.CSharp.Compiling
             if (_searcher.HasResults)
             {
                 //there are possible overloads for call
-                return setCalledObject(node);
+                return setCalledObject(node, false);
             }
             else
             {
@@ -191,31 +211,61 @@ namespace AssemblyProviders.CSharp.Compiling
             }
         }
 
-        private bool setCalledObject(INodeAST currNode)
+        private bool setCalledObject(INodeAST currNode, bool dispatchSetter)
         {
-            var callActivation = _compiler.CreateCallActivation(_currentObject, currNode, _searcher.FoundResult);
-            if (callActivation == null)
-            {
-                //overloads doesnt match to arguments
+            var resolvedCall = resolveCall(_currentObject, currNode, _searcher.FoundResult);
+
+            if (resolvedCall == null || !setCurrentObject(resolvedCall, currNode, dispatchSetter))
                 return false;
-            }
-
-            var resolvedCall = new CallValue(callActivation, Context);
-
-            _currentObject = resolvedCall;
 
             //old searcher is not needed now
             _searcher = null;
             return true;
         }
 
+        private CallValue resolveCall(RValueProvider calledObject, INodeAST currNode, IEnumerable<TypeMethodInfo> overloads)
+        {
+            var callActivation = _compiler.CreateCallActivation(calledObject, currNode, overloads);
+            if (callActivation == null)
+            {
+                //overloads doesnt match to arguments
+                return null;
+            }
 
+            return new CallValue(callActivation, Context);
+        }
+
+        private bool setCurrentObject(RValueProvider calledObject, INodeAST currNode, bool dispatchSetter)
+        {
+            if (calledObject != null && currNode != null && currNode.Indexer != null)
+            {
+                if (dispatchSetter)
+                {
+                    //nothing to do here - setters are created in LNode value processing
+                }
+                else
+                {
+                    var searcher = createMethodSearcher(calledObject);
+                    searcher.Dispatch(Naming.IndexerGetter);
+                    calledObject = resolveCall(calledObject, currNode, searcher.FoundResult);
+                    if (calledObject == null)
+                        //indexer hasn't been found
+                        return false;
+
+                    //reset searcher, because object has been found
+                    _searcher = null;
+                }
+            }
+
+            _currentObject = calledObject;
+            return true;
+        }
 
         /// <summary>
-        /// Create method searcher filled with valid namespaces according to _currentObject
+        /// Create method searcher filled with valid namespaces according to calledObject
         /// </summary>
         /// <returns>Created <see cref="MethodSearcher"/></returns>
-        private MethodSearcher createMethodSearcher()
+        private MethodSearcher createMethodSearcher(RValueProvider calledObject)
         {
             //x without base can resolve to:            
             //[this namespace].this.get_x /this.set_x
@@ -226,13 +276,13 @@ namespace AssemblyProviders.CSharp.Compiling
 
             var searcher = Context.CreateSearcher();
 
-            if (_currentObject == null)
+            if (calledObject == null)
             {
                 searcher.ExtendName(_compiler.Namespaces.ToArray());
             }
             else
             {
-                var calledObjectInfo = _currentObject.Type;
+                var calledObjectInfo = calledObject.Type;
                 searcher.SetCalledObject(calledObjectInfo);
             }
             return searcher;
@@ -252,33 +302,25 @@ namespace AssemblyProviders.CSharp.Compiling
             switch (node.NodeType)
             {
                 case NodeTypes.hierarchy:
-                    if (node.Indexer == null)
+                    if (dispatchSetter)
                     {
-                        Debug.Assert(node.Arguments.Length == 0);
-                        if (dispatchSetter)
+                        if (node.Indexer != null)
                         {
-                            searcher.Dispatch(Naming.SetterPrefix + name);
-                        }
-                        else
-                        {
-                            searcher.Dispatch(Naming.GetterPrefix + name);
-                        }
-                    }
-                    else
-                    {
-                        if (dispatchSetter)
-                        {
+                            //indexer setters are handled in different way than getters
                             searcher.Dispatch(Naming.IndexerSetter);
                         }
                         else
                         {
-                            searcher.Dispatch(Naming.IndexerGetter);
+                            searcher.Dispatch(Naming.SetterPrefix + name);
                         }
+                    }
+                    else
+                    {
+                        searcher.Dispatch(Naming.GetterPrefix + name);
                     }
                     break;
 
                 case NodeTypes.call:
-                    //TODO this is not correct!!
                     searcher.Dispatch(name);
                     break;
 
