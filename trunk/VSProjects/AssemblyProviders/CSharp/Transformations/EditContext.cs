@@ -16,6 +16,8 @@ namespace AssemblyProviders.CSharp.Transformations
     {
         private readonly HashSet<INodeAST> _removedNodes = new HashSet<INodeAST>();
 
+        private readonly HashSet<string> _requiredNamespaces = new HashSet<string>();
+
         private readonly Source _source;
 
         private readonly ExecutionView _view;
@@ -25,6 +27,8 @@ namespace AssemblyProviders.CSharp.Transformations
         public bool IsCommited { get; private set; }
 
         public string Code { get; private set; }
+
+        public IEnumerable<string> RequiredNamespaces { get { return _requiredNamespaces; } }
 
         internal EditContext(ExecutionView view, Source source, string code)
         {
@@ -51,6 +55,15 @@ namespace AssemblyProviders.CSharp.Transformations
         internal void NodeRemoved(INodeAST removedNode)
         {
             _removedNodes.Add(removedNode);
+        }
+
+        internal void EnsureNamespace(string ns)
+        {
+            if (_source.Namespaces.Contains(ns))
+                //Namespace already exists
+                return;
+
+            _requiredNamespaces.Add(ns);
         }
 
         protected override void commit()

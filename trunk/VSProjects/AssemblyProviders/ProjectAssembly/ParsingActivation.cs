@@ -13,7 +13,8 @@ namespace AssemblyProviders.ProjectAssembly
     /// Handler for events raised for source changes
     /// </summary>
     /// <param name="commitedSource">Source that has been commited</param>
-    public delegate void SourceChangeCommitedEvent(string commitedSource);
+    /// <param name="requiredNamespaces">Namespaces that are required for code change</param>
+    public delegate void SourceChangeCommitedEvent(string commitedSource, IEnumerable<string> requiredNamespaces);
 
     /// <summary>
     /// Handler for events raised when user wants to navigate at given offset
@@ -69,8 +70,8 @@ namespace AssemblyProviders.ProjectAssembly
 
         public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters, IEnumerable<string> namespaces = null)
         {
-          /*  if (sourceCode == null)
-                throw new ArgumentNullException("sourceCode");*/
+            /*  if (sourceCode == null)
+                  throw new ArgumentNullException("sourceCode");*/
 
             if (genericParameters == null)
                 throw new ArgumentNullException("genericParameterrs");
@@ -95,10 +96,11 @@ namespace AssemblyProviders.ProjectAssembly
         /// Method for reporting commits on represented source code
         /// </summary>
         /// <param name="commitedSource">Code that has been commited</param>
-        internal void OnCommited(string commitedSource)
+        /// <param name="requiredNamespaces">Namespaces which presence is required</param>
+        internal void OnCommited(string commitedSource, IEnumerable<string> requiredNamespaces)
         {
             if (SourceChangeCommited != null)
-                SourceChangeCommited(commitedSource);
+                SourceChangeCommited(commitedSource, requiredNamespaces);
         }
 
         /// <summary>

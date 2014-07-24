@@ -127,7 +127,7 @@ namespace AssemblyProviders.CSharp
         internal void OnCommited(EditContext commitedContext)
         {
             if (SourceChangeCommited != null)
-                SourceChangeCommited(commitedContext.Code);
+                SourceChangeCommited(commitedContext.Code, commitedContext.RequiredNamespaces);
         }
 
 
@@ -180,6 +180,7 @@ namespace AssemblyProviders.CSharp
         internal void AppendCall(ExecutionView view, INodeAST lineNode, CallEditInfo call)
         {
             var callRepresentation = callToCSharp(call);
+            ensureNamespaces(view, call);
 
             var behindLineOffset = getBehindOffset(lineNode);
             write(view, behindLineOffset, callRepresentation);
@@ -194,6 +195,7 @@ namespace AssemblyProviders.CSharp
         internal void PrependCall(ExecutionView view, INodeAST lineNode, CallEditInfo call)
         {
             var callRepresentation = callToCSharp(call);
+            ensureNamespaces(view, call);
 
             var beforeLineOffset = getBeforeOffset(lineNode);
             write(view, beforeLineOffset, callRepresentation);
@@ -254,7 +256,7 @@ namespace AssemblyProviders.CSharp
 
             currentShiftedLine = shiftedLine;
             currentBehindLine = behindLine;
-            var minLength = Math.Min(shiftedSubq.Count, behindSubq.Count)-1;
+            var minLength = Math.Min(shiftedSubq.Count, behindSubq.Count) - 1;
             for (int i = 0; i <= minLength; ++i)
             {
                 var currentShifted = shiftedSubq[i];
@@ -531,20 +533,23 @@ namespace AssemblyProviders.CSharp
         /// <returns>Generated code</returns>
         private string callToCSharp(CallEditInfo call)
         {
+            var rawThisObj = call.IsExtensionCall ? call.CallArguments[0] : call.ThisObj;
+            var rawArguments = call.IsExtensionCall ? call.CallArguments.Skip(1) : call.CallArguments;
+
             string thisObj;
             string callFormat;
             if (call.CallName == Naming.CtorName)
             {
                 callFormat = "new {0}({2})";
-                thisObj = toCSharpType(call.ThisObj as InstanceInfo);
+                thisObj = toCSharpType(rawThisObj as InstanceInfo);
             }
             else
             {
                 callFormat = "{0}.{1}({2})";
-                thisObj = toCSharp(call.ThisObj);
+                thisObj = toCSharp(rawThisObj);
             }
 
-            var args = (from arg in call.CallArguments select toCSharp(arg)).ToArray();
+            var args = (from arg in rawArguments select toCSharp(arg)).ToArray();
             var argsList = string.Join(",", args);
             var callRepresentation = string.Format(callFormat + ";\n", thisObj, call.CallName, argsList);
 
@@ -555,6 +560,26 @@ namespace AssemblyProviders.CSharp
             }
 
             return callRepresentation;
+        }
+
+        /// <summary>
+        /// Ensure that required namespaces are present
+        /// </summary>
+        /// <param name="view"></param>
+        /// <param name="call">Call which namespaces are required</param>
+        private void ensureNamespaces(ExecutionView view, CallEditInfo call)
+        {
+            if (!call.IsExtensionCall)
+                return;
+
+            var typeSignature = PathInfo.GetSignature(call.ThisObj as TypeDescriptor);
+            var lastDot = typeSignature.LastIndexOf('.');
+            if (lastDot <= 0)
+                //there is no required namespace
+                return;
+
+            var ns = typeSignature.Substring(0, lastDot);
+            EditContext(view).EnsureNamespace(ns);
         }
 
         /// <summary>
@@ -758,7 +783,6 @@ namespace AssemblyProviders.CSharp
         {
             EditContext(view).Strips.Move(p1, length, np1);
         }
-
 
         #endregion
 

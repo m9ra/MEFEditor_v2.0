@@ -100,7 +100,7 @@ namespace TestConsole
                 UserInteraction.DraggedInstance = AssemblyUtils.REPORTED_INSTANCE; 
             })
 
-            .RunEditAction("cont", UserInteraction.AcceptEditName)
+           // .RunEditAction("cont", UserInteraction.AcceptEditName)
            ;
         }
 

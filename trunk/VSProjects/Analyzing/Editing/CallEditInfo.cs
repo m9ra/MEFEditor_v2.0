@@ -17,6 +17,7 @@ namespace Analyzing.Editing
         public readonly object ThisObj;
         public readonly string CallName;
         public readonly object[] CallArguments;
+        public readonly bool IsExtensionCall;
 
         /// <summary>
         /// Name of variable that will contain call return value
@@ -28,6 +29,12 @@ namespace Analyzing.Editing
             ThisObj = thisObj;
             CallName = callName;
             CallArguments = callArgs;
+        }
+
+        public CallEditInfo(object thisObj, string callName, bool isExtensionCall, params object[] callArgs)
+            : this(thisObj, callName, callArgs)
+        {
+            IsExtensionCall = isExtensionCall;
         }
 
         public IEnumerable<Instance> Instances
@@ -51,13 +58,13 @@ namespace Analyzing.Editing
                 args.Add(subsitute(arg, substitutions));
             }
 
-            var call= new CallEditInfo(
-                subsitute(ThisObj, substitutions), CallName, args.ToArray()
+            var call = new CallEditInfo(
+                subsitute(ThisObj, substitutions), CallName, IsExtensionCall, args.ToArray()
                 );
 
             call.ReturnName = ReturnName;
 
-            return call;    
+            return call;
         }
 
         private object subsitute(object oldValue, Dictionary<Instance, VariableName> subsitutions)

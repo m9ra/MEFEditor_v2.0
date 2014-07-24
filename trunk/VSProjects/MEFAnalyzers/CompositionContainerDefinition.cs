@@ -189,8 +189,7 @@ namespace MEFAnalyzers
                 return null;
             }
 
-            //TODO check for using System.ComponentModel.Composition;
-            return new CallEditInfo(This, "ComposeParts", toAccept);
+            return new CallEditInfo(TypeDescriptor.Create(typeof(AttributedModelServices)), "ComposeParts", true, This, toAccept);
         }
 
         private object acceptAppendComponent(EditsProvider e, ExecutionView view)

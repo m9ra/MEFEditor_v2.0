@@ -585,7 +585,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             //TODO parse aliases
             if (genericParameter.EndsWith("[]"))
             {
-                var itemType = genericParameter.Substring(0,genericParameter.Length - 2);                
+                var itemType = genericParameter.Substring(0, genericParameter.Length - 2);
                 genericParameter = string.Format("Array<{0},1>", itemType);
             }
 
@@ -708,7 +708,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <param name="element">Element where bindings will be applied</param>
         private static void registerActivation(ParsingActivation activation, CodeFunction element)
         {
-            activation.SourceChangeCommited += (source) => write(element, source);
+            activation.SourceChangeCommited += (source, ns) => { write(element, source, ns); };
             activation.NavigationRequested += (offset) => navigate(element, offset);
         }
 
@@ -716,8 +716,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// Process source writing into given element
         /// </summary>
         /// <param name="element">Element which source will be written</param>
+        /// <param name="requiredNamespaces">Namespaces which presence is required within document</param>
         /// <param name="source">Source that will be written</param>
-        private static void write(CodeFunction element, string source)
+        private static void write(CodeFunction element, string source, IEnumerable<string> requiredNamespaces)
         {
             bool undoOpened = false;
 
@@ -734,9 +735,16 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
                 if (element.ProjectItem.Document.ReadOnly)
                     throw new NotSupportedException("Document is read only");
 
-                //TODO this is ugly - refactor getting source code
-                source = source.Substring(1); //remove first {
+                var fileCodeModel2 = element.ProjectItem.FileCodeModel as FileCodeModel2;
+                if (fileCodeModel2 != null)
+                {
+                    foreach (var ns in requiredNamespaces)
+                    {
+                        fileCodeModel2.AddImport(ns);
+                    }
+                }
 
+                source = source.Substring(1); //remove first {
                 editPoint.ReplaceText(element.EndPoint, source, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
             }
             finally
