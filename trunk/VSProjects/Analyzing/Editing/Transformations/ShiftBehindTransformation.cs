@@ -30,7 +30,7 @@ namespace Analyzing.Editing.Transformations
         {
             shiftBehind(_shifted, _target, View);
         }
-        
+
         /// <summary>
         /// Shift given shiftedBlock behind target, if possible
         /// </summary>

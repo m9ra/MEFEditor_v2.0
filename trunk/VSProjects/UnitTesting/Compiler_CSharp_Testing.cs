@@ -44,7 +44,7 @@ namespace UnitTesting
             "a < b c > d"
             .AssertTokens("a", "<", "b", "c", ">", "d");
         }
-        
+
         [TestMethod]
         public void Parse_Basic()
         {
@@ -557,6 +557,55 @@ namespace UnitTesting
             .AssertVariable("inc").HasValue(5)
             .AssertVariable("post").HasValue(2)
             .AssertVariable("pref").HasValue(4)
+            ;
+        }
+
+        [TestMethod]
+        public void Compile_ArrayCreation()
+        {
+            AssemblyUtils.Run(@"
+                var arr=new System.String[2];
+                arr[0]=""abc"";
+                arr[1]=""def"";
+                var result=arr[0]+arr[1];
+            ")
+
+            .AssertVariable("result").HasValue("abcdef")
+
+            ;
+        }
+
+        [TestMethod]
+        public void Compile_ArrayInitializer()
+        {
+            AssemblyUtils.Run(@"
+                var arr=new System.String[]{
+                    ""abc"",
+                    ""def""
+                };   
+                var result=arr[0]+arr[1];
+            ")
+
+            .AssertVariable("result").HasValue("abcdef")
+
+            ;
+        }
+
+        [TestMethod]
+        public void Compile_CollectionInitializer()
+        {
+            AssemblyUtils.Run(@"
+             var list=new System.Collections.Generic.List<System.String>(){
+                    ""abc"",
+                    ""def""
+                };   
+                var result=list[0]+list[1];
+            ")
+
+            .AddWrappedGenericToRuntime(typeof(List<>))
+
+            .AssertVariable("result").HasValue("abcdef")
+
             ;
         }
     }

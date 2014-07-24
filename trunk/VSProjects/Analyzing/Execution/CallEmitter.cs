@@ -31,7 +31,12 @@ namespace Analyzing.Execution
         /// <summary>
         /// Instruction info for currently emitted block
         /// </summary>
-        private InstructionInfo _currentBlockInfo = new InstructionInfo();
+        private InstructionInfo _currentBlockInfo = new InstructionInfo(null);
+
+        /// <summary>
+        /// Group id that is currently used for instructions
+        /// </summary>
+        private object _currentGroupID;
 
         internal CallEmitter(AnalyzingContext context)
             : base(context)
@@ -184,12 +189,18 @@ namespace Analyzing.Execution
         {
             emitInstruction(new Nop());
         }
-
+        
         public override InstructionInfo StartNewInfoBlock()
         {
-            _currentBlockInfo = new InstructionInfo();
+            _currentBlockInfo = new InstructionInfo(_currentGroupID);
             return _currentBlockInfo;
         }
+
+        public override void SetCurrentGroup(object groupID)
+        {
+            _currentGroupID = groupID;
+        }
+
 
         public override string GetTemporaryVariable(string description = "")
         {
@@ -328,5 +339,7 @@ namespace Analyzing.Execution
         }
 
         #endregion
+
+
     }
 }

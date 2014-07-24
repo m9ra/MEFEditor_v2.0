@@ -161,7 +161,6 @@ namespace MEFAnalyzers
 
         private void initEdits(bool acceptCatalog)
         {
-            //TODO provide edit context
             var e = Edits;
             if (acceptCatalog)
             {

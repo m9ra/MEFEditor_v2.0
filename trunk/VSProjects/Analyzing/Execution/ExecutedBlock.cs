@@ -173,5 +173,13 @@ namespace Analyzing.Execution
 
             _assignRemoveProviders.Add(assignedInstance, removeProvider);
         }
+
+        public override string ToString()
+        {
+            if (Info.Comment == null)
+                return base.ToString();
+
+            return "[ExecutedBlock]" + Info.Comment;
+        }
     }
 }

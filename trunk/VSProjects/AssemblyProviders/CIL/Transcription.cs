@@ -13,6 +13,7 @@ using Analyzing;
 using TypeSystem;
 
 using AssemblyProviders.CIL.ILAnalyzer;
+using AssemblyProviders.DirectDefinitions;
 
 namespace AssemblyProviders.CIL
 {
@@ -387,8 +388,7 @@ namespace AssemblyProviders.CIL
 
         static void _ldnull()
         {
-            //TODO solve it semanticaly better
-            emitPush<string>("null");
+            emitPush<NullLiteral>(new NullLiteral());
         }
 
         static void _ldstr()

@@ -87,6 +87,7 @@ namespace AssemblyProviders.CSharp.Compiling
         readonly INodeAST _newOperator;
 
         RValueProvider _ctorCall;
+        RValueProvider[] _initializerArguments;
         string _storage;
 
         public NewObjectValue(TypeDescriptor objectType, INodeAST newOperator, CompilationContext context) :
@@ -139,6 +140,12 @@ namespace AssemblyProviders.CSharp.Compiling
             _ctorCall = ctorCall;
         }
 
+
+        internal void SetInitializerArguments(IEnumerable<RValueProvider> initializerArguments)
+        {
+            _initializerArguments = initializerArguments.ToArray();
+        }
+
         private void generateAssignInto(LValueProvider lValue)
         {
             if (_storage != null)
@@ -163,6 +170,41 @@ namespace AssemblyProviders.CSharp.Compiling
             }
 
             _ctorCall.Generate();
+
+            if (_initializerArguments.Length > 0)
+                generateInitializer();
+        }
+
+        private void generateInitializer()
+        {
+            var searcher=Context.CreateSearcher();
+            searcher.SetCalledObject(_objectType);
+
+            searcher.Dispatch("Add");
+            searcher.Dispatch(Naming.IndexerSetter);
+
+            if (!searcher.HasResults)
+                //no initializer has been found
+                return;
+
+            var initializerMethod = searcher.FoundResult.First();
+            var isSetter = initializerMethod.MethodName == Naming.IndexerSetter;
+            var indexVariable = isSetter ? E.GetTemporaryVariable("index") : null;
+
+            for (int i = 0; i < _initializerArguments.Length; ++i)
+            {
+                var argument=_initializerArguments[i];
+                var argumentStorage=argument.GenerateStorage();
+                if (isSetter)
+                {
+                    E.AssignLiteral(indexVariable, i);
+                    E.Call(initializerMethod.MethodID, _storage, Arguments.Values(indexVariable, argumentStorage));
+                }
+                else
+                {
+                    E.Call(initializerMethod.MethodID,_storage,Arguments.Values(argumentStorage));
+                }
+            }
         }
     }
 

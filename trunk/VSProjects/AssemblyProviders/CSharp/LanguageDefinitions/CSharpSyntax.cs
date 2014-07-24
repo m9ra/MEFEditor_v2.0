@@ -174,7 +174,6 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <returns>Created exception</returns>
         public static ParsingException ParsingException(INodeAST node, string descriptionFormat, params object[] formatArguments)
         {
-            //TODO navigation
             var description = string.Format(descriptionFormat, formatArguments);
             var error = string.Format("{0} near {1} at offset {2}", description, node, node.StartingToken.Position.Offset);
             throw new ParsingException(error, () => navigate(node));
@@ -189,7 +188,9 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <returns>Created exception</returns>
         public static ParsingException ParsingException(IToken token, string descriptionFormat, params object[] formatArguments)
         {
-            throw new NotImplementedException();
+            var description = string.Format(descriptionFormat, formatArguments);
+            var error = string.Format("{0} near {1} at offset {2}", description, token, token.Position.Offset);
+            throw new ParsingException(error, () => navigate(token));
         }
 
         public bool HasLesserPriority(INodeAST node, INodeAST node2)
@@ -243,7 +244,16 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <param name="node">Navigation target</param>
         private static void navigate(INodeAST node)
         {
-            node.StartingToken.Position.Navigate();
+            navigate(node.StartingToken);
+        }
+
+        /// <summary>
+        /// Helper for source navigation
+        /// </summary>
+        /// <param name="token">Navigation target</param>
+        private static void navigate(IToken token)
+        {
+            token.Position.Navigate();
         }
 
         /// <summary>

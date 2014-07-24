@@ -10,6 +10,7 @@ using Analyzing;
 using TypeSystem;
 
 using AssemblyProviders.ProjectAssembly;
+using AssemblyProviders.DirectDefinitions;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
 using AssemblyProviders.CSharp.Compiling;
@@ -132,6 +133,11 @@ namespace AssemblyProviders.CSharp
         private readonly CodeNode _method;
 
         /// <summary>
+        /// Stack of pushed blocks
+        /// </summary>
+        private readonly Stack<INodeAST> _blocks = new Stack<INodeAST>();
+
+        /// <summary>
         /// Context of compilation process
         /// </summary>
         internal readonly CompilationContext Context;
@@ -201,6 +207,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         private void generateInstructions()
         {
+            startGroup(_method);
             if (!IsInlined)
             {
                 //information attached to entry block of method preparation
@@ -217,6 +224,8 @@ namespace AssemblyProviders.CSharp
 
             //generate method body
             generateSubsequence(_method);
+
+            Debug.Assert(_blocks.Count == 1, "Block context handling is incorrect");
         }
 
         /// <summary>
@@ -323,7 +332,8 @@ namespace AssemblyProviders.CSharp
         /// <param name="switchBlock">Switch block which instructions will be generated</param>
         private void generateSwitch(INodeAST switchBlock)
         {
-            startInfoBlock(getConditionalBlockText(switchBlock));
+            startInfoBlock(switchBlock);
+            startGroup(switchBlock);
 
             //transfer continue from upper context
             var continueLbl = Context.CurrentBlock == null ? null : Context.CurrentBlock.ContinueLabel;
@@ -391,14 +401,17 @@ namespace AssemblyProviders.CSharp
             var tableDefaultLbl = hasDefaultBranch ? defaultLbl : endLbl;
             E.Jump(tableDefaultLbl);
 
+
             //generate branche statements
             for (var caseIndex = 0; caseIndex < caseBranches.Count; ++caseIndex)
             {
                 var caseBranch = caseBranches[caseIndex];
                 var caseLabel = caseLabels[caseIndex];
 
+                startGroup(caseBranch);
                 E.SetLabel(caseLabel);
                 generateSubsequence(caseBranch);
+                endGroup();
             }
 
             //generate default branch if any
@@ -410,6 +423,8 @@ namespace AssemblyProviders.CSharp
 
             E.SetLabel(endLbl);
             E.Nop();
+
+            endGroup();
         }
 
         /// <summary>
@@ -418,7 +433,8 @@ namespace AssemblyProviders.CSharp
         /// <param name="forBlock">For block which instructions will be generated</param>
         private void generateFor(INodeAST forBlock)
         {
-            startInfoBlock(getConditionalBlockText(forBlock));
+            startGroup(forBlock);
+            startInfoBlock(forBlock);
 
             //block labels
             var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
@@ -446,13 +462,15 @@ namespace AssemblyProviders.CSharp
             E.ConditionalJump(condition.GenerateStorage(), loopLbl);
             E.Jump(endLbl);
             E.SetLabel(loopLbl);
+            endGroup();
 
+            startGroup(loop);
             //body of the loop
             generateSubsequence(loop);
 
             //for loop increment
             E.SetLabel(continueLbl);
-            startInfoBlock("=increment: " + getStatementText(increment));
+            startInfoBlock(increment, "=increment: " + getStatementText(increment));
             generateStatement(increment);
 
             //repeat
@@ -461,6 +479,7 @@ namespace AssemblyProviders.CSharp
             E.Nop();
 
             Context.PopBlock();
+            endGroup();
         }
 
         /// <summary>
@@ -469,7 +488,8 @@ namespace AssemblyProviders.CSharp
         /// <param name="whileBlock">While block which instructions will be generated</param>
         private void generateWhile(INodeAST whileBlock)
         {
-            startInfoBlock(getConditionalBlockText(whileBlock));
+            startGroup(whileBlock);
+            startInfoBlock(whileBlock);
 
             //block labels
             var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
@@ -490,6 +510,9 @@ namespace AssemblyProviders.CSharp
             E.ConditionalJump(condition.GenerateStorage(), loopLbl);
             E.Jump(endLbl);
 
+            endGroup();
+            startGroup(loop);
+
             //loop body
             E.SetLabel(loopLbl);
             generateSubsequence(loop);
@@ -500,6 +523,7 @@ namespace AssemblyProviders.CSharp
             E.Nop();
 
             Context.PopBlock();
+            endGroup();
         }
 
         /// <summary>
@@ -508,7 +532,8 @@ namespace AssemblyProviders.CSharp
         /// <param name="ifBlock">If block which instructions will be generated</param>
         private void generateIf(INodeAST ifBlock)
         {
-            startInfoBlock(getConditionalBlockText(ifBlock));
+            startGroup(ifBlock);
+            startInfoBlock(ifBlock);
 
             //block
             var condition = getRValue(ifBlock.Arguments[0]);
@@ -529,7 +554,9 @@ namespace AssemblyProviders.CSharp
             //generate condition block with jump table
             E.ConditionalJump(condition.GenerateStorage(), trueLbl);
             E.Jump(falseLbl);
+            endGroup();
 
+            startGroup(ifBranch);
             //generate if branch
             E.SetLabel(trueLbl);
             generateSubsequence(ifBranch);
@@ -537,8 +564,9 @@ namespace AssemblyProviders.CSharp
             if (elseBranch != null)
             {
                 //if there is else branch generate it
-
                 //firstly protect falling into else branch from ifbranch
+                endGroup();
+                startGroup(elseBranch);
                 E.Jump(endLbl);
                 E.SetLabel(falseLbl);
                 generateSubsequence(elseBranch);
@@ -547,6 +575,7 @@ namespace AssemblyProviders.CSharp
             E.SetLabel(endLbl);
             //because of editing can proceed smoothly (detecting borders)
             E.Nop();
+            endGroup();
         }
 
         /// <summary>
@@ -1229,6 +1258,13 @@ namespace AssemblyProviders.CSharp
         private bool tryGetLiteral(INodeAST literalNode, out RValueProvider literal)
         {
             var literalToken = literalNode.Value;
+
+            if (literalToken == "null")
+            {
+                literal = new LiteralValue(new NullLiteral(), literalNode, Context);
+                return true;
+            }
+
             if (literalToken.Contains('"'))
             {
                 //string literal
@@ -1413,36 +1449,100 @@ namespace AssemblyProviders.CSharp
         /// <returns>Representation of newOperand result</returns>
         private RValueProvider resolveNew(INodeAST newOperand)
         {
+            //resolve type
             INodeAST callNode;
-            var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
-            var objectType = resolveTypeDescriptor(typeSuffix);
+            var objectType = resolveObjectType(newOperand, out callNode);
 
-            if (objectType == null)
-                throw parsingException(callNode, "Cannot find type");
+            //resolve arguments and repair type accordingly
+            List<RValueProvider> initializerArguments;
+            List<Argument> constructorArguments;
+            resolveArguments(newOperand, callNode, ref objectType, out initializerArguments, out constructorArguments);
 
-            var w = System.Diagnostics.Stopwatch.StartNew();
+            //create and construct object
+            var overloads = getConstructorOverloads(callNode, objectType);
+            var nObject = new NewObjectValue(objectType, newOperand.Parent, Context);
+            var activation = createConstructorActivation(nObject, callNode, overloads, constructorArguments);
+            if (activation == null)
+            {
+                throw parsingException(callNode, "Constructor call doesn't match to any available definition");
+            }
+            var ctorCall = new CallValue(activation, Context);
+
+            //set object initialization
+
+            nObject.SetCtor(ctorCall);
+            nObject.SetInitializerArguments(initializerArguments);
+            return nObject;
+        }
+
+        private IEnumerable<TypeMethodInfo> getConstructorOverloads(INodeAST callNode, TypeDescriptor objectType)
+        {
             var searcher = Context.CreateSearcher();
             searcher.SetCalledObject(objectType);
             searcher.Dispatch(Naming.CtorName);
-            w.Stop();
 
             if (!searcher.FoundResult.Any())
             {
                 throw parsingException(callNode, "Constructor wasn't found");
             }
 
-            var nObject = new NewObjectValue(objectType, newOperand.Parent, Context);
+            return searcher.FoundResult;
+        }
 
-            var activation = CreateCallActivation(nObject, callNode, searcher.FoundResult);
-            if (activation == null)
+
+        private CallActivation createConstructorActivation(NewObjectValue nObject, INodeAST callNode, IEnumerable<TypeMethodInfo> overloads, List<Argument> constructorArguments)
+        {
+            var selector = new MethodSelector(overloads, Context);
+
+            return createCallActivation(selector, nObject, callNode, constructorArguments.ToArray());
+        }
+
+        private void resolveArguments(INodeAST newOperand, INodeAST callNode, ref TypeDescriptor objectType, out List<RValueProvider> initializerArguments, out List<Argument> constructorArguments)
+        {
+            var isArray = objectType.TypeName.StartsWith("Array<");
+            var isImplicitlyTypedArray = newOperand.Indexer != null;
+            var hasInitializer = callNode.Subsequence != null;
+
+            initializerArguments = new List<RValueProvider>();
+            constructorArguments = new List<Argument>();
+            if (hasInitializer)
             {
-                throw parsingException(callNode, "Constructor call doesn't match to any available definition");
+                foreach (var arg in callNode.Subsequence.Lines)
+                {
+                    var initializerValue = getRValue(arg);
+                    initializerArguments.Add(initializerValue);
+                }
+
+                if (isImplicitlyTypedArray && initializerArguments.Count > 0)
+                    //we can do implicit type specification
+                    objectType = TypeDescriptor.Create("Array<" + initializerArguments[0].Type.TypeName + ",1>");
+
+                if (isArray)
+                {
+                    //array has to have implicit constructor parameter
+                    var lengthArgument = new Argument(new LiteralValue(initializerArguments.Count, callNode, Context));
+                    constructorArguments.Add(lengthArgument);
+                }
             }
+            else
+            {
+                var arguments = GetArguments(callNode, isArray);
+                constructorArguments.AddRange(arguments);
+            }
+        }
 
-            var ctorCall = new CallValue(activation, Context);
 
-            nObject.SetCtor(ctorCall);
-            return nObject;
+        private TypeDescriptor resolveObjectType(INodeAST newOperand, out INodeAST callNode)
+        {
+            var isImplicitTypedArray = newOperand.Indexer != null;
+
+            var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
+            var objectType = resolveTypeDescriptor(typeSuffix);
+
+            if (objectType == null)
+                throw parsingException(callNode, "Cannot find type");
+
+            return objectType;
         }
 
         /// <summary>
@@ -1453,11 +1553,18 @@ namespace AssemblyProviders.CSharp
         /// <param name="callNode">Node determining call</param>
         /// <param name="methods">Methods used for right overloading selection</param>
         /// <returns>Created call activation</returns>
-        internal CallActivation CreateCallActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods)
+        internal CallActivation CreateCallActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods, bool forceIndexer = false)
         {
+            //prepare arguments
             var selector = new MethodSelector(methods, Context);
+            var arguments = GetArguments(callNode, selector.IsIndexer || forceIndexer);
 
-            var arguments = GetArguments(callNode, selector.IsIndexer);
+            //create activation
+            return createCallActivation(selector, calledObject, callNode, arguments);
+        }
+
+        private CallActivation createCallActivation(MethodSelector selector, RValueProvider calledObject, INodeAST callNode, Argument[] arguments)
+        {
             var callActivation = selector.CreateCallActivation(arguments);
 
             if (callActivation != null)
@@ -1550,11 +1657,30 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="blockDescription">Textual description of started block</param>
         /// <returns>Info object created for the block</returns>
-        private InstructionInfo startInfoBlock(string blockDescription)
+        private InstructionInfo startInfoBlock(INodeAST node, string blockDescription = null)
         {
+            if (blockDescription == null)
+                blockDescription = getConditionalBlockText(node);
+
             var info = E.StartNewInfoBlock();
             info.Comment = InstructionCommentStart + blockDescription + InstructionCommentEnd;
+            info.BlockTransformProvider = new Transformations.BlockProvider(node, _method.Source);
             return info;
+        }
+
+
+        private void startGroup(INodeAST node)
+        {
+            _blocks.Push(node);
+            E.SetCurrentGroup(node);
+        }
+
+        private void endGroup()
+        {
+            var popped = _blocks.Pop();
+
+            var current = _blocks.Peek();
+            E.SetCurrentGroup(current);
         }
 
         /// <summary>

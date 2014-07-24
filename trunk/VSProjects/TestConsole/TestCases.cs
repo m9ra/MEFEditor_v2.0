@@ -22,6 +22,7 @@ using UserExtensions;
 
 using AssemblyProviders.CILAssembly;
 using AssemblyProviders.CIL.Providing;
+using AssemblyProviders.DirectDefinitions;
 
 namespace TestConsole
 {
@@ -63,7 +64,45 @@ namespace TestConsole
            ;
         }
 
+        static internal TestingAssembly Edit_BlockScope()
+        {
+            return AssemblyUtils.Run(@"
+            var toAccept = new SimpleStringExport();
+            Report(toAccept);
+            System.ComponentModel.Composition.Hosting.CompositionContainer cont;
 
+            if (true)
+            {
+                //here is end of comp scope - if condition of upper block is true
+                toAccept = null;
+                //some complicated block structure
+                var test = ""f"";
+                if (true)
+                {
+                }
+                switch (test)
+                {
+                    case ""f"":
+                    case ""e"":
+                    default:
+                        break;
+                }
+            }
+            cont = new System.ComponentModel.Composition.Hosting.CompositionContainer();          
+            ")
+
+           .AddToRuntime<CompositionContainerDefinition>()
+           .AddToRuntime<SimpleStringExport>()
+           .AddDirectToRuntime<NullLiteral>()
+
+            .UserAction((c) =>
+            {
+                UserInteraction.DraggedInstance = AssemblyUtils.REPORTED_INSTANCE; 
+            })
+
+            .RunEditAction("cont", UserInteraction.AcceptEditName)
+           ;
+        }
 
         static internal TestingAssembly Edit_SemanticEnd_CommonScope()
         {
@@ -178,7 +217,7 @@ namespace TestConsole
 
                 compCont.Compose(batch);                
             ")
-             
+
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<CompositionBatchDefinition>()
             .AddToRuntime<AssemblyCatalogDefinition>()
@@ -188,7 +227,7 @@ namespace TestConsole
             .AddWrappedGenericToRuntime(typeof(List<>))
 
             .AddAssembly(testAssembly)
-            
+
             ;
         }
 
@@ -207,7 +246,7 @@ namespace TestConsole
                 compCont.ComposeParts();
    
             ")
-             
+
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<AssemblyCatalogDefinition>()
             .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
@@ -756,6 +795,46 @@ namespace TestConsole
             ;
         }
 
+        static internal TestingAssembly Array_Creation()
+        {
+            return AssemblyUtils.Run(@"        
+                var arr=new System.String[2];   
+                arr[0]=""abc"";
+                arr[1]=""def"";
+                var result=arr[0]+arr[1];
+            ")
+
+            ;
+        }
+
+        static internal TestingAssembly Array_Initializer()
+        {
+            return AssemblyUtils.Run(@"        
+                var arr=new System.String[]{
+                    ""abc"",
+                    ""def""
+                };   
+                var result=arr[0]+arr[1];
+            ")
+
+             ;
+        }
+
+        static internal TestingAssembly Collection_Initializer()
+        {
+            return AssemblyUtils.Run(@"        
+                var list=new System.Collections.Generic.List<System.String>(){
+                    ""abc"",
+                    ""def""
+                };   
+                var result=list[0]+list[1];
+            ")
+
+             .AddWrappedGenericToRuntime(typeof(List<>))
+
+             ;
+        }
+        
         static internal TestingAssembly ArrayTesting()
         {
             return AssemblyUtils.Run(@"                

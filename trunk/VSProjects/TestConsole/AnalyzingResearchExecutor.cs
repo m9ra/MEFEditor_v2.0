@@ -147,41 +147,7 @@ namespace TestConsole
             }
         }
 
-        #region Printing services
-
-        /// <summary>
-        /// Print count-times new line on console output
-        /// </summary>
-        /// <param name="count">Number of printed new lines</param>
-        internal static void PrintLines(int count = 1)
-        {
-            for (int i = 0; i < count; ++i)
-                Print(ConsoleColor.White, "\n");
-        }
-
-        /// <summary>
-        /// Print text with specified color on console output. Text is suffixed by new line character.
-        /// </summary>
-        /// <param name="color">Color of printed output</param>
-        /// <param name="text">Text printed to output</param>
-        /// <param name="formatArgs">Format arguments for printed text</param>
-        internal static void Println(ConsoleColor color, string text, params object[] formatArgs)
-        {
-            Print(color, text + "\n", formatArgs);
-        }
-
-        /// <summary>
-        /// Print text with specified color on console output
-        /// </summary>
-        /// <param name="color">Color of printed output</param>
-        /// <param name="text">Text printed to output</param>
-        /// <param name="formatArgs">Format arguments for printed text</param>
-        internal static void Print(ConsoleColor color, string text, params object[] formatArgs)
-        {
-            Printer.Print(color, text, formatArgs);
-        }
-
-        #endregion
+   
 
         #region Output building
 
@@ -302,10 +268,10 @@ namespace TestConsole
         /// </summary>
         private void printEntryContext()
         {
-            Println(ConsoleColor.Cyan, "ENTRY CONTEXT - Variable values");
+            Printer.Println(ConsoleColor.Cyan, "ENTRY CONTEXT - Variable values");
             Printer.PrintVariables(_entryContext);
 
-            Println(ConsoleColor.Red, "\n\nENTRY CONTEXT");
+            Printer.Println(ConsoleColor.Red, "\n\nENTRY CONTEXT");
             Printer.PrintIAL(_entryContext.Program.Code);
         }
 
@@ -314,7 +280,7 @@ namespace TestConsole
         /// </summary>
         private void printOtherContexts()
         {
-            Println(ConsoleColor.Cyan, "\nGENERATED METHODS");
+            Printer.Println(ConsoleColor.Cyan, "\nGENERATED METHODS");
 
             var contexts = generatedContexts();
 
@@ -323,9 +289,9 @@ namespace TestConsole
 
             foreach (var context in contexts)
             {
-                Println(ConsoleColor.Red, "Method: {0}", context.Name);
+                Printer.Println(ConsoleColor.Red, "Method: {0}", context.Name);
                 Printer.PrintIAL(context.Program.Code);
-                PrintLines();
+                Printer.PrintLines();
             }
         }
 
@@ -334,12 +300,12 @@ namespace TestConsole
         /// </summary>
         private void printAdditionalInfo()
         {
-            PrintLines(2);
-            Println(ConsoleColor.Green, "Elapsed time: {0}ms", _watch.ElapsedMilliseconds);
+            Printer.PrintLines(2);
+            Printer.Println(ConsoleColor.Green, "Elapsed time: {0}ms", _watch.ElapsedMilliseconds);
 
-            PrintLines(2);
-            Println(ConsoleColor.Yellow, "Entry source result:");
-            Println(ConsoleColor.Gray, "{0}", formatSource(_assembly.GetSource(_entryMethod, _result.View)));
+            Printer.PrintLines(2);
+            Printer.Println(ConsoleColor.Yellow, "Entry source result:");
+            Printer.PrintCode(_assembly.GetSource(_entryMethod, _result.View));
         }
 
 
@@ -376,68 +342,6 @@ namespace TestConsole
             }
 
             return result;
-        }
-
-        #endregion
-
-        #region Source formatting
-
-        /// <summary>
-        /// Format indented source
-        /// </summary>
-        /// <param name="source">Source to be formatted</param>
-        /// <returns>Formatted source</returns>
-        private string formatSource(string source)
-        {
-            var result = new StringBuilder();
-
-            var lines = source.Replace("\r", "").Split('\n');
-
-            var lastOriginalIndent = getIndentLevel(lines[0]);
-            var currIndent = 0;
-            foreach (var line in lines)
-            {
-                var originalIndent = getIndentLevel(line);
-
-                if (originalIndent > lastOriginalIndent)
-                {
-                    ++currIndent;
-                }
-                else if (originalIndent < lastOriginalIndent)
-                {
-                    --currIndent;
-                }
-
-                lastOriginalIndent = originalIndent;
-                if (currIndent < 0)
-                {
-                    currIndent = 0;
-                }
-
-                var indentedLine = "".PadLeft(currIndent * 3, ' ') + line.Trim();
-                result.AppendLine(indentedLine);
-
-            }
-
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Get level of indentation on given line
-        /// </summary>
-        /// <param name="line">Line which indentation is resolved</param>
-        /// <returns>Level of indentation</returns>
-        private int getIndentLevel(string line)
-        {
-            int i;
-            for (i = 0; i < line.Length; ++i)
-            {
-                var ch = line[i];
-                if (!char.IsWhiteSpace(ch))
-                    break;
-            }
-            return i;
-
         }
 
         #endregion

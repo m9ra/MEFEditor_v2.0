@@ -19,9 +19,19 @@ namespace AssemblyProviders.CSharp.Primitives
     class CodeSeq : ISeqAST
     {
         public INodeAST[] Lines { get; private set; }
+
+        /// <summary>
+        /// Node where current subsequence is contained
+        /// </summary>
+        public INodeAST ContainingNode { get; internal set; }
+
         public CodeSeq(IEnumerable<CodeNode> lines)
         {
             Lines = lines.ToArray();
+            foreach (var line in lines)
+            {
+                line.ContainingSequence = this;
+            }
         }
 
         public IToken EndingToken
@@ -67,30 +77,42 @@ namespace AssemblyProviders.CSharp.Primitives
         /// Token, from which was created this node
         /// </summary>
         public IToken SourceToken { get; private set; }
+
         /// <summary>
         /// String value of this node
         /// </summary>
         public string Value { get { return SourceToken.Value; } }
+
         /// <summary>
         /// If this code node is ending of any tree expression
         /// </summary>
         public bool IsTreeEnding;
+
         /// <summary>
         /// Type of node
         /// </summary>
         public NodeTypes NodeType { get; set; }
+
         /// <summary>
         /// Subsequence if available
         /// </summary>
         public ISeqAST Subsequence { get; private set; }
+
+        /// <summary>
+        /// Sequence where node is listed (null if there is no such subsequence)
+        /// </summary>
+        public ISeqAST ContainingSequence { get; internal set; }
+
         /// <summary>
         /// Indexer associated with this node
         /// </summary>
         public IIndexer Indexer { get; private set; }
+
         /// <summary>
         /// Operands for operator, arguments for call, condition and block nodes for if, switch,...
         /// </summary>        
         public INodeAST[] Arguments { get { return _args.ToArray(); } }
+
         /// <summary>
         /// Node for that Parent.Child==this
         /// </summary>
@@ -100,8 +122,6 @@ namespace AssemblyProviders.CSharp.Primitives
         /// Source from where this Code node comes
         /// </summary>
         public Source Source { get { return SourceToken.Position.Source; } }
-
-
 
         /// <summary>
         /// Create CodeNode object from sourceToken.
@@ -161,7 +181,8 @@ namespace AssemblyProviders.CSharp.Primitives
 
         public IEnumerable<INodeAST> AllChildren
         {
-            get {
+            get
+            {
                 foreach (var arg in Arguments)
                 {
                     yield return arg;
@@ -191,7 +212,9 @@ namespace AssemblyProviders.CSharp.Primitives
         {
             if (Subsequence != null) throw new NotSupportedException("Cannot reset subsequence");
             if (subseq.Subsequence == null) throw new NotSupportedException("Expected node with subsequence");
-            Subsequence = subseq.Subsequence;
+            var sub = subseq.Subsequence as CodeSeq;
+            sub.ContainingNode = this;
+            Subsequence = sub;
         }
         /// <summary>
         /// Get given lines to subsequence
@@ -199,7 +222,9 @@ namespace AssemblyProviders.CSharp.Primitives
         /// <param name="lines"></param>
         public void SetSubsequence(IEnumerable<CodeNode> lines)
         {
-            Subsequence = new CodeSeq(lines);
+            var sub = new CodeSeq(lines);
+            sub.ContainingNode = this;
+            Subsequence = sub;
         }
 
         public void SetIndexer(IEnumerable<INodeAST> args)
@@ -282,9 +307,10 @@ namespace AssemblyProviders.CSharp.Primitives
             var start = StartingToken.Position.Offset;
 
             var next = EndingToken.Next;
-            
+
             var end = next == null ? Source.OriginalCode.Length - 1 : next.Position.Offset;
             return Source.OriginalCode.Substring(start, end - start);
         }
+
     }
 }

@@ -63,7 +63,7 @@ namespace AssemblyProviders.CSharp.Interfaces
     /// Result instructions of syntax parser.
     /// </summary>
     interface ISynaxTree
-    {    
+    {
         /// <summary>
         /// Parsed syntax tree root.
         /// </summary>
@@ -90,26 +90,37 @@ namespace AssemblyProviders.CSharp.Interfaces
         /// Type of node
         /// </summary>
         NodeTypes NodeType { get; }
+
         /// <summary>
         /// Parent node of this node
         /// </summary>
         INodeAST Parent { get; }
+
         /// <summary>
         /// Arguments for calls, operands for operators
         /// </summary>
         INodeAST[] Arguments { get; }
+
         /// <summary>
         /// Child node of this node in hierarchy
         /// </summary>
         INodeAST Child { get; }
+
         /// <summary>
         /// All children (arguments, hierarchy child... of current node)
         /// </summary>
         IEnumerable<INodeAST> AllChildren { get; }
+
         /// <summary>
         /// Subsequence of this node
         /// </summary>
         ISeqAST Subsequence { get; }
+
+        /// <summary>
+        /// Sequence where node is listed (null if there is no such subsequence)
+        /// </summary>
+        ISeqAST ContainingSequence { get; }
+
         /// <summary>
         /// indexer aplied to node. If null - no indexer is available
         /// </summary>
@@ -129,6 +140,7 @@ namespace AssemblyProviders.CSharp.Interfaces
         /// Most left token of al sub nodes
         /// </summary>
         IToken StartingToken { get; }
+
         /// <summary>
         /// Most top token of all sub nodes
         /// </summary>
@@ -141,9 +153,15 @@ namespace AssemblyProviders.CSharp.Interfaces
     public interface ISeqAST
     {
         /// <summary>
+        /// Node where current subsequence is contained
+        /// </summary>
+        INodeAST ContainingNode { get; }
+
+        /// <summary>
         /// Lines in sequence
         /// </summary>
         INodeAST[] Lines { get; }
+
         /// <summary>
         /// Ending token according all lines
         /// </summary>

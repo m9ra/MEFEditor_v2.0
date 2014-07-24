@@ -64,7 +64,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 return _blockContexts.Peek();
             }
         }
-
+        
         /// <summary>
         /// Initialize alias tables
         /// </summary>

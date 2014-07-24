@@ -23,6 +23,8 @@ namespace Analyzing
         /// <returns>Created instruction info</returns>
         public abstract InstructionInfo StartNewInfoBlock();
 
+        public abstract void SetCurrentGroup(object groupID);
+
         /// <summary>
         /// Get variable, which is not used yet in emitted code
         /// </summary>        

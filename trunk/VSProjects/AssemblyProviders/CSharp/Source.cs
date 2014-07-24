@@ -234,13 +234,88 @@ namespace AssemblyProviders.CSharp
         /// <param name="behindLine">Line that will be before shiftedLine</param>
         internal void ShiftBehind(ExecutionView view, INodeAST shiftedLine, INodeAST behindLine)
         {
-            var shiftTargetOffset = getBehindOffset(behindLine);
+            INodeAST currentShiftedLine;
+            INodeAST currentBehindLine;
+            findShiftLines(shiftedLine, behindLine, out currentShiftedLine, out currentBehindLine);
+
+            var shiftTargetOffset = getBehindOffset(currentBehindLine);
 
             int shiftStart, shiftEnd;
-            getBorderPositions(shiftedLine, out shiftStart, out shiftEnd);
+            getBorderPositions(currentShiftedLine, out shiftStart, out shiftEnd);
             var shiftLen = shiftEnd - shiftStart;
 
             move(view, shiftStart, shiftTargetOffset, shiftLen);
+        }
+
+        private void findShiftLines(INodeAST shiftedLine, INodeAST behindLine, out INodeAST currentShiftedLine, out INodeAST currentBehindLine)
+        {
+            var shiftedSubq = getAscendantSubsequences(shiftedLine);
+            var behindSubq = getAscendantSubsequences(behindLine);
+
+            currentShiftedLine = shiftedLine;
+            currentBehindLine = behindLine;
+            var minLength = Math.Min(shiftedSubq.Count, behindSubq.Count);
+            for (int i = 0; i < minLength; ++i)
+            {
+                var currentShifted = shiftedSubq[i];
+                var currentBehind = behindSubq[i];
+
+                if (i == minLength || currentBehind != currentShifted)
+                {
+                    if (currentBehind != currentShifted)
+                        //we have to use previous node
+                        --i;
+
+                    currentShiftedLine = getShiftingNode(i, shiftedSubq, currentShiftedLine);
+                    currentBehindLine = getShiftingNode(i, behindSubq, currentBehindLine);
+                    break;
+                }
+            }
+        }
+
+        private INodeAST getShiftingNode(int index, List<ISeqAST> subqChain, INodeAST defaultNode)
+        {
+            var i = index + 1;
+            if (i >= subqChain.Count)
+                return defaultNode;
+
+            return getTopParent(subqChain[i].ContainingNode);
+        }
+
+        private INodeAST getTopParent(INodeAST node)
+        {
+            var current = node.Parent;
+            while (current.Parent != null)
+            {
+                current = current.Parent;
+            }
+
+            return current;
+        }
+
+        private List<ISeqAST> getAscendantSubsequences(INodeAST node)
+        {
+            var result = new List<ISeqAST>();
+
+            var currentSeq = node.ContainingSequence;
+            while (currentSeq != null)
+            {
+                result.Add(currentSeq);
+
+                if (currentSeq.ContainingNode == null)
+                    break;
+
+                var currentNode = currentSeq.ContainingNode;
+                while (currentNode.Parent != null)
+                {
+                    currentNode = currentNode.Parent;
+                }
+
+                currentSeq = currentNode.ContainingSequence;
+            }
+
+            result.Reverse();
+            return result;
         }
 
         #endregion

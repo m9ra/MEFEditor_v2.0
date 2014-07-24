@@ -30,6 +30,7 @@ namespace RecommendedExtensions.TypeDefinitions
                 typeof(bool), 
                 typeof(byte),
                 typeof(VMStack),
+                typeof(NullLiteral),
                 typeof(LiteralType),
                 typeof(Lazy<>),
                 typeof(Lazy<,>),

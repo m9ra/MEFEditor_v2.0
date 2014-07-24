@@ -16,8 +16,14 @@ namespace Analyzing
         /// <summary>
         /// Comment message for instructions including this info
         /// </summary>
-        public string Comment { get; set; }
+        public string Comment;
 
+        /// <summary>
+        /// Identifier that is used for limiting shifting changes
+        /// only to scope of same block group
+        /// </summary>
+        public readonly object GroupID;
+        
         public BlockTransformProvider BlockTransformProvider
         {
             get
@@ -39,6 +45,11 @@ namespace Analyzing
 
                 _shiftingProvider = value;
             }
+        }
+
+        internal InstructionInfo(object groupID)
+        {
+            GroupID = groupID;
         }
     }
 }

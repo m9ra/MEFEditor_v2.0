@@ -42,8 +42,12 @@ namespace TestConsole
         static ConsoleColor BoolColor = ConsoleColor.DarkGreen;
         static ConsoleColor VariableColor = ConsoleColor.DarkYellow;
         static ConsoleColor LabelColor = ConsoleColor.Yellow;
+        static ConsoleColor CodeColor = ConsoleColor.Gray;
 
-        internal static void PrintVariables(CallContext context)
+        #region Printing services
+
+
+        public static void PrintVariables(CallContext context)
         {
             foreach (var variable in context.Variables)
             {
@@ -55,6 +59,12 @@ namespace TestConsole
             }
         }
 
+        /// <summary>
+        /// Print text with specified color on console output
+        /// </summary>
+        /// <param name="color">Color of printed output</param>
+        /// <param name="text">Text printed to output</param>
+        /// <param name="formatArgs">Format arguments for printed text</param>
         public static void Print(ConsoleColor color, string text, params object[] formatArgs)
         {
             var output = string.Format(text, formatArgs);
@@ -87,6 +97,68 @@ namespace TestConsole
 
             Console.ForegroundColor = ConsoleColor.Gray;
         }
+
+        /// <summary>
+        /// Print count-times new line on console output
+        /// </summary>
+        /// <param name="count">Number of printed new lines</param>
+        public static void PrintLines(int count = 1)
+        {
+            for (int i = 0; i < count; ++i)
+                Print(ConsoleColor.White, "\n");
+        }
+
+        /// <summary>
+        /// Print text with specified color on console output. Text is suffixed by new line character.
+        /// </summary>
+        /// <param name="color">Color of printed output</param>
+        /// <param name="text">Text printed to output</param>
+        /// <param name="formatArgs">Format arguments for printed text</param>
+        public static void Println(ConsoleColor color, string text, params object[] formatArgs)
+        {
+            Print(color, text + "\n", formatArgs);
+        }
+
+        /// <summary>
+        /// Format indented source
+        /// </summary>
+        /// <param name="source">Source to be formatted</param>
+        /// <returns>Formatted source</returns>
+        public static void PrintCode(string source)
+        {
+            var result = new StringBuilder();
+
+            var lines = source.Replace("\r", "").Split('\n');
+
+            var currIndent = 0;
+            foreach (var rawLine in lines)
+            {
+                var line = rawLine.Trim();
+
+                if (line.Contains('}'))
+                {
+                    --currIndent;
+                }
+
+                if (currIndent < 0)
+                {
+                    currIndent = 0;
+                }
+
+                var indentedLine = "".PadLeft(currIndent * 3, ' ') + line.Trim();
+                result.AppendLine(indentedLine);
+
+                if (line.Contains('{'))
+                {
+                    ++currIndent;
+                }
+            }
+
+            Print(CodeColor, "{0}", result);
+        }
+
+        #endregion
+
 
         static void printComment(string comment)
         {

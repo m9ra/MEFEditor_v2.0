@@ -215,17 +215,27 @@ namespace UnitTesting.TypeSystem_TestUtils
         private static ExecutionView processInstanceEdit(RuntimeAssembly runtime, AnalyzingResult result, ExecutionView view, EditAction editAction)
         {
             var editOwner = result.EntryContext.GetValue(editAction.Variable);
+            string lastError = null;
             foreach (var edit in editOwner.Edits)
             {
                 if (edit.Name != editAction.Name)
                     continue;
 
                 var editView = new EditView(view);
-                var resultView=runtime.RunEdit(edit, editView);
+                var resultView = runtime.RunEdit(edit, editView);
                 editView = (resultView as EditView);
+
+                if (editView.HasError)
+                {
+                    lastError = editView.Error;
+                    continue;
+                }
 
                 return editView.CopyView();
             }
+
+            if (lastError != null)
+                throw new NotSupportedException("Error occured during edit: " + lastError);
 
             throw new KeyNotFoundException("Specified edit hasn't been found");
         }
@@ -235,7 +245,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             assembly.AddMethod("Test.Report", (c) =>
             {
                 AssemblyUtils.REPORTED_INSTANCE = c.CurrentArguments[1];
-            }, Method.Void_StringParam);
+            }, Method.Void_ObjectParam);
         }
 
     }

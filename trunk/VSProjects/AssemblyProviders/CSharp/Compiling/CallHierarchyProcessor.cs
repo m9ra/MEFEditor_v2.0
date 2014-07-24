@@ -35,11 +35,6 @@ namespace AssemblyProviders.CSharp.Compiling
         private RValueProvider _currentObject;
 
         /// <summary>
-        /// Current setter where hierarchy is resolved, if available
-        /// </summary>
-        private SetterLValue _currentSetter;
-
-        /// <summary>
         /// Context available from compiler that uses current processor
         /// </summary>
         protected CompilationContext Context { get { return _compiler.Context; } }
