@@ -97,7 +97,7 @@ namespace TestConsole
 
             .UserAction((c) =>
             {
-                UserInteraction.DraggedInstance = AssemblyUtils.REPORTED_INSTANCE; 
+                UserInteraction.DraggedInstance = AssemblyUtils.REPORTED_INSTANCE;
             })
 
            // .RunEditAction("cont", UserInteraction.AcceptEditName)
@@ -834,7 +834,7 @@ namespace TestConsole
 
              ;
         }
-        
+
         static internal TestingAssembly ArrayTesting()
         {
             return AssemblyUtils.Run(@"                
@@ -1173,6 +1173,19 @@ namespace TestConsole
                 for(var i=0;i<" + n + @";++i){
                     result=result+2;                    
                 }
+                ++result;
+            ");
+        }
+
+        static internal TestingAssembly DoWhileLoop()
+        {
+            return AssemblyUtils.Run(@"                
+                var i=0;
+                var result=0;
+                do{
+                    result=result+2;                    
+                    ++i;
+                }while(i<5);
                 ++result;
             ");
         }

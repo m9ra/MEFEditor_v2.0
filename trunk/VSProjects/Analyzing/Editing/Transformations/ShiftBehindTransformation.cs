@@ -76,7 +76,6 @@ namespace Analyzing.Editing.Transformations
             return true;
         }
 
-
         private bool canCross(ExecutedBlock shiftedBlock, HashSet<Instance> borderInstances, ExecutionView view)
         {
             foreach (var instance in view.AffectedInstances(shiftedBlock))

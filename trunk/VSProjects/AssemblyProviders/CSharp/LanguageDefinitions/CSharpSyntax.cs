@@ -77,7 +77,17 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         /// <summary>
         /// Operator used for for based statement
         /// </summary>
+        internal const string ForeachOperator = "foreach";
+
+        /// <summary>
+        /// Operator used for for based statement
+        /// </summary>
         internal const string SwitchOperator = "switch";
+
+        /// <summary>
+        /// Operator used for do based statement
+        /// </summary>
+        internal const string DoOperator = "do";
 
         /// <summary>
         /// Operator used for incrementing variable value
@@ -218,19 +228,21 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         {
             switch (_lexer.Current.Value)
             {
-                case "for":
+                case CSharpSyntax.DoOperator:
+                    return layouts.DoLayout();
+                case CSharpSyntax.ForOperator:
                     return layouts.ForLayout();
-                case "switch":
+                case CSharpSyntax.SwitchOperator:
                     return layouts.SwitchLayout();
-                case "if":
-                case "while":
+                case CSharpSyntax.IfOperator:
+                case CSharpSyntax.WhileOperator:
                     return layouts.CondBlockLayout();
                 case "{":
                     return layouts.SequenceLayout();
                 case "(":
                     return layouts.BracketLayout();
-                case "continue":
-                case "break":
+                case CSharpSyntax.ContinueKeyword:
+                case CSharpSyntax.BreakKeyword:
                     return layouts.KeywordLayout();
                 default:
                     return layouts.HierarchyLayout();

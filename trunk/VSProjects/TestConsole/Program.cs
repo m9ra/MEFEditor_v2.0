@@ -23,7 +23,7 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var testAssembly = TestCases.Edit_BlockScope();
+            var testAssembly = TestCases.DoWhileLoop();
             DisplayTestResult(testAssembly);
         }
 

@@ -435,6 +435,22 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Compile_DoWhileLoop()
+        {
+            AssemblyUtils.Run(@"
+                var i=0;
+                var result=0;
+                do{
+                    result=result+2;
+                    ++i;
+                }while(i<10);
+                ++result;
+            ")
+
+             .AssertVariable("result").HasValue(21);
+        }
+
+        [TestMethod]
         public void Compile_GenericCall()
         {
             AssemblyUtils.Run(@"                

@@ -81,6 +81,25 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
 
 
         /// <summary>
+        /// Create <see cref="CodeNode"/> representing do{}while() block
+        /// </summary>
+        /// <returns><see cref="CodeNode"/> created according to layout</returns>
+        public CodeNode DoLayout()
+        {
+            var commandNode = new CodeNode(_lexer.Move(), NodeTypes.block);
+
+            //on { nextTree gives sequence, else return command
+            commandNode.AddArgument(_nextTree());
+
+            _shiftToken("while", "Missing {0} after do");
+            condition(commandNode);
+            commandNode.EndingToken = _lexer.Current;
+
+            return commandNode;
+        }
+
+
+        /// <summary>
         /// Create CodeNode representing switch block.
         /// </summary>
         /// <returns>CodeNode created according to layout.</returns>
@@ -133,7 +152,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         public CodeNode HierarchyLayout()
         {
             var node = new CodeNode(_lexer.Move(), NodeTypes.hierarchy);
-
+            
             if (_checkToken("("))//function call
             {
                 node.NodeType = NodeTypes.call;

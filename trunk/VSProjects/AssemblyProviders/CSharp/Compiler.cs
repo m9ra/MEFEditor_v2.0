@@ -309,6 +309,10 @@ namespace AssemblyProviders.CSharp
                     generateIf(block);
                     break;
 
+                case CSharpSyntax.DoOperator:
+                    generateDo(block);
+                    break;
+
                 case CSharpSyntax.WhileOperator:
                     generateWhile(block);
                     break;
@@ -321,8 +325,12 @@ namespace AssemblyProviders.CSharp
                     generateSwitch(block);
                     break;
 
-                default:
+                case CSharpSyntax.ForeachOperator:
                     throw new NotImplementedException();
+                    break;
+                    
+                default:
+                    throw new NotSupportedException("Block command '"+block.Value+"' is not supported by C# compiler.");
             }
         }
 
@@ -525,6 +533,52 @@ namespace AssemblyProviders.CSharp
             Context.PopBlock();
             endGroup();
         }
+
+        /// <summary>
+        /// Generate instructions for do block
+        /// </summary>
+        /// <param name="block">Do block which instructions will be generated</param>
+        private void generateDo(INodeAST doBlock)
+        {
+            startGroup(doBlock);
+            startInfoBlock(doBlock);
+
+            //block labels
+            var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
+            var loopLbl = E.GetTemporaryLabel(LoopLabelCaption);
+            var endLbl = E.GetTemporaryLabel(EndLabelCaption);
+
+            Context.PushBlock(doBlock,
+                    conditionLbl,
+                    endLbl
+                );
+
+            //loop primitives
+            var loop = doBlock.Arguments[0];
+            var condition = getRValue(doBlock.Arguments[1]);
+
+            //conditional jump table
+            E.Jump(loopLbl); //for first loop we skip condition
+            E.SetLabel(conditionLbl);
+            E.ConditionalJump(condition.GenerateStorage(), loopLbl);
+            E.Jump(endLbl);
+
+            endGroup();
+            startGroup(loop);
+
+            //loop body
+            E.SetLabel(loopLbl);
+            generateSubsequence(loop);
+
+            //repeat
+            E.Jump(conditionLbl);
+            E.SetLabel(endLbl);
+            E.Nop();
+
+            Context.PopBlock();
+            endGroup();
+        }
+
 
         /// <summary>
         /// Generate instructions for if block
