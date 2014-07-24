@@ -40,6 +40,22 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         }
 
         /// <summary>
+        /// Create <see cref="CodeNode"/> representing implicitly typed array with initializer
+        /// </summary>
+        /// <returns></returns>
+        public CodeNode ImplicitArray()
+        {
+            var node = new CodeNode(_lexer.Move(), NodeTypes.hierarchy);
+            _shiftToken("]", "Expected '{0}' for implicitly typed array");
+            //_shiftToken("{", "Expected '{0}' initializer expected for implicitly type array");
+
+            var initializer = InitializerLayout();
+            node.SetSubsequence(initializer);
+            node.EndingToken = _lexer.Current;
+            return node;
+        }
+
+        /// <summary>
         /// Create CodeNode representing for block.
         /// </summary>
         /// <returns>CodeNode created according to layout.</returns>
@@ -93,7 +109,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
 
             _shiftToken("while", "Missing {0} after do");
             condition(commandNode);
-            commandNode.EndingToken = _lexer.Current;
+            commandNode.EndingToken = _lexer.Current.Next;
 
             return commandNode;
         }
@@ -363,7 +379,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                     args.Add(expectedString);
                     args.AddRange(msgArgs);
 
-                    throw CSharpSyntax.ParsingException(_lexer.Current, errorMessage, args);
+                    throw CSharpSyntax.ParsingException(_lexer.Current, errorMessage, args.ToArray());
                 }
                 return false;
             }

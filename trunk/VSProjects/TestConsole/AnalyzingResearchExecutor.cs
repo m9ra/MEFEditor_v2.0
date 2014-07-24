@@ -259,7 +259,10 @@ namespace TestConsole
 
         private void generalDrawer(DrawedInstance instance)
         {
-            var componentInfo = _assembly.Loader.GetComponentInfo(instance.WrappedInstance.Info);
+            var instanceInfo=instance.WrappedInstance.Info;
+            var componentInfo = _assembly.Loader.GetComponentInfo(instanceInfo);
+            var definingAssembly = _assembly.Loader.AppDomain.GetDefiningAssembly(instanceInfo);
+            instance.SetProperty("DefiningAssembly", definingAssembly.Name);
             GeneralDefinitionProvider.Draw(instance, componentInfo);
         }
 

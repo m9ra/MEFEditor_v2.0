@@ -329,7 +329,6 @@ namespace TestConsole
             .AddMethod("System.Type." + Naming.ClassCtorName, (c) => { }, Method.Ctor_NoParam)
 
             .AddToRuntime<AttributedModelServicesDefinition>()
-
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<DirectoryCatalogDefinition>()
             .AddToRuntime<AggregateCatalogDefinition>()
@@ -804,13 +803,13 @@ namespace TestConsole
                 var result=arr[0]+arr[1];
             ")
 
-            ;
+            ; 
         }
 
         static internal TestingAssembly Array_Initializer()
         {
             return AssemblyUtils.Run(@"        
-                var arr=new System.String[]{
+                var arr=new []{
                     ""abc"",
                     ""def""
                 };   

@@ -237,6 +237,8 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                 case CSharpSyntax.IfOperator:
                 case CSharpSyntax.WhileOperator:
                     return layouts.CondBlockLayout();
+                case "[":
+                    return layouts.ImplicitArray();
                 case "{":
                     return layouts.SequenceLayout();
                 case "(":

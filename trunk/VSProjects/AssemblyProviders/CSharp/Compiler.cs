@@ -328,9 +328,9 @@ namespace AssemblyProviders.CSharp
                 case CSharpSyntax.ForeachOperator:
                     throw new NotImplementedException();
                     break;
-                    
+
                 default:
-                    throw new NotSupportedException("Block command '"+block.Value+"' is not supported by C# compiler.");
+                    throw new NotSupportedException("Block command '" + block.Value + "' is not supported by C# compiler.");
             }
         }
 
@@ -1554,7 +1554,7 @@ namespace AssemblyProviders.CSharp
         private void resolveArguments(INodeAST newOperand, INodeAST callNode, ref TypeDescriptor objectType, out List<RValueProvider> initializerArguments, out List<Argument> constructorArguments)
         {
             var isArray = objectType.TypeName.StartsWith("Array<");
-            var isImplicitlyTypedArray = newOperand.Indexer != null;
+            var isImplicitlyTypedArray = newOperand.Value == "[";
             var hasInitializer = callNode.Subsequence != null;
 
             initializerArguments = new List<RValueProvider>();
@@ -1588,10 +1588,10 @@ namespace AssemblyProviders.CSharp
 
         private TypeDescriptor resolveObjectType(INodeAST newOperand, out INodeAST callNode)
         {
-            var isImplicitTypedArray = newOperand.Indexer != null;
+            var isImplicitTypedArray = newOperand.Value == "[";
 
             var typeSuffix = resolveCtorSuffix(newOperand, out callNode);
-            var objectType = resolveTypeDescriptor(typeSuffix);
+            var objectType = isImplicitTypedArray ? TypeDescriptor.Create("Array<System.Object,1>") : resolveTypeDescriptor(typeSuffix);
 
             if (objectType == null)
                 throw parsingException(callNode, "Cannot find type");

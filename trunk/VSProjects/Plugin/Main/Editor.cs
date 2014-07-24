@@ -513,7 +513,10 @@ namespace MEFEditor.Plugin.Main
             }));
 
 
-            var componentInfo = _loader.GetComponentInfo(instance.WrappedInstance.Info);
+            var instanceInfo = instance.WrappedInstance.Info;
+            var componentInfo = _loader.GetComponentInfo(instanceInfo);
+            var assembly = _loader.AppDomain.GetDefiningAssembly(instanceInfo);
+            instance.SetProperty("DefiningAssembly", assembly.Name);
             GeneralDefinitionProvider.Draw(instance, componentInfo);
         }
 

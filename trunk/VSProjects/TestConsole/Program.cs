@@ -23,7 +23,7 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var testAssembly = TestCases.DoWhileLoop();
+            var testAssembly = TestCases.MEF_Demo();
             DisplayTestResult(testAssembly);
         }
 

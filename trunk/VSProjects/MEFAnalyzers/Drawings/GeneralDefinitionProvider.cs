@@ -16,8 +16,16 @@ namespace MEFAnalyzers.Drawings
     {
         public static void Draw(DrawedInstance instance, ComponentInfo info)
         {
+            if (instance.WrappedInstance.IsDirty)
+            {
+                //instance is dirty
+                instance.SetProperty("IsDirty", "");
+            }
+
             if (info == null)
                 return;
+
+            instance.SetProperty("DefiningAssembly", info.DefiningAssembly.Name);
 
             if (instance.WrappedInstance.IsEntryInstance)
             {

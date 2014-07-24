@@ -34,25 +34,32 @@ namespace MEFAnalyzers.Drawings
 
             var properties = Definition.Properties.OrderBy((prop) => prop.Name);
 
+            string definingAssembly = null;
             string removedBy = null;
             var isEntryInstance = false;
 
             foreach (var property in properties)
             {
-                var propertyBlock = new TextBlock();
-
                 var value = property.Value;
                 var name = property.Name;
-                var prefix = value == null || value == "" ? name : name + ": ";
 
-                propertyBlock.Text = prefix + value;
-
-                Properties.Children.Add(propertyBlock);
-
-                isEntryInstance |= property.Name == "EntryInstance";
-                if (property.Name == "Removed")
+                switch (name)
                 {
-                    removedBy = property.Value;
+                    case "EntryInstance":
+                        isEntryInstance = true;
+                        break;
+                    case "Removed":
+                        removedBy = value;
+                        break;
+                    case "DefiningAssembly":
+                        definingAssembly = value;
+                        break;
+                    default:
+                        var prefix = value == null || value == "" ? name : name + ": ";
+                        var propertyBlock = new TextBlock();
+                        propertyBlock.Text = prefix + value;
+                        Properties.Children.Add(propertyBlock);
+                        break;
                 }
             }
 
@@ -68,6 +75,13 @@ namespace MEFAnalyzers.Drawings
                 DrawingTools.SetIcon(RemoveIcon, Icons.Remove);
                 DrawingTools.SetToolTip(RemoveIcon, DrawingTools.GetText("Component has been removed " + removedBy));
             }
+
+            if (definingAssembly != null)
+            {
+                var assembly = DrawingTools.GetHeadingText("Defining assembly", definingAssembly);
+                DrawingTools.SetToolTip(TypeName, assembly);
+            }
+
             RemoveIcon.Visibility = isRemoved ? Visibility.Visible : Visibility.Hidden;
 
         }

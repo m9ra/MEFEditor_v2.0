@@ -608,6 +608,22 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Compile_ImplicitArrayInitializer()
+        {
+            AssemblyUtils.Run(@"
+                var arr=new []{
+                    ""abc"",
+                    ""def""
+                };   
+                var result=arr[0]+arr[1];
+            ")
+
+            .AssertVariable("result").HasValue("abcdef")
+
+            ;
+        }
+
+        [TestMethod]
         public void Compile_CollectionInitializer()
         {
             AssemblyUtils.Run(@"

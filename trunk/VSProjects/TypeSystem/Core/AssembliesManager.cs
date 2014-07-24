@@ -566,6 +566,38 @@ namespace TypeSystem.Core
         }
 
         /// <summary>
+        /// Get assembly which defines given type.
+        /// </summary>
+        /// <param name="type">Type which assembly is searched</param>
+        /// <returns>Assembly where type is defined</returns>
+        internal TypeAssembly GetDefiningAssembly(InstanceInfo type)
+        {
+            var definingAssemblyProvider = GetDefiningAssemblyProvider(type);
+            if (definingAssemblyProvider == null)
+                return null;
+
+            return _assemblies.GetTypeAssembly(definingAssemblyProvider);
+        }
+
+        /// <summary>
+        /// Get assembly which defines given type.
+        /// </summary>
+        /// <param name="type">Type which assembly is searched</param>
+        /// <returns>Assembly provider where type is defined</returns>
+        internal AssemblyProvider GetDefiningAssemblyProvider(InstanceInfo type)
+        {
+            var path = new PathInfo(type.TypeName);
+            foreach (var assemblyProvider in _assemblies.Providers)
+            {
+                var chain = assemblyProvider.GetInheritanceChain(path);
+                if (chain != null)
+                    return assemblyProvider;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Get assembly which defines given method.
         /// </summary>
         /// <param name="method">Method which assembly is searched</param>

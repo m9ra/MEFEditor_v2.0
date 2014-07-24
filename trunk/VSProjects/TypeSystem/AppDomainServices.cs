@@ -71,7 +71,7 @@ namespace TypeSystem
         public event MethodInvalidationEvent MethodInvalidated;
 
         public event Action CompositionSchemeInvalidated;
-        
+
         /// <summary>
         /// Event fired whenever new message is logged
         /// </summary>
@@ -134,6 +134,18 @@ namespace TypeSystem
             return _manager.GetDefiningAssembly(method);
         }
 
+        /// <summary>
+        /// Get assembly which defines given type.
+        /// </summary>
+        /// <param name="type">Type which assembly is searched</param>
+        /// <returns>Assembly where type is defined</returns>
+        public TypeAssembly GetDefiningAssembly(InstanceInfo type)
+        {
+            return _manager.GetDefiningAssembly(type);
+        }
+
+
+
         #region Logging routines
 
         /// <summary>
@@ -145,7 +157,7 @@ namespace TypeSystem
         public virtual void Log(string category, string format, params object[] args)
         {
             var message = string.Format(format, args);
-            
+
             if (OnLog != null)
                 OnLog(category, message);
         }
