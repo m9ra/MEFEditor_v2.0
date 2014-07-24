@@ -9,7 +9,6 @@ using TypeSystem;
 
 using AssemblyProviders.CSharp.Primitives;
 using AssemblyProviders.CSharp.Interfaces;
-using AssemblyProviders.CSharp.CodeInstructions;
 
 namespace AssemblyProviders.CSharp.LanguageDefinitions
 {

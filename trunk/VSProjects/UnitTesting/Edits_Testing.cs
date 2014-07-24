@@ -5,14 +5,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Analyzing.Execution.Instructions;
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
+using UnitTesting.RuntimeTypeDefinitions;
 
 using Analyzing;
 using Analyzing.Execution;
 using Analyzing.Editing;
 
 using TypeSystem;
+using MEFAnalyzers;
 using AssemblyProviders.CSharp;
 using AssemblyProviders.CSharp.Compiling;
+using AssemblyProviders.DirectDefinitions;
+
 
 using UnitTesting.AssemblyProviders_TestUtils;
 
@@ -506,6 +510,72 @@ namespace UnitTesting
          .AssertSourceEquivalence(@"
                 var c=""ForceRedeclare"";
          ");
+        }
+
+        [TestMethod]
+        public void Edit_GroupShifting()
+        {
+            AssemblyUtils.Run(@"
+                var toAccept = new SimpleStringExport();
+                Report(toAccept);
+                System.ComponentModel.Composition.Hosting.CompositionContainer cont;
+
+                if (true)
+                {
+                    //here is end of comp scope - if condition of upper block is true
+                    toAccept = null;
+                    //some complicated block structure
+                    var test = ""f"";
+                    if (true)
+                    {
+                    }
+                    switch (test)
+                    {
+                        case ""f"":
+                        case ""e"":
+                        default:
+                            break;
+                    }
+                }
+                cont = new System.ComponentModel.Composition.Hosting.CompositionContainer();          
+            ")
+
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<SimpleStringExport>()
+            .AddDirectToRuntime<NullLiteral>()
+
+            .UserAction((c) =>
+            {
+                UserInteraction.DraggedInstance = AssemblyUtils.REPORTED_INSTANCE;
+            })
+
+            .RunEditAction("cont", UserInteraction.AcceptEditName)
+
+            .AssertSourceEquivalence(@"
+                var toAccept = new SimpleStringExport();
+                Report(toAccept);
+                System.ComponentModel.Composition.Hosting.CompositionContainer cont;
+
+                cont = new System.ComponentModel.Composition.Hosting.CompositionContainer();   
+                cont.ComposeParts(toAccept);       
+                if (true)
+                {
+                    //here is end of comp scope - if condition of upper block is true
+                    toAccept = null;
+                    //some complicated block structure
+                    var test = ""f"";
+                    if (true)
+                    {
+                    }
+                    switch (test)
+                    {
+                        case ""f"":
+                        case ""e"":
+                        default:
+                            break;
+                    }
+                }
+            ");
         }
     }
 }

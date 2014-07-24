@@ -11,8 +11,6 @@ using TypeSystem;
 using UnitTesting.Analyzing_TestUtils;
 using UnitTesting.TypeSystem_TestUtils;
 
-
-
 using AssemblyProviders;
 using AssemblyProviders.CIL;
 
@@ -43,6 +41,7 @@ namespace TestConsole
 
             //Wait so user can read an output
             Console.ReadKey();
+            Environment.Exit(0);
         }
     }
 }

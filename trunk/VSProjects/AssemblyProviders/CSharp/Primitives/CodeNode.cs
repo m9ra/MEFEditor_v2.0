@@ -18,6 +18,8 @@ namespace AssemblyProviders.CSharp.Primitives
 
     class CodeSeq : ISeqAST
     {
+        private readonly IToken _endingToken;
+
         public INodeAST[] Lines { get; private set; }
 
         /// <summary>
@@ -25,8 +27,9 @@ namespace AssemblyProviders.CSharp.Primitives
         /// </summary>
         public INodeAST ContainingNode { get; internal set; }
 
-        public CodeSeq(IEnumerable<CodeNode> lines)
+        public CodeSeq(IEnumerable<CodeNode> lines, IToken endingToken)
         {
+            _endingToken = endingToken;
             Lines = lines.ToArray();
             foreach (var line in lines)
             {
@@ -38,8 +41,7 @@ namespace AssemblyProviders.CSharp.Primitives
         {
             get
             {
-                if (Lines.Length == 0) throw new NotSupportedException("Cannot get ending token of empty sequence");
-                return Lines[Lines.Length - 1].EndingToken;
+                return _endingToken;
             }
         }
 
@@ -220,9 +222,9 @@ namespace AssemblyProviders.CSharp.Primitives
         /// Get given lines to subsequence
         /// </summary>
         /// <param name="lines"></param>
-        public void SetSubsequence(IEnumerable<CodeNode> lines)
+        public void SetSubsequence(IEnumerable<CodeNode> lines, IToken endingToken)
         {
-            var sub = new CodeSeq(lines);
+            var sub = new CodeSeq(lines, endingToken);
             sub.ContainingNode = this;
             Subsequence = sub;
         }

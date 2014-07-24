@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using AssemblyProviders.CSharp.CodeInstructions;
 using AssemblyProviders.CSharp.Interfaces;
 using AssemblyProviders.CSharp.Primitives;
 
@@ -111,7 +110,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                             _shiftToken(";");
                         }
 
-                        labelBlock.SetSubsequence(lines);
+                        labelBlock.SetSubsequence(lines, _lexer.Current);
                         switchNode.AddArgument(labelBlock);
                         break;
                     case "}":
@@ -229,7 +228,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
 
             var lines = new List<CodeNode>();
             resolveBracket(() => addNode(lines, canSkipDelim), "{", delimiter, "}", "Error in sequence, expected '" + delimiter + "'");
-            node.SetSubsequence(lines);
+            node.SetSubsequence(lines, _lexer.Current.Previous);
             if (_lexer.Current.Value == delimiter)
                 node.EndingToken = _lexer.Current;
 
@@ -345,7 +344,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                     args.Add(expectedString);
                     args.AddRange(msgArgs);
 
-                    throw CSharpSyntax.ParsingException(_lexer.Current,errorMessage, args);
+                    throw CSharpSyntax.ParsingException(_lexer.Current, errorMessage, args);
                 }
                 return false;
             }

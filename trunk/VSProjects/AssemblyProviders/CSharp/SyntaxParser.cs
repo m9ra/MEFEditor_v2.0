@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using AssemblyProviders.CSharp.Interfaces;
-using AssemblyProviders.CSharp.CodeInstructions;
 using AssemblyProviders.CSharp.Primitives;
 using AssemblyProviders.CSharp.LanguageDefinitions;
 

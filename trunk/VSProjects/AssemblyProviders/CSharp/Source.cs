@@ -254,8 +254,8 @@ namespace AssemblyProviders.CSharp
 
             currentShiftedLine = shiftedLine;
             currentBehindLine = behindLine;
-            var minLength = Math.Min(shiftedSubq.Count, behindSubq.Count);
-            for (int i = 0; i < minLength; ++i)
+            var minLength = Math.Min(shiftedSubq.Count, behindSubq.Count)-1;
+            for (int i = 0; i <= minLength; ++i)
             {
                 var currentShifted = shiftedSubq[i];
                 var currentBehind = behindSubq[i];
