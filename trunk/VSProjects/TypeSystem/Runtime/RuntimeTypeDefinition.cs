@@ -108,14 +108,20 @@ namespace TypeSystem.Runtime
         /// <returns>Unwrapped data</returns>
         internal protected virtual T Unwrap<T>(Instance instance)
         {
-            if (typeof(T).IsArray)
+            var type = typeof(T);
+            if (type.IsArray)
             {
                 var arrayDef = instance.DirectValue as Array<InstanceWrap>;
                 return arrayDef.Unwrap<T>();
             }
             else
             {
-                return (T)instance.DirectValue;
+                var value = instance.DirectValue;
+
+                if (value != null && type.IsAssignableFrom(value.GetType()))
+                    return (T)instance.DirectValue;
+                else
+                    return default(T);
             }
         }
 

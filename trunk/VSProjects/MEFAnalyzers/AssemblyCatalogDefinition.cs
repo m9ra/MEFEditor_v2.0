@@ -127,11 +127,12 @@ namespace MEFAnalyzers
 
             var slot = drawer.AddSlot();
 
-            foreach (var component in Components.Value)
-            {
-                var componentDrawing = drawer.GetInstanceDrawing(component);
-                slot.Add(componentDrawing.Reference);
-            }
+            if (Components.Value != null)
+                foreach (var component in Components.Value)
+                {
+                    var componentDrawing = drawer.GetInstanceDrawing(component);
+                    slot.Add(componentDrawing.Reference);
+                }
 
             drawer.ForceShow();
         }

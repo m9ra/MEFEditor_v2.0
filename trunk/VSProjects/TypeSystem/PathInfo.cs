@@ -11,7 +11,10 @@ namespace TypeSystem
 {
     public class PathInfo
     {
-        private static readonly Regex _genericRemover = new Regex(@"
+        /// <summary>
+        /// Regex that is used for replacing type parameters in fullname
+        /// </summary>
+        public static readonly Regex GenericMatcher = new Regex(@"
      <  
       (?>  [^><]+       | 
         < (?<Depth>)    |
@@ -98,7 +101,7 @@ namespace TypeSystem
 
         public static string GetNonGenericPath(string path)
         {
-            return _genericRemover.Replace(path, "");
+            return GenericMatcher.Replace(path, "");
         }
 
         /// <summary>

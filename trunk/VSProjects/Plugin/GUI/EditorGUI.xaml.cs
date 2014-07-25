@@ -169,8 +169,6 @@ namespace Plugin.GUI
         {
             InitializeComponent();
             setVisibleContent(ContentPanel.Workspace);
-
-            logsExpander.IsExpanded = true;
         }
 
         public void ShowLoadingMessage(string message)

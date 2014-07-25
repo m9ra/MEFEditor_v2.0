@@ -33,13 +33,30 @@ namespace AssemblyProviders.CSharp
         /// Mapping operators on .NET methods. First operand is treated as called object, second one is passed as call argument.
         /// </summary>
         private static readonly Dictionary<string, string> _mathOperatorMethods = new Dictionary<string, string>(){
-              {"+","add_operator"},
-              {"-","sub_operator"},
-              {"*","mul_operator"},
-              {"/","div_operator"},
-              {"<","lesser_operator"},
-              {">","greater_operator"},
+              {"+","op_Addition"},
+              {"-","op_Subtraction"},
+              {"*","op_Multiply"},
+              {"/","op_Division"},
+              {"%","op_Modulus"},
+
+              {"^","op_ExclusiveOr"},
+              {"&","op_BitwiseAnd"},
+              {"|","op_BitwiseOr"},
+
+              //we dont support partial evaluation - use bitwise instead
+              //{"&&","op_LogicalAnd"},
+              //{"||","op_LogicalOr"},
+              {"&&","op_BitwiseAnd"},
+              {"||","op_BitwiseOr"},              
               
+              {">","op_GreaterThan"},
+              {"<","op_LessThan"},
+              {">=","op_GreaterThanOrEqual"},
+              {"<=","op_LessThanOrEqual"},
+
+              //this is workaround, because of missing CIL method in specification
+              {"!","op_Not"},
+
               {"==","Equals"}
         };
 
@@ -234,8 +251,10 @@ namespace AssemblyProviders.CSharp
         private void generateArgumentsInitialization()
         {
             //prepare object that is called
-            E.AssignArgument(CSharpSyntax.ThisVariable, MethodInfo.DeclaringType, 0);
+            var thisType = MethodInfo.DeclaringType;
+            E.AssignArgument(CSharpSyntax.ThisVariable, thisType, 0);
             var thisVariable = new VariableInfo(CSharpSyntax.ThisVariable, _source.CompilationInfo);
+            thisVariable.HintAssignedType(thisType);
 
             if (MethodInfo.HasThis)
             {
@@ -279,9 +298,12 @@ namespace AssemblyProviders.CSharp
         /// <param name="node">Node which subsequence instructions will be generated</param>
         private void generateSubsequence(INodeAST node)
         {
+            var hasSubsequence = node.Subsequence != null;
+            var lines = hasSubsequence ? node.Subsequence.Lines : new[] { node };
+
             var times = new List<long>();
             var w = System.Diagnostics.Stopwatch.StartNew();
-            foreach (var line in node.Subsequence.Lines)
+            foreach (var line in lines)
             {
                 if (line.NodeType == NodeTypes.block)
                 {
@@ -397,7 +419,7 @@ namespace AssemblyProviders.CSharp
                 //note that comparing slightly differs from C# switch semantic. However
                 //switch is allowed only on primitive and constant values
                 //so it doesn't matter
-                var comparisonActivation = createOperatorActivation(conditionRStorage, CSharpSyntax.IsEqualOperator, caseValueRStorage, caseConditionNode);
+                var comparisonActivation = createBinaryOperatorActivation(conditionRStorage, CSharpSyntax.IsEqualOperator, caseValueRStorage, caseConditionNode);
                 var comparisonCall = new CallValue(comparisonActivation, Context);
                 comparisonCall.GenerateAssignInto(testValueStorage);
 
@@ -467,7 +489,8 @@ namespace AssemblyProviders.CSharp
 
             //conditional jump table
             E.SetLabel(conditionLbl);
-            E.ConditionalJump(condition.GenerateStorage(), loopLbl);
+            if (condition != null)
+                E.ConditionalJump(condition.GenerateStorage(), loopLbl);
             E.Jump(endLbl);
             E.SetLabel(loopLbl);
             endGroup();
@@ -750,6 +773,10 @@ namespace AssemblyProviders.CSharp
                     //force declaration
                     getLValue(statement);
                     break;
+                case NodeTypes.empty:
+                    //there is nothing to do
+                    E.Nop();
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -909,8 +936,6 @@ namespace AssemblyProviders.CSharp
         /// <returns><see cref="RValueProvider"/> represented by given node</returns>
         private RValueProvider getRValue(INodeAST rValue)
         {
-            //TODO check semantic
-
             RValueProvider result;
 
             switch (rValue.NodeType)
@@ -928,6 +953,9 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.postOperator:
                     result = resolvePostfixOperator(rValue);
                     break;
+                case NodeTypes.empty:
+                    //for empty there is no rvalue
+                    return null;
                 default:
                     throw parsingException(rValue, "Unexpected {0} token", rValue.NodeType);
             }
@@ -1105,7 +1133,11 @@ namespace AssemblyProviders.CSharp
                     return resolveLValueAdd(decrementedLValue, decrementBase, -1, true, prefixOperator);
 
                 default:
-                    throw parsingException(prefixOperator, "Prefix operation '{0}' is not supported", operatorNotation);
+                    var result = tryGetUnary(operatorNotation, operandNode);
+                    if (result == null)
+                        throw parsingException(prefixOperator, "Prefix operation '{0}' is not supported", operatorNotation);
+
+                    return result;
             }
         }
 
@@ -1118,20 +1150,105 @@ namespace AssemblyProviders.CSharp
         {
             var operatorNotation = postfixOperator.Value;
             var operandNode = postfixOperator.Arguments[0];
-            var lValue = getLValue(operandNode);
-            var source = getRValue(operandNode);
+
+            LValueProvider lValue;
+            RValueProvider source;
 
             switch (operatorNotation)
             {
                 case CSharpSyntax.IncrementOperator:
+                    lValue = getLValue(operandNode);
+                    source = getRValue(operandNode);
                     return resolveLValueAdd(lValue, source, 1, false, postfixOperator);
 
                 case CSharpSyntax.DecrementOperator:
+                    lValue = getLValue(operandNode);
+                    source = getRValue(operandNode);
                     return resolveLValueAdd(lValue, source, -1, false, postfixOperator);
 
                 default:
-                    throw parsingException(postfixOperator, "Postfix operation '{0}' is not supported", operatorNotation);
+                    var result = tryGetUnary(operatorNotation, operandNode);
+                    if (result == null)
+                        throw parsingException(postfixOperator, "Postfix operation '{0}' is not supported", operatorNotation);
+
+                    return result;
             }
+        }
+
+        /// <summary>
+        /// Resolve unary operation on given operand
+        /// </summary>
+        /// <param name="operandNode">Operand of unary operation</param>
+        /// <returns>Representation of negate operation result</returns>
+        private RValueProvider tryGetUnary(string operatorNotation, INodeAST operandNode)
+        {
+            string operatorMethod;
+            if (!_mathOperatorMethods.TryGetValue(operatorNotation, out operatorMethod))
+                return null;
+            
+            var operandValue=getRValue(operandNode);
+            var activation = createUnaryOperatorActivation(operandValue, operatorMethod, operandNode.Parent);
+            if (activation == null)
+                return null;
+
+            return new CallValue(activation, Context);
+        }
+
+        /// <summary>
+        /// Find method representation of unary operator for given nodes
+        /// </summary>
+        /// <param name="leftOperandType">Operand</param>
+        /// <param name="operatorMethod">Method belonging to operator</param>
+        /// <returns>Found operator call</returns>
+        private CallActivation createUnaryOperatorActivation(RValueProvider operand, string operatorMethod, INodeAST operatorNode)
+        {
+            //translate method according to operators table
+            var searcher = Context.CreateSearcher();
+            searcher.SetCalledObject(operand.Type);
+            searcher.Dispatch(operatorMethod);
+
+            if (!searcher.HasResults)
+                throw parsingException(operatorNode, "Method implementation for operator {0} cannot be found", operatorMethod);
+
+            var hasStaticMethod = false;
+            foreach (var method in searcher.FoundResult)
+            {
+                if (method.IsStatic)
+                {
+                    hasStaticMethod = true;
+                    break;
+                }
+            }
+
+
+            Argument[] arguments;
+            if (hasStaticMethod)
+            {
+                //static methods needs to pass both operands
+                arguments = new[]{
+                    new Argument(operand),
+                };
+            }
+            else
+            {
+                //non static methods passes second argument as this object
+                arguments = new Argument[]{
+                };
+            }
+
+
+            var selector = new MethodSelector(searcher.FoundResult, Context);
+            var activation = selector.CreateCallActivation(arguments);
+            activation.CallNode = operatorNode;
+
+            if (!hasStaticMethod)
+                //static methods doesnt have called object
+                activation.CalledObject = operand;
+
+            if (activation == null)
+                throw parsingException(operatorNode, "Cannot select method overload for operator {0}", operatorMethod);
+
+            return activation;
         }
 
         /// <summary>
@@ -1157,7 +1274,7 @@ namespace AssemblyProviders.CSharp
 
                 E.AssignLiteral(addedValueStorage, toAdd);
 
-                var operatorActivation = createOperatorActivation(source, "+", addedValue, operatorNode);
+                var operatorActivation = createBinaryOperatorActivation(source, "+", addedValue, operatorNode);
 
                 var callProvider = new CallValue(operatorActivation, Context);
                 callProvider.Generate();
@@ -1282,21 +1399,21 @@ namespace AssemblyProviders.CSharp
             var lOperandProvider = getRValue(lNode);
             var rOperandProvider = getRValue(rNode);
 
-            var operatorActivation = createOperatorActivation(lOperandProvider, op, rOperandProvider, lNode.Parent);
+            var operatorActivation = createBinaryOperatorActivation(lOperandProvider, op, rOperandProvider, lNode.Parent);
 
             var call = new CallValue(operatorActivation, Context);
             return call;
         }
 
         /// <summary>
-        /// Find method representation of operator for given nodes
+        /// Find method representation of binary operator for given nodes
         /// </summary>
         /// <param name="leftOperandType">Left operand</param>
         /// <param name="op">Operator notation</param>
         /// <param name="rightOperand">Right operand</param>
         /// <param name="leftOperand">Node available for operator</param>
         /// <returns>Found operator</returns>
-        private CallActivation createOperatorActivation(RValueProvider leftOperand, string op, RValueProvider rightOperand, INodeAST operatorNode)
+        private CallActivation createBinaryOperatorActivation(RValueProvider leftOperand, string op, RValueProvider rightOperand, INodeAST operatorNode)
         {
             //translate method according to operators table
             var searcher = findOperatorMethod(leftOperand, op);
@@ -1497,7 +1614,7 @@ namespace AssemblyProviders.CSharp
         {
             var translatedTypeName = Context.MapGeneric(typeNameSuffix);
 
-            return Context.DescriptorFromSuffix(typeNameSuffix);
+            return Context.DescriptorFromSuffix(translatedTypeName);
         }
 
         /// <summary>

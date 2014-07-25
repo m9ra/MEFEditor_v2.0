@@ -23,7 +23,6 @@
         </StackPanel>
         <TextBlock Name="InstanceID" DockPanel.Dock="Top" FontStyle="Italic" Foreground="White" HorizontalAlignment="Center">No id specified</TextBlock>
         
-        <StackPanel Name="Properties"></StackPanel>
         <dr:SlotCanvas Name="Catalogs" Margin="10" MinHeight="200" MinWidth="200" Background="Transparent"></dr:SlotCanvas>
     </DockPanel>
 </dr:ContentDrawing>

@@ -100,6 +100,11 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         internal const string DecrementOperator = "--";
 
         /// <summary>
+        /// Operator used for negating value
+        /// </summary>
+        internal const string NegateOperator = "!";
+
+        /// <summary>
         /// Operator used for assigning variable value
         /// </summary>
         internal const string AssignOperator = "=";
@@ -126,7 +131,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
 
         static readonly HashSet<string> KnownTokens = new HashSet<string>();
         static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";", ":", ",", ")", "}", "]", "in" };
-        static readonly HashSet<string> PrefOperators = new HashSet<string>() { "!", "throw", "out", "ref", "const", ReturnOperator, NewOperator, "-", "+", IncrementOperator, DecrementOperator, "~" };
+        static readonly HashSet<string> PrefOperators = new HashSet<string>() { NegateOperator, "throw", "out", "ref", "const", ReturnOperator, NewOperator, "-", "+", IncrementOperator, DecrementOperator, "~" };
         static readonly HashSet<string> PostOperators = new HashSet<string>() { IncrementOperator, DecrementOperator };
         static readonly Dictionary<string, int> BinOperators = new Dictionary<string, int>(){
             {":",50},

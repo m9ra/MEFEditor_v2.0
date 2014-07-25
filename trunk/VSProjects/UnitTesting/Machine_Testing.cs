@@ -60,7 +60,7 @@ namespace UnitTesting
         [TestMethod]
         public void InjectedMethodCall_adding()
         {
-            var add = Naming.Method<int>("add_operator", typeof(int));
+            var add = Naming.Method<int>("op_Addition", typeof(int));
 
             ExecutionUtils.Run((e) =>
             {
@@ -75,7 +75,7 @@ namespace UnitTesting
         [TestMethod]
         public void ConditionalLoop_Iteration()
         {
-            var add = Naming.Method<int>("add_operator", typeof(int));
+            var add = Naming.Method<int>("op_Addition", typeof(int));
             var equals = Naming.Method<int>("Equals", typeof(int));
 
             ExecutionUtils.Run((e) =>

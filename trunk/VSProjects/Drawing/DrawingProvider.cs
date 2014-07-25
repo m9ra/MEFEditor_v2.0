@@ -85,6 +85,9 @@ namespace Drawing
 
                 //create edits
                 var edits = provider();
+                if (edits == null)
+                    continue;
+
                 foreach (var edit in edits)
                 {
                     var editItem = createEditItem(edit, context);

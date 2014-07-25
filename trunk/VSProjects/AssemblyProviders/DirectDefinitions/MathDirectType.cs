@@ -12,6 +12,11 @@ using TypeSystem.Runtime;
 
 namespace AssemblyProviders.DirectDefinitions
 {
+
+    delegate BinaryExpression BinaryOperator(ParameterExpression op1, ParameterExpression op2);
+
+    delegate UnaryExpression UnaryOperator(ParameterExpression op);
+
     public class MathDirectType<T> : DirectTypeDefinition<T>
             where T : IComparable
     {
@@ -27,71 +32,28 @@ namespace AssemblyProviders.DirectDefinitions
 
         private void addDirectMath()
         {
-            var add = operatorInfo("add_operator");
-            var sub = operatorInfo("sub_operator");
+            addBinaryOperator("op_Addition", Expression.Add);
+            addBinaryOperator("op_Subtraction", Expression.Subtract);
+            addBinaryOperator("op_Multiply", Expression.Multiply);
+            addBinaryOperator("op_Division", Expression.Divide);
+            addBinaryOperator("op_Modulus", Expression.Modulo);
 
-            AddMethod(generateAddOperator(), add);
-            AddMethod(generateSubOperator(), sub);
-        }
+            addBinaryOperator("op_BitwiseAnd", Expression.And);
+            addBinaryOperator("op_BitwiseOr", Expression.Or);
+            addBinaryOperator("op_BitwiseAnd", Expression.AndAlso);
+            addBinaryOperator("op_BitwiseOr", Expression.OrElse);
 
-        private TypeMethodInfo operatorInfo(string methodName)
-        {
-            var thisInfo = TypeDescriptor.Create<T>();
-
-            var op1 = ParameterTypeInfo.Create("op1", thisInfo);
-            var op2 = ParameterTypeInfo.Create("op2", thisInfo);
-
-            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new ParameterTypeInfo[] { op2 }, false, TypeDescriptor.NoDescriptors);
-            return methodInfo;
+            addUnaryOperator("op_Not", Expression.Not);
+            addUnaryOperator("op_UnaryNegation", Expression.Negate);
+            addUnaryOperator("op_UnaryPlus", Expression.UnaryPlus);
         }
 
         private void addDirectComparing()
         {
-            var lesser = operatorInfo("lesser_operator");
-
-            AddMethod(generateLesserThanOperator(), lesser);
+            addBinaryOperator("op_LessThan", generateLesserThanOperator());
         }
 
-        private DirectMethod generateAddOperator()
-        {
-            var param1 = Expression.Parameter(typeof(T), "op1");
-            var param2 = Expression.Parameter(typeof(T), "op2");
-
-            return generateMathOperator(
-                Expression.Add(param1, param2)
-                , param1, param2
-            );
-        }
-
-        private DirectMethod generateSubOperator()
-        {
-            var param1 = Expression.Parameter(typeof(T), "op1");
-            var param2 = Expression.Parameter(typeof(T), "op2");
-
-            return generateMathOperator(
-                Expression.Subtract(param1, param2)
-                , param1, param2
-            );
-        }
-
-        private DirectMethod generateMathOperator(BinaryExpression mathExpression, ParameterExpression param1, ParameterExpression param2)
-        {
-            var addOperator = Expression.Lambda<Func<T, T, T>>(
-                mathExpression,
-                new ParameterExpression[] { param1, param2 }
-                ).Compile();
-
-
-            return (context) =>
-            {
-                var op1 = (T)context.CurrentArguments[0].DirectValue;
-                var op2 = (T)context.CurrentArguments[1].DirectValue;
-                var result = addOperator(op1, op2);
-                var resultInstance = context.Machine.CreateDirectInstance(result);
-
-                context.Return(resultInstance);
-            };
-        }
+        #region Operators implementation
 
         private DirectMethod generateLesserThanOperator()
         {
@@ -105,5 +67,131 @@ namespace AssemblyProviders.DirectDefinitions
             };
         }
 
+        #endregion
+
+
+        #region Utility methods
+
+        private void addBinaryOperator(string methodName, BinaryOperator binaryOperator)
+        {
+            DirectMethod directOperator;
+            try
+            {
+                directOperator = generateDirectBinaryOperator(binaryOperator);
+            }
+            catch (InvalidOperationException)
+            {
+                //operation is not available for desired type
+                return;
+            }
+
+            addBinaryOperator(methodName, directOperator);
+        }
+
+        private void addBinaryOperator(string methodName, DirectMethod directOperator)
+        {
+            var method = binaryOperatorInfo(methodName);
+            AddMethod(directOperator, method);
+        }
+
+        private void addUnaryOperator(string methodName, UnaryOperator unaryOperator)
+        {
+            DirectMethod directOperator;
+            try
+            {
+                directOperator = generateDirectUnaryOperator(unaryOperator);
+            }
+            catch (InvalidOperationException)
+            {
+                //operation is not available for desired type
+                return;
+            }
+
+            var method = unaryOperatorInfo(methodName);
+            AddMethod(directOperator, method);
+        }
+
+
+        private DirectMethod generateDirectBinaryOperator(BinaryOperator binaryOperator)
+        {
+            var param1 = Expression.Parameter(typeof(T), "op1");
+            var param2 = Expression.Parameter(typeof(T), "op2");
+
+            return generateMathOperator(
+                binaryOperator(param1, param2)
+                , param1, param2
+            );
+        }
+
+        private DirectMethod generateDirectUnaryOperator(UnaryOperator unaryOperator)
+        {
+            var param1 = Expression.Parameter(typeof(T), "op");
+
+            return generateMathOperator(
+                unaryOperator(param1)
+                , param1
+            );
+        }
+
+        private DirectMethod generateMathOperator(BinaryExpression mathExpression, ParameterExpression param1, ParameterExpression param2)
+        {
+            var directOperator = Expression.Lambda<Func<T, T, T>>(
+                mathExpression,
+                new ParameterExpression[] { param1, param2 }
+                ).Compile();
+
+
+            return (context) =>
+            {
+                var op1 = (T)context.CurrentArguments[0].DirectValue;
+                var op2 = (T)context.CurrentArguments[1].DirectValue;
+                var result = directOperator(op1, op2);
+                var resultInstance = context.Machine.CreateDirectInstance(result);
+
+                context.Return(resultInstance);
+            };
+        }
+
+        private DirectMethod generateMathOperator(UnaryExpression mathExpression, ParameterExpression param)
+        {
+            var directOperator = Expression.Lambda<Func<T, T>>(
+                mathExpression,
+                new ParameterExpression[] { param }
+                ).Compile();
+
+
+            return (context) =>
+            {
+                var op = (T)context.CurrentArguments[0].DirectValue;
+                var result = directOperator(op);
+                var resultInstance = context.Machine.CreateDirectInstance(result);
+
+                context.Return(resultInstance);
+            };
+        }
+
+        private TypeMethodInfo binaryOperatorInfo(string methodName)
+        {
+            var thisInfo = TypeDescriptor.Create<T>();
+
+            var op1 = ParameterTypeInfo.Create("op1", thisInfo);
+            var op2 = ParameterTypeInfo.Create("op2", thisInfo);
+
+            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new ParameterTypeInfo[] { op2 }, false, TypeDescriptor.NoDescriptors);
+            return methodInfo;
+        }
+
+
+        private TypeMethodInfo unaryOperatorInfo(string methodName)
+        {
+            var thisInfo = TypeDescriptor.Create<T>();
+
+            var op = ParameterTypeInfo.Create("op", thisInfo);
+
+            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, ParameterTypeInfo.NoParams, false, TypeDescriptor.NoDescriptors);
+            return methodInfo;
+        }
+
+        #endregion
     }
 }

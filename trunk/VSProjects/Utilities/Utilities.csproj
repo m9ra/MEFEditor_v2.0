@@ -73,6 +73,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReverseComparer.cs" />
     <Compile Include="SortedMultiList.cs" />
+    <Compile Include="TypeUtilities.cs" />
     <Compile Include="WordTrie.cs" />
   </ItemGroup>
   <ItemGroup>

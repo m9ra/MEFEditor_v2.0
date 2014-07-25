@@ -36,7 +36,7 @@ namespace TypeSystem
         /// Regex that is used for replacing type parameters in fullname
         /// <remarks>Note that dots are included if available - this prevents replacing namespace parts</remarks>
         /// </summary>
-        private static readonly Regex _typeReplacement = new Regex(@"[@a-zA-Z01-9.]+", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+        private static readonly Regex _typeReplacement = new Regex(@"[@a-zA-Z01-9.]+[,>]", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
 
         /// <summary>
         /// TODO: Correct generic typing for array
@@ -177,7 +177,7 @@ namespace TypeSystem
         {
             var name = TypeName;
 
-            name = TranslatePath(name, substitutions);
+            name = TranslatePath(name, substitutions, true);
 
             return TypeDescriptor.Create(name);
         }
@@ -188,12 +188,15 @@ namespace TypeSystem
         /// <param name="path">Translated path</param>
         /// <param name="resolver">Resolver used for substitutions</param>
         /// <returns>Translated path</returns>
-        public static string TranslatePath(string path, SubstitutionResolver resolver)
+        public static string TranslatePath(string path, SubstitutionResolver resolver, bool replaceSelf = false)
         {
-            var replaced = _typeReplacement.Replace(path, (m) =>
+            var initialPath = replaceSelf ? resolver(path) : path;
+
+            var replaced = _typeReplacement.Replace(initialPath, (m) =>
             {
-                var matched = m.ToString();
-                return resolver(matched);
+                var toReplace = m.ToString();
+                var matched = toReplace.Substring(0, m.Length - 1);
+                return resolver(matched) + toReplace[m.Length - 1];
             });
 
             return replaced;
@@ -205,7 +208,7 @@ namespace TypeSystem
         /// <param name="path">Translated path</param>
         /// <param name="substitutions">Substitutions used for translation</param>
         /// <returns>Translated path</returns>
-        public static string TranslatePath(string path, Dictionary<string, string> substitutions)
+        public static string TranslatePath(string path, Dictionary<string, string> substitutions, bool replaceSelf = false)
         {
             return TranslatePath(path, (pathParameter) =>
             {
@@ -219,7 +222,7 @@ namespace TypeSystem
 
                 //no replacement
                 return pathParameter;
-            });
+            }, replaceSelf);
         }
 
         /// <summary>

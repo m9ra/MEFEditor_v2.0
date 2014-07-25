@@ -25,19 +25,20 @@ namespace RecommendedExtensions.TypeDefinitions
 
             //.NET Essentials
             exportTypes(new[]{
-                typeof(char),
-                typeof(string),
-                typeof(bool), 
-                typeof(byte),
                 typeof(VMStack),
                 typeof(NullLiteral),
                 typeof(LiteralType),
                 typeof(Lazy<>),
                 typeof(Lazy<,>),
+                typeof(List<>),
                 typeof(IEnumerable<>),
                 typeof(IEnumerator<>),
                 typeof(System.Collections.IEnumerator)
             }, new[]{
+                typeof(char),
+                typeof(string),
+                typeof(bool), 
+                typeof(byte),
                 typeof(short),        
                 typeof(int),
                 typeof(uint),

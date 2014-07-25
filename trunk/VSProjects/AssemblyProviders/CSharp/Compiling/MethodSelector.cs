@@ -25,8 +25,8 @@ namespace AssemblyProviders.CSharp.Compiling
             {
                 _argumentIterators.AddFirst(new ArgumentIterator(overload, context));
 
-                var name=overload.MethodName;
-                IsIndexer |= name== Naming.IndexerSetter || name==Naming.IndexerGetter;
+                var name = overload.MethodName;
+                IsIndexer |= name == Naming.IndexerSetter || name == Naming.IndexerGetter;
             }
         }
 
@@ -161,14 +161,16 @@ namespace AssemblyProviders.CSharp.Compiling
             }
             else
             {
-                if (!param.HasParam && !_context.Services.IsAssignable(param.Type, arg.Value.Type))
+                var type = arg.Value.Type;
+                var isNull = type != null && type.TypeName == typeof(DirectDefinitions.NullLiteral).FullName;
+                if (!isNull && !param.HasParam && !_context.Services.IsAssignable(param.Type, type))
                 {
                     //type mismatch
                     IsValid = false;
                     return;
                 }
             }
-            
+
             _argBindings.Add(param, arg.Value);
         }
 
@@ -236,8 +238,8 @@ namespace AssemblyProviders.CSharp.Compiling
 
             foreach (var param in _genericBindings.Keys)
             {
-                var translatedName=param.Type.TypeName;
-                if(translations.ContainsKey(translatedName))
+                var translatedName = param.Type.TypeName;
+                if (translations.ContainsKey(translatedName))
                     //we already have translation
                     continue;
 
@@ -260,7 +262,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 var args = _argBindings.Get(oldParameter);
                 _argBindings.Set(currentParameter, args);
             }
-            
+
             return genericMethod;
         }
 

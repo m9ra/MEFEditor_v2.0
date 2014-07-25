@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Utilities;
 using Analyzing;
 using Analyzing.Execution;
 
@@ -120,7 +121,8 @@ namespace TypeSystem.Runtime
                     value = item.Wrapped;
                 }
 
-                array.SetValue(value, i);
+                var castedValue = TypeUtilities.DynamicCast(value, elementType);
+                array.SetValue(castedValue, i);
             }
 
             var result = (ResultType)(object)array;

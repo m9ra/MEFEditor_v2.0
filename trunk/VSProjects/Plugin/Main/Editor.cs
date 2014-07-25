@@ -148,7 +148,6 @@ namespace MEFEditor.Plugin.Main
             loadUserExtensions();
             _settings.Runtime.BuildAssembly();
 
-            //TODO draw according to extensions
             var factory = new DiagramFactory(_contentDrawers);
             _guiManager.Initialize(_loader.AppDomain, factory);
 
@@ -445,6 +444,9 @@ namespace MEFEditor.Plugin.Main
         {
             var result = new List<EditDefinition>();
 
+            if (_currentResult == null || _currentResult.EntryContext == null)
+                return null;
+
             var call = _currentResult.EntryContext.EntryBlock.Call;
 
             var assembly = _loader.AppDomain.GetDefiningAssembly(call.Name);
@@ -516,7 +518,8 @@ namespace MEFEditor.Plugin.Main
             var instanceInfo = instance.WrappedInstance.Info;
             var componentInfo = _loader.GetComponentInfo(instanceInfo);
             var assembly = _loader.AppDomain.GetDefiningAssembly(instanceInfo);
-            instance.SetProperty("DefiningAssembly", assembly.Name);
+            if (assembly != null)
+                instance.SetProperty("DefiningAssembly", assembly.Name);
             GeneralDefinitionProvider.Draw(instance, componentInfo);
         }
 

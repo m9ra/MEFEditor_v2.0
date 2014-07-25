@@ -32,14 +32,6 @@ namespace MEFAnalyzers.Drawings
             DrawingTools.SetIcon(CaptionIcon, Icons.Container);
             InstanceID.Text = Definition.ID;
 
-            foreach (var property in Definition.Properties)
-            {
-                var propertyBlock = new TextBlock();
-                propertyBlock.Text = string.Format("{0}: {1}", property.Name, property.Value);
-
-                Properties.Children.Add(propertyBlock);
-            }
-
             var slot = Definition.Slots.First();
             Item.FillSlot(Catalogs, slot);
         }
