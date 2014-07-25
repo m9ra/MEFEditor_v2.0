@@ -34,6 +34,9 @@ namespace RecommendedExtensions.TypeDefinitions
                 typeof(LiteralType),
                 typeof(Lazy<>),
                 typeof(Lazy<,>),
+                typeof(IEnumerable<>),
+                typeof(IEnumerator<>),
+                typeof(System.Collections.IEnumerator)
             }, new[]{
                 typeof(short),        
                 typeof(int),

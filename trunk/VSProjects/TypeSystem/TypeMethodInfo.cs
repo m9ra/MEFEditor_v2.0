@@ -209,5 +209,11 @@ namespace TypeSystem
 
             return result.ToArray();
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return "[TypeMethodInfo]" + MethodID.MethodString;
+        }
     }
 }

@@ -57,6 +57,11 @@ namespace TypeSystem.Runtime
         /// </summary>
         internal readonly Type DirectType;
 
+        /// <summary>
+        /// Wrapped type representation of direct type
+        /// </summary>
+        internal Type WrappedDirectType { get { return getWrappedType(DirectType); } }
+
         public TypeDescriptor ForcedInfo;
 
         public DirectTypeDefinition(Type directType)
@@ -166,7 +171,7 @@ namespace TypeSystem.Runtime
         /// <returns>Generated methods</returns>
         private IEnumerable<RuntimeMethodGenerator> generatePublicMethods(Type type)
         {
-            var wrappedType = getWrappedType(type);
+            var wrappedType = WrappedDirectType;
             var implementedTypesMap = createImplementedTypesMap(wrappedType);
 
             var wrappedMethods = getPublicMethods(wrappedType);
@@ -198,7 +203,20 @@ namespace TypeSystem.Runtime
 
         private static MethodInfo[] getPublicMethods(Type type)
         {
-            return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            if (!type.IsInterface)
+                //inherited methods are included
+                return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+            //for interfaces we have to include all children interfaces
+            var ifaces = type.GetInterfaces().Union(new[] { type });
+            var methods = new List<MethodInfo>();
+
+            foreach (var iface in ifaces)
+            {
+                var ifaceMethods = iface.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                methods.AddRange(ifaceMethods);
+            }
+            return methods.ToArray();
         }
 
         private static Type getWrappedType(Type type)
@@ -376,6 +394,5 @@ namespace TypeSystem.Runtime
         }
 
         #endregion
-
     }
 }

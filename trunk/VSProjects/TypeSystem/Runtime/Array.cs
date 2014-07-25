@@ -10,7 +10,7 @@ using Analyzing.Execution;
 
 namespace TypeSystem.Runtime
 {
-    public class Array<ItemType>
+    public class Array<ItemType> : IEnumerable<ItemType>, System.Collections.IEnumerable
         where ItemType : InstanceWrap
     {
         private readonly Dictionary<string, ItemType> _data = new Dictionary<string, ItemType>();
@@ -55,6 +55,7 @@ namespace TypeSystem.Runtime
             }
             Length = _data.Count;
         }
+        #region Supported array members
 
         public void set_Item(int index, ItemType instance)
         {
@@ -71,17 +72,28 @@ namespace TypeSystem.Runtime
             return value;
         }
 
-        public IEnumerator<ItemType> GeEnumerator()
+        #endregion
+
+        #region IEnumerable implementations
+
+        /// <inheritdoc />
+        public IEnumerator<ItemType> GetEnumerator()
         {
             return _data.Values.GetEnumerator();
         }
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _data.Values.GetEnumerator();
+        }
+
+        #endregion
 
         private string getKey(int index)
         {
             return index.ToString();
         }
-
-
 
         internal ResultType Unwrap<ResultType>()
         {

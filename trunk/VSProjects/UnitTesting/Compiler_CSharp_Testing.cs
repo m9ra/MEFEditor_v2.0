@@ -387,6 +387,29 @@ namespace UnitTesting
         }
 
         [TestMethod]
+        public void Compile_ForeachLoop()
+        {
+            AssemblyUtils.Run(@"                
+                var data=new []{
+                    ""abc"",
+                    ""def""
+                };
+    
+                var result=""0"";               
+                foreach(var x in data){
+                    result=result + x;
+                }
+                result=result+""1"";
+            ")
+
+            .AddWrappedGenericToRuntime(typeof(IEnumerable<>))
+            .AddWrappedGenericToRuntime(typeof(IEnumerator<>))
+            .AddDirectToRuntime<System.Collections.IEnumerator>()
+
+            .AssertVariable("result").HasValue("0abcdef1");
+
+        }
+        [TestMethod]
         public void Compile_ForLoopBreak()
         {
             AssemblyUtils.Run(@"                

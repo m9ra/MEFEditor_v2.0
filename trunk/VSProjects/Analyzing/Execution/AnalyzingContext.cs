@@ -209,11 +209,11 @@ namespace Analyzing.Execution
                 {
                     argumentValue.IsDirty = true;
                 }
+                LastReturnValue = Machine.CreateDirectInstance("DirtyReturn");
+                LastReturnValue.IsDirty = true;
                 //and call wont be pushed
                 return;
             }
-
-
 
             var call = new CallContext(this, name, callTransformProvider, generator, argumentValues);
 
@@ -325,7 +325,7 @@ namespace Analyzing.Execution
         /// <param name="createdInstances">Enumeration of all instances created during execution</param>
         /// <returns>Result of analysis</returns>
         internal AnalyzingResult GetResult(Dictionary<string, Instance> createdInstances)
-        {            
+        {
             return new AnalyzingResult(LastReturnValue, _entryContext, createdInstances, _methods.Keys);
         }
 

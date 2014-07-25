@@ -83,7 +83,6 @@ namespace MEFAnalyzers.Drawings
             }
 
             RemoveIcon.Visibility = isRemoved ? Visibility.Visible : Visibility.Hidden;
-
         }
     }
 }

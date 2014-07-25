@@ -77,6 +77,26 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             return node;
         }
 
+        /// <summary>
+        /// Create CodeNode representing for block.
+        /// </summary>
+        /// <returns>CodeNode created according to layout.</returns>
+        public CodeNode ForeachLayout()
+        {
+            var node = new CodeNode(_lexer.Move(), NodeTypes.block);
+
+            _shiftToken("(", "Error in Foreach layout, expected '('");
+            var declaration = _nextTree();
+            node.AddArgument(declaration);
+            _shiftToken("in", "Expected 'in'");
+            var expression = _nextTree();
+            node.AddArgument(expression);
+            _shiftToken(")", "Error in For layout, expected ')'");
+
+            node.Child = _nextTree();
+            return node;
+        }
+
 
         /// <summary>
         /// Create CodeNode representing conditional block.
@@ -168,7 +188,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         public CodeNode HierarchyLayout()
         {
             var node = new CodeNode(_lexer.Move(), NodeTypes.hierarchy);
-            
+
             if (_checkToken("("))//function call
             {
                 node.NodeType = NodeTypes.call;

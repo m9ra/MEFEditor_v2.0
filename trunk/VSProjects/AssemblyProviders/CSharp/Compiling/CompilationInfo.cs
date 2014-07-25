@@ -109,7 +109,9 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <returns><see cref="TypeDescriptor"/> of resolved type if available, <c>null</c> otherwise</returns>
         internal TypeDescriptor ResolveAssignType(INodeAST variableUsing)
         {
-            if (variableUsing.Parent == null || variableUsing.Parent.Arguments.Length < 2)
+            if (variableUsing.Parent == null || 
+                variableUsing.Parent.Arguments.Length < 2 || 
+                !variableUsing.Parent.Value.Contains('='))
                 return null;
 
             var assignedNode = variableUsing.Parent.Arguments[1];

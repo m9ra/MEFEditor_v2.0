@@ -737,19 +737,22 @@ namespace MEFAnalyzers.CompositionEngine
 
         private bool isICollectionImport(JoinPoint import, out InstanceRef iCollectionToSet, out MethodID addMethod)
         {
-            var imp = import.Point as Import;
+            addMethod = null;
+            iCollectionToSet = null;
 
+            //Detect if import type is of ICollection
+            var imp = import.Point as Import;
             var itemType = imp.ImportTypeInfo.ItemType;
             var collectionTypeName = string.Format("System.Collections.Generic.ICollection<{0}>", itemType.TypeName);
             var collectionType = TypeDescriptor.Create(collectionTypeName);
-            var collectionAddMethod = _context.GetMethod(collectionType, "Add").MethodID;
 
-            addMethod = _context.TryGetImplementation(imp.ImportTypeInfo.ImportType, collectionAddMethod);
-
-            iCollectionToSet = null;
-            if (addMethod == null)
+            var isICollection = _context.IsOfType(imp.ImportTypeInfo.ImportType, collectionType);
+            if (!isICollection)
                 //cannot resolve type as ICollection
                 return false;
+
+            var collectionAddMethod = _context.GetMethod(collectionType, "Add").MethodID;
+            addMethod = collectionAddMethod;
 
             iCollectionToSet = getImportInstance(import);
             return true;

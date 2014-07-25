@@ -321,12 +321,12 @@ namespace AssemblyProviders.CSharp
                     generateFor(block);
                     break;
 
-                case CSharpSyntax.SwitchOperator:
-                    generateSwitch(block);
+                case CSharpSyntax.ForeachOperator:
+                    generateForeach(block);
                     break;
 
-                case CSharpSyntax.ForeachOperator:
-                    throw new NotImplementedException();
+                case CSharpSyntax.SwitchOperator:
+                    generateSwitch(block);
                     break;
 
                 default:
@@ -488,6 +488,82 @@ namespace AssemblyProviders.CSharp
 
             Context.PopBlock();
             endGroup();
+        }
+
+        /// <summary>
+        /// Generate instructions for foreach block
+        /// </summary>
+        /// <param name="foreachBlock">Foreach block which instructions will be generated</param>
+        private void generateForeach(INodeAST foreachBlock)
+        {
+            startGroup(foreachBlock);
+            startInfoBlock(foreachBlock);
+
+            //block labels
+            var conditionLbl = E.GetTemporaryLabel(ConditionLabelCaption);
+            var loopLbl = E.GetTemporaryLabel(LoopLabelCaption);
+            var endLbl = E.GetTemporaryLabel(EndLabelCaption);
+
+            //push block to register continue and end labels
+            Context.PushBlock(foreachBlock,
+                    conditionLbl,
+                    endLbl
+              );
+
+            //get enumerator
+            var enumeratedNode = foreachBlock.Arguments[1];
+            var enumeratedValue = getRValue(enumeratedNode);
+
+            var getEnumeratorCall = createCall(enumeratedValue, "GetEnumerator", enumeratedNode);
+            var enumeratorStorage = new TemporaryRVariableValue(Context, getEnumeratorCall.GenerateStorage());
+            var moveNextCall = createCall(enumeratorStorage, "MoveNext", enumeratedNode);
+
+            //foreach loop condition
+            E.SetLabel(conditionLbl);
+            E.ConditionalJump(moveNextCall.GenerateStorage(), loopLbl);
+            E.Jump(endLbl);
+            endGroup();
+
+            var loop = foreachBlock.Child;
+            startGroup(loop);
+            //body of the loop
+            E.SetLabel(loopLbl);
+
+            //iterated variable
+            var getCurrent = createCall(enumeratorStorage, "get_Current", enumeratedNode);
+            //for loop variable declaration
+            var variable = getLValue(foreachBlock.Arguments[0], getCurrent.MethodInfo.ReturnType);
+            getCurrent.GenerateAssignInto(variable);
+
+            //body of the loop
+            generateSubsequence(loop);
+
+            //repeat
+            E.Jump(conditionLbl);
+            E.SetLabel(endLbl);
+            E.Nop();
+
+            Context.PopBlock();
+            endGroup();
+        }
+
+        private CallValue createCall(RValueProvider calledObject, string callName, INodeAST calledObjectNode)
+        {
+            var searcher = Context.CreateSearcher();
+            searcher.SetCalledObject(calledObject.Type);
+            searcher.Dispatch(callName);
+            if (!searcher.HasResults)
+                throw parsingException(calledObjectNode, "Missing {0} method", callName);
+
+            var selector = new MethodSelector(searcher.FoundResult, Context);
+            var activation = createCallActivation(selector, calledObject, calledObjectNode, new Argument[0]);
+            if (activation == null)
+            {
+                throw parsingException(calledObjectNode, "{0} there is no matching overload for given arguments");
+            }
+
+            var call = new CallValue(activation, Context);
+            return call;
         }
 
         /// <summary>
@@ -779,14 +855,14 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="lValue">Node which lvalue provider is needed</param>
         /// <returns><see cref="LValueProvider"/> represented by given node</returns>
-        private LValueProvider getLValue(INodeAST lValue)
+        private LValueProvider getLValue(INodeAST lValue, TypeDescriptor typeHint = null)
         {
             var value = lValue.Value;
             switch (lValue.NodeType)
             {
                 case NodeTypes.declaration:
                     //declaration of new variable
-                    var variable = resolveDeclaration(lValue);
+                    var variable = resolveDeclaration(lValue, typeHint);
                     declareVariable(variable);
                     return new VariableLValue(variable, lValue, Context);
 
@@ -1440,7 +1516,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="declarationNode">Node where is variable declared</param>
         /// <returns>Declared variable<returns>
-        private VariableInfo resolveDeclaration(INodeAST declarationNode)
+        private VariableInfo resolveDeclaration(INodeAST declarationNode, TypeDescriptor typeHint)
         {
             Debug.Assert(declarationNode.NodeType == NodeTypes.declaration);
 
@@ -1448,7 +1524,7 @@ namespace AssemblyProviders.CSharp
             var isImplicitlyTyped = typeNode.Value == LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
 
             //resolve type if needed
-            TypeDescriptor declaredType = null;
+            TypeDescriptor declaredType = typeHint;
             if (!isImplicitlyTyped)
             {
                 declaredType = resolveTypeDescriptor(typeNode);

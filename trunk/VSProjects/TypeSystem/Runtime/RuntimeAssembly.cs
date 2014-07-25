@@ -40,6 +40,8 @@ namespace TypeSystem.Runtime
         /// </summary>
         private readonly Dictionary<Type, RuntimeTypeDefinition> _directTypes = new Dictionary<Type, RuntimeTypeDefinition>();
 
+        private readonly HashSet<Type> _wrappedDirectTypes = new HashSet<Type>();
+
         private readonly HashSet<string> _directSignatures = new HashSet<string>();
 
         private readonly List<Edit> _staticEdits = new List<Edit>();
@@ -80,22 +82,22 @@ namespace TypeSystem.Runtime
                 {"_static_set",_createStaticProperty},
             };
 
+            initializeTypeSystemBase();
+        }
+
+        /// <summary>
+        /// Initialize important type systems definitions
+        /// </summary>
+        private void initializeTypeSystemBase()
+        {
+            //support for System.Object
             var chain = new InheritanceChain(TypeDescriptor.Create<object>(), new InheritanceChain[0]);
             _inheritanceChains.Add(chain.Path.Signature, chain);
 
-            //TODO refactor array support
-            var arrayDefinition = new DirectTypeDefinition<Array<InstanceWrap>>();
+            //support for Array
+            var arrayDefinition = new DirectTypeDefinition(typeof(Array<>));
             arrayDefinition.ForcedInfo = TypeDescriptor.ArrayInfo;
-            arrayDefinition.ForcedSubTypes = new[]{
-                typeof(IEnumerable<>),
-                typeof(System.Collections.IEnumerable),
-            };
-
             AddDirectDefinition(arrayDefinition);
-
-            /*   var objDefinition = new DirectTypeDefinition<ObjectDefinition>();
-               objDefinition.ForcedInfo = ObjectInfo;
-               AddDirectDefinition(objDefinition);*/
         }
 
         /// <summary>
@@ -111,6 +113,7 @@ namespace TypeSystem.Runtime
         public void AddDirectDefinition(DirectTypeDefinition definition)
         {
             _directTypes[definition.DirectType] = definition;
+            _wrappedDirectTypes.Add(definition.WrappedDirectType);
 
             var typeInfo = definition.TypeInfo;
             _directSignatures.Add(new PathInfo(typeInfo.TypeName).Signature);
@@ -183,7 +186,7 @@ namespace TypeSystem.Runtime
                 type.IsArray ||
                 typeof(Instance).IsAssignableFrom(type) ||
                 type == typeof(InstanceWrap) ||
-                _directTypes.ContainsKey(type);
+                _wrappedDirectTypes.Contains(type);
         }
 
         internal bool IsDirectType(InstanceInfo typeInfo)
@@ -227,8 +230,21 @@ namespace TypeSystem.Runtime
         /// <inheritdoc />
         public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer)
         {
+            //we may have explicit definition
             alternativeImplementer = null;
-            return _runtimeMethods.GetImplementation(method, dynamicInfo);
+            var explicitImplementation = _runtimeMethods.GetImplementation(method, dynamicInfo);
+            if (explicitImplementation != null)
+                return explicitImplementation;
+
+            //or there is implicit .NET definition
+            var signature = PathInfo.GetSignature(dynamicInfo);
+            var isNativeObject = _directSignatures.Contains(signature);
+            if (!isNativeObject)
+                //implicit definition is there only for native objects
+                return null;
+
+            //we can use native implementation
+            return method; //note that using dynamic flag is a hack
         }
 
         /// <inheritdoc />

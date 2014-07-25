@@ -803,7 +803,7 @@ namespace TestConsole
                 var result=arr[0]+arr[1];
             ")
 
-            ; 
+            ;
         }
 
         static internal TestingAssembly Array_Initializer()
@@ -1174,6 +1174,28 @@ namespace TestConsole
                 }
                 ++result;
             ");
+        }
+
+
+        static internal TestingAssembly ForeachLoop()
+        {
+            return AssemblyUtils.Run(@"                
+                var data=new []{
+                    ""abc"",
+                    ""def""
+                };
+    
+                var result=""0"";               
+                foreach(var x in data){
+                    result=result + x;
+                }
+                result=result+""1"";
+            ")
+
+             .AddWrappedGenericToRuntime(typeof(IEnumerable<>))
+             .AddWrappedGenericToRuntime(typeof(IEnumerator<>))
+             .AddDirectToRuntime<System.Collections.IEnumerator>()
+             ;
         }
 
         static internal TestingAssembly DoWhileLoop()

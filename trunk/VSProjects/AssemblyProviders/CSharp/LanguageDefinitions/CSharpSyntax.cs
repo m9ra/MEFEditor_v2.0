@@ -125,7 +125,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         readonly ILexer _lexer;
 
         static readonly HashSet<string> KnownTokens = new HashSet<string>();
-        static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";", ":", ",", ")", "}", "]" };
+        static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";", ":", ",", ")", "}", "]", "in" };
         static readonly HashSet<string> PrefOperators = new HashSet<string>() { "!", "throw", "out", "ref", "const", ReturnOperator, NewOperator, "-", "+", IncrementOperator, DecrementOperator, "~" };
         static readonly HashSet<string> PostOperators = new HashSet<string>() { IncrementOperator, DecrementOperator };
         static readonly Dictionary<string, int> BinOperators = new Dictionary<string, int>(){
@@ -232,6 +232,8 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
                     return layouts.DoLayout();
                 case CSharpSyntax.ForOperator:
                     return layouts.ForLayout();
+                case CSharpSyntax.ForeachOperator:
+                    return layouts.ForeachLayout();
                 case CSharpSyntax.SwitchOperator:
                     return layouts.SwitchLayout();
                 case CSharpSyntax.IfOperator:
