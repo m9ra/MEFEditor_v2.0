@@ -45,7 +45,7 @@ namespace TypeSystem
         /// <summary>
         /// Fullname of ImportingConstructorAttribute type
         /// </summary>
-        public static readonly string ImportingConstructor = typeof(ImportingConstructorAttribute).FullName;
+        public static readonly string ImportingConstructorAttribute = typeof(ImportingConstructorAttribute).FullName;
 
         /// <summary>
         /// Fullname of CompositionPointAttribute type

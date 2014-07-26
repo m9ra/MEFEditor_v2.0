@@ -22,10 +22,20 @@ namespace MEFAnalyzers
         {
             Simulate<Type>();
         }
-                
+
         public void _static_method_cctor()
         {
             //nothing to do
+        }
+
+        public string _get_FullName()
+        {
+            var storedType = Context.GetField(This, "Type") as TypeDescriptor;
+
+            if (storedType != null)
+                return storedType.TypeName;
+
+            return typeof(Type).FullName;
         }
     }
 }

@@ -37,31 +37,21 @@ namespace MEFAnalyzers
 
         public void _method_ctor(string path)
         {
-            Path.Set(path);
-            FullPath.Set(resolveFullPath(path));
+            Path.Value = path;
 
-            var components = new List<Instance>();
-            Components.Set(components);
-
-            var fullPath = DirectoryCatalogDefinition.ResolveFullPath(path, Services);
-            var assembly = Services.LoadAssembly(fullPath);
-
-            //we wont test existence of path in file system, because of mapping
-            if (assembly == null)
-            {
-                Error.Set("Assembly file hasn't been found");
-            }
-            else
-            {
-                AssemblyName.Value = assembly.Name;
-                foreach (var componentInfo in assembly.GetComponents())
-                {
-                    var component = Context.Machine.CreateInstance(componentInfo.ComponentType);
-                    components.Add(component);
-                }
-            }
+            loadComponentsFromPath(path);
 
             setCtorEdits();
+        }
+
+        [ParameterTypes(typeof(System.Reflection.Assembly))]
+        public void _method_ctor(Instance assembly)
+        {
+            AsyncCall<string>(assembly, "get_FullPath", (fullPath) =>
+            {
+                Path.Value = fullPath;
+                loadComponentsFromPath(fullPath);
+            });
         }
 
         public Instance[] _get_Parts()
@@ -85,8 +75,39 @@ namespace MEFAnalyzers
 
         private string resolveFullPath(string relativePath)
         {
-            //TODO resolve according to codebase
-            return "FullPath://" + relativePath;
+            return DirectoryCatalogDefinition.ResolveFullPath(relativePath, Services);
+        }
+
+        private void loadComponentsFromPath(string path)
+        {
+            var components = new List<Instance>();
+            Components.Set(components);
+
+            try
+            {
+                FullPath.Value = resolveFullPath(path);
+
+                var assembly = Services.LoadAssembly(path);
+                //we wont test existence of path in file system, because of mapping
+                if (assembly == null)
+                {
+                    Error.Set("Assembly file hasn't been found");
+                }
+                else
+                {
+                    AssemblyName.Value = assembly.Name;
+                    foreach (var componentInfo in assembly.GetComponents())
+                    {
+                        var component = Context.Machine.CreateInstance(componentInfo.ComponentType);
+                        components.Add(component);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                FullPath.Value = path;
+                Error.Value = "Invalid path specified";
+            }
         }
 
         #endregion

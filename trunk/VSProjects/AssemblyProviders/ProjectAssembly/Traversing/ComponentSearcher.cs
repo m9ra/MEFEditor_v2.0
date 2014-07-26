@@ -104,7 +104,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             {
                 addCompositionPoint(new AttributeInfo(e));
             }
-            else if (fullname == Naming.ImportingConstructor)
+            else if (fullname == Naming.ImportingConstructorAttribute)
             {
                 addImportingConstructor(new AttributeInfo(e));
             }

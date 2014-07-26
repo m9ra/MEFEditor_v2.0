@@ -31,6 +31,7 @@ namespace RecommendedExtensions.TypeDefinitions
                 typeof(Lazy<>),
                 typeof(Lazy<,>),
                 typeof(List<>),
+                typeof(ICollection<>),
                 typeof(IEnumerable<>),
                 typeof(IEnumerator<>),
                 typeof(System.Collections.IEnumerator)
@@ -54,12 +55,12 @@ namespace RecommendedExtensions.TypeDefinitions
             ExportDefinition<CompositionBatchDefinition>();
             ExportDefinition<AggregateCatalogDefinition>();
             ExportDefinition<AssemblyCatalogDefinition>();
+            ExportDefinition<AssemblyDefinition>();
             ExportDefinition<TypeCatalogDefinition>();
             ExportDefinition<AttributedModelServicesDefinition>();
             ExportDefinition<ComposablePartCatalogCollectionDefinition>();
 
             //Support for Assembly providers
-            ExportAsDirectDefinition<ICollection<InstanceWrap>>();
             ExportDefinition<ObjectDefinition>();
             ExportDefinition<TypeDefinition>();
 

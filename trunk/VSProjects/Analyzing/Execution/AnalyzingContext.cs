@@ -132,7 +132,8 @@ namespace Analyzing.Execution
         /// <param name="value">Value that will be set to variable</param>
         public void SetValue(VariableName targetVaraiable, Instance value)
         {
-            value.HintID(targetVaraiable.Name, this);
+            if (value != null)
+                value.HintID(targetVaraiable.Name, this);
             CurrentCall.SetValue(targetVaraiable, value);
         }
 

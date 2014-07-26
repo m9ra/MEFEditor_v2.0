@@ -88,7 +88,7 @@ namespace Analyzing.Execution
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value cannot be null");
+                value = _context.Machine.Null;
             }
 
             Instance oldInstance;

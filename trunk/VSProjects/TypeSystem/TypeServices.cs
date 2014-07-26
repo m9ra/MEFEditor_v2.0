@@ -264,6 +264,16 @@ namespace TypeSystem
             return _manager.GetDefiningAssembly(method);
         }
 
+        /// <summary>
+        /// Get assembly which defines given type.
+        /// </summary>
+        /// <param name="type">Type which assembly is searched</param>
+        /// <returns>Assembly where type is defined</returns>
+        public TypeAssembly GetDefiningAssembly(InstanceInfo type)
+        {
+            return _manager.GetDefiningAssembly(type);
+        }
+
         #endregion
     }
 }

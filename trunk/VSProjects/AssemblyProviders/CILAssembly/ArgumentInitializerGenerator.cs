@@ -29,7 +29,7 @@ namespace AssemblyProviders.CILAssembly
         protected override void generate(EmitterBase emitter)
         {
             //first and only argument is parametric
-            var resolvedArguments = resolveCustomArgument(_attribute.ConstructorArguments[0]) as object[];
+            var resolvedArguments = CILAssembly.ResolveCustomAttributeArgument(_attribute.ConstructorArguments[0]) as object[];
 
             for (var i = 0; i < resolvedArguments.Length; ++i)
             {
@@ -38,38 +38,6 @@ namespace AssemblyProviders.CILAssembly
 
                 emitter.AssignLiteral(argumentStorage, argumentValue);
             }
-        }
-
-        /// <summary>
-        /// Resolve objects from arguments of <see cref="CustomAttributeArgument"/> objects
-        /// </summary>
-        /// <param name="argumentObject">Object that can be present in <see cref="CustomAttributeArgument.Value"/></param>
-        /// <returns>Resolved custom argument</returns>
-        private object resolveCustomArgument(object argumentObject)
-        {
-            if (argumentObject is CustomAttributeArgument)
-                return resolveCustomArgument(((CustomAttributeArgument)argumentObject).Value);
-
-            var memberReference = argumentObject as MemberReference;
-            if (memberReference != null)
-            {
-                var type = TypeDescriptor.Create(memberReference.FullName);
-                return new CSharp.LiteralType(type);
-            }
-
-            var multiArgument = argumentObject as CustomAttributeArgument[];
-            if (multiArgument != null)
-            {
-                var arguments = new List<object>();
-                foreach (var singleArg in multiArgument)
-                {
-                    arguments.Add(resolveCustomArgument(singleArg));
-                }
-
-                return arguments.ToArray();
-            }
-
-            return argumentObject;
-        }
+        }      
     }
 }

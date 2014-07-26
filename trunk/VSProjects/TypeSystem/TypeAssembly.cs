@@ -28,6 +28,11 @@ namespace TypeSystem
         /// </summary>
         public string Name { get { return Assembly.Name; } }
 
+        /// <summary>
+        /// Mapping of represented assembly path
+        /// </summary>
+        public string FullPathMapping { get { return Assembly.FullPathMapping; } }
+
         internal TypeAssembly(AssembliesManager manager, AssemblyProvider assembly)
         {
             _manager = manager;

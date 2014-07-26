@@ -105,6 +105,8 @@ namespace AssemblyProviders.CILAssembly
             }
         }
 
+        #region Reference resolving
+
         /// <summary>
         /// Set references according to project referencies
         /// </summary>
@@ -138,6 +140,7 @@ namespace AssemblyProviders.CILAssembly
             }
         }
 
+
         private string resolveFullPath(AssemblyNameReference reference)
         {
             var gac_assembly = GetAssemblyGac(reference);
@@ -159,7 +162,6 @@ namespace AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// 
         /// <remarks>Changed implementation from https://github.com/icsharpcode/ILSpy/blob/master/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs </remarks>
         /// </summary>
         /// <param name="reference"></param>
@@ -206,6 +208,7 @@ namespace AssemblyProviders.CILAssembly
                 reference.Name + ".dll");
         }
 
+        #endregion
 
         #endregion
 
@@ -314,8 +317,36 @@ namespace AssemblyProviders.CILAssembly
 
                 if (fullname == Naming.ExportAttribute)
                 {
+                    exploreMetaData(componentType.CustomAttributes, infoBuilder);
+
                     var contract = getExportContract(attribute, infoBuilder.ComponentType);
                     infoBuilder.AddSelfExport(contract);
+                }
+            }
+        }
+
+        private void exploreMetaData(IEnumerable<CustomAttribute> attributes, ComponentInfoBuilder infoBuilder)
+        {
+            foreach (var attribute in attributes)
+            {
+                if (attribute.AttributeType.FullName == Naming.ExportMetadataAttribute)
+                {
+                    object nameObject;
+                    object value;
+
+                    if (!tryGetAttributeData(attribute, 0, "Name", out nameObject) ||
+                        !tryGetAttributeData(attribute, 1, "Value", out value) ||
+                        !(nameObject is string)
+                        )
+                        continue;
+
+                    var name = nameObject as string;
+
+                    object isMultipleObject;
+                    tryGetAttributeData(attribute, "IsMultiple", out isMultipleObject);
+                    var isMultiple = isMultipleObject != null && isMultipleObject is bool && (bool)isMultipleObject;
+
+                    infoBuilder.AddMeta(name, value, isMultiple);
                 }
             }
         }
@@ -368,7 +399,7 @@ namespace AssemblyProviders.CILAssembly
                     if (fullname == Naming.ExportAttribute)
                     {
                         var getterId = getMethodId(infoBuilder.ComponentType, property.GetMethod);
-                        addExport(infoBuilder, property.GetMethod, getterId, attribute);
+                        addExport(infoBuilder, property.GetMethod, getterId, attribute, property.CustomAttributes);
                     }
                     else if (fullname == Naming.ImportAttribute)
                     {
@@ -405,7 +436,7 @@ namespace AssemblyProviders.CILAssembly
                         hasExplicitCompositionPoint = true;
                     }
 
-                    if (fullname == Naming.ImportingConstructor)
+                    if (fullname == Naming.ImportingConstructorAttribute)
                     {
                         addImportingConstructor(infoBuilder, method, attribute);
                     }
@@ -467,6 +498,7 @@ namespace AssemblyProviders.CILAssembly
             var exportType = getter.Info.ReturnType;
             var contract = getExportContract(attribute, exportType);
 
+            exploreMetaData(field.CustomAttributes, infoBuilder);
             infoBuilder.AddExport(exportType, getter.Info.MethodID, contract);
         }
 
@@ -477,11 +509,12 @@ namespace AssemblyProviders.CILAssembly
         /// <param name="method">Export method</param>
         /// <param name="methodId">Id of export method</param>
         /// <param name="attribute">Attribute defining export</param>
-        private void addExport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute)
+        private void addExport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute, IEnumerable<CustomAttribute> exportingAttributes)
         {
             var exportType = getDescriptor(method.ReturnType);
             var contract = getExportContract(attribute, exportType);
 
+            exploreMetaData(exportingAttributes, infoBuilder);
             infoBuilder.AddExport(exportType, methodId, contract);
         }
 
@@ -533,7 +566,8 @@ namespace AssemblyProviders.CILAssembly
                 fullname == Naming.ExportAttribute ||
                 fullname == Naming.ImportAttribute ||
                 fullname == Naming.ImportManyAttribute ||
-                fullname == Naming.CompositionPointAttribute;
+                fullname == Naming.CompositionPointAttribute ||
+                fullname == Naming.ImportingConstructorAttribute;
         }
 
         /// <summary>
@@ -593,6 +627,32 @@ namespace AssemblyProviders.CILAssembly
             }
         }
 
+        private bool tryGetAttributeData(CustomAttribute attribute, int constructorIndex, string namedProperty, out object data)
+        {
+            if (!attribute.HasConstructorArguments || attribute.ConstructorArguments.Count <= constructorIndex)
+                return tryGetAttributeData(attribute, namedProperty, out data);
+
+            var argument = attribute.ConstructorArguments[constructorIndex];
+
+            data = ResolveCustomAttributeArgument(argument);
+            return true;
+        }
+
+        private bool tryGetAttributeData(CustomAttribute attribute, string namedProperty, out object data)
+        {
+            foreach (var property in attribute.Properties)
+            {
+                if (property.Name == namedProperty)
+                {
+                    data = ResolveCustomAttributeArgument(property);
+                    return true;
+                }
+            }
+
+            data = null;
+            return false;
+        }
+
         /// <summary>
         /// Get indicator that import allow default value
         /// </summary>
@@ -635,6 +695,41 @@ namespace AssemblyProviders.CILAssembly
         #endregion
 
         #region Method building
+
+        /// <summary>
+        /// Resolve objects from arguments of <see cref="CustomAttributeArgument"/> objects
+        /// </summary>
+        /// <param name="argumentObject">Object that can be present in <see cref="CustomAttributeArgument.Value"/></param>
+        /// <returns>Resolved custom argument</returns>
+        public static object ResolveCustomAttributeArgument(object argumentObject)
+        {
+            if (argumentObject is CustomAttributeArgument)
+                return ResolveCustomAttributeArgument(((CustomAttributeArgument)argumentObject).Value);
+
+            if (argumentObject is CustomAttributeNamedArgument)
+                return ResolveCustomAttributeArgument(((CustomAttributeNamedArgument)argumentObject).Argument);
+
+            var memberReference = argumentObject as MemberReference;
+            if (memberReference != null)
+            {
+                var type = TypeDescriptor.Create(memberReference.FullName);
+                return new CSharp.LiteralType(type);
+            }
+
+            var multiArgument = argumentObject as CustomAttributeArgument[];
+            if (multiArgument != null)
+            {
+                var arguments = new List<object>();
+                foreach (var singleArg in multiArgument)
+                {
+                    arguments.Add(ResolveCustomAttributeArgument(singleArg));
+                }
+
+                return arguments.ToArray();
+            }
+
+            return argumentObject;
+        }
 
         /// <summary>
         /// Create complete method info for given method definition

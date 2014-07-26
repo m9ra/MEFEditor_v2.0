@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AggregateCatalogDefinition.cs" />
+    <Compile Include="AssemblyDefinition.cs" />
     <Compile Include="AttributedModelServicesDefinition.cs" />
     <Compile Include="ComposablePartCatalogCollectionDefinition.cs" />
     <Compile Include="CompositionBatchDefinition.cs" />
