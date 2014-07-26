@@ -225,6 +225,13 @@ namespace AssemblyProviders.CSharp
 
             _method = _parser.Parse(_source);
 
+            var isCtor = MethodInfo.MethodName == Naming.CtorName;
+            if (preCode == null && isCtor)
+            {
+                //we have to call default base constructor
+                preCode = "base();";
+            }
+
             if (preCode != null)
             {
                 _preLine = _parser.Parse(new Source(preCode, activation.Method));
@@ -256,7 +263,9 @@ namespace AssemblyProviders.CSharp
             }
 
             if (_preLine != null)
+            {
                 generateLine(_preLine);
+            }
 
             //generate method body
             generateSubsequence(_method);
@@ -1055,9 +1064,12 @@ namespace AssemblyProviders.CSharp
             }
 
             var searcher = Context.CreateSearcher();
-            searcher.SetCalledObject(resultType);
+            searcher.SetCalledObject(valueToCast.Type);
             searcher.Dispatch("op_Explicit");
-            var result = tryCreateCall(searcher, null, explicitCasting, valueToCast);
+
+            var overloads = from overload in searcher.FoundResult where overload.ReturnType.Equals(resultType) select overload;
+            var selector = new MethodSelector(overloads, Context);
+            var result = tryCreateCall(selector, null, explicitCasting, valueToCast);
             if (result == null)
                 throw parsingException(explicitCasting, "Cannot find method op_Explicit for explicit casting");
 
@@ -1080,7 +1092,7 @@ namespace AssemblyProviders.CSharp
             var hasBaseObject = tryGetLiteral(hierarchy, out result) || tryGetRVariable(ref hierarchy, out result);
             var isIndexerCall = hierarchy.Indexer != null && hierarchy.NodeType == NodeTypes.hierarchy;
             var hasCallExtending = hierarchy.Child != null || hierarchy.Indexer != null ||
-                hierarchyValue == CSharpSyntax.ThisVariable || hierarchyValue == CSharpSyntax.BaseVariable;
+                ((hierarchyValue == CSharpSyntax.ThisVariable || hierarchyValue == CSharpSyntax.BaseVariable) && hierarchy.NodeType == NodeTypes.call);
 
             if (hasBaseObject && hasCallExtending)
             {
@@ -1340,14 +1352,15 @@ namespace AssemblyProviders.CSharp
 
             var selector = new MethodSelector(searcher.FoundResult, Context);
             var activation = selector.CreateCallActivation(arguments);
+
+            if (activation == null)
+                throw parsingException(operatorNode, "Cannot select method overload for operator {0}", operatorMethod);
+
             activation.CallNode = operatorNode;
 
             if (!hasStaticMethod)
                 //static methods doesnt have called object
                 activation.CalledObject = operand;
-
-            if (activation == null)
-                throw parsingException(operatorNode, "Cannot select method overload for operator {0}", operatorMethod);
 
             return activation;
         }
@@ -1940,7 +1953,11 @@ namespace AssemblyProviders.CSharp
         private CallValue tryCreateCall(MethodSearcher searcher, RValueProvider calledObject, INodeAST callNode, params RValueProvider[] argumentValues)
         {
             var selector = new MethodSelector(searcher.FoundResult, Context);
+            return tryCreateCall(selector, calledObject, callNode, argumentValues);
+        }
 
+        private CallValue tryCreateCall(MethodSelector selector, RValueProvider calledObject, INodeAST callNode, params RValueProvider[] argumentValues)
+        {
             var arguments = from argumentValue in argumentValues select new Argument(argumentValue);
             var activation = createCallActivation(selector, calledObject, callNode, arguments.ToArray());
             if (activation == null)

@@ -192,9 +192,52 @@ namespace AssemblyProviders.ProjectAssembly
                     return DeclaringClass(element as CodeFunction);
                 case vsCMElement.vsCMElementAttribute:
                     return DeclaringClass(element as CodeAttribute);
-
                 default:
                     return null;
+            }
+        }
+
+        /// <summary>
+        /// Return operator name as is presented in MSIL code from C#
+        /// </summary>
+        /// <param name="fn"></param>
+        /// <returns></returns>
+        public static string GetMethodName(this CodeFunction fn)
+        {
+            var name = fn.Name;
+            var fields = name.Split(' ');
+            if (fields.Length < 2) return name; //unresolvable operator
+            name = fields.Last();
+
+            string opMethod;
+            if (fn.Parameters.Count == 2)
+                opMethod = OperatorTools.GetBinaryOperatorMethod(name);
+            else
+                opMethod = OperatorTools.GetUnaryOperatorMethod(name);
+
+            if (opMethod != null)
+                //operator has been found
+                return opMethod;
+
+            //is conversion operator
+            if (fields.First().ToLowerInvariant() == "explicit") return "op_Explicit";
+            else return "op_Implicit";
+        }
+
+        
+        public static string Name(this CodeElement element)
+        {
+            switch (element.Kind)
+            {
+                case vsCMElement.vsCMElementImportStmt:
+                    //import statements doesnt have any name
+                    return null;
+                    
+                case vsCMElement.vsCMElementFunction:
+                    return (element as CodeFunction).GetMethodName();
+
+                default:
+                    return element.Name;
             }
         }
 

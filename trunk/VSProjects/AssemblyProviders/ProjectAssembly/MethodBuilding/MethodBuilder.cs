@@ -315,6 +315,10 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
                 //repair name according to naming conventions
                 name = isShared ? Naming.ClassCtorName : Naming.CtorName;
             }
+            else
+            {
+                name = element.GetMethodName();
+            }
 
             return name;
         }
@@ -326,12 +330,8 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// <returns>Function name representation</returns>
         internal static string GetFullName(CodeFunction element)
         {
-            //TODO correctnes
-            var name = GetName(element);
-            var declaringType = element.DeclaringType();
-
-            var parentFullname = CreateDescriptor(declaringType).TypeName;
-            return parentFullname + "." + name;
+            var info = CreateMethodInfo(element);
+            return Naming.GetMethodPath(info.MethodID).Name;
         }
 
 
@@ -524,7 +524,16 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var lang = fn.Language;
             if (!fn.ProjectItem.IsOpen) fn.ProjectItem.Open();
             var editPoint = fn.GetStartPoint(vsCMPart.vsCMPartHeader).CreateEditPoint();
-            var preCode = editPoint.GetText(vsCMPart.vsCMPartHeader).Replace("\r", "");
+            var endPoint = fn.GetStartPoint(vsCMPart.vsCMPartBody);
+            var preCode = editPoint.GetText(endPoint).Replace("\r", "");
+            var preCodeStart = preCode.IndexOf(':');
+
+            if (preCodeStart < 0)
+                return "";
+
+            preCode = preCode.Substring(preCodeStart);
+            var bodyStart = preCode.LastIndexOf('{');
+            preCode = preCode.Substring(0, bodyStart).Trim();
 
             return preCode + (char)0;
         }

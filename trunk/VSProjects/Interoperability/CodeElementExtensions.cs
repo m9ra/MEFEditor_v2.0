@@ -66,19 +66,6 @@ namespace Interoperability
             }
         }
 
-        public static string Name(this CodeElement element)
-        {
-            switch (element.Kind)
-            {
-                case vsCMElement.vsCMElementImportStmt:
-                    //import statements doesnt have any name
-                    return null;
-
-                default:
-                    return element.Name;
-            }
-        }
-
         /// <summary>
         /// Get <see cref="CodeElement"/> from Parent property. Considers only named code constructs.
         /// </summary>

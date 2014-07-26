@@ -44,8 +44,8 @@ namespace AssemblyProviders.DirectDefinitions
             addBinaryOperator("op_BitwiseOr", Expression.OrElse);
 
             addUnaryOperator("op_Not", Expression.Not);
-            addUnaryOperator("op_UnaryNegation", Expression.Negate);
-            addUnaryOperator("op_UnaryPlus", Expression.UnaryPlus);
+            addUnaryOperator("op_Subtraction", Expression.Negate);
+            addUnaryOperator("op_Addition", Expression.UnaryPlus);
         }
 
         private void addDirectComparing()

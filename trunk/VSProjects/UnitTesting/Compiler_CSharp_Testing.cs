@@ -233,8 +233,7 @@ namespace UnitTesting
 
             .AssertVariable("result").HasValue("after");
         }
-
-
+        
         [TestMethod]
         public void Compile_ImplicitThis_Setter()
         {
@@ -264,6 +263,8 @@ namespace UnitTesting
                 var data = c.GetField(thisObj, "_property") as Instance;
                 c.Return(data);
             }, Method.String_NoParam)
+
+            .AddDirectToRuntime<object>()
 
             .AssertVariable("result").HasValue("ValueToSet");
         }
@@ -770,7 +771,7 @@ namespace UnitTesting
             AssemblyUtils.Run(@"
                 var result=(string)5;
             ")
-            .AddMethod("System.String.op_Explicit", @"
+            .AddMethod("System.Int32.op_Explicit", @"
                 return ""CastingResult"";
             ", Method.StaticString_IntParam)
 

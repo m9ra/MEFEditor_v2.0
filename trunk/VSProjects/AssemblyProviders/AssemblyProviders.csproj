@@ -122,6 +122,7 @@
     <Compile Include="ProjectAssembly\MethodBuilding\InitializerGenerator.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\MethodBuilder.cs" />
     <Compile Include="ProjectAssembly\MethodBuilding\SourceMethodGenerator.cs" />
+    <Compile Include="ProjectAssembly\OperatorTools.cs" />
     <Compile Include="ProjectAssembly\ParsingActivation.cs" />
     <Compile Include="ProjectAssembly\ProjectAssemblyFactory.cs" />
     <Compile Include="ProjectAssembly\Traversing\CodeElementIterator.cs" />

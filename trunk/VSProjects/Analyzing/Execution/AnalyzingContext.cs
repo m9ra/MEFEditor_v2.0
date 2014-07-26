@@ -367,7 +367,8 @@ namespace Analyzing.Execution
         public void Initialize(Instance instance, object data)
         {
             var directInstance = instance as DirectInstance;
-            directInstance.Initialize(data);
+            if (directInstance != null)
+                directInstance.Initialize(data);
         }
 
         internal void Jump(Label target)
