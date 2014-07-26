@@ -657,6 +657,7 @@ namespace UnitTesting
                 var result=list[0]+list[1];
             ")
 
+             .AddDirectToRuntime<object>()
             .AddWrappedGenericToRuntime(typeof(List<>))
 
             .AssertVariable("result").HasValue("abcdef")

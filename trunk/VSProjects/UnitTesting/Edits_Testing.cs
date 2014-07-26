@@ -542,7 +542,6 @@ namespace UnitTesting
 
             .AddToRuntime<CompositionContainerDefinition>()
             .AddToRuntime<SimpleStringExport>()
-            .AddDirectToRuntime<NullLiteral>()
 
             .UserAction((c) =>
             {

@@ -118,6 +118,9 @@ namespace MEFAnalyzers.CompositionEngine
         /// <returns></returns>
         private bool satisfyPreImports(ComponentRef inst)
         {
+            if (inst.IsConstructed)
+                return true;
+
             if (inst.ComposingFailed)
                 //has been already proceeded
                 return false;
@@ -125,11 +128,6 @@ namespace MEFAnalyzers.CompositionEngine
             if (_currentPrereqInstances.Contains(inst))
                 //circular dependency
                 return false;
-
-            if (!inst.NeedsPrerequisitySatisfiing)
-                //has been already satisfied
-                return true;
-
 
             var preImports = new List<ComponentRef>();
             bool satisfied = true;
@@ -154,7 +152,6 @@ namespace MEFAnalyzers.CompositionEngine
 
             if (!satisfied)
             {
-                inst.CompositionError("Prerequisities hasn't been satisfied");
                 return false;
             }
 
@@ -182,20 +179,19 @@ namespace MEFAnalyzers.CompositionEngine
             var candidates = getExportCandidates(import);
             //determine that import has any candidates 
             //(even those, that cannot be used for import because of missing initialization)
-            var hasAnyCandidates = candidates.Any();
 
             //filter candidates that are initialized now (circular dependency)
-            //TODO: this is probably incorrect behaviour from v1.1
-            candidates = candidates.Except(_currentPrereqInstances);
-            var hasInitializedCandidates = candidates.Any();
+            var initializedCandidates = candidates.Except(_currentPrereqInstances);
+            var candidatesInProgress = candidates.Intersect(_currentPrereqInstances);
+            var hasInitializedCandidates = initializedCandidates.Any();
 
             if (!hasInitializedCandidates && !import.AllowDefault)
-                return noInitializedCandidatesError(component, import, hasAnyCandidates);
+                return noInitializedCandidatesError(component, import, candidatesInProgress);
 
-            if (candidates.Count() > 1 && !import.AllowMany)
-                return tooManyCandidatesError(component, import, candidates);
+            if (initializedCandidates.Count() > 1 && !import.AllowMany)
+                return tooManyCandidatesError(component, import, initializedCandidates);
 
-            return satisfyFromCandidates(component, import, candidates);
+            return satisfyFromCandidates(component, import, initializedCandidates);
         }
 
         private bool satisfyFromCandidates(ComponentRef component, Import import, IEnumerable<ComponentRef> candidates)
@@ -205,10 +201,6 @@ namespace MEFAnalyzers.CompositionEngine
             {
                 if (!satisfyPreImports(candidate))
                 {
-                    if (_failed)
-                        //error has been already set
-                        return false;
-
                     setError(importPoint, "Cannot satisfy import, because depending component cannot be instantiated");
                     makeErrorJoins(importPoint, candidate, "This export cannot be provided before prerequisity imports are satisfied");
 
@@ -266,18 +258,26 @@ namespace MEFAnalyzers.CompositionEngine
             return false;
         }
 
-        private bool noInitializedCandidatesError(ComponentRef component, Import import, bool hasAnyCandidates)
+        private bool noInitializedCandidatesError(ComponentRef component, Import import, IEnumerable<ComponentRef> candidatesInProgress)
         {
             var importPoint = component.GetPoint(import);
 
             string error = "Can't satisfy import";
-            if (hasAnyCandidates)
-                error += ", there are probably circular dependencies in prerequisity imports";
+            if (candidatesInProgress.Any())
+            {
+                error += ", there are circular dependencies in prerequisity imports";
+
+                foreach (var candidate in candidatesInProgress)
+                {
+                    makeErrorJoins(importPoint, candidate, "Can't get export because of unsatisfied prerequisities");
+                }
+            }
             else
                 error = noMatchingExportError(importPoint, error);
 
             //set error to import
             setError(importPoint, error);
+
 
             if (import.IsPrerequisity)
                 setWarning(component.ExportPoints, "Because of unsatisfied prerequisity import, exports cannot be provided");
@@ -709,16 +709,17 @@ namespace MEFAnalyzers.CompositionEngine
                 if (iCollectionToSet == null)
                 {
                     //there is no collection which could be set.
-                    setError(import, "Cannot get ICollection object, for importing exports.");
+                    setError(import, "Cannot get ICollection object, for importing exports, because of missing getter.");
                     return null;
                 }
 
-                foreach (var exportedValue in exportValues)
-                {
-                    iCollectionToSet.Call(addMethod, exportedValue);
-                }
+                var arguments = new[] { iCollectionToSet }.Union(exportValues);
 
-                //because it's set via add
+                _context.CallDirect((c, args) =>
+                    fillICollection(args[0], args.Skip(1).ToArray(), import, addMethod, c),
+                    arguments.ToArray());
+
+                //there is no returned value because import is filled via add
                 return null;
             }
             else
@@ -732,6 +733,27 @@ namespace MEFAnalyzers.CompositionEngine
                 }
 
                 return arr;
+            }
+        }
+
+        private void fillICollection(Instance importCollection, Instance[] exports, JoinPoint import, MethodID addMethod, AnalyzingContext c)
+        {
+            if (exports.Length == 0)
+                //there is nothing to export
+                return;
+
+            //test if import can be filled
+            if (_context.IsNull(importCollection))
+            {
+                setWarning(import, "ICollection import was not initialized after component creation");
+                return;
+            }
+
+            //fill with exports
+            for (var i = 0; i < exports.Length; ++i)
+            {
+                var export = exports[i];
+                c.DynamicCall(addMethod, importCollection, export);
             }
         }
 

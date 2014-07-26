@@ -43,6 +43,18 @@ namespace TypeSystem.Runtime
         /// </summary>
         protected TypeServices Services { get; private set; }
 
+        protected TypeServices CallingAssemblyServices
+        {
+            get
+            {
+                var caller = GetCallerAssembly();
+                if (caller == null)
+                    return Services;
+
+                return caller.Assembly.TypeServices;
+            }
+        }
+
         protected EditsProvider Edits { get; private set; }
 
         /// <summary>

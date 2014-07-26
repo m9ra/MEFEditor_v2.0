@@ -27,9 +27,9 @@ namespace AssemblyProviders.CSharp.Compiling
         private static readonly Dictionary<Type, string> Aliases = new Dictionary<Type, string>();
 
         /// <summary>
-        /// Mapping of 
+        /// Mapping of aliases to their type names
         /// </summary>
-        private static readonly Dictionary<string, string> AliasLookup = new Dictionary<string, string>();
+        internal static readonly Dictionary<string, string> AliasLookup = new Dictionary<string, string>();
 
         /// <summary>
         /// Stack of block contexts

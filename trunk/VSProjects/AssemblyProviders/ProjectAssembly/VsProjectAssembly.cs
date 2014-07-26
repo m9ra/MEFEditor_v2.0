@@ -118,6 +118,25 @@ namespace AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
+        /// Translate given path according to aliases and language type conventions
+        /// <remarks>Namespace lookup is not used</remarks>
+        /// </summary>
+        /// <param name="name">Name to be translated</param>
+        /// <returns>Resulting descriptor</returns>
+        internal static string TranslatePath(string path)
+        {
+            var translated = TypeDescriptor.TranslatePath(path, (toResolve) =>
+            {
+                string result;
+                if (CSharp.Compiling.CompilationContext.AliasLookup.TryGetValue(toResolve, out result))
+                    return result;
+                return toResolve;
+            }, true);
+
+            return translated;
+        }
+
+        /// <summary>
         /// Initialize assembly
         /// </summary>
         private void initializeAssembly()
@@ -411,6 +430,23 @@ namespace AssemblyProviders.ProjectAssembly
         /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>null</c> otherwise</returns>
         private MethodItem getMethodItemFromGeneric(MethodID methodID, PathInfo methodGenericPath)
         {
+            var searchedMethod = Naming.GetMethodName(methodID);
+            var isInitializer = CSharp.LanguageDefinitions.CSharpSyntax.MemberInitializer == searchedMethod ||
+                CSharp.LanguageDefinitions.CSharpSyntax.MemberStaticInitializer == searchedMethod;
+
+            if (isInitializer)
+            {
+                var declaringType = Naming.GetDeclaringType(methodID);
+                var signature = PathInfo.GetSignature(declaringType);
+                var type = getTypeNode(signature) as EnvDTE80.CodeClass2;
+
+                if (type == null)
+                    return null;
+
+                var isStatic = CSharp.LanguageDefinitions.CSharpSyntax.MemberInitializer != searchedMethod;
+                return MethodBuilder.BuildFrom(type, isStatic, this);
+            }
+
             //from given nodes find the one with matching id
             foreach (var node in findMethodNodes(methodGenericPath.Signature))
             {
@@ -435,11 +471,11 @@ namespace AssemblyProviders.ProjectAssembly
                 {
                     if (needParamLessCtor)
                     {
-                        return MethodBuilder.BuildImplicitCtor(declaringClass);
+                        return MethodBuilder.BuildImplicitCtor(declaringClass, this);
                     }
                     else
                     {
-                        return MethodBuilder.BuildImplicitClassCtor(declaringClass);
+                        return MethodBuilder.BuildImplicitClassCtor(declaringClass, this);
                     }
                 }
             }

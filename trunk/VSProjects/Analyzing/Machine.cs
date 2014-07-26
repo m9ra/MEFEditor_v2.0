@@ -34,6 +34,11 @@ namespace Analyzing
         public readonly MachineSettingsBase Settings;
 
         /// <summary>
+        /// Creates representation of null
+        /// </summary>
+        public Instance Null { get { return CreateDirectInstance(Settings.CreateNullRepresentation()); } }
+
+        /// <summary>
         /// Initialize machine with specified settings
         /// </summary>
         /// <param name="settings">Settings specified for machine</param>

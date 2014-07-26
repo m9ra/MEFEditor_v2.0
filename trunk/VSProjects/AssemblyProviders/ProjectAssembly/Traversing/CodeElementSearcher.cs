@@ -193,10 +193,10 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         /// <returns>Found <see cref="CodeElement"/> if any, <c>null</c> otherwise</returns>
         private IEnumerable<CodeElement> findElements(string[] pathParts, int pathLength)
         {
-            if (pathLength == 0)
-                return new CodeElement[0];
-
             var currentElements = _searchedAssembly.RootElements;
+
+            if (pathLength == 0)
+                return currentElements;
 
             //traverse all allowed part
             for (var i = 0; i < pathLength; ++i)

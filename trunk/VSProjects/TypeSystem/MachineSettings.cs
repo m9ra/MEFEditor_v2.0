@@ -93,7 +93,6 @@ namespace TypeSystem
         {
             if (IsDirect(sharedInstanceInfo))
                 //direct types doesn't have static initializers 
-                //TODO this could be potentionall inconsitency drawback
                 return null;
 
             return Naming.Method(sharedInstanceInfo, Naming.ClassCtorName, false, new ParameterTypeInfo[] { });
@@ -103,6 +102,12 @@ namespace TypeSystem
         public override bool IsDirect(InstanceInfo typeInfo)
         {
             return Runtime.IsDirectType(typeInfo);
+        }
+
+        /// <inheritdoc />
+        public override object CreateNullRepresentation()
+        {
+            return new Null();
         }
     }
 }

@@ -22,9 +22,7 @@
             <TextBlock Name="CaptionText" FontSize="22" Foreground="Black">TypeCatalog</TextBlock>
         </StackPanel>
         <TextBlock Name="InstanceID" DockPanel.Dock="Top" FontStyle="Italic" HorizontalAlignment="Center">No id specified</TextBlock>
-        
-        
-        <StackPanel Name="Properties"></StackPanel>
+                
         <dr:SlotCanvas Name="Catalogs" Margin="10" MinHeight="200" MinWidth="200" Background="Transparent"></dr:SlotCanvas>
     </DockPanel>
 </dr:ContentDrawing>

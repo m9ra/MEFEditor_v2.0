@@ -180,7 +180,7 @@ namespace TypeSystem.Runtime
             {
                 var wrappedMethod = wrappedMethods[i];
 
-                if (!isInDirectCover(wrappedMethod))
+                if (!isInDirectCover(wrappedMethod) || wrappedMethod.CallingConvention == CallingConventions.VarArgs)
                     continue;
 
                 var implementedTypes = implementedTypesMap.Get(wrappedMethod);

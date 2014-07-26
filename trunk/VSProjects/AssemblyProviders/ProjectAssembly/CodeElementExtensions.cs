@@ -145,8 +145,8 @@ namespace AssemblyProviders.ProjectAssembly
         {
             try
             {
-                var pGetter = prop.Getter as CodeElement;
-                var pSetter = prop.Setter as CodeElement;
+                var pGetter = prop.Getter as CodeFunction;
+                var pSetter = prop.Setter as CodeFunction;
 
                 if (pGetter == null || pSetter == null)
                     //auto generated property has to have both setter, getter
@@ -161,7 +161,7 @@ namespace AssemblyProviders.ProjectAssembly
                     return !text.Contains("{");
                 }
 
-                if (pGetter.GetBody() == null)
+                if ((pGetter as CodeElement).GetBody() == null)
                     return true;
 
                 return false;
@@ -185,7 +185,7 @@ namespace AssemblyProviders.ProjectAssembly
                 case vsCMElement.vsCMElementClass:
                     return element as CodeClass;
                 case vsCMElement.vsCMElementProperty:
-                    return DeclaringClass(element as CodeProperty);
+                    return DeclaringClass(element as CodeProperty) as CodeClass;
                 case vsCMElement.vsCMElementVariable:
                     return DeclaringClass(element as CodeVariable);
                 case vsCMElement.vsCMElementFunction:
@@ -220,7 +220,7 @@ namespace AssemblyProviders.ProjectAssembly
                     return parent as CodeClass;
 
                 case vsCMElement.vsCMElementProperty:
-                    return DeclaringClass(parent as CodeProperty);
+                    return DeclaringClass(parent as CodeProperty) as CodeClass;
 
                 default:
                     return null;
@@ -266,9 +266,13 @@ namespace AssemblyProviders.ProjectAssembly
             }
         }
 
-        public static CodeClass DeclaringClass(this CodeProperty element)
+        public static CodeType DeclaringClass(this CodeProperty element)
         {
-            return element.Parent;
+            var property2 = element as CodeProperty2;
+            if (property2 != null)
+                return property2.Parent2 as CodeType;
+
+            return element.Parent as CodeType;
         }
 
         public static CodeClass DeclaringClass(this CodeVariable element)

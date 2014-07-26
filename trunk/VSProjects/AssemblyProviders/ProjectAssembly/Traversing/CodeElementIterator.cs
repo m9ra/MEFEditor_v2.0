@@ -178,13 +178,13 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                     {
                         //get implicit ctor of class (we can create it, 
                         //because there is no other ctor)
-                        methods.Add(MethodBuilder.BuildImplicitCtor(classNode));
+                        methods.Add(MethodBuilder.BuildImplicitCtor(classNode, _assembly));
                     }
                     else if (searchedName == Naming.ClassCtorName)
                     {
                         //get implicit cctor of class (we can create it,
                         //because there is no other cctor)
-                        methods.Add(MethodBuilder.BuildImplicitClassCtor(classNode));
+                        methods.Add(MethodBuilder.BuildImplicitClassCtor(classNode, _assembly));
                     }
                 }
             }

@@ -27,10 +27,15 @@ namespace AssemblyProviders.CIL.Providing
         {
             var This = context.CurrentArguments[0];
 
-            var fieldValue = context.GetField(This, _fieldName) as Instance;
-
-            if (fieldValue == null)
-                context.Return(null);
+            Instance fieldValue;
+            if (This is DirectInstance)
+            {
+                fieldValue = null;
+            }
+            else
+            {
+                fieldValue = context.GetField(This, _fieldName) as Instance;
+            }
 
             context.Return(fieldValue);
         }

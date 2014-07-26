@@ -21,17 +21,17 @@ namespace TypeSystem
         /// <summary>
         /// Provider of represented assembly
         /// </summary>
-        private readonly AssemblyProvider _assembly;
+        internal readonly AssemblyProvider Assembly;
 
         /// <summary>
         /// Name of represented assembly
         /// </summary>
-        public string Name { get { return _assembly.Name; } }
+        public string Name { get { return Assembly.Name; } }
 
         internal TypeAssembly(AssembliesManager manager, AssemblyProvider assembly)
         {
             _manager = manager;
-            _assembly = assembly;
+            Assembly = assembly;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace TypeSystem
         /// <returns>Components defined by represented assembly</returns>
         public IEnumerable<ComponentInfo> GetComponents()
         {
-            return _manager.GetComponents(_assembly);
+            return _manager.GetComponents(Assembly);
         }
 
         /// <summary>
@@ -49,13 +49,13 @@ namespace TypeSystem
         /// <returns>Components defined by represented assembly and all its referenced assemblies</returns>
         public IEnumerable<ComponentInfo> GetReferencedComponents()
         {
-            return _manager.GetReferencedComponents(_assembly);
+            return _manager.GetReferencedComponents(Assembly);
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return _assembly.Name.ToString();
+            return Assembly.Name.ToString();
         }
     }
 }

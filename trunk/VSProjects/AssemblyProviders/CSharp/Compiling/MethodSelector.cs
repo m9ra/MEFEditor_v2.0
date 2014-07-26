@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TypeSystem;
-using Analyzing;
 using Utilities;
-
+using Analyzing;
+using TypeSystem;
+using TypeSystem.Runtime;
 
 using AssemblyProviders.CSharp.Compiling;
 
@@ -23,7 +23,7 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             foreach (var overload in overloads)
             {
-                _argumentIterators.AddFirst(new ArgumentIterator(overload, context));
+                _argumentIterators.AddLast(new ArgumentIterator(overload, context));
 
                 var name = overload.MethodName;
                 IsIndexer |= name == Naming.IndexerSetter || name == Naming.IndexerGetter;
@@ -162,7 +162,7 @@ namespace AssemblyProviders.CSharp.Compiling
             else
             {
                 var type = arg.Value.Type;
-                var isNull = type != null && type.TypeName == typeof(DirectDefinitions.NullLiteral).FullName;
+                var isNull = Null.TypeInfo.Equals(type);
                 if (!isNull && !param.HasParam && !_context.Services.IsAssignable(param.Type, type))
                 {
                     //type mismatch

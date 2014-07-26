@@ -135,7 +135,7 @@ namespace MEFAnalyzers
             if (toRemove == null)
                 toRemove = new Instance[0];
 
-            var composition = new CompositionContext(Services, Context);
+            var composition = new CompositionContext(CallingAssemblyServices, Context);
 
             notConstructed = notConstructed.Except(toRemove);
             constructed = constructed.Except(toRemove);
@@ -152,7 +152,7 @@ namespace MEFAnalyzers
 
             if (!compositionResult.Failed)
             {
-                //if composition is OK then process composition
+                //if composition building is OK then process composition
                 Context.DynamicCall("$dynamic_composition", composition.Generator, composition.InputInstances);
             }
         }

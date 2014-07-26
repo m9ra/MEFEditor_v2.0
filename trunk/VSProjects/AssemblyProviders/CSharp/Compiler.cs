@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 using Analyzing;
 using TypeSystem;
+using TypeSystem.Runtime;
 
 using AssemblyProviders.ProjectAssembly;
 using AssemblyProviders.DirectDefinitions;
@@ -1508,7 +1509,7 @@ namespace AssemblyProviders.CSharp
 
             if (literalToken == "null")
             {
-                literal = new LiteralValue(new NullLiteral(), literalNode, Context);
+                literal = new LiteralValue(new Null(), literalNode, Context);
                 return true;
             }
 

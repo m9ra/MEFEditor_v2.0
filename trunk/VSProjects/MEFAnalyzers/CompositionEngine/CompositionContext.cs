@@ -15,6 +15,8 @@ namespace MEFAnalyzers.CompositionEngine
 
     internal delegate Instance DirectCompositionMethod(AnalyzingContext context, Instance[] arguments);
 
+    internal delegate void DirectContextMethod(AnalyzingContext context, Instance[] arguments);
+
     /// <summary>
     /// Context of composition provides access to type and emitting services
     /// </summary>
@@ -204,14 +206,9 @@ namespace MEFAnalyzers.CompositionEngine
         }
 
 
-        internal InstanceRef CallDirectWithReturn(DirectCompositionMethod method, params InstanceRef[] argumentInstances)
+        internal void CallDirect(DirectContextMethod method, params InstanceRef[] argumentInstances)
         {
-            var resultStorage = getFreeStorage("ret");
-            //TODO determine result type
-            var resultInstance = new InstanceRef(this, null, true);
-            _instanceStorages.Add(resultInstance, resultStorage);
-
-            var argumentStorages=from argumentInstance in argumentInstances select new VariableName(getStorage(argumentInstance));
+            var argumentStorages = from argumentInstance in argumentInstances select new VariableName(getStorage(argumentInstance));
 
             //emitting routine
             emit((e) =>
@@ -223,7 +220,36 @@ namespace MEFAnalyzers.CompositionEngine
                     var argumentValues = new List<Instance>();
                     foreach (var argumentStorage in argumentStorages)
                     {
-                        var argumentValue=c.GetValue(argumentStorage);
+                        var argumentValue = c.GetValue(argumentStorage);
+                        argumentValues.Add(argumentValue);
+                    }
+
+                    method(c, argumentValues.ToArray());
+                });
+            });
+        }
+
+
+        internal InstanceRef CallDirectWithReturn(DirectCompositionMethod method, params InstanceRef[] argumentInstances)
+        {
+            var resultStorage = getFreeStorage("ret");
+            //TODO determine result type
+            var resultInstance = new InstanceRef(this, null, true);
+            _instanceStorages.Add(resultInstance, resultStorage);
+
+            var argumentStorages = from argumentInstance in argumentInstances select new VariableName(getStorage(argumentInstance));
+
+            //emitting routine
+            emit((e) =>
+            {
+                //wrap method into direct invoke instruction
+                e.DirectInvoke((c) =>
+                {
+                    //fetch arguments
+                    var argumentValues = new List<Instance>();
+                    foreach (var argumentStorage in argumentStorages)
+                    {
+                        var argumentValue = c.GetValue(argumentStorage);
                         argumentValues.Add(argumentValue);
                     }
 
@@ -275,6 +301,11 @@ namespace MEFAnalyzers.CompositionEngine
         internal MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
         {
             return _services.TryGetImplementation(type, abstractMethod);
+        }
+
+        internal bool IsNull(Instance importCollection)
+        {
+            return _services.IsNull(importCollection);
         }
     }
 }

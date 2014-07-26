@@ -214,6 +214,20 @@ namespace TypeSystem
         /// Set importing constructor of component
         /// </summary>
         /// <param name="importingParameters">Parameters of import</param>
+        public void SetImportingCtor(TypeMethodInfo info)
+        {
+            _importingCtor = info.MethodID;
+            foreach (var parameter in info.Parameters)
+            {
+                var type = parameter.Type;
+                addPreImport(type);
+            }
+        }
+
+        /// <summary>
+        /// Set importing constructor of component
+        /// </summary>
+        /// <param name="importingParameters">Parameters of import</param>
         public void SetImportingCtor(params TypeDescriptor[] importingParameters)
         {
             var parameters = new ParameterTypeInfo[importingParameters.Length];
@@ -223,10 +237,7 @@ namespace TypeSystem
                 var importType = importingParameters[i];
                 parameters[i] = ParameterTypeInfo.Create("p", importType);
 
-                var importTypeInfo = ImportTypeInfo.ParseFromMany(importType, false, null);
-                var contract = importTypeInfo.ItemType.TypeName;
-                var preImport = new Import(importTypeInfo, null, contract);
-                _imports.Add(preImport);
+                addPreImport(importType);
             }
 
             _importingCtor = Naming.Method(ComponentType, Naming.CtorName, false, parameters);
@@ -272,6 +283,18 @@ namespace TypeSystem
         }
 
         #region Private helpers
+
+        /// <summary>
+        /// Add prerequisity import of given type
+        /// </summary>
+        /// <param name="type">Type of import</param>
+        private void addPreImport(TypeDescriptor type)
+        {
+            var importTypeInfo = ImportTypeInfo.ParseFromMany(type, false, null);
+            var contract = importTypeInfo.ItemType.TypeName;
+            var preImport = new Import(importTypeInfo, null, contract);
+            _imports.Add(preImport);
+        }
 
         /// <summary>
         /// Get id for setter of given property

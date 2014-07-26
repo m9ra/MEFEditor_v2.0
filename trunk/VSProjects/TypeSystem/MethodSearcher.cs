@@ -42,10 +42,10 @@ namespace TypeSystem
         /// Extend name according to possible suffixes. Suffixes are searched in paralel        
         /// </summary>
         /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel</param>
-        /// <param name="_activeIterators">List of active iterators, where extending is processed</param>
-        private void extendName(LinkedList<SearchIterator> _activeIterators, IEnumerable<string> possibleSuffixes)
+        /// <param name="activeIterators">List of active iterators, where extending is processed</param>
+        private void extendName(LinkedList<SearchIterator> activeIterators, IEnumerable<string> possibleSuffixes)
         {
-            var currentIterator = _activeIterators.First;
+            var currentIterator = activeIterators.First;
 
             var partedSuffixes = new List<string[]>();
             foreach (var possibleSuffix in possibleSuffixes)
@@ -69,12 +69,12 @@ namespace TypeSystem
                     }
 
                     if (newIt != null)
-                        _activeIterators.AddFirst(newIt);
+                        activeIterators.AddFirst(newIt);
                 }
 
                 var lastIt = currentIterator;
                 currentIterator = currentIterator.Next;
-                _activeIterators.Remove(lastIt);
+                activeIterators.Remove(lastIt);
             }
         }
 

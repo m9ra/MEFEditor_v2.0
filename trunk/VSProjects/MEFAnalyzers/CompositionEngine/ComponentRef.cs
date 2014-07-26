@@ -26,8 +26,6 @@ namespace MEFAnalyzers.CompositionEngine
 
         internal bool IsSatisfied;
 
-        internal bool NeedsPrerequisitySatisfiing { get { return !HasSatisfiedPreImports && !ComposingFailed; } }
-
         /// <summary>
         /// Determine that composition of instance has failed
         /// </summary>

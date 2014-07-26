@@ -177,7 +177,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var isAutoProperty = element.IsAutoProperty();
             var methodInfo = CreateMethodInfo(element, buildGetter);
 
-            if (isAutoProperty)
+            if (isAutoProperty || methodInfo.IsAbstract)
                 return buildAutoProperty(methodInfo);
 
             var method = buildGetter ? element.Getter : element.Setter;
@@ -193,7 +193,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>   
         /// <param name="declaringClass">Class that declare implicit ctor</param>
         /// <returns>Built method</returns>
-        internal static MethodItem BuildImplicitCtor(CodeClass declaringClass)
+        internal static MethodItem BuildImplicitCtor(CodeClass declaringClass, VsProjectAssembly declaringAssembly)
         {
             var declaringType = CreateDescriptor(declaringClass);
             var methodInfo = new TypeMethodInfo(declaringType,
@@ -201,7 +201,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
                 false, TypeDescriptor.NoDescriptors);
 
 
-            return BuildImplicitCtor(declaringClass, methodInfo);
+            return BuildImplicitCtor(declaringClass, methodInfo, declaringAssembly);
         }
 
         /// <summary>
@@ -209,14 +209,20 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>   
         /// <param name="declaringClass">Class that declare implicit ctor</param>
         /// <returns>Built method</returns>
-        private static MethodItem BuildImplicitCtor(CodeClass declaringClass, TypeMethodInfo methodInfo)
+        private static MethodItem BuildImplicitCtor(CodeClass declaringClass, TypeMethodInfo methodInfo, VsProjectAssembly declaringAssembly)
         {
-            var ctorGenerator = new DirectGenerator((c) =>
-            {
-                //TODO member initialization
-            });
+            var cls2 = declaringClass as CodeClass2;
 
-            return new MethodItem(ctorGenerator, methodInfo);
+            if (cls2 == null)
+            {
+                var ctorGenerator = new DirectGenerator((c) =>
+                {
+                    //Initialization cannot be created
+                });
+                return new MethodItem(ctorGenerator, methodInfo);
+            }
+
+            return BuildFrom(cls2, false, declaringAssembly);
         }
 
         /// <summary>
@@ -224,14 +230,14 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>   
         /// <param name="declaringClass">Class that declare implicit class ctor</param>
         /// <returns>Built method</returns>
-        internal static MethodItem BuildImplicitClassCtor(CodeClass declaringClass)
+        internal static MethodItem BuildImplicitClassCtor(CodeClass declaringClass, VsProjectAssembly declaringAssembly)
         {
             var declaringType = CreateDescriptor(declaringClass);
             var methodInfo = new TypeMethodInfo(declaringType,
                 Naming.ClassCtorName, TypeDescriptor.Void, ParameterTypeInfo.NoParams,
                 false, TypeDescriptor.NoDescriptors);
 
-            return BuildImplicitCtor(declaringClass, methodInfo);
+            return BuildImplicitClassCtor(declaringClass, methodInfo, declaringAssembly);
         }
 
         /// <summary>
@@ -239,14 +245,20 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         /// </summary>   
         /// <param name="declaringClass">Class that declare implicit class ctor</param>
         /// <returns>Built method</returns>
-        private static MethodItem BuildImpliciClassCtor(CodeClass declaringClass, TypeMethodInfo methodInfo)
+        private static MethodItem BuildImplicitClassCtor(CodeClass declaringClass, TypeMethodInfo methodInfo, VsProjectAssembly declaringAssembly)
         {
-            var cctorGenerator = new DirectGenerator((c) =>
-            {
-                //TODO member initialization
-            });
+            var cls2 = declaringClass as CodeClass2;
 
-            return new MethodItem(cctorGenerator, methodInfo);
+            if (cls2 == null)
+            {
+                var cctorGenerator = new DirectGenerator((c) =>
+                {
+                    //Initialization cannot be created
+                });
+                return new MethodItem(cctorGenerator, methodInfo);
+            }
+
+            return BuildFrom(cls2, false, declaringAssembly);
         }
 
         #endregion
@@ -356,7 +368,9 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
             var isShared = property2 != null && property2.IsShared;
             var isAbstract = method.MustImplement;
-            var declaringType = CreateDescriptor(element.Parent as CodeClass);
+
+            var declaringTypeNode = element.DeclaringClass();
+            var declaringType = CreateDescriptor(declaringTypeNode);
             var variableType = CreateDescriptor(element.Type);
 
             //variables cannot have type arguments
@@ -520,7 +534,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             if (fullname == "")
                 return TypeDescriptor.Void;
 
-            return ConvertToDescriptor(fullname);
+            return ConvertToDescriptor(fullname, false);
         }
 
         /// <summary>
@@ -534,7 +548,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             if (fullname == "")
                 return TypeDescriptor.Void;
 
-            return ConvertToDescriptor(fullname);
+            return ConvertToDescriptor(fullname, false);
         }
 
         /// <summary>
@@ -546,7 +560,7 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var fullname = typeNode.FullName;
 
-            return ConvertToDescriptor(fullname);
+            return ConvertToDescriptor(fullname, true);
         }
 
 
@@ -559,18 +573,20 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         {
             var fullname = typeNode.FullName;
 
-            return ConvertToDescriptor(fullname);
+            return ConvertToDescriptor(fullname, true);
         }
 
         /// <summary>
         /// Converts fullnames between <see cref="CodeModel"/> representation and TypeSystem typeName
         /// </summary>
         /// <param name="fullname">Fullname of element from <see cref="CodeModel"/></param>
+        /// <param name="hasOnlyGenericArguments">Determine that fullname belongs to compile time element 
+        /// (like <see cref="CodeClass"/> or <see cref="CodeInterface"/>) or not</param>
         /// <returns></returns>
-        internal static TypeDescriptor ConvertToDescriptor(string fullname)
+        internal static TypeDescriptor ConvertToDescriptor(string fullname, bool hasOnlyGenericArguments)
         {
             //every fullname collected from assembly is compile time - thus all generic arguments are parameters
-            var convertedName = fullname.Replace("<", "<@").Replace(",", ",@");
+            var convertedName = hasOnlyGenericArguments ? fullname.Replace("<", "<@").Replace(",", ",@") : fullname;
 
             convertedName = arrayResolver(convertedName);
             convertedName = TypeDescriptor.TranslatePath(convertedName, arrayResolver);
@@ -582,10 +598,10 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
 
         private static string arrayResolver(string genericParameter)
         {
-            //TODO parse aliases
             if (genericParameter.EndsWith("[]"))
             {
                 var itemType = genericParameter.Substring(0, genericParameter.Length - 2);
+                itemType = VsProjectAssembly.TranslatePath(itemType);
                 genericParameter = string.Format("Array<{0},1>", itemType);
             }
 

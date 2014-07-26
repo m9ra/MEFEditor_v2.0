@@ -182,6 +182,12 @@ namespace Analyzing.Execution
             return generator;
         }
 
+        public void DynamicCall(MethodID method, params Instance[] argumentValues)
+        {
+            var generator = resolveGenerator(ref method, argumentValues);
+            if (method != null)
+                DynamicCall(method.MethodString, generator, argumentValues);
+        }
 
         public void DynamicCall(string methodNameHint, GeneratorBase generator, params Instance[] argumentValues)
         {
@@ -350,8 +356,7 @@ namespace Analyzing.Execution
             popContext();
             LastReturnValue = returnValue;
             if (LastReturnValue == null)
-                //TODO resolve null values same as dirty instances
-                LastReturnValue = Machine.CreateDirectInstance("Null");
+                LastReturnValue = Machine.Null;
         }
 
         public bool Contains(VariableName targetVariable)

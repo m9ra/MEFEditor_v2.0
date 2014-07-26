@@ -118,7 +118,7 @@ namespace Analyzing.Execution
 
             if (initializerID != null && initializerID.NeedsDynamicResolving)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("Initializers doesn't support dynamic resolving");
             }
 
             var ensureInitialization = new EnsureInitialized(sharedThisVar, sharedInstanceInfo, initializerID);

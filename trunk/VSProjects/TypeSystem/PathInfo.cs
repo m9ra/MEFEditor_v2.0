@@ -22,7 +22,7 @@ namespace TypeSystem
       )*     
      (?(Depth)(?!))   # Ensure that depth level is at zero
      >
-",RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
 
         public readonly string Name;
 
@@ -92,6 +92,13 @@ namespace TypeSystem
             ShortSignature = getShortSignature(Signature);
         }
 
+
+
+        public static string GetSignature(string typeName)
+        {
+            var list = new List<string>();
+            return parseSignature(typeName, list);
+        }
 
         public static string GetSignature(TypeDescriptor typeDescriptor)
         {

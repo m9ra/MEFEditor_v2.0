@@ -53,6 +53,8 @@ namespace Analyzing
 
         public abstract MethodID GetSharedInitializer(InstanceInfo sharedInstanceInfo);
 
+        public abstract object CreateNullRepresentation();
+
         internal void FireBeforeInterpretation()
         {
             if (BeforeInterpretation != null)
@@ -64,5 +66,6 @@ namespace Analyzing
             if (AfterInterpretation != null)
                 AfterInterpretation();
         }
+
     }
 }

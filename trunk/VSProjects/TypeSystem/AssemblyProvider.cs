@@ -134,7 +134,7 @@ namespace TypeSystem
         /// </summary>
         internal protected TypeServices TypeServices
         {
-            protected get
+            get
             {
                 if (_services == null)
                     throw new InvalidOperationException("Cannot request services before theire initiliazed");
@@ -142,7 +142,7 @@ namespace TypeSystem
                 return _services;
             }
 
-            set
+            internal set
             {
                 if (_services != null)
                     throw new InvalidOperationException("Cannot reset already initialized services");

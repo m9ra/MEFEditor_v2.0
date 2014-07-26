@@ -93,6 +93,11 @@ namespace TypeSystem
 
         #region Type inspection API
 
+        public bool IsNull(Instance importCollection)
+        {
+            return importCollection == null || (Runtime.Null.TypeInfo.Equals(importCollection.Info));
+        }
+
         /// <summary>
         /// Creates method searcher, which can search in referenced assemblies
         /// </summary>
@@ -260,6 +265,5 @@ namespace TypeSystem
         }
 
         #endregion
-
     }
 }

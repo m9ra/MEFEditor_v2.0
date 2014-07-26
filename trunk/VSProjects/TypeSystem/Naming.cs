@@ -28,7 +28,7 @@ namespace TypeSystem
         public static readonly string ExportAttribute = typeof(ExportAttribute).FullName;
 
         /// <summary>
-        /// Fullname of ExportMetadata
+        /// Fullname of ExportMetadataAttribute type
         /// </summary>
         public static readonly string ExportMetadataAttribute = typeof(ExportMetadataAttribute).FullName;
 
@@ -43,7 +43,12 @@ namespace TypeSystem
         public static readonly string ImportManyAttribute = typeof(ImportManyAttribute).FullName;
 
         /// <summary>
-        /// Fullname of CompositionPointAttribute
+        /// Fullname of ImportingConstructorAttribute type
+        /// </summary>
+        public static readonly string ImportingConstructor = typeof(ImportingConstructorAttribute).FullName;
+
+        /// <summary>
+        /// Fullname of CompositionPointAttribute type
         /// </summary>
         public static readonly string CompositionPointAttribute = typeof(MEFEditor.CompositionPointAttribute).FullName;
 

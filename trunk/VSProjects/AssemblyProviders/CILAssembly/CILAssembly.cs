@@ -404,6 +404,11 @@ namespace AssemblyProviders.CILAssembly
                         addCompositionPoint(infoBuilder, method, attribute);
                         hasExplicitCompositionPoint = true;
                     }
+
+                    if (fullname == Naming.ImportingConstructor)
+                    {
+                        addImportingConstructor(infoBuilder, method, attribute);
+                    }
                 }
             }
 
@@ -418,6 +423,7 @@ namespace AssemblyProviders.CILAssembly
                 addCompositionPoint(infoBuilder, implicitCtor, null);
             }
         }
+
         /// <summary>
         /// Add composition point into infoBuilder
         /// </summary>
@@ -434,6 +440,18 @@ namespace AssemblyProviders.CILAssembly
 
             var methodID = getMethodId(infoBuilder.ComponentType, method);
             infoBuilder.AddExplicitCompositionPoint(methodID, argumentsInitializer);
+        }
+
+        /// <summary>
+        /// Add importing constructor into infoBuilder
+        /// </summary>
+        /// <param name="infoBuilder">Info builder where constructor will be added</param>
+        /// <param name="method">Importing construcotr that is added</param>
+        /// <param name="attribute">Attribute defining importing constructor</param>
+        private void addImportingConstructor(ComponentInfoBuilder infoBuilder, MethodDefinition method, CustomAttribute attribute)
+        {
+            var methodItem = createItem(infoBuilder.ComponentType, method);
+            infoBuilder.SetImportingCtor(methodItem.Info);
         }
 
         /// <summary>

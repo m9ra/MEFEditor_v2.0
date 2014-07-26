@@ -90,6 +90,11 @@ namespace TypeSystem.Runtime
         /// </summary>
         private void initializeTypeSystemBase()
         {
+            //null support
+            var nullDefinition = new DirectTypeDefinition<Null>();
+            nullDefinition.ForcedInfo = Null.TypeInfo;
+            AddDirectDefinition(nullDefinition);
+
             //support for System.Object
             var chain = new InheritanceChain(TypeDescriptor.Create<object>(), new InheritanceChain[0]);
             _inheritanceChains.Add(chain.Path.Signature, chain);

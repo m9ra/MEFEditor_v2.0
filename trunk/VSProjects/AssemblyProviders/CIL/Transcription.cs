@@ -11,6 +11,7 @@ using Mono.Cecil;
 
 using Analyzing;
 using TypeSystem;
+using TypeSystem.Runtime;
 
 using AssemblyProviders.CIL.ILAnalyzer;
 using AssemblyProviders.DirectDefinitions;
@@ -388,7 +389,7 @@ namespace AssemblyProviders.CIL
 
         static void _ldnull()
         {
-            emitPush<NullLiteral>(new NullLiteral());
+            emitPush<Null>(new Null());
         }
 
         static void _ldstr()

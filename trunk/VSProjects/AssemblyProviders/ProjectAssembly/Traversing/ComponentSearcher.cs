@@ -104,6 +104,10 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             {
                 addCompositionPoint(new AttributeInfo(e));
             }
+            else if (fullname == Naming.ImportingConstructor)
+            {
+                addImportingConstructor(new AttributeInfo(e));
+            }
         }
 
         #endregion
@@ -278,6 +282,24 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         }
 
         /// <summary>
+        /// Add importing constructor according to given <see cref="CodeAttribute"/>
+        /// </summary>
+        /// <param name="compositionAttrbiute">Attribute defining importing constructor</param>
+        private void addImportingConstructor(AttributeInfo compositionAttrbiute)
+        {
+            var method = getMethod(compositionAttrbiute.Element);
+            if (method == null)
+            {
+                throw new NotImplementedException("Log that method cannot been loaded");
+            }
+
+            var info = MethodBuilder.CreateMethodInfo(method);
+
+            var builder = getOrCreateCurrentBuilder(compositionAttrbiute.Element as CodeElement);
+            builder.SetImportingCtor(info);
+        }
+
+        /// <summary>
         /// Add CompositionPoint according to given <see cref="CodeAttribute"/>
         /// </summary>
         /// <param name="compositionAttrbiute">Attribute defining export</param>
@@ -311,7 +333,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
 
         private string parseString(string data)
         {
-            if (data.StartsWith("@\"") && data.Length >2)
+            if (data.StartsWith("@\"") && data.Length > 2)
                 return data.Substring(2, data.Length - 3).Replace("\"\"", "\"");
 
             if (data.StartsWith("\"") && data.Length > 1)
@@ -367,6 +389,7 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
             if (data.StartsWith(typePrefix))
             {
                 data = data.Substring(typePrefix.Length).Replace(")", "");
+                data = VsProjectAssembly.TranslatePath(data);
 
                 //find contracted type
 

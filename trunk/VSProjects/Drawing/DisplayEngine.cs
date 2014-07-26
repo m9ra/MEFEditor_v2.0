@@ -216,11 +216,18 @@ namespace Drawing
                 {
                     Navigator.Graph.Explore(join.From, join.To);
                 }
-            }
 
-            foreach (var join in _joins)
+                foreach (var join in _joins)
+                {
+                    join.PointPath = Navigator.Graph.FindPath(join.From, join.To);
+                }
+            }
+            else
             {
-                join.PointPath = Navigator.Graph.FindPath(join.From, join.To);
+                foreach (var join in _joins)
+                {
+                    join.PointPath = new[] { join.From.GlobalConnectPoint, join.To.GlobalConnectPoint };
+                }
             }
         }
 
@@ -235,8 +242,15 @@ namespace Drawing
             Navigator = new SceneNavigator(Items);
             Navigator.EnsureGraphInitialized();
 
-            Navigator.Graph.Explore(join.From, join.To);
-            join.PointPath = Navigator.Graph.FindPath(join.From, join.To);
+            if (Output.DiagramContext.Diagram.UseJoinAvoidance)
+            {
+                Navigator.Graph.Explore(join.From, join.To);
+                join.PointPath = Navigator.Graph.FindPath(join.From, join.To);
+            }
+            else
+            {
+                join.PointPath = new[] { join.From.GlobalConnectPoint, join.To.GlobalConnectPoint };
+            }
         }
 
         /// <summary>
@@ -323,7 +337,7 @@ namespace Drawing
                     //root has no owner, because of that has special cursor
                     _rootCursor = cursor;
                     //we dont want to limit size of root canvas
-                    lastLayoutSize = new Size(); 
+                    lastLayoutSize = new Size();
                 }
                 else
                 {
@@ -357,7 +371,7 @@ namespace Drawing
         {
             Point oldPosition;
             if (item.HasPosition)
-                {
+            {
                 //keep preset position
                 oldPosition = item.GlobalPosition;
             }
@@ -381,7 +395,7 @@ namespace Drawing
                 //keep position from previous display
                 oldPosition = parentPositions[item.ID];
             }
-            
+
             cursor.RegisterPosition(item, oldPosition);
         }
 
