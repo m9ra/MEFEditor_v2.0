@@ -178,7 +178,7 @@ namespace Plugin.GUI
         }
 
         /// <summary>
-        /// 
+        /// Initialization routine that makes <see cref="GUIManager"/> active
         /// </summary>
         /// <param name="appDomain">Appdomain where analysis is processed</param>
         /// <param name="diagramFactory">Factory used for diagram drawings</param>
@@ -193,26 +193,24 @@ namespace Plugin.GUI
             initialize();
         }
 
+        #region Display handling
+
         /// <summary>
-        /// Display given diagram definition within editors workspace
+        /// Display given <see cref="DiagramDefinition"/> within editors workspace
         /// </summary>
         /// <param name="diagram">Displayed diagram</param>
         public void Display(DiagramDefinition diagram)
         {
-           DispatchedAction(() =>
-           {
-               _drawingProvider.Display(diagram);
-           });
-        }
-        
-        public void DisplayLoadingMessage(string message)
-        {
             DispatchedAction(() =>
             {
-               _gui.ShowLoadingMessage(message);
+                _gui.ShowWorkspace();
+                _drawingProvider.Display(diagram);
             });
         }
 
+        /// <summary>
+        /// Show workspace to the user
+        /// </summary>
         public void ShowWorkspace()
         {
             DispatchedAction(() =>
@@ -221,6 +219,35 @@ namespace Plugin.GUI
             });
         }
 
+        /// <summary>
+        /// Display specified entry to the user
+        /// </summary>
+        /// <param name="entry">Entry to be displayed</param>
+        internal void DisplayEntry(LogEntry entry)
+        {
+            DispatchedAction(() =>
+            {
+                var entryDrawing = createLogEntryDrawing(entry) as Expander;
+
+                var heading = entryDrawing.Header as TextBox;
+                heading.FontSize = 20;
+
+                entryDrawing.Margin = new Thickness(20);
+                _gui.ShowElement(entryDrawing);
+            });
+        }
+
+        /// <summary>
+        /// Display message with loading bar
+        /// </summary>
+        /// <param name="message">Displayed loading message</param>
+        public void DisplayLoadingMessage(string message)
+        {
+            DispatchedAction(() =>
+            {
+                _gui.ShowLoadingMessage(message);
+            });
+        }
 
         /// <summary>
         /// Reset workspace
@@ -235,6 +262,10 @@ namespace Plugin.GUI
            });
         }
 
+        #endregion
+
+        #region Dispatcher handling
+
         /// <summary>
         /// Run given action in context of gui thread
         /// </summary>
@@ -244,25 +275,6 @@ namespace Plugin.GUI
             _gui.Dispatcher.BeginInvoke(action);
         }
 
-        /// <summary>
-        /// Display specified entry within workspace
-        /// </summary>
-        /// <param name="entry">Entry to be displayed</param>
-        internal void DisplayEntry(LogEntry entry)
-        {
-            DispatchedAction(() =>
-           {
-               _gui.Workspace.Clear();
-               _gui.Workspace.Reset();
-               var entryDrawing = createLogEntryDrawing(entry, true) as Expander;
-
-               var heading = entryDrawing.Header as TextBlock;
-               heading.FontSize = 20;
-
-               entryDrawing.Margin = new Thickness(20);
-               _gui.Workspace.Children.Add(entryDrawing);
-           });
-        }
 
         /// <summary>
         /// Do events which is compatible with WPF and WinForms.
@@ -273,6 +285,8 @@ namespace Plugin.GUI
             var idle = System.Windows.Threading.DispatcherPriority.SystemIdle;
             System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { }), idle);
         }
+
+        #endregion
 
         #region Initialization routines
 
@@ -659,6 +673,9 @@ namespace Plugin.GUI
                 _gui.Log.Children.RemoveAt(LogHistorySize);
         }
 
+        /// <summary>
+        /// Refresh displayed log entries
+        /// </summary>
         private void logRefresh()
         {
             foreach (var entry in _logQueue)
@@ -667,6 +684,12 @@ namespace Plugin.GUI
             }
         }
 
+        /// <summary>
+        /// Creates drawing for given entry
+        /// </summary>
+        /// <param name="entry">Entry which drawing will be created</param>
+        /// <param name="expanded">Determine that drawing should be expanded</param>
+        /// <returns>Created drawing</returns>
         private UIElement createLogEntryDrawing(LogEntry entry, bool expanded = false)
         {
             Brush entryColor;
@@ -686,13 +709,11 @@ namespace Plugin.GUI
                     break;
             }
 
-            var heading = new TextBlock();
-            heading.Text = entry.Message;
+            var heading = createText(entry.Message);
             heading.Foreground = entryColor;
 
             //set navigation handler
-            if (entry.Navigate != null)
-                heading.PreviewMouseDown += (a, b) => entry.Navigate();
+            setContextMenu(heading, entry);
 
             if (entry.Description == null)
                 //no description is available
@@ -702,14 +723,63 @@ namespace Plugin.GUI
             expander.Header = heading;
             expander.IsExpanded = expanded;
 
-            var description = new TextBlock();
-            description.Text = entry.Description;
+            var description = createText(entry.Description);
             description.Margin = new Thickness(10, 0, 0, 10);
+
+            //set navigation handler
+            setContextMenu(description, entry);
 
             expander.Content = description;
             expander.Margin = new Thickness(20, 0, 0, 0);
 
             return expander;
+        }
+
+        /// <summary>
+        /// Creates text representation within created <see cref="TextBlock"/>
+        /// </summary>
+        /// <param name="text">Text to be represented</param>
+        /// <returns>Created text</returns>
+        private TextBox createText(string text)
+        {
+            var heading = new TextBox();
+            heading.IsReadOnly = true;
+            heading.Text = text;
+            heading.BorderBrush = Brushes.Transparent;
+            heading.BorderThickness = new Thickness(0);
+
+            return heading;
+        }
+
+        /// <summary>
+        /// Set navigation routines to given element
+        /// </summary>
+        /// <param name="element">Element which navigation will be set</param>
+        /// <param name="entry">Entry defining navigation</param>
+        private void setContextMenu(FrameworkElement element, LogEntry entry)
+        {
+
+            var toolText = new TextBlock();
+            toolText.Text = "Right click to open menu";
+
+            element.ToolTip = toolText;
+
+            var contextMenu = new ContextMenu();
+            element.ContextMenu = contextMenu;
+
+            if (entry.Navigate != null)
+            {
+                var navigate = new MenuItem();
+                navigate.Header = "Navigate to";
+                navigate.Click += (s, e) => entry.Navigate();
+                contextMenu.Items.Add(navigate);
+            }
+
+            var copy = new MenuItem();
+            copy.Header = "Copy to clipboard";
+            copy.Click += (s, e) =>
+                Clipboard.SetText(entry.ToString());
+            contextMenu.Items.Add(copy);
         }
 
         #endregion

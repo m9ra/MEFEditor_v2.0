@@ -59,5 +59,10 @@ namespace AssemblyProviders.CSharp.Transformations
                 source.AppendCall(view, _line, call);
             }, _source);
         }
+
+        public override NavigationAction GetNavigation()
+        {
+            return () => _source.Navigate(0);
+        }
     }
 }

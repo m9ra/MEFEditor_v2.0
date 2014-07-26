@@ -12,5 +12,6 @@ namespace Analyzing.Editing
         public abstract Transformation ShiftBehind(BlockTransformProvider provider);
         public abstract Transformation PrependCall(CallEditInfo call);
         public abstract Transformation AppendCall(CallEditInfo call);
+        public abstract NavigationAction GetNavigation();
     }
 }

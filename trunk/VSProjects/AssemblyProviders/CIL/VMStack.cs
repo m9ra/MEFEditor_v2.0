@@ -9,6 +9,8 @@ using System.Linq.Expressions;
 using Analyzing;
 using Analyzing.Execution;
 
+using Mono.Cecil.Cil;
+
 using TypeSystem;
 using TypeSystem.Runtime;
 
@@ -49,6 +51,25 @@ namespace AssemblyProviders.CIL
 
             var popped = _stack.Pop();
             return popped;
+        }
+
+        public void Fake()
+        {
+            var toFake = Pop().DirectValue as CILInstruction;
+            var opCode = toFake.OpCode;
+
+            for (var i = 0; i < getPopDelta(toFake, _stack.Count); ++i)
+            {
+                var popped = Pop();
+                _context.SetDirty(popped);
+            }
+
+            for (var i = 0; i < getPushDelta(toFake); ++i)
+            {
+                var fakeData=_context.Machine.CreateDirectInstance("Faking: "+toFake);
+                _context.SetDirty(fakeData);
+                Push(fakeData);
+            }
         }
 
         /// <summary>
@@ -128,6 +149,111 @@ namespace AssemblyProviders.CIL
             return _context.Machine.CreateDirectInstance(obj);
         }
 
+        #region Counting stack delta
+
+        /// <summary>
+        /// Compute delta of pushing according to given instruction
+        /// <remarks>Modified method taken from http://cecil.googlecode.com/svn/trunk/decompiler/Cecil.Decompiler/Cecil.Decompiler.Cil/ControlFlowGraphBuilder.cs </remarks>
+        /// </summary>
+        /// <param name="instruction">Instruction which delta is computed</param>
+        /// <returns>Push delta</returns>
+        int getPushDelta(CILInstruction instruction)
+        {
+            var stackBehaviour = instruction.OpCode.StackBehaviourPush;
+            switch (stackBehaviour)
+            {
+                case StackBehaviour.Push0:
+                    return 0;
+
+                case StackBehaviour.Push1:
+                case StackBehaviour.Pushi:
+                case StackBehaviour.Pushi8:
+                case StackBehaviour.Pushr4:
+                case StackBehaviour.Pushr8:
+                case StackBehaviour.Pushref:
+                    return 1;
+
+                case StackBehaviour.Push1_push1:
+                    return 2;
+
+                case StackBehaviour.Varpush:
+                    if (instruction.MethodOperand == null)
+                        //cannot be determined
+                        return 0;
+
+                    return instruction.MethodOperand.ReturnType.TypeName == typeof(void).FullName ? 0 : 1;
+
+                default:
+                    //unknown behaviour
+                    return 0;
+            }
+        }
+
+
+        /// <summary>
+        /// Compute delta of popping according to given instruction
+        /// <remarks>Modified method taken from http://cecil.googlecode.com/svn/trunk/decompiler/Cecil.Decompiler/Cecil.Decompiler.Cil/ControlFlowGraphBuilder.cs </remarks>
+        /// </summary>
+        /// <param name="instruction">Instruction which delta is computed</param>
+        /// <param name="stackHeight">Current height of stack that should be popped</param>
+        /// <returns>Pop delta</returns>
+        int getPopDelta(CILInstruction instruction, int stackHeight)
+        {
+            var stackBehaviour = instruction.OpCode.StackBehaviourPop;
+            switch (stackBehaviour)
+            {
+                case StackBehaviour.Pop0:
+                    return 0;
+                case StackBehaviour.Popi:
+                case StackBehaviour.Popref:
+                case StackBehaviour.Pop1:
+                    return 1;
+
+                case StackBehaviour.Pop1_pop1:
+                case StackBehaviour.Popi_pop1:
+                case StackBehaviour.Popi_popi:
+                case StackBehaviour.Popi_popi8:
+                case StackBehaviour.Popi_popr4:
+                case StackBehaviour.Popi_popr8:
+                case StackBehaviour.Popref_pop1:
+                case StackBehaviour.Popref_popi:
+                    return 2;
+
+                case StackBehaviour.Popi_popi_popi:
+                case StackBehaviour.Popref_popi_popi:
+                case StackBehaviour.Popref_popi_popi8:
+                case StackBehaviour.Popref_popi_popr4:
+                case StackBehaviour.Popref_popi_popr8:
+                case StackBehaviour.Popref_popi_popref:
+                    return 3;
+
+                case StackBehaviour.PopAll:
+                    return stackHeight;
+
+                case StackBehaviour.Varpop:
+                    if (instruction.MethodOperand != null)
+                    {
+                        var method = instruction.MethodOperand;
+                        int count = method.Parameters.Length;
+                        if (method.HasThis && OpCodes.Newobj.Value != instruction.OpCode.Value)
+                            ++count;
+
+                        return count;
+                    }
+
+                    //if (instruction.OpCode.Code == Code.Ret)
+                    //return IsVoidMethod() ? 0 : 1;
+                    return 0; //we dont now if we are in void method
+
+
+            }
+
+            return 0;
+        }
+
+        #endregion
+
+        /// <inheritdoc />
         public override string ToString()
         {
             return string.Format("Stack state: {0}", _stack.Count);

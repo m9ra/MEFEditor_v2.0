@@ -137,6 +137,9 @@ namespace TypeSystem
 
         public static PathInfo Append(PathInfo path, string suffix)
         {
+            if (suffix == null)
+                return path;
+
             if (path == null)
             {
                 return new PathInfo(suffix);

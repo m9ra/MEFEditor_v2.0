@@ -25,7 +25,7 @@ namespace Plugin.GUI
     /// Enumeration of content panels that can be displayed in
     /// GUI's main area.
     /// </summary>
-    internal enum ContentPanel { Workspace, Settings, Loading };
+    internal enum ContentPanel { Workspace, Settings, Loading, Element };
 
     /// <summary>
     /// Delagate used for reporting changes in path
@@ -38,12 +38,24 @@ namespace Plugin.GUI
     /// </summary>
     public partial class EditorGUI : UserControl
     {
+        /// <summary>
+        /// Determine that cross interpreting is enabled in settings
+        /// </summary>
         private bool _crossInterpretingEnabled = false;
 
+        /// <summary>
+        /// Main workspace where composition scheme is drawed
+        /// </summary>
         public DiagramCanvas Workspace { get { return _Workspace; } }
 
+        /// <summary>
+        /// Settings of assemblies
+        /// </summary>
         public SettingsSection Assemblies { get { return _Assemblies; } }
 
+        /// <summary>
+        /// Log where messages to user are displayed
+        /// </summary>
         public StackPanel Log { get { return _Log; } }
 
         /// <summary>
@@ -125,6 +137,9 @@ namespace Plugin.GUI
             }
         }
 
+        /// <summary>
+        /// Path for host application defined within runtime settings section
+        /// </summary>
         public string HostPath
         {
             set
@@ -132,8 +147,8 @@ namespace Plugin.GUI
                 if (value == "")
                     value = null;
 
+                //check incomming value
                 var hasValue = value != null;
-
                 var hasSamePath = _HostPath.Text == value;
                 var hasSameStatus = _crossInterpretingEnabled == hasValue;
 
@@ -165,12 +180,21 @@ namespace Plugin.GUI
             }
         }
 
+        /// <summary>
+        /// Initializes new instance of editor gui
+        /// </summary>
         public EditorGUI()
         {
             InitializeComponent();
             setVisibleContent(ContentPanel.Workspace);
         }
 
+        #region Display handlinga
+
+        /// <summary>
+        /// Show specified loading message
+        /// </summary>
+        /// <param name="message">Message that will be shown to user</param>
         public void ShowLoadingMessage(string message)
         {
             _Loading.Message.Text = message;
@@ -178,24 +202,56 @@ namespace Plugin.GUI
                 setVisibleContent(ContentPanel.Loading);
         }
 
+        /// <summary>
+        /// Show workspace so it can be visible to user
+        /// </summary>
         public void ShowWorkspace()
         {
             setVisibleContent(ContentPanel.Workspace);
         }
 
+        /// <summary>
+        /// Show given element so it can be visible to user
+        /// </summary>
+        /// <param name="element">Shown element</param>
+        public void ShowElement(FrameworkElement element)
+        {
+            _Element.Children.Clear();
+            _Element.Children.Add(element);
+            element.MaxWidth = _Workspace.ActualWidth;
+            setVisibleContent(ContentPanel.Element);
+        }
+
+        #endregion
+
         #region Basic GUI events handling
 
+        /// <summary>
+        /// GUI event handler for drawing settings changes
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void drawingSettings_Changed(object sender, RoutedEventArgs e)
         {
             if (DrawingSettingsChanged != null)
                 DrawingSettingsChanged();
         }
 
+        /// <summary>
+        /// GUI event handler for switch button
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void switch_Click(object sender, RoutedEventArgs e)
         {
             toggleSettingsVisibility();
         }
 
+        /// <summary>
+        /// GUI event handler refresh button
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void refresh_Click(object sender, RoutedEventArgs e)
         {
             if (!isWorkspaceVisible())
@@ -207,16 +263,31 @@ namespace Plugin.GUI
                 RefreshClicked();
         }
 
+        /// <summary>
+        /// GUI event handler enabling cross interpretation
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void interpretingEnabled_Checked(object sender, RoutedEventArgs e)
         {
             HostPath = _HostPath.Text;
         }
 
+        /// <summary>
+        /// GUI event handler for disabling cross interpretation 
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void interpretingEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
             HostPath = null;
         }
 
+        /// <summary>
+        /// GUI event handler for selecting hosted application path
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void hostPath_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             var dialog = new System.Windows.Forms.OpenFileDialog();
@@ -239,6 +310,11 @@ namespace Plugin.GUI
             }
         }
 
+        /// <summary>
+        /// GUI event handler for expanding log
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void logExpander_Expanded(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource != logsExpander)
@@ -252,6 +328,11 @@ namespace Plugin.GUI
                 LogRefresh();
         }
 
+        /// <summary>
+        /// GUI event handler for collapsing log
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
         private void logExpander_Collapsed(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource != logsExpander)
@@ -267,6 +348,9 @@ namespace Plugin.GUI
 
         #region Content panels switching
 
+        /// <summary>
+        /// Toggle between workspace and settings visiblity
+        /// </summary>
         private void toggleSettingsVisibility()
         {
             var isVisible = isWorkspaceVisible();
@@ -275,16 +359,28 @@ namespace Plugin.GUI
             setVisibleContent(toToggle);
         }
 
+        /// <summary>
+        /// Determine that workspace is visible
+        /// </summary>
+        /// <returns><c>true</c> if workspace is visible, <c>false</c> otherwise</returns>
         private bool isWorkspaceVisible()
         {
             return _Workspace.Visibility == Visibility.Visible;
         }
 
+        /// <summary>
+        /// Determine that loading screen is visible
+        /// </summary>
+        /// <returns><c>true</c> if loading screen is visible, <c>false</c> otherwise</returns>
         private bool isLoadingVisible()
         {
             return _Loading.Visibility == Visibility.Visible;
         }
 
+        /// <summary>
+        /// Set content screen that will be visible
+        /// </summary>
+        /// <param name="panel">Panel of content screen that will be visible</param>
         private void setVisibleContent(ContentPanel panel)
         {
             string settingsButtonText;
@@ -295,20 +391,34 @@ namespace Plugin.GUI
                     _Loading.Visibility = Visibility.Visible;
                     _Workspace.Visibility = Visibility.Hidden;
                     _Settings.Visibility = Visibility.Hidden;
+                    _Element.Visibility = Visibility.Hidden;
                     settingsButtonText = null;
                     break;
+
                 case ContentPanel.Settings:
                     _Loading.Visibility = Visibility.Hidden;
                     _Settings.Visibility = Visibility.Visible;
                     _Workspace.Visibility = Visibility.Hidden;
+                    _Element.Visibility = Visibility.Hidden;
                     settingsButtonText = "Workspace";
                     break;
+
                 case ContentPanel.Workspace:
                     _Loading.Visibility = Visibility.Hidden;
                     _Settings.Visibility = Visibility.Hidden;
                     _Workspace.Visibility = Visibility.Visible;
+                    _Element.Visibility = Visibility.Hidden;
                     settingsButtonText = "Settings";
                     break;
+
+                case ContentPanel.Element:
+                    _Loading.Visibility = Visibility.Hidden;
+                    _Settings.Visibility = Visibility.Hidden;
+                    _Workspace.Visibility = Visibility.Hidden;
+                    _Element.Visibility = Visibility.Visible;
+                    settingsButtonText = "Settings";
+                    break;
+                    
                 default:
                     throw new NotImplementedException("Unsupported content panel" + panel);
             }
@@ -316,6 +426,7 @@ namespace Plugin.GUI
             if (settingsButtonText == null)
             {
                 ScreenSwitchButton.IsEnabled = false;
+                RefreshButton.IsEnabled = false;
             }
             else
             {
@@ -324,6 +435,7 @@ namespace Plugin.GUI
 
                 ScreenSwitchButton.Content = switchCaption;
                 ScreenSwitchButton.IsEnabled = true;
+                RefreshButton.IsEnabled = true;
             }
         }
 

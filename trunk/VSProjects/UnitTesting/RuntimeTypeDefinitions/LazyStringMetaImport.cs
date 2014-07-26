@@ -22,7 +22,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             builder.AddPropertyImport(TypeDescriptor.Create("System.Lazy<System.String,MetaInterface>"), "Import");
             builder.SetImportingCtor();
 
-            ComponentInfo = builder.BuildInfo();
+            ComponentInfo = builder.BuildWithImplicitCtor();
         }
 
         public void _method_ctor()

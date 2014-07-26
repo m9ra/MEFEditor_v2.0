@@ -25,6 +25,7 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
     {
         private static readonly Type[] directTypes = new Type[]{
             typeof(string),
+            typeof(CILInstruction),
             typeof(VMStack),
             typeof(LiteralType)
         };

@@ -22,7 +22,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             var builder = new ComponentInfoBuilder(GetTypeInfo());
             builder.AddPropertyExport(TypeDescriptor.Create<string>(), "Export");
             builder.SetImportingCtor(TypeDescriptor.Create<string>());            
-            ComponentInfo = builder.BuildInfo();
+            ComponentInfo = builder.BuildWithImplicitCtor();
         }
 
         public void _method_ctor(string toExport)

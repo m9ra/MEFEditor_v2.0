@@ -202,16 +202,11 @@ namespace Analyzing
         /// <param name="context">Properly initialized context</param>        
         private void runContext(AnalyzingContext context)
         {
-            var executionLimit = Settings.ExecutionLimit;
-
+            var initialLimit=Settings.ExecutionLimit;
+            var executionLimit = initialLimit;
             //interpretation processing
             while (!context.IsExecutionEnd)
             {
-                //limit execution
-                --executionLimit;
-                if (executionLimit < 0)
-                    throw new NotSupportedException("Execution limit has been reached");
-
                 //process instruction
                 var instruction = context.NextInstruction();
                 if (instruction == null)
@@ -219,8 +214,22 @@ namespace Analyzing
                     break;
                 }
 
+                if (executionLimit == initialLimit)
+                {
+                    //set initial block for argument instances
+                    foreach (var instance in _createdInstances)
+                    {
+                        instance.Value.CreationBlock = context.CurrentCall.CurrentBlock;
+                    }
+                }
+
                 context.Prepare(instruction);
                 instruction.Execute(context);
+
+                //limit execution
+                --executionLimit;
+                if (executionLimit < 0)
+                    throw new NotSupportedException("Execution limit has been reached");
             }
         }
 

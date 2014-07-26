@@ -568,6 +568,10 @@ namespace MEFEditor.Plugin.Main
             _vs.Log.Entry(entry);
         }
 
+        /// <summary>
+        /// Try to show progress of given <see cref="Transaction"/>
+        /// </summary>
+        /// <param name="transaction">Transaction which progress can be shown</param>
         private void tryShowProgress(Transaction transaction)
         {
             if (!_showProgress)
@@ -671,6 +675,10 @@ namespace MEFEditor.Plugin.Main
             _loader.UnloadAssemblies();
         }
 
+        /// <summary>
+        /// Set visibility of progress informing.
+        /// </summary>
+        /// <param name="isShown">Determine that progress will be shown or not</param>
         private void setProgressVisibility(bool isShown)
         {
             if (isShown)

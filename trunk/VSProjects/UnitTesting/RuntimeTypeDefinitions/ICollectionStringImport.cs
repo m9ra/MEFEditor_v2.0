@@ -20,7 +20,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
             var builder = new ComponentInfoBuilder(GetTypeInfo());
             builder.AddManyImport(TypeDescriptor.Create<List<string>>(), TypeDescriptor.Create<string>(), "Import");
-            ComponentInfo = builder.BuildInfo();
+            ComponentInfo = builder.BuildWithImplicitCtor();
         }
 
         public void _method_ctor()

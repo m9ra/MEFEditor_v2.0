@@ -29,8 +29,7 @@ namespace MEFAnalyzers.Drawings
 
             if (instance.WrappedInstance.IsEntryInstance)
             {
-                //instance that was pasted on analysis start
-                instance.SetProperty("EntryInstance", "");
+                handleEntryInstance(instance);
             }
 
             foreach (var export in info.Exports)
@@ -70,12 +69,30 @@ namespace MEFAnalyzers.Drawings
             }
         }
 
+        private static void handleEntryInstance(DrawedInstance instance)
+        {
+            //instance that was pasted on analysis start
+            instance.SetProperty("EntryInstance", "");
+            var wrappedInstance = instance.WrappedInstance;
+            var creationBlock = wrappedInstance.CreationBlock;
+            if (creationBlock == null)
+                return;
+
+            var firstBlockInfo = creationBlock.FirstBlock.Info;
+            if (firstBlockInfo != null && firstBlockInfo.BlockTransformProvider != null)
+            {
+                var navigation = firstBlockInfo.BlockTransformProvider.GetNavigation();
+                if (navigation != null)
+                    instance.Drawing.AddCommand(new CommandDefinition("Navigate to", () => navigation()));
+            }
+        }
+
         private static void setMetaProperties(ConnectorDefinition connector, string propertyPrefix, MetaExport meta)
         {
             foreach (var key in meta.ExportedKeys)
             {
                 var item = meta.GetItem(key);
-                var index=1;
+                var index = 1;
                 foreach (var value in item.Data)
                 {
                     var propertyName = propertyPrefix + index + "-" + item.Key;

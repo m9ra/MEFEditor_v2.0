@@ -26,6 +26,7 @@ namespace RecommendedExtensions.TypeDefinitions
             //.NET Essentials
             exportTypes(new[]{
                 typeof(object),
+                typeof(CILInstruction),
                 typeof(VMStack),
                 typeof(LiteralType),
                 typeof(Lazy<>),

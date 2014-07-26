@@ -301,7 +301,7 @@ namespace AssemblyProviders.CILAssembly
             reportComponentFields(componentType, infoBuilder);
             reportComponentProperties(componentType, infoBuilder);
 
-            return infoBuilder.BuildInfo();
+            return infoBuilder.Build();
         }
 
         /// <summary>

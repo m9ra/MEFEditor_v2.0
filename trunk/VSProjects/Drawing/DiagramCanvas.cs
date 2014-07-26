@@ -13,13 +13,26 @@ using System.ComponentModel;
 
 namespace Drawing
 {
+    /// <summary>
+    /// <see cref="Canvas"/> specialization for providing services of MEFEditor.Drawing library.
+    /// It is root of displayed diagram.
+    /// </summary>
     public class DiagramCanvas : DiagramCanvasBase
     {
+        /// <summary>
+        /// Scale transformation used for zooming
+        /// </summary>
         private readonly ScaleTransform _scale = new ScaleTransform();
 
+        /// <summary>
+        /// Shift <see cref="Vector"/> used for content shifting
+        /// </summary>
         private Vector _shift;
 
-
+        /// <summary>
+        /// Set or get vector that determine shifting of content 
+        /// displayed on <see cref="DiagramCanvas"/>
+        /// </summary>
         public Vector Shift
         {
             get
@@ -37,6 +50,9 @@ namespace Drawing
             }
         }
 
+        /// <summary>
+        /// Zoom of displayed content
+        /// </summary>
         public double Zoom
         {
             get
@@ -56,13 +72,27 @@ namespace Drawing
             }
         }
 
-       protected override Size ArrangeOverride(Size arrangeSize)
+        /// <summary>
+        /// Clear displayed content
+        /// </summary>
+        public void Clear()
         {
-    /*        if (DiagramContext != null)
-            {
-                DiagramContext.Provider.Engine.ArrangeChildren(OwnerItem, this);
-            }*/
+            Children.Clear();
+            ContextMenu = null;
+        }
 
+        /// <summary>
+        /// Reset content transformations
+        /// </summary>
+        public void Reset()
+        {
+            Shift = new Vector(0, 0);
+            Zoom = 1;
+        }
+
+        /// <inheritdoc />
+        protected override Size ArrangeOverride(Size arrangeSize)
+        {
             foreach (FrameworkElement child in Children)
             {
                 child.RenderTransform = _scale;
@@ -78,16 +108,5 @@ namespace Drawing
             return arrangeSize;
         }
 
-        public void Clear()
-        {
-            Children.Clear();
-            ContextMenu = null;
-        }
-
-        public void Reset()
-        {
-            Shift = new Vector(0, 0);
-            Zoom = 1;
-        }
     }
 }

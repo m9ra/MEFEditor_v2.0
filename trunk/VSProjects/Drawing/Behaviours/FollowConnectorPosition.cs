@@ -11,24 +11,35 @@ using System.Windows.Controls;
 
 namespace Drawing.Behaviours
 {
-    class FollowConnectorPosition
+    /// <summary>
+    /// Handler for connector move events
+    /// </summary>
+    /// <param name="connector">Connector that has been moved</param>
+    delegate void OnConnectorMove(ConnectorDrawing connector);
+
+    /// <summary>
+    /// Definition of connector's following behaviour
+    /// </summary>
+    internal class FollowConnectorPosition
     {
-        internal static void Attach(ConnectorDrawing connector, DisplayEngine engine, OnConnectorMove move)
+        /// <summary>
+        /// Attach behaviour to given connector
+        /// </summary>
+        /// <param name="connector">Attached connector</param>
+        /// <param name="engine">Engine using attached behaviour</param>
+        /// <param name="moveHandler">Handler used for move events</param>
+        internal static void Attach(ConnectorDrawing connector, DisplayEngine engine, OnConnectorMove moveHandler)
         {
             var item = connector.OwningItem;
-        /*    UpdateGlobalPosition.GlobalPositionChange.AddValueChanged(item, (e, args) =>
-            {
-                move(connector);
-            });*/
 
             UpdateGlobalPosition.WidthChange.AddValueChanged(item, (e, args) =>
             {
-                move(connector);
+                moveHandler(connector);
             });
 
             UpdateGlobalPosition.HeightChange.AddValueChanged(item, (e, args) =>
             {
-                move(connector);
+                moveHandler(connector);
             });
         }
     }

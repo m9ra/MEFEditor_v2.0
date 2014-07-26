@@ -22,6 +22,9 @@ namespace Utilities
 
         public static IEnumerable<string> Filter(IEnumerable<string> files, string pattern)
         {
+            if (pattern == null || files == null)
+                yield break;
+
             var regex = PatternToRegex(pattern);
 
             foreach (var file in files)

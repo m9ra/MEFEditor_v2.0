@@ -476,7 +476,8 @@ namespace Drawing.ArrangeEngine
         private GraphPoint[] getInputSlots(int connectorIndex, int connectorsCount, ConnectorDrawing connector, DiagramItem item, List<GraphPoint> contactPoints)
         {
             var connectorAlign = connector.Align;
-            var tightItemSpan = new Rect(item.GlobalPosition, item.DesiredSize);
+
+            var span = _navigator.GetSpan(item);
 
             //find positions of slots for inputs according to connector align
             Point slot1End, slot1Start;
@@ -496,8 +497,8 @@ namespace Drawing.ArrangeEngine
                     slot2Contact = contactPoints[3];
                     slot1View = TopLeftCorner;
                     slot2View = TopRightCorner;
-                    slot1End = tightItemSpan.TopLeft;
-                    slot2End = tightItemSpan.TopRight;
+                    slot1End = span.TopLeft;
+                    slot2End = span.TopRight;
                     slot1Start = new Point(slot1End.X, slot1End.Y + item.TopConnectors.DesiredSize.Height);
                     break;
 
@@ -506,8 +507,8 @@ namespace Drawing.ArrangeEngine
                     slot2Contact = contactPoints[1];
                     slot1View = BottomLeftCorner;
                     slot2View = BottomRightCorner;
-                    slot1End = tightItemSpan.BottomLeft;
-                    slot2End = tightItemSpan.BottomRight;
+                    slot1End = span.BottomLeft;
+                    slot2End = span.BottomRight;
                     slot1Start = new Point(slot1End.X, slot1End.Y - item.BottomConnectors.DesiredSize.Height);
                     break;
 
@@ -516,8 +517,8 @@ namespace Drawing.ArrangeEngine
                     slot2Contact = contactPoints[3];
                     slot1View = TopLeftCorner;
                     slot2View = BottomLeftCorner;
-                    slot1End = tightItemSpan.TopLeft;
-                    slot2End = tightItemSpan.BottomLeft;
+                    slot1End = span.TopLeft;
+                    slot2End = span.BottomLeft;
                     slot1Start = new Point(slot1End.X + item.LeftConnectors.DesiredSize.Width, slot1End.Y);
                     break;
 
@@ -526,8 +527,8 @@ namespace Drawing.ArrangeEngine
                     slot2Contact = contactPoints[2];
                     slot1View = TopRightCorner;
                     slot2View = BottomRightCorner;
-                    slot1End = tightItemSpan.TopRight;
-                    slot2End = tightItemSpan.BottomRight;
+                    slot1End = span.TopRight;
+                    slot2End = span.BottomRight;
                     slot1Start = new Point(slot1End.X - item.RightConnectors.DesiredSize.Width, slot1End.Y);
                     break;
 

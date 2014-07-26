@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Drawing;
 using Analyzing;
+using Analyzing.Execution;
 
 using TypeSystem.Core;
 
@@ -29,6 +30,11 @@ namespace TypeSystem
         private readonly Dictionary<Instance, GeneratorBase> _overridingGenerators = new Dictionary<Instance, GeneratorBase>();
 
         /// <summary>
+        /// Generator used for handling calls on null value
+        /// </summary>
+        private readonly DirectGenerator _nullCallHandler;
+
+        /// <summary>
         /// Services available
         /// </summary>
         public readonly AppDomainServices AppDomain;
@@ -42,12 +48,15 @@ namespace TypeSystem
         {
             _manager = new AssembliesManager(this, settings);
             _assemblyFactories = factories.ToArray();
+            _nullCallHandler = new DirectGenerator(nullCallHandler);
 
             AppDomain = new AppDomainServices(_manager);
+
 
             //register cleaning of overriding generators
             Settings.BeforeInterpretation += () => _overridingGenerators.Clear();
         }
+
         #region Public API
 
         /// <summary>
@@ -117,8 +126,14 @@ namespace TypeSystem
             if (argumentValues.Length == 0)
                 return null;
 
+            var thisArgument = argumentValues[0];
+
             GeneratorBase generator;
-            _overridingGenerators.TryGetValue(argumentValues[0], out generator);
+            _overridingGenerators.TryGetValue(thisArgument, out generator);
+
+            if (thisArgument.Info.TypeName == Runtime.Null.TypeInfo.TypeName)
+                return _nullCallHandler;
+
             return generator;
         }
 
@@ -164,6 +179,32 @@ namespace TypeSystem
 
         #endregion
 
+        #region Private utilities
 
+        /// <summary>
+        /// Handler called whenever call on null instance is detected.
+        /// </summary>
+        /// <param name="context">Context used during analysis</param>
+        private void nullCallHandler(AnalyzingContext context)
+        {
+            AppDomain.Log("WARNING", "Call on null instance detected: " + context.CurrentCall.Name);
+
+            foreach (var argument in context.CurrentArguments.Skip(1))
+            {
+                if (argument.IsDirty)
+                    continue;
+
+                if (Settings.IsDirect(argument.Info))
+                    continue;
+
+                if (argument.Info.TypeName == Runtime.Null.TypeInfo.TypeName)
+                    continue;
+
+                context.SetDirty(argument);
+                AppDomain.Log("WARNING", "Setting dirty flag for {0}", argument);
+            }
+        }
+
+        #endregion
     }
 }

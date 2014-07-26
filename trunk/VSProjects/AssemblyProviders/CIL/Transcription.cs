@@ -42,11 +42,16 @@ namespace AssemblyProviders.CIL
         /// Push method of stack
         /// </summary>
         internal static readonly MethodID Stack_push = Naming.Method<VMStack>("Push", typeof(object));
-
+        
         /// <summary>
         /// Pop method of stack
         /// </summary>
         internal static readonly MethodID Stack_pop = Naming.Method<VMStack>("Pop");
+
+        /// <summary>
+        /// Fake method of stack
+        /// </summary>
+        internal static readonly MethodID Stack_fakeInstruction = Naming.Method<VMStack>("Fake");
 
         /// <summary>
         /// Pop array size and Push new array on the stack
@@ -62,6 +67,7 @@ namespace AssemblyProviders.CIL
         /// Load the element at index onto the top of the stack.
         /// </summary>
         internal static readonly MethodID Stack_ldelem = Naming.Method<VMStack>("LdElem");
+
         /// <summary>
         /// Duplicate the value on the top of the stack.
         /// </summary>
@@ -225,8 +231,8 @@ namespace AssemblyProviders.CIL
         /// </summary>
         static void unknwonInstruction()
         {
-            //TODO handle stack behaviour with setting dirty
-            E.AssignLiteral(LocalTmpVar, "NotImplemented instruction: " + Name);
+            emitPush<CILInstruction>(Instruction);
+            stackCall(Stack_fakeInstruction);
         }
 
         static void _nop()
@@ -254,8 +260,6 @@ namespace AssemblyProviders.CIL
             var argNumber = getArgNumber(Name);
 
             emitPushArg(argNumber);
-            //getArgVar(Name);
-            //throw new NotImplementedException();
         }
 
         static void _newobj()
@@ -306,6 +310,7 @@ namespace AssemblyProviders.CIL
             var literalType = new CSharp.LiteralType(type);
             emitPush<CSharp.LiteralType>(literalType);
         }
+        
 
         static void _dup()
         {

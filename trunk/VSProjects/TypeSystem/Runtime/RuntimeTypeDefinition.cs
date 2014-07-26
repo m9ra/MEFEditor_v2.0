@@ -292,7 +292,7 @@ namespace TypeSystem.Runtime
                         var callValue = context.GetValue(new VariableName(callReturn));
                         var unwrapped = Unwrap<TResult>(callValue);
 
-                        context.ShareEdits(edits);
+                        context.InjectEdits(edits);
                         Invoke(context, (c) => callback(unwrapped));
                     });
                 }

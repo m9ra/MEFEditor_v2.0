@@ -77,6 +77,16 @@ namespace Interoperability
             Description = description;
             Navigate = navigate;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            var result = string.Format("[{0}]{1}{2}", Level, Environment.NewLine, Message);
+            if (Description != null)
+                result += Environment.NewLine + Environment.NewLine + Description;
+
+            return result;
+        }
     }
 
 

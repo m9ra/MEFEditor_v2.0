@@ -149,12 +149,18 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         {
             var methods = new List<MethodItem>();
             var path = PathInfo.Append(_currentPath, searchedName);
+            
+            //test if we have constraionts on name
+            var returnAll = searchedName == null;
+            if (returnAll)
+                //HACK because of retrieving getters
+                path = PathInfo.Append(path, Naming.GetterPrefix);
 
             var nodes = getActualNodes();
             foreach (CodeElement child in nodes)
             {
                 var method = MethodBuilder.Build(child, path.LastPart, _assembly);
-                if (method == null || method.Info.MethodName != searchedName)
+                if (method == null || (method.Info.MethodName != searchedName && !returnAll))
                     //not everything could be filtered by CodeFunction testing
                     continue;
 
@@ -174,13 +180,13 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                     if (classNode == null)
                         continue;
 
-                    if (searchedName == Naming.CtorName)
+                    if (searchedName == Naming.CtorName || returnAll )
                     {
                         //get implicit ctor of class (we can create it, 
                         //because there is no other ctor)
                         methods.Add(MethodBuilder.BuildImplicitCtor(classNode, _assembly));
                     }
-                    else if (searchedName == Naming.ClassCtorName)
+                    else if (searchedName == Naming.ClassCtorName || returnAll)
                     {
                         //get implicit cctor of class (we can create it,
                         //because there is no other cctor)

@@ -23,7 +23,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
             var manyInfo = TypeDescriptor.Create<string[]>();
 
             builder.AddManyImport(manyInfo, stringInfo, "Import");
-            ComponentInfo = builder.BuildInfo();
+            ComponentInfo = builder.BuildWithImplicitCtor();
         }
 
         public void _method_ctor()

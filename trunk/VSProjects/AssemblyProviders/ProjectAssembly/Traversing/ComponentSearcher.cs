@@ -70,14 +70,20 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
                 //component has been found
                 var componentBuilder = _builtComponents[e];
 
-                //check componts implicit composition point
+                if (!componentBuilder.HasImportingCtor)
+                {
+                    if (hasParamLessConstructor(e))
+                        componentBuilder.AddImplicitImportingConstructor();
+                }
+
+                //check componet's implicit composition point
                 if (!componentBuilder.HasCompositionPoint)
                 {
-                    if (couldHaveImplicitCompositionPoint(e))
+                    if (hasParamLessConstructor(e))
                         componentBuilder.AddImplicitCompositionPoint();
                 }
 
-                var componentInfo = componentBuilder.BuildInfo();
+                var componentInfo = componentBuilder.Build();
                 OnComponentFound(componentInfo);
             }
         }
@@ -475,16 +481,15 @@ namespace AssemblyProviders.ProjectAssembly.Traversing
         }
 
         /// <summary>
-        /// Determine that given component class satisfies requirements for having implicit
-        /// composition point
+        /// Determine that given class has parameter less constructor (implicit or not)
         /// </summary>
-        /// <param name="componentClass">Class to be tested</param>
-        /// <returns><c>true</c> if component class should have implicit composition point, <c>false</c> otherwise</returns>
-        private bool couldHaveImplicitCompositionPoint(CodeClass2 componentClass)
+        /// <param name="element">Class element to be tested</param>
+        /// <returns><c>true</c> if class has parameter less constructor, <c>false</c> otherwise</returns>
+        private bool hasParamLessConstructor(CodeClass2 element)
         {
             var hasImplicitParamLessCtor = true;
 
-            foreach (var member in componentClass.Members)
+            foreach (var member in element.Members)
             {
                 var function = member as CodeFunction;
                 if (function == null)

@@ -19,30 +19,66 @@ using Drawing.ArrangeEngine;
 
 namespace Drawing
 {
-    delegate void OnConnectorMove(ConnectorDrawing connector);
-
-    class DisplayEngine
+    /// <summary>
+    /// Implements main logic of diagram display, positioning and arranging.
+    /// Provides also interaction logic and behaviours attaching.
+    /// </summary>
+    internal class DisplayEngine
     {
+        /// <summary>
+        /// Displayed items according to thier references
+        /// </summary>
         private readonly MultiDictionary<string, DiagramItem> _items = new MultiDictionary<string, DiagramItem>();
 
+        /// <summary>
+        /// Old positions that are remembered for next drawing
+        /// </summary>
         private readonly Dictionary<string, Dictionary<string, Point>> _oldPositions = new Dictionary<string, Dictionary<string, Point>>();
 
+        /// <summary>
+        /// Items that are displayed directly in root diagram canvas
+        /// </summary>
         private readonly List<DiagramItem> _rootItems = new List<DiagramItem>();
 
+        /// <summary>
+        /// All displayed joins
+        /// </summary>
         private readonly List<JoinDrawing> _joins = new List<JoinDrawing>();
 
+        /// <summary>
+        /// Group used for ordering behaviour
+        /// </summary>
         private ElementGroup _orderingGroup = new ElementGroup();
 
+        /// <summary>
+        /// Cursor used for positioning root items
+        /// </summary>
         private PositionCursor _rootCursor;
 
+        /// <summary>
+        /// <see cref="DiagramCanvas"/> where output is displayed
+        /// </summary>
         internal readonly DiagramCanvas Output;
 
+        /// <summary>
+        /// Navigator that is used for item and join collision avoidance
+        /// </summary>
         internal SceneNavigator Navigator { get; private set; }
 
+        /// <summary>
+        /// Items that are currently displayed
+        /// </summary>
         internal IEnumerable<DiagramItem> Items { get { return _items.Values; } }
 
+        /// <summary>
+        /// Joins that are currently displayed
+        /// </summary>
         internal IEnumerable<JoinDrawing> Joins { get { return _joins; } }
 
+        /// <summary>
+        /// Initialize new instance of displaying engine
+        /// </summary>
+        /// <param name="output">Output where drawings will be displayed</param>
         internal DisplayEngine(DiagramCanvas output)
         {
             Output = output;
@@ -51,9 +87,12 @@ namespace Drawing
             ContentZoomable.Attach(Output);
         }
 
-        #region Public API
+        #region Display control
 
-        public void Display()
+        /// <summary>
+        /// Display all registered root items
+        /// </summary>
+        internal void Display()
         {
             _rootCursor = null;
 
@@ -63,7 +102,10 @@ namespace Drawing
             }
         }
 
-        public void Clear()
+        /// <summary>
+        /// Clear all displayed items
+        /// </summary>
+        internal void Clear()
         {
             //keep old positions
             foreach (var item in _items.Values)
@@ -85,20 +127,25 @@ namespace Drawing
         #region Display building methods
 
         /// <summary>
-        /// Clear old positions of items
+        /// Clear old positions of items. It causes
+        /// forgetting of their positions in next display.
         /// </summary>
         internal void ClearOldPositions()
         {
             _oldPositions.Clear();
         }
 
+        /// <summary>
+        /// Register item to be displayed after next <see cref="Display"/> call
+        /// </summary>
+        /// <param name="item">Registered item</param>
         internal void RegisterItem(DiagramItem item)
         {
+            //attach items behaviours
             ItemHighlighting.Attach(item);
             ZOrdering.Attach(item, _orderingGroup);
             DragAndDrop.Attach(item, GetPosition, SetPosition);
             UpdateGlobalPosition.Attach(item);
-
 
             _items.Add(item.Definition.ID, item);
 
@@ -106,6 +153,12 @@ namespace Drawing
                 _rootItems.Add(item);
         }
 
+        /// <summary>
+        /// Add join into <see cref="Output"/>
+        /// </summary>
+        /// <param name="join">Added join</param>
+        /// <param name="fromItem">Owner of join start connector</param>
+        /// <param name="toItem">Owner of join end connector</param>
         internal void AddJoin(JoinDrawing join, DiagramItem fromItem, DiagramItem toItem)
         {
             var from = fromItem.GetConnector(join.Definition.From);
@@ -129,34 +182,49 @@ namespace Drawing
 
         #endregion
 
-        #region Services for item states discovering
+        #region Services for item states manipulation
 
+        /// <summary>
+        /// Set position of given item
+        /// </summary>
+        /// <param name="item">Positioned item</param>
+        /// <param name="position">Position of item</param>
         internal void SetPosition(FrameworkElement item, Point position)
         {
             DiagramCanvasBase.SetPosition(item, position);
         }
 
+        /// <summary>
+        /// Get position of given item
+        /// </summary>
+        /// <param name="item">Item which position is returned</param>
+        /// <returns>Item's position</returns>
         internal Point GetPosition(FrameworkElement item)
         {
             return DiagramCanvasBase.GetPosition(item);
         }
 
         /// <summary>
-        /// DiagramItem contexts containing drawing for given connector definition
+        /// Get <see cref="DiagramItem"/> that are referenced by given <see cref="ConnectorDefinition"/>
         /// </summary>
-        /// <param name="connectorDefinition"></param>
-        /// <returns></returns>
+        /// <param name="connectorDefinition">Definition of connector</param>
+        /// <returns>Referenced <see cref="DiagramItem"/> objects</returns>
         internal IEnumerable<DiagramItem> DefiningItems(ConnectorDefinition connectorDefinition)
         {
             return _items.Get(connectorDefinition.Reference.DefinitionID);
         }
 
+        /// <summary>
+        /// Hint position of <see cref="DiagramItem"/> so it can be displayed
+        /// on hinted position in next redraw.
+        /// </summary>
+        /// <param name="hintContext">Context item of hint</param>
+        /// <param name="hintedItem">Item that's position is hinted</param>
+        /// <param name="point">Hinted position</param>
         internal void HintPosition(DiagramItem hintContext, DiagramItem hintedItem, Point point)
         {
             saveOldPosition(hintContext, hintedItem, point);
         }
-
-        #endregion
 
         /// <summary>
         /// Arrange children of given owner according to Arrange algorithm
@@ -179,14 +247,23 @@ namespace Drawing
             //create navigator after items are positioned
             Navigator = new SceneNavigator(Items);
 
-            var borders = getChildrenBorders(container, children);
+            var borders = getChildrenBorders(children);
 
             refreshJoinPaths();
 
             return borders;
         }
 
-        private Size getChildrenBorders(DiagramCanvasBase container, IEnumerable<DiagramItem> children)
+        #endregion
+
+        #region Private utilities
+
+        /// <summary>
+        /// Get borders where all children can be present
+        /// </summary>
+        /// <param name="children">Children which borders are computed</param>
+        /// <returns>Computed borders</returns>
+        private Size getChildrenBorders(IEnumerable<DiagramItem> children)
         {
             var maxX = 0.0;
             var maxY = 0.0;
@@ -254,77 +331,15 @@ namespace Drawing
         }
 
         /// <summary>
-        /// Check position according to borders of given element within given container
+        /// Set initial positions of given children
         /// </summary>
-        /// <param name="element">Element which position is checked</param>
-        /// <param name="container">Container which borders are used for position check</param>
-        private void checkBorders(FrameworkElement element, DiagramCanvasBase container)
+        /// <param name="parent">Parent of children</param>
+        /// <param name="container">Container where children are displayed</param>
+        /// <param name="children">Children which positions will be initialized</param>
+        private void setInitialPositions(DiagramItem parent, DiagramCanvasBase container, IEnumerable<DiagramItem> children)
         {
-            var position = GetPosition(element);
-            var update = false;
-
-
-            var contMargin = container.Margin;
-
-            var containerHeight = container.DesiredSize.Height - contMargin.Bottom - contMargin.Top;
-            var containerWidth = container.DesiredSize.Width - contMargin.Left - contMargin.Right;
-
-            var elHeight = element.DesiredSize.Height;
-            var elWidth = element.DesiredSize.Width;
-
-
-            if (position.X + elWidth > containerWidth)
-            {
-                update = true;
-                position.X = containerWidth - elWidth;
-            }
-
-            if (position.Y + elHeight > containerHeight)
-            {
-                update = true;
-                position.Y = containerHeight - elHeight;
-            }
-
-            if (position.X < 0)
-            {
-                update = true;
-                position.X = 0;
-            }
-
-            if (position.Y < 0)
-            {
-                update = true;
-                position.Y = 0;
-            }
-
-            if (update)
-                SetPosition(element, position);
-        }
-
-        private void updateCrossedLines(DiagramItem item)
-        {
-            foreach (var join in _joins)
-            {
-                if (join.PointPathArray.Length == 0)
-                    continue;
-
-                var from = join.PointPathArray[0];
-                for (int i = 1; i < join.PointPathArray.Length; ++i)
-                {
-                    var to = join.PointPathArray[1];
-
-                    //TODO: check crossing between from-to line
-                    from = to;
-                }
-            }
-        }
-
-        #region Positioning routines
-
-        private void setInitialPositions(DiagramItem owner, DiagramCanvasBase container, IEnumerable<DiagramItem> children)
-        {
-            var isRoot = owner == null;
-            var lastCursor = isRoot ? _rootCursor : owner.PositionCursor;
+            var isRoot = parent == null;
+            var lastCursor = isRoot ? _rootCursor : parent.PositionCursor;
 
             var needsInitialPositions = lastCursor == null;
             if (needsInitialPositions)
@@ -342,7 +357,7 @@ namespace Drawing
                 else
                 {
                     //owner should keep their cursors
-                    owner.PositionCursor = cursor;
+                    parent.PositionCursor = cursor;
                     lastLayoutSize = container.DesiredSize;
                 }
 

@@ -81,6 +81,11 @@ namespace TypeSystem
         public bool HasCompositionPoint { get { return _explicitCompositionPoints.Count > 0 || _implicitCompositionPoint != null; } }
 
         /// <summary>
+        /// Determine that component has importing constructor
+        /// </summary>
+        public bool HasImportingCtor { get { return _importingCtor != null; } }
+
+        /// <summary>
         /// Create ComponentInfoBuilder
         /// </summary>
         /// <param name="componentType">Type of component that is builded</param>
@@ -254,6 +259,16 @@ namespace TypeSystem
         }
 
         /// <summary>
+        /// Add Implicit importing constructor of component.
+        /// </summary>
+        public void AddImplicitImportingConstructor()
+        {
+            if (_importingCtor != null)
+                return;
+            _importingCtor = getComponentParamLessCtorID();
+        }
+
+        /// <summary>
         /// Add Implicit composition point of component.
         /// </summary>
         public void AddImplicitCompositionPoint()
@@ -262,10 +277,10 @@ namespace TypeSystem
         }
 
         /// <summary>
-        /// Build collected info into ComponentInfo
-        /// </summary>
+        /// Build collected info into ComponentInfo with implicit ctor if required
+        /// </summary>        
         /// <returns>Created ComponentInfo</returns>
-        public ComponentInfo BuildInfo()
+        public ComponentInfo BuildWithImplicitCtor()
         {
             if (_importingCtor == null)
             {
@@ -273,6 +288,15 @@ namespace TypeSystem
                 _importingCtor = getComponentParamLessCtorID();
             }
 
+            return Build();
+        }
+
+        /// <summary>
+        /// Build collected info into ComponentInfo
+        /// </summary>        
+        /// <returns>Created ComponentInfo</returns>
+        public ComponentInfo Build()
+        {
             var compositionPoints = new List<CompositionPoint>(_explicitCompositionPoints);
             if (_implicitCompositionPoint != null)
             {
@@ -334,6 +358,5 @@ namespace TypeSystem
         }
 
         #endregion
-
     }
 }

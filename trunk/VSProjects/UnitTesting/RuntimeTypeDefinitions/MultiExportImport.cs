@@ -29,7 +29,7 @@ namespace UnitTesting.RuntimeTypeDefinitions
 
             builder.AddSelfExport(FullName);
             builder.AddSelfExport(FullName);
-            ComponentInfo = builder.BuildInfo();
+            ComponentInfo = builder.BuildWithImplicitCtor();
         }
 
         public void _method_ctor()

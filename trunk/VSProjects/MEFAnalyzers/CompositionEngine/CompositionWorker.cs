@@ -38,7 +38,6 @@ namespace MEFAnalyzers.CompositionEngine
         /// </summary>
         MultiDictionary<JoinPoint, JoinPoint> _storage = new MultiDictionary<JoinPoint, JoinPoint>();
 
-
         /// <summary>
         /// Create composition worker which compose given instances.
         /// </summary>

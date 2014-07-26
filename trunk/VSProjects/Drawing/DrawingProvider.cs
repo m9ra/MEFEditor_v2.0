@@ -10,7 +10,7 @@ using System.Windows.Controls;
 namespace Drawing
 {
     /// <summary>
-    /// Provider of drawing services
+    /// Provider of drawing services. It is entry point of MEFEditor.Drawing library API.
     /// </summary>
     public class DrawingProvider
     {
@@ -45,6 +45,8 @@ namespace Drawing
             _diagramFactory = diagramFactory;
         }
 
+        #region Display handling
+
         /// <summary>
         /// Display diagram specified by given definition
         /// </summary>
@@ -72,30 +74,7 @@ namespace Drawing
 
             return context;
         }
-
-        void menu_ContextMenuOpening(ContextMenu menu, DiagramContext context)
-        {
-            foreach (MenuItem item in menu.Items)
-            {
-                var provider = item.Tag as EditsMenuProvider;
-                if (provider == null)
-                    continue;
-
-                item.Items.Clear();
-
-                //create edits
-                var edits = provider();
-                if (edits == null)
-                    continue;
-
-                foreach (var edit in edits)
-                {
-                    var editItem = createEditItem(edit, context);
-                    item.Items.Add(editItem);
-                }
-            }
-        }
-
+                
         /// <summary>
         /// Reset positions of diagram items
         /// </summary>
@@ -114,6 +93,9 @@ namespace Drawing
         {
             Display(_currentDiagram);
         }
+        #endregion
+
+        #region Drawing utilities
 
         /// <summary>
         /// Initialize drawing of given item according to its definition
@@ -141,8 +123,6 @@ namespace Drawing
 
             Engine.RegisterItem(item);
         }
-
-        #region Private utilities
 
         /// <summary>
         /// Create context menu according to edits and commands in given definition
@@ -186,6 +166,12 @@ namespace Drawing
             return menu;
         }
 
+        /// <summary>
+        /// Create <see cref="MenuItem"/> representing given edit
+        /// </summary>
+        /// <param name="edit">Represented edit</param>
+        /// <param name="context">Context of edit</param>
+        /// <returns>Created <see cref="MenuItem"/></returns>
         private static MenuItem createEditItem(EditDefinition edit, DiagramContext context)
         {
             var item = new MenuItem();
@@ -221,6 +207,35 @@ namespace Drawing
                         var join = _diagramFactory.CreateJoin(joinDefinition, context);
                         Engine.AddJoin(join, from, to);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// GUI event handler for opening context menu. It computes 
+        /// currently displayed menu items.
+        /// </summary>
+        /// <param name="sender">Sender of event</param>
+        /// <param name="e">Event object</param>
+        private void menu_ContextMenuOpening(ContextMenu menu, DiagramContext context)
+        {
+            foreach (MenuItem item in menu.Items)
+            {
+                var provider = item.Tag as EditsMenuProvider;
+                if (provider == null)
+                    continue;
+
+                item.Items.Clear();
+
+                //create edits
+                var edits = provider();
+                if (edits == null)
+                    continue;
+
+                foreach (var edit in edits)
+                {
+                    var editItem = createEditItem(edit, context);
+                    item.Items.Add(editItem);
                 }
             }
         }

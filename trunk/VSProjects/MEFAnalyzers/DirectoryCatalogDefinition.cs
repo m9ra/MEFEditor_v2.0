@@ -57,7 +57,7 @@ namespace MEFAnalyzers
             {
                 Error.Set("Path is invalid");
             }
-            
+
             GivenPath.Set(path);
             FullPath.Set(fullPath);
             Pattern.Set(pattern);
@@ -198,7 +198,7 @@ namespace MEFAnalyzers
 
         private void setCtorEdits()
         {
-            AddActionEdit("Open folder", () => OpenPathInExplorer(FullPath.Value)); 
+            AddActionEdit("Open folder", () => OpenPathInExplorer(FullPath.Value));
             RewriteArg(1, "Change path", _pathInput);
             AppendArg(2, "Add search pattern", _patternInput);
             RewriteArg(2, "Change search pattern", _patternInput);
@@ -249,11 +249,12 @@ namespace MEFAnalyzers
 
             var slot = drawer.AddSlot();
 
-            foreach (var component in Components.Get())
-            {
-                var componentDrawing = drawer.GetInstanceDrawing(component);
-                slot.Add(componentDrawing.Reference);
-            }
+            if (Components.Value != null)
+                foreach (var component in Components.Value)
+                {
+                    var componentDrawing = drawer.GetInstanceDrawing(component);
+                    slot.Add(componentDrawing.Reference);
+                }
 
             drawer.ForceShow();
         }
