@@ -6,7 +6,7 @@ using System.Text;
 using System.IO;
 using System.ComponentModel.Composition;
 
-using Drawing;
+using MEFEditor.Drawing;
 using TypeSystem;
 
 namespace UserExtensions

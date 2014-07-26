@@ -74,9 +74,9 @@
     <Compile Include="ProviderTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Drawing\Drawing.csproj">
+    <ProjectReference Include="..\MEFEditor.Drawing\MEFEditor.Drawing.csproj">
       <Project>{dc23fe88-544c-4751-ac71-cd87bf758095}</Project>
-      <Name>Drawing</Name>
+      <Name>MEFEditor.Drawing</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

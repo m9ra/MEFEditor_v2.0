@@ -13,7 +13,7 @@ using Analyzing.Editing;
 using TypeSystem;
 using TypeSystem.Runtime;
 
-using Drawing;
+using MEFEditor.Drawing;
 
 using MEFAnalyzers.CompositionEngine;
 

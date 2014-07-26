@@ -164,21 +164,21 @@
       <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
       <Name>Mono.Cecil</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Analyzing\Analyzing.csproj">
+    <ProjectReference Include="..\MEFEditor.Analyzing\MEFEditor.Analyzing.csproj">
       <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
-      <Name>Analyzing</Name>
+      <Name>MEFEditor.Analyzing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Interoperability\Interoperability.csproj">
+    <ProjectReference Include="..\MEFEditor.Interoperability\MEFEditor.Interoperability.csproj">
       <Project>{db50ece5-7415-4b4c-8297-a04543996630}</Project>
-      <Name>Interoperability</Name>
+      <Name>MEFEditor.Interoperability</Name>
     </ProjectReference>
     <ProjectReference Include="..\MEFEditor\MEFEditor.csproj">
       <Project>{79f2bdfb-802b-44e6-b8c6-56e5cf64ecf6}</Project>
       <Name>MEFEditor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
+    <ProjectReference Include="..\MEFEditor.TypeSystem\MEFEditor.TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
-      <Name>TypeSystem</Name>
+      <Name>MEFEditor.TypeSystem</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Utilities.csproj">
       <Project>{7c9e6dff-b855-47bb-be22-b4c0c45b73eb}</Project>

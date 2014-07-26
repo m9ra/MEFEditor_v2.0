@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Drawing;
+using MEFEditor.Drawing;
 using Analyzing;
 
 using TypeSystem;

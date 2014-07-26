@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "..\VSProjects\TestConsole\TestConsole.csproj", "{807BE5F4-84D5-4035-8905-9D196A957AF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor.TestConsole", "..\VSProjects\MEFEditor.TestConsole\MEFEditor.TestConsole.csproj", "{807BE5F4-84D5-4035-8905-9D196A957AF0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserExtensions", "..\VSProjects\UserExtensions\UserExtensions.csproj", "{BD71AA75-9783-4BD8-A20F-E8E886B44583}"
 EndProject
@@ -9,21 +9,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil", "..\ExternalSo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFAnalyzers", "..\VSProjects\MEFAnalyzers\MEFAnalyzers.csproj", "{D9591DC4-83D6-477F-A23A-495F65F5B934}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzing", "..\VSProjects\Analyzing\Analyzing.csproj", "{4E0257A9-5C44-434D-85D0-B2D4906D00FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor.Analyzing", "..\VSProjects\MEFEditor.Analyzing\MEFEditor.Analyzing.csproj", "{4E0257A9-5C44-434D-85D0-B2D4906D00FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyProviders", "..\VSProjects\AssemblyProviders\AssemblyProviders.csproj", "{7BE9C607-8E00-44D7-958C-60519BA569B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing", "..\VSProjects\Drawing\Drawing.csproj", "{DC23FE88-544C-4751-AC71-CD87BF758095}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor.Drawing", "..\VSProjects\MEFEditor.Drawing\MEFEditor.Drawing.csproj", "{DC23FE88-544C-4751-AC71-CD87BF758095}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interoperability", "..\VSProjects\Interoperability\Interoperability.csproj", "{DB50ECE5-7415-4B4C-8297-A04543996630}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor.Interoperability", "..\VSProjects\MEFEditor.Interoperability\MEFEditor.Interoperability.csproj", "{DB50ECE5-7415-4B4C-8297-A04543996630}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeSystem", "..\VSProjects\TypeSystem\TypeSystem.csproj", "{6571F9B2-7D38-423D-BB65-79916C9CD1B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor.TypeSystem", "..\VSProjects\MEFEditor.TypeSystem\MEFEditor.TypeSystem.csproj", "{6571F9B2-7D38-423D-BB65-79916C9CD1B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTesting", "..\VSProjects\UnitTesting\UnitTesting.csproj", "{A95A1DF1-8C3D-4ED0-8E6B-758994261909}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor.UnitTesting", "..\VSProjects\MEFEditor.UnitTesting\MEFEditor.UnitTesting.csproj", "{A95A1DF1-8C3D-4ED0-8E6B-758994261909}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor", "..\VSProjects\MEFEditor\MEFEditor.csproj", "{79F2BDFB-802B-44E6-B8C6-56E5CF64ECF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin", "..\VSProjects\Plugin\Plugin.csproj", "{5EB8EAF6-82A9-4803-B60E-07A68290A83E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEFEditor.Plugin", "..\VSProjects\MEFEditor.Plugin\MEFEditor.Plugin.csproj", "{5EB8EAF6-82A9-4803-B60E-07A68290A83E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "..\VSProjects\Utilities\Utilities.csproj", "{7C9E6DFF-B855-47BB-BE22-B4C0C45B73EB}"
 EndProject

@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A95A1DF1-8C3D-4ED0-8E6B-758994261909}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MEFEditor.UnitTesting</RootNamespace>
+    <AssemblyName>MEFEditor.UnitTesting</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <Choose>
+    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+  <ItemGroup>
+    <Compile Include="Analyzing_TestUtils\EditAction.cs" />
+    <Compile Include="Analyzing_TestUtils\EmitDirectorGenerator.cs" />
+    <Compile Include="Analyzing_TestUtils\EmitDirectorLoader.cs" />
+    <Compile Include="Analyzing_TestUtils\Environment\SettingsProvider.cs" />
+    <Compile Include="Analyzing_TestUtils\ExecutionUtils.cs" />
+    <Compile Include="AssemblyProviders_TestUtils\SimpleAssemblyFactory.cs" />
+    <Compile Include="AssemblyProviders_TestUtils\Tools.cs" />
+    <Compile Include="AssemblyProviders_TestUtils\SourceTest.cs" />
+    <Compile Include="AssemblyProviders_TestUtils\SourceUtils.cs" />
+    <Compile Include="Compiler_CIL_Testing.cs" />
+    <Compile Include="Drawing_TestUtils\DrawingTest.cs" />
+    <Compile Include="Drawing_TestUtils\Extensions.cs" />
+    <Compile Include="Drawing_TestUtils\TestContent.cs" />
+    <Compile Include="Drawing_TestUtils\TestDrawingFactory.cs" />
+    <Compile Include="EditorInternals_Testing.cs" />
+    <Compile Include="Edits_Testing.cs" />
+    <Compile Include="Machine_Testing.cs" />
+    <Compile Include="MEFAnalyzers_Testing.cs" />
+    <Compile Include="Compiler_CSharp_Testing.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RuntimeTypeDefinitions\StringMetaExport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\LazyStringMetaImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\LazyStringImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\MetaInterface.cs" />
+    <Compile Include="RuntimeTypeDefinitions\SelfStringExport.cs" />
+    <Compile Include="TypeDefinitions_Testing.cs" />
+    <Compile Include="RuntimeTypeDefinitions\StringExport2.cs" />
+    <Compile Include="RuntimeTypeDefinitions\SimpleStringExport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\ICollectionStringImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\ManyStringImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\MultiExportImport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\StringExport.cs" />
+    <Compile Include="RuntimeTypeDefinitions\SimpleType.cs" />
+    <Compile Include="RuntimeTypeDefinitions\StringImport.cs" />
+    <Compile Include="SceneNavigator_Testing.cs" />
+    <Compile Include="SourceWriting_Testing.cs" />
+    <Compile Include="TypeSystem_TestUtils\AssemblyUtils.cs" />
+    <Compile Include="TypeSystem_TestUtils\CILGenerator.cs" />
+    <Compile Include="TypeSystem_TestUtils\Method.cs" />
+    <Compile Include="TestClass.cs" />
+    <Compile Include="TypeSystem_TestUtils\TestingAssembly.cs" />
+    <Compile Include="TypeSystem_TestUtils\ParsedGenerator.cs" />
+    <Compile Include="TypeSystem_TestUtils\TestingTypes.cs" />
+    <Compile Include="TypeSystem_TestUtils\TestResult.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\ExternalSources\cecil-master\Mono.Cecil.csproj">
+      <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MEFEditor.Analyzing\MEFEditor.Analyzing.csproj">
+      <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
+      <Name>MEFEditor.Analyzing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AssemblyProviders\AssemblyProviders.csproj">
+      <Project>{7be9c607-8e00-44d7-958c-60519ba569b7}</Project>
+      <Name>AssemblyProviders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MEFEditor.Drawing\MEFEditor.Drawing.csproj">
+      <Project>{dc23fe88-544c-4751-ac71-cd87bf758095}</Project>
+      <Name>MEFEditor.Drawing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MEFAnalyzers\MEFAnalyzers.csproj">
+      <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
+      <Name>MEFAnalyzers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MEFEditor.TypeSystem\MEFEditor.TypeSystem.csproj">
+      <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
+      <Name>MEFEditor.TypeSystem</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

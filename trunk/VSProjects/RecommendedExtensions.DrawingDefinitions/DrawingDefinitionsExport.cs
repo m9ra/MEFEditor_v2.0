@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 
-using Drawing;
+using MEFEditor.Drawing;
 using TypeSystem;
 using MEFAnalyzers.Drawings;
 

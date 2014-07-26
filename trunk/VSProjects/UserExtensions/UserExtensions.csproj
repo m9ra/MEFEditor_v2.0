@@ -42,11 +42,14 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Analyzing">
-      <HintPath>.\Analyzing.dll</HintPath>
+    <Reference Include="MEFEditor.Analyzing">
+      <HintPath>.\MEFEditor.Analyzing.dll</HintPath>
     </Reference>
-    <Reference Include="Drawing">
-      <HintPath>.\Drawing.dll</HintPath>
+    <Reference Include="MEFEditor.Drawing">
+      <HintPath>.\MEFEditor.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="MEFEditor.TypeSystem">
+      <HintPath>.\MEFEditor.TypeSystem.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -59,9 +62,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TypeSystem">
-      <HintPath>.\TypeSystem.dll</HintPath>
-    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>

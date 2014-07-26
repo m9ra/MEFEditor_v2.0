@@ -63,17 +63,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Drawing\Drawing.csproj">
+    <ProjectReference Include="..\MEFEditor.Drawing\MEFEditor.Drawing.csproj">
       <Project>{dc23fe88-544c-4751-ac71-cd87bf758095}</Project>
-      <Name>Drawing</Name>
+      <Name>MEFEditor.Drawing</Name>
     </ProjectReference>
     <ProjectReference Include="..\MEFAnalyzers\MEFAnalyzers.csproj">
       <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
       <Name>MEFAnalyzers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TypeSystem\TypeSystem.csproj">
+    <ProjectReference Include="..\MEFEditor.TypeSystem\MEFEditor.TypeSystem.csproj">
       <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
-      <Name>TypeSystem</Name>
+      <Name>MEFEditor.TypeSystem</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
