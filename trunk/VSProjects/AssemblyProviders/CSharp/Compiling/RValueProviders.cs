@@ -610,11 +610,48 @@ namespace AssemblyProviders.CSharp.Compiling
         #endregion
     }
 
+    class ImplicitCastRValue : RValueProvider
+    {
+        public readonly TypeDescriptor CastedType;
+
+        private readonly RValueProvider _castedValue;
+
+        public ImplicitCastRValue(RValueProvider castedValue, TypeDescriptor castedType, CompilationContext context)
+            : base(context)
+        {
+            _castedValue = castedValue;
+            CastedType = castedType;
+        }
+
+        public override void GenerateAssignInto(LValueProvider target)
+        {
+            _castedValue.GenerateAssignInto(target);
+        }
+
+        public override void GenerateReturn()
+        {
+            _castedValue.GenerateReturn();
+        }
+
+        public override void Generate()
+        {
+            _castedValue.Generate();
+        }
+
+        public override TypeDescriptor Type
+        {
+            get { return CastedType; }
+        }
+
+        public override string GenerateStorage()
+        {
+            return _castedValue.GenerateStorage();
+        }
+    }
+
     class TemporaryRVariableValue : RValueProvider
     {
         public readonly string Storage;
-
-        private TypeDescriptor _forcedType;
 
         public TemporaryRVariableValue(CompilationContext context, string storage = null)
             : base(context)
@@ -647,20 +684,8 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             get
             {
-                if (_forcedType != null)
-                    return _forcedType;
-
                 return E.VariableInfo(Storage) as TypeDescriptor;
             }
-        }
-
-        /// <summary>
-        /// Force variable to behave like force type
-        /// </summary>
-        /// <param name="forcedType">Type to which is variable forced to</param>
-        public void SetForcedType(TypeDescriptor forcedType)
-        {
-            _forcedType = forcedType;
         }
 
         /// </ inheritdoc>

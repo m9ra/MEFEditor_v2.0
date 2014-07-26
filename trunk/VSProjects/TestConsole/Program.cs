@@ -23,7 +23,7 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var testAssembly = TestCases.CompoundOperators();
+            var testAssembly = TestCases.CastingOperators();
             DisplayTestResult(testAssembly);
         }
 

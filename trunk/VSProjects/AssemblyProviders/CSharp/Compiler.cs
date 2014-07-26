@@ -985,6 +985,9 @@ namespace AssemblyProviders.CSharp
                     if (result == null)
                         throw parsingException(rValue, "Cannot get variable information");
                     break;
+                case NodeTypes.conversion:
+                    result = resolveExplicitCast(rValue);
+                    break;
 
                 default:
                     throw parsingException(rValue, "Unexpected {0} token", rValue.NodeType);
@@ -1028,6 +1031,35 @@ namespace AssemblyProviders.CSharp
                     throw parsingException(hierarchy, "Unknown hierarchy construction", hierarchy);
                 }
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Resolve explicit casting according to given node
+        /// </summary>
+        /// <param name="explicitCasting">Casting node</param>
+        /// <returns>Casted result</returns>
+        private RValueProvider resolveExplicitCast(INodeAST explicitCasting)
+        {
+            var resultTypeNode = explicitCasting.Arguments[0];
+            var valueToCastNode = explicitCasting.Arguments[1];
+
+            var resultType = resolveTypeDescriptor(resultTypeNode);
+            var valueToCast = getRValue(valueToCastNode);
+
+            if (Context.Services.IsAssignable(resultType, valueToCast.Type))
+            {
+                //there is no need for explicit casting
+                return new ImplicitCastRValue(valueToCast, resultType, Context);
+            }
+
+            var searcher = Context.CreateSearcher();
+            searcher.SetCalledObject(resultType);
+            searcher.Dispatch("op_Explicit");
+            var result = tryCreateCall(searcher, null, explicitCasting, valueToCast);
+            if (result == null)
+                throw parsingException(explicitCasting, "Cannot find method op_Explicit for explicit casting");
 
             return result;
         }
@@ -1905,6 +1937,18 @@ namespace AssemblyProviders.CSharp
             return createCallActivation(selector, calledObject, callNode, arguments);
         }
 
+        private CallValue tryCreateCall(MethodSearcher searcher, RValueProvider calledObject, INodeAST callNode, params RValueProvider[] argumentValues)
+        {
+            var selector = new MethodSelector(searcher.FoundResult, Context);
+
+            var arguments = from argumentValue in argumentValues select new Argument(argumentValue);
+            var activation = createCallActivation(selector, calledObject, callNode, arguments.ToArray());
+            if (activation == null)
+                return null;
+
+            return new CallValue(activation, Context);
+        }
+
         private CallActivation createCallActivation(MethodSelector selector, RValueProvider calledObject, INodeAST callNode, Argument[] arguments)
         {
             var callActivation = selector.CreateCallActivation(arguments);
@@ -1938,10 +1982,12 @@ namespace AssemblyProviders.CSharp
             if (!MethodInfo.HasThis)
                 throw parsingException(contextNode, "Implicit this is not available in static method");
 
-            var variable = new TemporaryRVariableValue(Context, CSharpSyntax.ThisVariable);
-            variable.SetForcedType(forcedType);
+            RValueProvider rValue = new TemporaryRVariableValue(Context, CSharpSyntax.ThisVariable);
 
-            return variable;
+            if (forcedType != null)
+                rValue = new ImplicitCastRValue(rValue, forcedType, Context);
+
+            return rValue;
         }
 
         /// <summary>

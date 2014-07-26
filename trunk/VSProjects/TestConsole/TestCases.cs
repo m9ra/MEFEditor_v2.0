@@ -1119,6 +1119,17 @@ namespace TestConsole
              ;
         }
 
+        static internal TestingAssembly CastingOperators()
+        {
+            return AssemblyUtils.Run(@"
+                var x=(string)5;
+            ")
+            .AddMethod("System.String.op_Explicit", @"
+                return ""CastingResult"";
+            ", Method.StaticString_IntParam)
+            ;
+        }
+
         static internal TestingAssembly CompoundOperators()
         {
             return AssemblyUtils.Run(@"

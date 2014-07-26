@@ -763,5 +763,19 @@ namespace UnitTesting
             .AssertVariable("withBracket").HasValue((2 + 1) * 3)
             ;
         }
+
+        [TestMethod]
+        public void Compile_ExplicitCast()
+        {
+            AssemblyUtils.Run(@"
+                var result=(string)5;
+            ")
+            .AddMethod("System.String.op_Explicit", @"
+                return ""CastingResult"";
+            ", Method.StaticString_IntParam)
+
+            .AssertVariable("result").HasValue("CastingResult")
+            ;
+        }
     }
 }

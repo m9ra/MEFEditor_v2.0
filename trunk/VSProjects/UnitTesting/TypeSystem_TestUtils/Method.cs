@@ -49,6 +49,8 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         public readonly static MethodDescription StaticString_StringParam = MethodDescription.CreateStatic<string>(StringParam1);
 
+        public readonly static MethodDescription StaticString_IntParam = MethodDescription.CreateStatic<string>(IntParam1);
+
         public readonly static MethodDescription StaticString_NoParam = MethodDescription.CreateStatic<string>();
 
         public readonly static MethodDescription StaticVoid_StringParam = new MethodDescription(TypeDescriptor.Void, true, StringParam1);
