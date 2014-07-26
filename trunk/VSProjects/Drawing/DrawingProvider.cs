@@ -20,6 +20,11 @@ namespace Drawing
         private readonly AbstractDiagramFactory _diagramFactory;
 
         /// <summary>
+        /// Lastly used context menu handler
+        /// </summary>
+        private ContextMenuEventHandler _lastContextMenuHandler;
+
+        /// <summary>
         /// Currently displayed diagram
         /// </summary>
         private DiagramDefinition _currentDiagram;
@@ -67,14 +72,18 @@ namespace Drawing
 
             var menu = createContextMenu(diagramDefinition, context);
 
+            //context menu handling
             Engine.Output.ContextMenu = menu;
-            Engine.Output.ContextMenuOpening += (s, e) => menu_ContextMenuOpening(menu, context);
+            if (_lastContextMenuHandler != null)
+                Engine.Output.ContextMenuOpening -= _lastContextMenuHandler;
+            _lastContextMenuHandler = (s, e) => menu_ContextMenuOpening(menu, context);
+            Engine.Output.ContextMenuOpening += _lastContextMenuHandler;
             Engine.Output.SetContext(context);
             Engine.Display();
 
             return context;
         }
-                
+
         /// <summary>
         /// Reset positions of diagram items
         /// </summary>
@@ -112,7 +121,7 @@ namespace Drawing
             ContentDrawing content;
             if (item.IsRecursive)
             {
-                content=_diagramFactory.CreateRecursiveContent(item);
+                content = _diagramFactory.CreateRecursiveContent(item);
             }
             else
             {

@@ -14,8 +14,16 @@ using Drawing;
 
 namespace MEFAnalyzers.Drawings
 {
-    static class DrawingTools
+    /// <summary>
+    /// Tools for usual drawing routines
+    /// </summary>
+    public static class DrawingTools
     {
+        /// <summary>
+        /// Cache for bitmap images
+        /// </summary>
+        private static readonly Dictionary<System.Drawing.Bitmap, BitmapSource> _bitmapCache = new Dictionary<System.Drawing.Bitmap, BitmapSource>();
+
         /// <summary>
         /// Delay for ToolTips, which are displayed immediately.
         /// </summary>
@@ -109,14 +117,14 @@ namespace MEFAnalyzers.Drawings
             SetToolTip(target, DrawingTools.GetText(toolTipText));
         }
 
-        internal static void SetImage(Image target, System.Drawing.Bitmap image)
+        /// <summary>
+        /// Set image to given target
+        /// </summary>
+        /// <param name="target">Target for image</param>
+        /// <param name="image">Image that will be set</param>
+        internal static void SetImage(Image target, CachedImage image)
         {
-            target.Source = DrawingTools.Convert(image);
-        }
-
-        internal static void SetIcon(Image target, System.Drawing.Bitmap image)
-        {
-            SetImage(target, image);
+            target.Source = image.ImageData;
         }
 
         /// <summary>
@@ -126,9 +134,14 @@ namespace MEFAnalyzers.Drawings
         /// <returns></returns>
         internal static BitmapSource Convert(System.Drawing.Bitmap source)
         {
-            //TODO cache converted images
-            var result = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(source.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty,
+            BitmapSource result;
+            if (!_bitmapCache.TryGetValue(source, out result))
+            {
+                result = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(source.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty,
                 System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+
+                _bitmapCache[source] = result;
+            }
 
             return result;
         }

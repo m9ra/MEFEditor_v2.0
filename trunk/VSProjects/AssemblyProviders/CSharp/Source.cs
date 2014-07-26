@@ -734,7 +734,8 @@ namespace AssemblyProviders.CSharp
                 return OriginalCode.Length - 1;
 
             var end = node.EndingToken;
-            return end.Next.Position.Offset;
+            var next = end.Next == null ? end : end.Next;
+            return next.Position.Offset;
         }
 
         /// <summary>

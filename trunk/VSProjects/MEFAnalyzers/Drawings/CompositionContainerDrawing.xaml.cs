@@ -22,13 +22,15 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class CompositionContainerDrawing : ContentDrawing
     {
+        protected static readonly CachedImage Image = new CachedImage(Icons.Composition);
+
         public CompositionContainerDrawing(DiagramItem item)
             : base(item)
         {
             InitializeComponent();
 
             DrawingTools.SetToolTip(Caption, Definition.DrawedType);
-            DrawingTools.SetIcon(CaptionIcon, Icons.Composition);
+            DrawingTools.SetImage(CaptionIcon, Image);
             InstanceID.Text = Definition.ID;
 
             var error = Definition.GetPropertyValue("Error");

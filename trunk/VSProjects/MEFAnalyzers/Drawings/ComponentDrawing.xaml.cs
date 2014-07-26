@@ -22,12 +22,16 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class ComponentDrawing : ContentDrawing
     {
+        protected static readonly CachedImage Image = new CachedImage(Icons.Component);
+
+        protected static readonly CachedImage RemoveImage = new CachedImage(Icons.Remove);
+
         public ComponentDrawing(DiagramItem item)
             : base(item)
         {
             InitializeComponent();
 
-            DrawingTools.SetIcon(ComponentIcon, Icons.Component);
+            DrawingTools.SetImage(ComponentIcon, Image);
 
             TypeName.Text = Definition.DrawedType;
             InstanceID.Text = Definition.ID;
@@ -72,7 +76,7 @@ namespace MEFAnalyzers.Drawings
             var isRemoved = removedBy != null;
             if (isRemoved)
             {
-                DrawingTools.SetIcon(RemoveIcon, Icons.Remove);
+                DrawingTools.SetImage(RemoveIcon, RemoveImage);
                 DrawingTools.SetToolTip(RemoveIcon, DrawingTools.GetText("Component has been removed " + removedBy));
             }
 

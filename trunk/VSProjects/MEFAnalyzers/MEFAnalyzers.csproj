@@ -91,6 +91,7 @@
     <Compile Include="AssemblyCatalogDefinition.cs" />
     <Compile Include="ComposablePartCatalogDefinition.cs" />
     <Compile Include="ConsoleDefinition.cs" />
+    <Compile Include="Drawings\CachedImage.cs" />
     <Compile Include="Drawings\CompositionBatchDrawing.xaml.cs">
       <DependentUpon>CompositionBatchDrawing.xaml</DependentUpon>
     </Compile>

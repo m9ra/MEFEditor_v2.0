@@ -620,6 +620,11 @@ namespace Plugin.GUI
                 onCompositionPointSelected(null);
             };
 
+            item.PreviewMouseDown += (e, s) =>
+            {
+                _desiredCompositionPointMethod = null;
+            };
+            
             return item;
         }
 

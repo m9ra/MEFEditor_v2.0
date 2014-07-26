@@ -74,6 +74,8 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             _shiftToken(")", "Error in For layout, expected ')'");
 
             node.Child = _nextTree();
+            node.EndingToken = _lexer.Current;
+
             return node;
         }
 
@@ -94,6 +96,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             _shiftToken(")", "Error in For layout, expected ')'");
 
             node.Child = _nextTree();
+            node.EndingToken = _lexer.Current;
             return node;
         }
 

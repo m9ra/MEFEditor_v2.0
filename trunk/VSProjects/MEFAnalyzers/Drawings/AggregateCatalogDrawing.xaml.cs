@@ -22,6 +22,8 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class AggregateCatalogDrawing : ContentDrawing
     {
+        protected static readonly CachedImage Image = new CachedImage(Icons.Container);
+
         public AggregateCatalogDrawing(DiagramItem item)
             : base(item)
         {
@@ -29,7 +31,7 @@ namespace MEFAnalyzers.Drawings
             InitializeComponent();
 
             DrawingTools.SetToolTip(Caption, Definition.DrawedType);
-            DrawingTools.SetIcon(CaptionIcon, Icons.Container);
+            DrawingTools.SetImage(CaptionIcon, Image);
             InstanceID.Text = Definition.ID;
 
             var slot = Definition.Slots.First();

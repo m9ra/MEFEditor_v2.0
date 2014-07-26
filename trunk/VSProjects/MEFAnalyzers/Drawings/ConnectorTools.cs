@@ -18,6 +18,10 @@ namespace MEFAnalyzers.Drawings
 {
     static class ConnectorTools
     {
+        static readonly CachedImage ErrorImage = new CachedImage(Icons.Error);
+
+        static readonly CachedImage WarningImage = new CachedImage(Icons.Warning);
+
         internal static void SetMessages(StackPanel messagesOutput, ConnectorDefinition definition)
         {
             var error = definition.GetPropertyValue("Error");
@@ -26,7 +30,7 @@ namespace MEFAnalyzers.Drawings
             if (error != null)
             {
                 var errorImg = new Image();
-                DrawingTools.SetIcon(errorImg, Icons.Error);
+                DrawingTools.SetImage(errorImg, ErrorImage);
 
                 var errorDescription = DrawingTools.GetHeadingText("Error", error);
                 DrawingTools.SetToolTip(errorImg, errorDescription);
@@ -37,7 +41,7 @@ namespace MEFAnalyzers.Drawings
             if (warning != null)
             {
                 var warningImg = new Image();
-                DrawingTools.SetIcon(warningImg, Icons.Warning);
+                DrawingTools.SetImage(warningImg, WarningImage);
 
                 var warningDescription = DrawingTools.GetHeadingText("Warning", warning);
                 DrawingTools.SetToolTip(warningImg, warningDescription);

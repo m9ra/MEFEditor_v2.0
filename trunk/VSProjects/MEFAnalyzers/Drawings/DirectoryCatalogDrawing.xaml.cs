@@ -22,13 +22,15 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class DirectoryCatalogDrawing : ContentDrawing
     {
+        protected static readonly CachedImage Image = new CachedImage(Icons.Folder);
+
         public DirectoryCatalogDrawing(DiagramItem item)
             :base(item)
         {
             InitializeComponent();
 
             DrawingTools.SetToolTip(Caption, Definition.DrawedType);
-            DrawingTools.SetIcon(CaptionIcon, Icons.Folder);
+            DrawingTools.SetImage(CaptionIcon, Image);
             InstanceID.Text = Definition.ID;
 
             var path = Definition.GetPropertyValue("Path");

@@ -62,7 +62,7 @@ namespace Drawing
                 else
                 {
                     var parentGlobal = OwnerItem.GlobalPosition;
-                    var parentOffset = OwnerItem.TranslatePoint(new Point(0, 0), this);
+                    var parentOffset = OwnerItem.TranslatePoint(new Point(-1, -1), this);
 
                     parentGlobal.X -= parentOffset.X;
                     parentGlobal.Y -= parentOffset.Y;

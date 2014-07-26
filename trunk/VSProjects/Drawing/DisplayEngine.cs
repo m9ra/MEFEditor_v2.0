@@ -443,7 +443,8 @@ namespace Drawing
         /// <param name="position">Saved position</param>
         private void saveOldPosition(DiagramItem contextItem, DiagramItem item, Point position)
         {
-            var contextID = contextItem == null ? "" : contextItem.ID;
+            var isRootItem = contextItem == null;
+            var contextID = isRootItem ? "" : contextItem.ID;
 
             Dictionary<string, Point> positions;
             if (!_oldPositions.TryGetValue(contextID, out positions))
@@ -451,7 +452,7 @@ namespace Drawing
                 positions = new Dictionary<string, Point>();
                 _oldPositions[contextID] = positions;
             }
-
+              
             positions[item.ID] = position;
         }
 

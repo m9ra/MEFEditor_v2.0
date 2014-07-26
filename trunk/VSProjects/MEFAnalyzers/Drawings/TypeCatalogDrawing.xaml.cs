@@ -22,13 +22,15 @@ namespace MEFAnalyzers.Drawings
     /// </summary>
     public partial class TypeCatalogDrawing : ContentDrawing
     {
+        protected static readonly CachedImage Image = new CachedImage(Icons.Type);
+
         public TypeCatalogDrawing(DiagramItem item)
             : base(item)
         {
             InitializeComponent();
 
             DrawingTools.SetToolTip(Caption, Definition.DrawedType);
-            DrawingTools.SetIcon(CaptionIcon, Icons.Type);
+            DrawingTools.SetImage(CaptionIcon, Image);
             InstanceID.Text = Definition.ID;
 
             var slot = Definition.Slots.First();
