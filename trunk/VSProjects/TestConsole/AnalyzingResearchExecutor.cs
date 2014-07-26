@@ -147,7 +147,7 @@ namespace TestConsole
             }
         }
 
-   
+
 
         #region Output building
 
@@ -221,7 +221,7 @@ namespace TestConsole
 
         private IEnumerable<Instance> getDefaultArguments(Machine m)
         {
-            yield return m.CreateDirectInstance("Default object");
+            yield return m.CreateInstance(TypeDescriptor.Create(Method.EntryClass));
         }
 
         /// <summary>
@@ -259,7 +259,7 @@ namespace TestConsole
 
         private void generalDrawer(DrawedInstance instance)
         {
-            var instanceInfo=instance.WrappedInstance.Info;
+            var instanceInfo = instance.WrappedInstance.Info;
             var componentInfo = _assembly.Loader.GetComponentInfo(instanceInfo);
             var definingAssembly = _assembly.Loader.AppDomain.GetDefiningAssembly(instanceInfo);
             instance.SetProperty("DefiningAssembly", definingAssembly.Name);

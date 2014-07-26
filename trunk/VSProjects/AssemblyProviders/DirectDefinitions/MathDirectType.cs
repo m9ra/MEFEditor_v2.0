@@ -50,25 +50,11 @@ namespace AssemblyProviders.DirectDefinitions
 
         private void addDirectComparing()
         {
-            addBinaryOperator("op_LessThan", generateLesserThanOperator());
+            addBinaryPredicate("op_LessThan", Expression.LessThan);
+            addBinaryPredicate("op_GreaterThan", Expression.GreaterThan);
+            addBinaryPredicate("op_LessThanOrEqual", Expression.LessThanOrEqual);
+            addBinaryPredicate("op_GreaterThanOrEqual", Expression.GreaterThanOrEqual);
         }
-
-        #region Operators implementation
-
-        private DirectMethod generateLesserThanOperator()
-        {
-            return (context) =>
-            {
-                var op1 = context.CurrentArguments[0].DirectValue as IComparable;
-                var op2 = context.CurrentArguments[1].DirectValue;
-
-                var result = context.Machine.CreateDirectInstance(op1.CompareTo(op2) < 0);
-                context.Return(result);
-            };
-        }
-
-        #endregion
-
 
         #region Utility methods
 
@@ -88,9 +74,32 @@ namespace AssemblyProviders.DirectDefinitions
             addBinaryOperator(methodName, directOperator);
         }
 
+
+        private void addBinaryPredicate(string predicateName, BinaryOperator binaryOperator)
+        {
+            DirectMethod directOperator;
+            try
+            {
+                directOperator = generateDirectBinaryPredicate(binaryOperator);
+            }
+            catch (InvalidOperationException)
+            {
+                //operation is not available for desired type
+                return;
+            }
+
+            addBinaryPredicate(predicateName, directOperator);
+        }
+
         private void addBinaryOperator(string methodName, DirectMethod directOperator)
         {
-            var method = binaryOperatorInfo(methodName);
+            var method = binaryInfo(methodName, TypeDescriptor.Create<T>());
+            AddMethod(directOperator, method);
+        }
+
+        private void addBinaryPredicate(string methodName, DirectMethod directOperator)
+        {
+            var method = binaryInfo(methodName, TypeDescriptor.Create<bool>());
             AddMethod(directOperator, method);
         }
 
@@ -117,7 +126,18 @@ namespace AssemblyProviders.DirectDefinitions
             var param1 = Expression.Parameter(typeof(T), "op1");
             var param2 = Expression.Parameter(typeof(T), "op2");
 
-            return generateMathOperator(
+            return generateDirectBinary<T>(
+                binaryOperator(param1, param2)
+                , param1, param2
+            );
+        }
+
+        private DirectMethod generateDirectBinaryPredicate(BinaryOperator binaryOperator)
+        {
+            var param1 = Expression.Parameter(typeof(T), "op1");
+            var param2 = Expression.Parameter(typeof(T), "op2");
+
+            return generateDirectBinary<bool>(
                 binaryOperator(param1, param2)
                 , param1, param2
             );
@@ -133,9 +153,9 @@ namespace AssemblyProviders.DirectDefinitions
             );
         }
 
-        private DirectMethod generateMathOperator(BinaryExpression mathExpression, ParameterExpression param1, ParameterExpression param2)
+        private DirectMethod generateDirectBinary<TResult>(BinaryExpression mathExpression, ParameterExpression param1, ParameterExpression param2)
         {
-            var directOperator = Expression.Lambda<Func<T, T, T>>(
+            var directOperator = Expression.Lambda<Func<T, T, TResult>>(
                 mathExpression,
                 new ParameterExpression[] { param1, param2 }
                 ).Compile();
@@ -170,14 +190,14 @@ namespace AssemblyProviders.DirectDefinitions
             };
         }
 
-        private TypeMethodInfo binaryOperatorInfo(string methodName)
+        private TypeMethodInfo binaryInfo(string methodName, TypeDescriptor resultInfo)
         {
             var thisInfo = TypeDescriptor.Create<T>();
 
             var op1 = ParameterTypeInfo.Create("op1", thisInfo);
             var op2 = ParameterTypeInfo.Create("op2", thisInfo);
 
-            var methodInfo = new TypeMethodInfo(thisInfo, methodName, thisInfo, new ParameterTypeInfo[] { op2 }, false, TypeDescriptor.NoDescriptors);
+            var methodInfo = new TypeMethodInfo(thisInfo, methodName, resultInfo, new ParameterTypeInfo[] { op2 }, false, TypeDescriptor.NoDescriptors);
             return methodInfo;
         }
 

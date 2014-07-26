@@ -93,7 +93,7 @@ namespace TestConsole
 
            .AddToRuntime<CompositionContainerDefinition>()
            .AddToRuntime<SimpleStringExport>()
-           .AddDirectToRuntime<NullLiteral>()
+           .AddDirectToRuntime<Null>()
 
             .UserAction((c) =>
             {
@@ -1119,6 +1119,48 @@ namespace TestConsole
              ;
         }
 
+        static internal TestingAssembly CompoundOperators()
+        {
+            return AssemblyUtils.Run(@"
+                var x=1;
+                var y=2;
+                var z=1;
+                var XeY= x==y;
+                var XeZ= x==z;
+                var XneY= x!=y;
+                var XneZ= x!=z;                     
+                    
+                x+=1;
+            ");
+        }
+
+        static internal TestingAssembly MathBrackets()
+        {
+            return AssemblyUtils.Run(@"
+                var noBracket= 2 + 1 * 3;   
+                var withBracket= (2 + 1) * 3;             
+            ");
+        }
+
+        static internal TestingAssembly ComparingOperators()
+        {
+            return AssemblyUtils.Run(@"
+                var x=1;
+                var y=2;
+                var z=1;
+
+                var XsameY= x==y;   
+                var XsameZ= x==z;
+                var XlessY= x < y;
+                var XlessZ= x < z;
+                var XgreatY = x > y;
+                var XgreatZ = x > z;
+                var YgreatX = y > x;
+                var XleY = x <= y;
+                var XleZ = x <= z;
+            ");
+        }
+
         static internal TestingAssembly Operators()
         {
             return AssemblyUtils.Run(@"
@@ -1128,6 +1170,33 @@ namespace TestConsole
                 var post=inc++;
                 var pref=++inc;
             ");
+        }
+
+        static internal TestingAssembly BaseTest()
+        {
+            return AssemblyUtils.RunRaw(@"                
+            : base(""ValuePassedToBase"")" + (char)0 + @"
+            { 
+                var baseResult=base.Method();
+                var thisResult=this.Method();
+            }")
+
+             .AddMethod("System.Object." + Naming.CtorName, (c) =>
+             {
+                 c.SetField(c.CurrentArguments[0], "BaseField", c.CurrentArguments[1]);
+             }, Method.Ctor_StringParam)
+
+             .AddMethod("System.Object.Method", (c) =>
+             {
+                 var field = c.GetField(c.CurrentArguments[0], "BaseField") as Instance;
+                 c.Return(field);
+             }, Method.String_NoParam)
+
+            .AddMethod(Method.EntryClass + ".Method", @"
+                return ""ThisMethod"";
+            ", Method.String_NoParam)
+
+             ;
         }
 
         static internal TestingAssembly SwitchBlock()

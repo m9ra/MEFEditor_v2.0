@@ -30,6 +30,11 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
         internal const string ThisVariable = "this";
 
         /// <summary>
+        /// Name of operator providing access to base members
+        /// </summary>
+        internal const string BaseVariable = "base";
+
+        /// <summary>
         /// Name of member initializer method (virtual method used for implementation purposes)
         /// </summary>
         internal const string MemberInitializer = "#initializer";
@@ -144,6 +149,7 @@ namespace AssemblyProviders.CSharp.LanguageDefinitions
             {"|=",100},      
             {"~=",100},      
             {"==",150},      
+            {"!=",150},  
             {"&",200},      
             {"|",200},      
             {"&&",200},      

@@ -28,6 +28,21 @@ namespace AssemblyProviders.CSharp
             return _getTree();
         }
 
+        public string GetSourceCode(string rawCode, out string preCode)
+        {
+            var trimmed = rawCode.Trim();
+            if (!trimmed.StartsWith(":"))
+            {
+                preCode = null;
+                return trimmed;
+            }
+
+            var splitChar = trimmed.IndexOf((char)0);
+            preCode = trimmed.Substring(1, splitChar - 1).Trim() + ";";
+
+            return trimmed.Substring(splitChar + 1).Trim();
+        }
+
         /// <summary>
         /// Usporada podle priorit jednotlive Node ktere vezme z getNode
         /// </summary>        
@@ -111,7 +126,7 @@ namespace AssemblyProviders.CSharp
             bool shouldRepair = false;
             NodeTypes nodeType = newNode.NodeType;
 
-            CodeNode argument=null;
+            CodeNode argument = null;
 
             if (expectPrefix && _language.IsPrefixOperator(newNode.Value))
             {
@@ -120,7 +135,7 @@ namespace AssemblyProviders.CSharp
                 argument = _getTree();
             }
             else if (expectPostfix && _language.IsPostfixOperator(newNode.Value))
-            {                
+            {
                 shouldRepair = true;
                 nodeType = NodeTypes.postOperator;
 

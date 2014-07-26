@@ -91,8 +91,10 @@ namespace AssemblyProviders.CSharp.Compiling
             _searcher = createMethodSearcher(calledObject);
             setCurrentObject(calledObject, _entryNode, dispatchSetter && _entryNode.Child == null);
 
+            var isCallNode = _entryNode.NodeType == NodeTypes.call;
+            var needEntryNode = calledObject == null || dispatchSetter || isCallNode;
             //if there is a called object, entry node has been already used for it
-            var currNode = calledObject == null || dispatchSetter ? _entryNode : _entryNode.Child;
+            var currNode = needEntryNode ? _entryNode : _entryNode.Child;
             return currNode;
         }
 
@@ -316,6 +318,17 @@ namespace AssemblyProviders.CSharp.Compiling
                     break;
 
                 case NodeTypes.call:
+
+                    //handle special name conventions
+                    switch (name)
+                    {
+                        case CSharpSyntax.ThisVariable:
+                        case CSharpSyntax.BaseVariable:
+                            name = Naming.CtorName;
+                            break;
+                    }
+
+                    //dispatch by name
                     searcher.Dispatch(name);
                     break;
 

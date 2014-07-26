@@ -177,7 +177,7 @@ namespace AssemblyProviders.CSharp.Compiling
 
         private void generateInitializer()
         {
-            var searcher=Context.CreateSearcher();
+            var searcher = Context.CreateSearcher();
             searcher.SetCalledObject(_objectType);
 
             searcher.Dispatch("Add");
@@ -193,8 +193,8 @@ namespace AssemblyProviders.CSharp.Compiling
 
             for (int i = 0; i < _initializerArguments.Length; ++i)
             {
-                var argument=_initializerArguments[i];
-                var argumentStorage=argument.GenerateStorage();
+                var argument = _initializerArguments[i];
+                var argumentStorage = argument.GenerateStorage();
                 if (isSetter)
                 {
                     E.AssignLiteral(indexVariable, i);
@@ -202,7 +202,7 @@ namespace AssemblyProviders.CSharp.Compiling
                 }
                 else
                 {
-                    E.Call(initializerMethod.MethodID,_storage,Arguments.Values(argumentStorage));
+                    E.Call(initializerMethod.MethodID, _storage, Arguments.Values(argumentStorage));
                 }
             }
         }
@@ -614,6 +614,8 @@ namespace AssemblyProviders.CSharp.Compiling
     {
         public readonly string Storage;
 
+        private TypeDescriptor _forcedType;
+
         public TemporaryRVariableValue(CompilationContext context, string storage = null)
             : base(context)
         {
@@ -645,8 +647,20 @@ namespace AssemblyProviders.CSharp.Compiling
         {
             get
             {
+                if (_forcedType != null)
+                    return _forcedType;
+
                 return E.VariableInfo(Storage) as TypeDescriptor;
             }
+        }
+
+        /// <summary>
+        /// Force variable to behave like force type
+        /// </summary>
+        /// <param name="forcedType">Type to which is variable forced to</param>
+        public void SetForcedType(TypeDescriptor forcedType)
+        {
+            _forcedType = forcedType;
         }
 
         /// </ inheritdoc>
@@ -658,7 +672,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// </ inheritdoc>
         public override void Generate()
         {
-            throw new NotImplementedException();
+            //There is nothing to generate
         }
     }
 }

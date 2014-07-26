@@ -58,7 +58,9 @@ namespace AssemblyProviders.CSharp
               //this is workaround, because of missing CIL method in specification
               {"!","op_Not"},
 
-              {"==","Equals"}
+              //Equals is used for compatibility with overriding              
+              {"==","Equals"},
+              {"!=","Equals"} //this is workaround, that is specialy handled by compiler
         };
 
         #region Compiler constants
@@ -151,6 +153,11 @@ namespace AssemblyProviders.CSharp
         private readonly CodeNode _method;
 
         /// <summary>
+        /// Result of syntax parsing of precode if available
+        /// </summary>
+        private readonly CodeNode _preLine;
+
+        /// <summary>
         /// Stack of pushed blocks
         /// </summary>
         private readonly Stack<INodeAST> _blocks = new Stack<INodeAST>();
@@ -205,7 +212,10 @@ namespace AssemblyProviders.CSharp
         {
             _activation = activation;
 
-            _source = new Source(activation.SourceCode, activation.Method);
+            string preCode;
+            var sourceCode = _parser.GetSourceCode(activation.SourceCode, out preCode);
+
+            _source = new Source(sourceCode, activation.Method);
             Context = new CompilationContext(emitter, _source, services);
 
             _source.SourceChangeCommited += activation.OnCommited;
@@ -214,6 +224,11 @@ namespace AssemblyProviders.CSharp
             _source.AddExternalNamespaces(activation.Namespaces);
 
             _method = _parser.Parse(_source);
+
+            if (preCode != null)
+            {
+                _preLine = _parser.Parse(new Source(preCode, activation.Method));
+            }
 
             registerGenericArguments(activation);
         }
@@ -239,6 +254,9 @@ namespace AssemblyProviders.CSharp
                 //can generate initialization routines before method body
                 generatePreBodyRoutines();
             }
+
+            if (_preLine != null)
+                generateLine(_preLine);
 
             //generate method body
             generateSubsequence(_method);
@@ -957,6 +975,17 @@ namespace AssemblyProviders.CSharp
                 case NodeTypes.empty:
                     //for empty there is no rvalue
                     return null;
+                case NodeTypes.bracket:
+                    result = getRValue(rValue.Arguments[0]);
+                    break;
+                case NodeTypes.declaration:
+                    var variable = rValue.Arguments[1];
+                    tryGetRVariable(ref variable, out result);
+
+                    if (result == null)
+                        throw parsingException(rValue, "Cannot get variable information");
+                    break;
+
                 default:
                     throw parsingException(rValue, "Unexpected {0} token", rValue.NodeType);
             }
@@ -983,7 +1012,7 @@ namespace AssemblyProviders.CSharp
             {
                 //setter on explicit object
                 RValueProvider baseObject;
-                tryGetRVariable(hierarchy, out baseObject);
+                tryGetRVariable(ref hierarchy, out baseObject);
 
                 if (!tryGetSetter(hierarchy, out result, baseObject))
                 {
@@ -1010,13 +1039,16 @@ namespace AssemblyProviders.CSharp
         /// <returns><see cref="RValueProvider"/> representing rvalue provided by hierarchy</returns>
         private RValueProvider resolveRHierarchy(INodeAST hierarchy)
         {
+            var hierarchyValue = hierarchy.Value;
+
             //first token can be literal/variable/call
             //other hierarchy tokens can only be calls (fields are resolved as calls to property getters)
             RValueProvider result;
 
-            var hasBaseObject = tryGetLiteral(hierarchy, out result) || tryGetRVariable(hierarchy, out result);
+            var hasBaseObject = tryGetLiteral(hierarchy, out result) || tryGetRVariable(ref hierarchy, out result);
             var isIndexerCall = hierarchy.Indexer != null && hierarchy.NodeType == NodeTypes.hierarchy;
-            var hasCallExtending = hierarchy.Child != null || hierarchy.Indexer != null;
+            var hasCallExtending = hierarchy.Child != null || hierarchy.Indexer != null ||
+                hierarchyValue == CSharpSyntax.ThisVariable || hierarchyValue == CSharpSyntax.BaseVariable;
 
             if (hasBaseObject && hasCallExtending)
             {
@@ -1074,7 +1106,7 @@ namespace AssemblyProviders.CSharp
         private bool tryGetLVariable(INodeAST variableNode, out LValueProvider variable)
         {
             var variableName = variableNode.Value;
-            var varInfo = getVariableInfo(variableName);
+            var varInfo = resolveVariableInfo(variableName);
             if (varInfo != null)
             {
                 variable = new VariableLValue(varInfo, variableNode, Context);
@@ -1091,17 +1123,53 @@ namespace AssemblyProviders.CSharp
         /// <param name="variableNode">Node representing needed variable</param>
         /// <param name="variable">Value provider of variable if available, <c>null</c> otherwise</param>
         /// <returns><c>true</c> if variable is available, <c>false</c> otherwise</returns>
-        private bool tryGetRVariable(INodeAST variableNode, out RValueProvider variable)
+        private bool tryGetRVariable(ref INodeAST variableNode, out RValueProvider variable)
         {
+            variable = null;
             var variableName = variableNode.Value;
-            var varInfo = getVariableInfo(variableName);
+
+            if (variableName == CSharpSyntax.BaseVariable)
+            {
+                var currentTypeChain = Context.Services.GetChain(MethodInfo.DeclaringType);
+                var currentNode = variableNode;
+                var isCall = currentNode.NodeType == NodeTypes.call;
+
+                //resolve base chaining
+                while (currentNode.Value == CSharpSyntax.BaseVariable)
+                {
+                    var subChains = currentTypeChain.SubChains;
+                    if (!subChains.Any())
+                        return false;
+
+                    currentTypeChain = subChains.First();
+
+                    if (isCall)
+                    {
+                        //it is base constructor call
+                        break;
+                    }
+
+                    currentNode = currentNode.Child;
+                    if (currentNode == null)
+                        return false;
+                }
+
+                if (!isCall)
+                    //set node to last base - because of chaining calls
+                    variableNode = currentNode.Parent;
+
+                //type this variable to based type
+                variable = CreateImplicitThis(variableNode, currentTypeChain.Type);
+                return true;
+            }
+
+            var varInfo = resolveVariableInfo(variableName);
             if (varInfo != null)
             {
                 variable = new VariableRValue(varInfo, variableNode, Context);
                 return true;
             }
 
-            variable = null;
             return false;
         }
         #endregion
@@ -1186,8 +1254,8 @@ namespace AssemblyProviders.CSharp
             string operatorMethod;
             if (!_mathOperatorMethods.TryGetValue(operatorNotation, out operatorMethod))
                 return null;
-            
-            var operandValue=getRValue(operandNode);
+
+            var operandValue = getRValue(operandNode);
             var activation = createUnaryOperatorActivation(operandValue, operatorMethod, operandNode.Parent);
             if (activation == null)
                 return null;
@@ -1342,7 +1410,7 @@ namespace AssemblyProviders.CSharp
             //TODO compound operators !=
             if (_mathOperatorMethods.ContainsKey(binary.Value))
             {
-                return resolveMathOperator(lNode, binary.Value, rNode);
+                return getMathOperator(lNode, binary.Value, rNode);
             }
             else
             {
@@ -1359,50 +1427,71 @@ namespace AssemblyProviders.CSharp
         /// <returns>Representation of assign operation result</returns>
         private RValueProvider resolveAssignOperator(INodeAST lNode, string op, INodeAST rNode)
         {
-            switch (op)
+            if (!op.EndsWith(CSharpSyntax.AssignOperator))
+                throw parsingException(lNode.Parent, "Unknown assign operator {0}", op);
+
+            var lValue = getLValue(lNode);
+            var rValue = getRValue(rNode);
+
+            var mathOperator = op[0].ToString();
+            if (_mathOperatorMethods.ContainsKey(mathOperator))
             {
-                case CSharpSyntax.AssignOperator:
-                    var lValue = getLValue(lNode);
-                    var rValue = getRValue(rNode);
-
-                    //determine type because of possible implicit typing of variables
-                    var type = lValue.Type == null ? rValue.Type : lValue.Type;
-
-                    var assignComputation = new ComputedValue(type, (e, storage) =>
-                    {
-                        rValue.GenerateAssignInto(lValue);
-
-                        if (storage != null)
-                        {
-                            //assign chaining
-
-                            //this is needed because of getters/setters
-                            var chainedRValue = getRValue(lNode);
-                            chainedRValue.GenerateAssignInto(storage);
-                        }
-                    }, Context);
-
-                    return assignComputation;
-                default:
-                    throw new NotImplementedException("TODO add mathassign operators");
+                var op1 = getRValue(lNode);
+                var op2 = rValue;
+                rValue = getMathOperator(op1, mathOperator, op2, lNode.Parent);
             }
+
+            //determine type because of possible implicit typing of variables
+            var type = lValue.Type == null ? rValue.Type : lValue.Type;
+            var assignComputation = new ComputedValue(type, (e, storage) =>
+            {
+                rValue.GenerateAssignInto(lValue);
+
+                if (storage != null)
+                {
+                    //assign chaining
+
+                    //this is needed because of getters/setters
+                    var chainedRValue = getRValue(lNode);
+                    chainedRValue.GenerateAssignInto(storage);
+                }
+            }, Context);
+
+            return assignComputation;
         }
 
         /// <summary>
-        /// Resolve math operator on given operands
+        /// Get math operator on given operands
         /// </summary>
         /// <param name="lNode">Left operand of math operation</param>
         /// <param name="op">Math operator notation</param>
         /// <param name="rNode">Right operand of math operation</param>
         /// <returns>Representation of math operatorion result</returns>
-        private RValueProvider resolveMathOperator(INodeAST lNode, string op, INodeAST rNode)
+        private RValueProvider getMathOperator(INodeAST lNode, string op, INodeAST rNode)
         {
             var lOperandProvider = getRValue(lNode);
             var rOperandProvider = getRValue(rNode);
+            var operatorNode = lNode.Parent;
 
-            var operatorActivation = createBinaryOperatorActivation(lOperandProvider, op, rOperandProvider, lNode.Parent);
+            return getMathOperator(lOperandProvider, op, rOperandProvider, operatorNode);
+        }
 
+        private RValueProvider getMathOperator(RValueProvider lOperandProvider, string op, RValueProvider rOperandProvider, INodeAST operatorNode)
+        {
+            var operatorActivation = createBinaryOperatorActivation(lOperandProvider, op, rOperandProvider, operatorNode);
             var call = new CallValue(operatorActivation, Context);
+
+            if (op == "!=")
+            {
+                //NOTICE: this is workaround for math operators
+                //we have to negate operatorActivation (it has result for ==)
+                var negateActivation = createUnaryOperatorActivation(call, "op_Not", operatorNode);
+                if (negateActivation == null)
+                    throw parsingException(operatorNode, "Cannot negate result of equality comparison");
+
+                call = new CallValue(negateActivation, Context);
+            }
+
             return call;
         }
 
@@ -1637,6 +1726,11 @@ namespace AssemblyProviders.CSharp
         private VariableInfo resolveDeclaration(INodeAST declarationNode, TypeDescriptor typeHint)
         {
             Debug.Assert(declarationNode.NodeType == NodeTypes.declaration);
+            var name = declarationNode.Arguments[1].Value;
+
+            /*  var existingVariable = resolveVariableInfo(name);
+              if (existingVariable != null)
+                  return existingVariable;*/
 
             var typeNode = declarationNode.Arguments[0];
             var isImplicitlyTyped = typeNode.Value == LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
@@ -1837,13 +1931,17 @@ namespace AssemblyProviders.CSharp
         /// Create value provider with implicit this variable
         /// </summary>
         /// <param name="contextNode">Context node that enforces implicit this creation</param>
+        /// <param name="forcedType">Type which is this object forced to</param>
         /// <returns>Created provider</returns>
-        internal RValueProvider CreateImplicitThis(INodeAST contextNode)
+        internal RValueProvider CreateImplicitThis(INodeAST contextNode, TypeDescriptor forcedType = null)
         {
             if (!MethodInfo.HasThis)
                 throw parsingException(contextNode, "Implicit this is not available in static method");
 
-            return new TemporaryRVariableValue(Context, CSharpSyntax.ThisVariable);
+            var variable = new TemporaryRVariableValue(Context, CSharpSyntax.ThisVariable);
+            variable.SetForcedType(forcedType);
+
+            return variable;
         }
 
         /// <summary>
@@ -1890,7 +1988,7 @@ namespace AssemblyProviders.CSharp
         /// </summary>
         /// <param name="variableName">Name of needed variable</param>
         /// <returns><see cref="VariableInfo"/> that is currently scoped under variableName</returns>
-        private VariableInfo getVariableInfo(string variableName)
+        private VariableInfo resolveVariableInfo(string variableName)
         {
             return CompilationInfo.TryGetVariable(variableName);
         }

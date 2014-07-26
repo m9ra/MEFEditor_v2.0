@@ -25,13 +25,12 @@ namespace UnitTesting.Analyzing_TestUtils.Environment
     {
         private static readonly Type[] directTypes = new Type[]{
             typeof(string),
-            typeof(bool),   
             typeof(VMStack),
             typeof(LiteralType)
         };
 
         private static readonly Type[] mathTypes = new Type[]{
-            typeof(int),typeof(double)
+            typeof(bool), typeof(int),typeof(double)
         };
 
 

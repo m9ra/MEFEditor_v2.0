@@ -63,8 +63,7 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <param name="variable">Declared variable</param>
         internal void DeclareVariable(VariableInfo variable)
         {
-            /// TODO multiple declarations for variable can be made
-            _declaredVariables.Add(variable.Name, variable);
+            _declaredVariables[variable.Name] = variable;
         }
 
         /// <summary>
@@ -109,8 +108,8 @@ namespace AssemblyProviders.CSharp.Compiling
         /// <returns><see cref="TypeDescriptor"/> of resolved type if available, <c>null</c> otherwise</returns>
         internal TypeDescriptor ResolveAssignType(INodeAST variableUsing)
         {
-            if (variableUsing.Parent == null || 
-                variableUsing.Parent.Arguments.Length < 2 || 
+            if (variableUsing.Parent == null ||
+                variableUsing.Parent.Arguments.Length < 2 ||
                 !variableUsing.Parent.Value.Contains('='))
                 return null;
 

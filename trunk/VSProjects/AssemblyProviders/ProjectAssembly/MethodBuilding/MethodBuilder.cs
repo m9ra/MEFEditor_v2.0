@@ -99,6 +99,13 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
         private static MethodItem BuildFrom(CodeFunction element, TypeMethodInfo methodInfo, VsProjectAssembly declaringAssembly)
         {
             var sourceCode = methodInfo.IsAbstract ? null : GetSourceCode(element);
+            var isCtor = methodInfo.MethodName == Naming.CtorName;
+            if (isCtor)
+            {
+                //ctor can have precode
+                sourceCode = GetPreCode(element) + sourceCode;
+            }
+
             var namespaces = declaringAssembly.GetNamespaces(element as CodeElement);
 
             var fullname = element.FullName;
@@ -498,6 +505,28 @@ namespace AssemblyProviders.ProjectAssembly.MethodBuilding
             var body = editPoint.GetText(element.EndPoint).Replace("\r", "");
 
             return "{" + body;
+        }
+
+        /// <summary>
+        /// Get source code from given element that is before main body
+        /// </summary>
+        /// <param name="fn">Element which precode is retrieved</param>
+        /// <returns>Element's precode</returns>
+        internal static string GetPreCode(CodeFunction fn)
+        {
+            if (fn.FunctionKind != vsCMFunction.vsCMFunctionConstructor)
+            {
+                //precode is available only for ctors
+                return "";
+            }
+
+            var name = fn.Name;
+            var lang = fn.Language;
+            if (!fn.ProjectItem.IsOpen) fn.ProjectItem.Open();
+            var editPoint = fn.GetStartPoint(vsCMPart.vsCMPartHeader).CreateEditPoint();
+            var preCode = editPoint.GetText(vsCMPart.vsCMPartHeader).Replace("\r", "");
+
+            return preCode + (char)0;
         }
 
         /// <summary>

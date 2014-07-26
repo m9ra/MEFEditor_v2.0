@@ -1,4 +1,4 @@
-﻿//#define PassExceptions //TODO should be defined only for debuging purposes
+﻿#define PassExceptions //TODO should be defined only for debuging purposes
 
 using System;
 using System.Collections.Generic;

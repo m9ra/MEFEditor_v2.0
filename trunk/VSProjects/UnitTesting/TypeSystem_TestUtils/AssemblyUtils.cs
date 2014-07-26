@@ -27,12 +27,15 @@ namespace UnitTesting.TypeSystem_TestUtils
         public static Instance EXTERNAL_INPUT { get; set; }
         public static Instance REPORTED_INSTANCE { get; internal set; }
 
-
-
         public static TestingAssembly Run(string entryMethodSource)
         {
+            return RunRaw("{" + entryMethodSource + "}");
+        }
+
+        public static TestingAssembly RunRaw(string rawEntryMethodSource)
+        {
             var assembly = SettingsProvider.CreateTestingAssembly();
-            assembly.AddMethod(Method.EntryMethodPath, entryMethodSource, Method.Entry_NoParam);
+            assembly.AddMethodRaw(Method.EntryMethodPath, rawEntryMethodSource, Method.Entry_NoParam);
 
             addStandardMethods(assembly);
 
@@ -122,8 +125,7 @@ namespace UnitTesting.TypeSystem_TestUtils
             if (!assembly.IsBuilded)
                 assembly.Build();
 
-            var entryObj = assembly.Machine.CreateDirectInstance("EntryObject", TypeDescriptor.Create(typeof(string)));
-
+            var entryObj = assembly.Machine.CreateInstance(TypeDescriptor.Create(Method.EntryClass));
             return GetResult(assembly, entryMethod, entryObj);
         }
 

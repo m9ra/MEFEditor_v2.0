@@ -664,5 +664,104 @@ namespace UnitTesting
 
             ;
         }
+
+        [TestMethod]
+        public void Compile_BaseCalls()
+        {
+            AssemblyUtils.RunRaw(@"                
+            : base(""ValuePassedToBase"")" + (char)0 + @"
+            { 
+                var baseResult=base.Method();
+                var thisResult=this.Method();
+            }")
+
+            .AddMethod("System.Object." + Naming.CtorName, (c) =>
+            {
+                c.SetField(c.CurrentArguments[0], "BaseField", c.CurrentArguments[1]);
+            }, Method.Ctor_StringParam)
+
+            .AddMethod("System.Object.Method", (c) =>
+            {
+                var field = c.GetField(c.CurrentArguments[0], "BaseField") as Instance;
+                c.Return(field);
+            }, Method.String_NoParam)
+
+            .AddMethod(Method.EntryClass + ".Method", @"
+                return ""ThisMethod"";
+            ", Method.String_NoParam)
+
+             .AssertVariable("baseResult").HasValue("ValuePassedToBase")
+             .AssertVariable("thisResult").HasValue("ThisMethod")
+
+            ;
+        }
+
+        [TestMethod]
+        public void Compile_CompareOperators()
+        {
+            AssemblyUtils.Run(@"
+                var x=1;
+                var y=2;
+                var z=1;
+
+                var XsameY= x==y;   
+                var XsameZ= x==z;
+                var XlessY= x < y;
+                var XlessZ= x < z;
+                var XgreatY = x > y;
+                var XgreatZ = x > z;
+                var YgreatX = y > x;
+                var XleY = x <= y;
+                var XleZ = x <= z;
+            ")
+
+            .AssertVariable("XsameY").HasValue(false)
+            .AssertVariable("XsameZ").HasValue(true)
+            .AssertVariable("XlessY").HasValue(true)
+            .AssertVariable("XlessZ").HasValue(false)
+            .AssertVariable("XgreatY").HasValue(false)
+            .AssertVariable("XgreatZ").HasValue(false)
+            .AssertVariable("YgreatX").HasValue(true)
+            .AssertVariable("XleY").HasValue(true)
+            .AssertVariable("XleZ").HasValue(true)
+
+            ;
+        }
+
+        [TestMethod]
+        public void Compile_CompoundOperators()
+        {
+            AssemblyUtils.Run(@"
+                var x=1;
+                var y=2;
+                var z=1;
+                var XeY= x==y;
+                var XeZ= x==z;
+                var XneY= x!=y;
+                var XneZ= x!=z;                     
+                    
+                x+=1;
+            ")
+
+            .AssertVariable("XeY").HasValue(1 == 2)
+            .AssertVariable("XeZ").HasValue(1 == 1)
+            .AssertVariable("XneY").HasValue(1 != 2)
+            .AssertVariable("XneZ").HasValue(1 != 1)
+            .AssertVariable("x").HasValue(2)
+
+            ;
+        }
+        [TestMethod]
+        public void Compile_MathBracket()
+        {
+            AssemblyUtils.Run(@"
+                var noBracket= 2 + 1 * 3;   
+                var withBracket= (2 + 1) * 3;             
+            ")
+
+            .AssertVariable("noBracket").HasValue(2 + 1 * 3)
+            .AssertVariable("withBracket").HasValue((2 + 1) * 3)
+            ;
+        }
     }
 }

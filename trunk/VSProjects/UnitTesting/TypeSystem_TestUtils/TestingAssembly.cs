@@ -145,17 +145,22 @@ namespace UnitTesting.TypeSystem_TestUtils
 
         #region Adding methods to current assembly
 
-        public TestingAssembly AddMethod(string methodPath, string code, MethodDescription description)
+        public TestingAssembly AddMethodRaw(string methodPath, string rawCode, MethodDescription description)
         {
             var methodInfo = buildDescription(description, methodPath);
             var genericParameters = new PathInfo(methodPath).GenericArgs;
 
-            var sourceCode = "{" + code + "}";
-            var method = new ParsedGenerator(methodInfo, sourceCode, genericParameters, TypeServices);
+            var method = new ParsedGenerator(methodInfo, rawCode, genericParameters, TypeServices);
 
             addMethod(method, methodInfo, description.Implemented);
 
             return this;
+        }
+
+        public TestingAssembly AddMethod(string methodPath, string code, MethodDescription description)
+        {
+            var sourceCode = "{" + code + "}";
+            return AddMethodRaw(methodPath, sourceCode, description);
         }
 
         public TestingAssembly AddMethod(string methodPath, DirectMethod source, MethodDescription description)

@@ -23,7 +23,7 @@ namespace TestConsole
         /// </summary>        
         public static void Main()
         {
-            var testAssembly = TestCases.ForeachLoop();
+            var testAssembly = TestCases.CompoundOperators();
             DisplayTestResult(testAssembly);
         }
 
