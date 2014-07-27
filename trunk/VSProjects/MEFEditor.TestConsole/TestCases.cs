@@ -30,7 +30,10 @@ namespace MEFEditor.TestConsole
     /// </summary>
     static class TestCases
     {
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly TestExtensions()
         {
             return AssemblyUtils.Run(@"
@@ -45,6 +48,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_Array()
         {
             var cilAssembly = new CILAssembly("TestCases.exe");
@@ -62,6 +69,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Edit_BlockScope()
         {
             return AssemblyUtils.Run(@"
@@ -102,6 +113,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Edit_SemanticEnd_CommonScope()
         {
             return AssemblyUtils.Run(@"
@@ -125,6 +140,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Edit_SemanticEnd_ScopeBlock()
         {
             return AssemblyUtils.Run(@"
@@ -148,6 +167,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_InterfaceResolving()
         {
             var cilAssembly = new CILAssembly("TestCases.exe");
@@ -156,6 +179,10 @@ namespace MEFEditor.TestConsole
                 .AddAssembly(cilAssembly);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_Components()
         {
             var cilAssembly = new CILAssembly("TestCases.exe");
@@ -179,6 +206,10 @@ namespace MEFEditor.TestConsole
            .AddAssembly(cilAssembly);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_GeneriInterfaceResolving()
         {
             var cilAssembly = new CILAssembly("TestCases.exe");
@@ -189,6 +220,10 @@ namespace MEFEditor.TestConsole
                 .AddAssembly(cilAssembly);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Drawing_MultiConnectors()
         {
             return AssemblyUtils.Run(@"        
@@ -198,6 +233,10 @@ namespace MEFEditor.TestConsole
              .AddToRuntime<MultiExportImport>();
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionContainer_CompositionBatch()
         {
             var testAssembly = new RuntimeAssembly("C:\\test.exe");
@@ -229,6 +268,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionContainer_SatisfyImportsOnce()
         {
             var testAssembly = new RuntimeAssembly("C:\\test.exe");
@@ -255,7 +298,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionContainer_LazyMeta()
         {
             var testAssembly = new RuntimeAssembly("C:\\test.exe");
@@ -283,6 +329,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionContainer_Lazy()
         {
             var testAssembly = new RuntimeAssembly("C:\\test.exe");
@@ -308,6 +358,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly MEF_Demo()
         {
             var testAssembly = new RuntimeAssembly("test.exe");
@@ -341,6 +395,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CrossInterpreting_Simple()
         {
             return AssemblyUtils.Run(@"
@@ -368,6 +426,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly MEF_AssemblyCatalog()
         {
             var testAssembly = new RuntimeAssembly("test.exe");
@@ -394,6 +456,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly MEF_TypeCatalog()
         {
             return AssemblyUtils.Run(@"                        
@@ -410,6 +476,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly MEF_CompositionErrors()
         {
             var testAssembly = new RuntimeAssembly("test.exe");
@@ -434,6 +504,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ParamTesting()
         {
             return AssemblyUtils.Run(@"
@@ -441,6 +515,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly MEF_AggregateCatalog()
         {
             var testAssembly = new RuntimeAssembly("test.exe");
@@ -474,6 +552,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly MEF_DirectoryCatalog()
         {
             var testAssembly = new RuntimeAssembly("test.exe");
@@ -505,6 +587,10 @@ namespace MEFEditor.TestConsole
 
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_AssemblyProviding()
         {
             var cilAssembly = new CILAssembly("TestCases.exe");
@@ -512,12 +598,20 @@ namespace MEFEditor.TestConsole
                 .AddAssembly(cilAssembly);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         [CompositionPoint]
         static internal TestingAssembly CECIL_ForLoop()
         {
             return AssemblyUtils.RunCECIL("TestCases.exe", "CecilTestSources.ForLoop");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CIL_ForLoop()
         {
             return AssemblyUtils.RunCIL(() =>
@@ -532,6 +626,10 @@ namespace MEFEditor.TestConsole
             });
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CIL_ObjectCall()
         {
             return AssemblyUtils.RunCIL(() =>
@@ -542,6 +640,10 @@ namespace MEFEditor.TestConsole
             });
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CIL_StaticCall()
         {
             return AssemblyUtils.RunCIL(() =>
@@ -552,6 +654,10 @@ namespace MEFEditor.TestConsole
             });
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CIL_HelloWorld()
         {
             return AssemblyUtils.RunCIL(() =>
@@ -561,6 +667,10 @@ namespace MEFEditor.TestConsole
             });
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly DrawingTester_TwoContainers()
         {
             return AssemblyUtils.Run(@"        
@@ -584,6 +694,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly DrawingTester_BoundsCheck()
         {
             return AssemblyUtils.Run(@"        
@@ -603,6 +717,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly DrawingTester_SingleComponent()
         {
             return AssemblyUtils.Run(@"        
@@ -613,6 +731,10 @@ namespace MEFEditor.TestConsole
          ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly DrawingTester_SingleJoinSelfExport()
         {
             return AssemblyUtils.Run(@"        
@@ -641,6 +763,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly DrawingTester_SingleJoin()
         {
             return AssemblyUtils.Run(@"        
@@ -669,6 +795,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionTester_LoadAssembly()
         {
             var testAssembly = new RuntimeAssembly("test.exe");
@@ -697,6 +827,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly GenericInterfaceCall()
         {
             return AssemblyUtils.Run(@"
@@ -716,7 +850,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly InterfaceCall()
         {
             return AssemblyUtils.Run(@"
@@ -754,6 +891,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionTester_ManyImport()
         {
             return AssemblyUtils.Run(@"        
@@ -773,6 +914,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionTester_ManyStringImport()
         {
             return AssemblyUtils.Run(@"        
@@ -792,6 +937,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Array_Creation()
         {
             return AssemblyUtils.Run(@"        
@@ -804,6 +953,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Array_Initializer()
         {
             return AssemblyUtils.Run(@"        
@@ -817,6 +970,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Collection_Initializer()
         {
             return AssemblyUtils.Run(@"        
@@ -832,6 +989,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ArrayTesting()
         {
             return AssemblyUtils.Run(@"                
@@ -846,6 +1007,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly GenericTesting()
         {
             return AssemblyUtils.Run(@"                
@@ -860,6 +1025,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly GenericMethodTesting()
         {
             return AssemblyUtils.Run(@"                
@@ -872,6 +1041,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly GenericMethodDefinition()
         {
             return AssemblyUtils.Run(@"                
@@ -904,7 +1077,10 @@ namespace MEFEditor.TestConsole
             }, Method.String_NoParam);
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ExplicitGenericTesting()
         {
             return AssemblyUtils.Run(@"                
@@ -919,7 +1095,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ComplexDirectRuntime()
         {
             return AssemblyUtils.Run(@"                
@@ -934,6 +1113,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompositionTester()
         {
             return AssemblyUtils.Run(@"        
@@ -950,6 +1133,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly RuntimeCall_Default()
         {
             return AssemblyUtils.Run(@"                
@@ -962,6 +1149,10 @@ namespace MEFEditor.TestConsole
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly InstanceRemoving()
         {
             return AssemblyUtils.Run(@"
@@ -994,6 +1185,10 @@ namespace MEFEditor.TestConsole
          ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly StaticCall()
         {
             return AssemblyUtils.Run(@"
@@ -1019,6 +1214,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly FieldUsage()
         {
             return AssemblyUtils.Run(@"
@@ -1046,6 +1245,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static object acceptInstance(EditsProvider edits, ExecutionView services)
         {
             var variable = edits.GetVariableFor(AssemblyUtils.EXTERNAL_INPUT, services);
@@ -1086,6 +1289,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly PropertiesInc()
         {
             return AssemblyUtils.Run(@"
@@ -1117,6 +1324,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CastingOperators()
         {
             return AssemblyUtils.Run(@"
@@ -1128,6 +1339,10 @@ namespace MEFEditor.TestConsole
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CompoundOperators()
         {
             return AssemblyUtils.Run(@"
@@ -1143,6 +1358,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly MathBrackets()
         {
             return AssemblyUtils.Run(@"
@@ -1151,6 +1370,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ComparingOperators()
         {
             return AssemblyUtils.Run(@"
@@ -1170,6 +1393,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Operators()
         {
             return AssemblyUtils.Run(@"
@@ -1181,6 +1408,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly BaseTest()
         {
             return AssemblyUtils.RunRaw(@"                
@@ -1208,6 +1439,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly SwitchBlock()
         {
             return AssemblyUtils.Run(@"                
@@ -1231,6 +1466,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ForLoopBreak()
         {
             return AssemblyUtils.Run(@"                
@@ -1243,6 +1482,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ForLoop(int n)
         {
             return AssemblyUtils.Run(@"                
@@ -1254,7 +1497,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly ForeachLoop()
         {
             return AssemblyUtils.Run(@"                
@@ -1276,6 +1522,10 @@ namespace MEFEditor.TestConsole
              ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly DoWhileLoop()
         {
             return AssemblyUtils.Run(@"                
@@ -1289,6 +1539,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly WhileLoop(int n)
         {
             return AssemblyUtils.Run(@"
@@ -1302,6 +1556,10 @@ namespace MEFEditor.TestConsole
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly Fibonacci(int n)
         {
             return AssemblyUtils.Run(@"

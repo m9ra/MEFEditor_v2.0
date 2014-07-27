@@ -6,15 +6,16 @@ using System.Text;
 namespace Utilities
 {
     /// <summary>
-    /// List sorting multiple values according to key
+    /// List sorting multiple values according to key.
     /// </summary>
-    /// <typeparam name="TKey">Type of sortable key</typeparam>
-    /// <typeparam name="TValue">Type of stored values</typeparam>
+    /// <typeparam name="TKey">Type of sortable key.</typeparam>
+    /// <typeparam name="TValue">Type of stored values.</typeparam>
     public class SortedMultiList<TKey, TValue> : SortedList<TKey, List<TValue>>
     {
         /// <summary>
-        /// All stored values sorted according to key
+        /// All stored values sorted according to key.
         /// </summary>
+        /// <value>The multi values.</value>
         public IEnumerable<TValue> MultiValues
         {
             get
@@ -28,10 +29,10 @@ namespace Utilities
         }
 
         /// <summary>
-        /// Add value according to key into multiple vlaue collection
+        /// Add value according to key into multiple valuea collection.
         /// </summary>
-        /// <param name="key">Added key</param>
-        /// <param name="value">Added value</param>
+        /// <param name="key">Added key.</param>
+        /// <param name="value">Added value.</param>
         public void MultiAdd(TKey key, TValue value)
         {
             List<TValue> values;

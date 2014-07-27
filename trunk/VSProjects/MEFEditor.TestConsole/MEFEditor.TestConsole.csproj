@@ -85,7 +85,6 @@
   <ItemGroup>
     <Compile Include="AnalyzingResearchExecutor.cs" />
     <Compile Include="CecilTestSources.cs" />
-    <Compile Include="Drawing\ContentDrawer.cs" />
     <Compile Include="Drawing\DiagramFactory.cs" />
     <Compile Include="Printer.cs" />
     <Compile Include="Program.cs" />

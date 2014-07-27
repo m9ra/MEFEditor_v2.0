@@ -15,12 +15,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
     /// <summary>
     /// Provide services for parsing C# syntax.
     /// </summary>
-    class CSharpSyntax
+    public class CSharpSyntax
     {
         /// <summary>
         /// ID of CSharp language
         /// </summary>
-        internal const string LanguageID = "{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}";
+        public const string LanguageID = "{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}";
 
         #region Syntax element constants of C#
 
@@ -174,7 +174,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// </summary>
         /// <param name="lexer">Lexer which will be used for getting tokens.</param>
         /// <param name="nextTree">Encapsulate method which return next node tree from parser.</param>
-        public CSharpSyntax(ILexer lexer, GetNextTree nextTree)
+        internal CSharpSyntax(ILexer lexer, GetNextTree nextTree)
         {
             _lexer = lexer;
             layouts = new LanguageLayouts(nextTree, _lexer);

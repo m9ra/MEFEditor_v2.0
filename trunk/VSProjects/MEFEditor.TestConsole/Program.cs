@@ -15,11 +15,14 @@ using RecommendedExtensions.Core.Languages.CIL;
 
 namespace MEFEditor.TestConsole
 {
+    /// <summary>
+    /// Main class of <see cref="MEFEditor.TestConsole"/> application.
+    /// </summary>
     class Program
     {
         /// <summary>
-        /// Main for running research sources
-        /// </summary>        
+        /// Main for running research sources.
+        /// </summary>
         public static void Main()
         {
             var testAssembly = TestCases.CastingOperators();
@@ -27,9 +30,9 @@ namespace MEFEditor.TestConsole
         }
 
         /// <summary>
-        /// Run test that is defined by given assembly
+        /// Run test that is defined by given assembly.
         /// </summary>
-        /// <param name="assembly">Assembly where test </param>
+        /// <param name="assembly">Assembly where test.</param>
         public static void DisplayTestResult(TestingAssembly assembly)
         {
             var executor = new AnalyzingResearchExecutor(assembly);

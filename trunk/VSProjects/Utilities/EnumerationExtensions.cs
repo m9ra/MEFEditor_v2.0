@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Utilities
 {
+    /// <summary>
+    /// Class EnumerationExtensions provides extension methods for IEnumerable.
+    /// </summary>
     public static class EnumerationExtensions
     {
         /// <summary>
@@ -15,7 +18,7 @@ namespace Utilities
         /// </summary>
         /// <typeparam name="T">Type of enumeration elements</typeparam>
         /// <param name="source">Source of element </param>
-        /// <param name="n">Number of skppied elements</param>
+        /// <param name="n">Number of skipped elements</param>
         /// <returns>Enumeration where the last one is skipped</returns>
         public static IEnumerable<T> SkipLastN<T>(this IEnumerable<T> source, int n)
         {
@@ -35,12 +38,15 @@ namespace Utilities
         }
 
         /// <summary>
-        /// Perform an action on each element of an IEnumerable<T>, optionally specifying a different action for the final item.
-        /// 
+        /// Perform an action on each element of an IEnumerable, optionally specifying a different action for the final item.
         /// <remarks>
         /// Method implementation is taken from https://gist.github.com/matt-hickford/2781446
         /// </remarks>
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">Enumerated data.</param>
+        /// <param name="action">Action to be done.</param>
+        /// <param name="finalAction">Action to be done on last enumerated value.</param>
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action, Action<T> finalAction = null)
         {
             if (source == null)

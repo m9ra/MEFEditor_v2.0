@@ -14,12 +14,33 @@ namespace Utilities
     /// </summary>
     public static class FindFiles
     {
-        private static Regex HasQuestionMarkRegEx = new Regex(@"\?", RegexOptions.Compiled);
+        /// <summary>
+        /// Regex for testing question marks presence.
+        /// </summary>
+        private static Regex HasQuestionMarkRegex = new Regex(@"\?", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Regex for testing illegal characters presence.
+        /// </summary>
         private static Regex IlegalCharactersRegex = new Regex("[" + @"\/:<>|" + "\"]", RegexOptions.Compiled);
+
+        /// <summary>
+        /// The catch extention regex
+        /// </summary>
         private static Regex CatchExtentionRegex = new Regex(@"^\s*.+\.([^\.]+)\s*$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Pattern for testing presence of non dots
+        /// </summary>
         private static string NonDotCharacters = @"[^.]*";
 
 
+        /// <summary>
+        /// Filters the specified files according to given pattern.
+        /// </summary>
+        /// <param name="files">The files to be filtered.</param>
+        /// <param name="pattern">The pattern for filtering.</param>
+        /// <returns>Filtered files.</returns>
         public static IEnumerable<string> Filter(IEnumerable<string> files, string pattern)
         {
             if (pattern == null || files == null)
@@ -35,10 +56,16 @@ namespace Utilities
         }
 
         /// <summary>
-        /// Emulates behaviour of Directory.GetFiles filtering
+        /// Emulates behaviour of Directory.GetFiles filtering.
         /// </summary>
-        /// <param name="pattern">Search pattern</param>
-        /// <returns>Regular expression that can be used for filtering</returns>
+        /// <param name="pattern">Search pattern.</param>
+        /// <returns>Regular expression that can be used for filtering.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentException">
+        /// Pattern is empty.
+        /// or
+        /// Patterns contains ilegal characters.
+        /// </exception>
         public static Regex PatternToRegex(string pattern)
         {
             if (pattern == null)
@@ -56,7 +83,7 @@ namespace Utilities
             }
             bool hasExtension = CatchExtentionRegex.IsMatch(pattern);
             bool matchExact = false;
-            if (HasQuestionMarkRegEx.IsMatch(pattern))
+            if (HasQuestionMarkRegex.IsMatch(pattern))
             {
                 matchExact = true;
             }

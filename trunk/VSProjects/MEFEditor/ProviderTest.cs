@@ -11,7 +11,7 @@ namespace MEFEditor
     public class ProviderTest
     {
         /// <summary>
-        /// Method returning name of assembly, where method is implemented
+        /// Method returning name of assembly, where method is implemented.
         /// </summary>
         /// <returns>Name of defining assembly</returns>
         public static string GetDefiningAssemblyName()

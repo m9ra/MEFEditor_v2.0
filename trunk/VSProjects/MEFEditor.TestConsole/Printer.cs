@@ -15,38 +15,105 @@ using MEFEditor.TypeSystem;
 namespace MEFEditor.TestConsole
 {
     /// <summary>
-    /// Prints Instruction Analyzing Language program in readable format
+    /// Prints Instruction Analyzing Language program in readable format.
     /// </summary>
-    static class Printer
+    public static class Printer
     {
+
+        /// <summary>
+        /// Namespaces that are contracted in output.
+        /// </summary>
         static readonly string[] usings = new[]{
             typeof(List<>).Namespace,
             typeof(VMStack).Namespace,
             "System.ComponentModel.Composition.Hosting"
         };
 
-        static ConsoleColor BySeparatorColor = ConsoleColor.Red;
-        static ConsoleColor EqualsSeparatorColor = ConsoleColor.Red;
-        static ConsoleColor IfSeparatorColor = ConsoleColor.Red;
-        static ConsoleColor ArgumentDelimiterColor = ConsoleColor.Red;
+        #region Color definitions
 
-        static ConsoleColor CommentColor = ConsoleColor.DarkGray;
-        static ConsoleColor OpcodeColor = ConsoleColor.White;
+        /// <summary>
+        /// Color of by separator.
+        /// </summary>
+        internal static ConsoleColor BySeparatorColor = ConsoleColor.Red;
 
-        static ConsoleColor ArgumentTypeColor = ConsoleColor.Magenta;
-        static ConsoleColor ArgumentColor = ConsoleColor.DarkMagenta;
+        /// <summary>
+        /// Color of equals.
+        /// </summary>
+        internal static ConsoleColor EqualsSeparatorColor = ConsoleColor.Red;
 
-        static ConsoleColor MethodColor = ConsoleColor.Cyan;
-        static ConsoleColor StringColor = ConsoleColor.Green;
-        static ConsoleColor NumberColor = ConsoleColor.DarkGreen;
-        static ConsoleColor BoolColor = ConsoleColor.DarkGreen;
-        static ConsoleColor VariableColor = ConsoleColor.DarkYellow;
-        static ConsoleColor LabelColor = ConsoleColor.Yellow;
-        static ConsoleColor CodeColor = ConsoleColor.Gray;
+        /// <summary>
+        /// Color of if.
+        /// </summary>
+        internal static ConsoleColor IfSeparatorColor = ConsoleColor.Red;
+
+        /// <summary>
+        /// Color of arguments delimiter.
+        /// </summary>
+        internal static ConsoleColor ArgumentDelimiterColor = ConsoleColor.Red;
+
+        /// <summary>
+        /// Color of comments.
+        /// </summary>
+        internal static ConsoleColor CommentColor = ConsoleColor.DarkGray;
+
+        /// <summary>
+        /// Color of opcode.
+        /// </summary>
+        internal static ConsoleColor OpcodeColor = ConsoleColor.White;
+
+        /// <summary>
+        /// Color of argument type.
+        /// </summary>
+        internal static ConsoleColor ArgumentTypeColor = ConsoleColor.Magenta;
+
+        /// <summary>
+        /// Color of argument.
+        /// </summary>
+        internal static ConsoleColor ArgumentColor = ConsoleColor.DarkMagenta;
+
+        /// <summary>
+        /// Color of method.
+        /// </summary>
+        internal static ConsoleColor MethodColor = ConsoleColor.Cyan;
+
+        /// <summary>
+        /// Color of string.
+        /// </summary>
+        internal static ConsoleColor StringColor = ConsoleColor.Green;
+
+        /// <summary>
+        /// Color of number.
+        /// </summary>
+        internal static ConsoleColor NumberColor = ConsoleColor.DarkGreen;
+
+        /// <summary>
+        /// Color of bool.
+        /// </summary>
+        internal static ConsoleColor BoolColor = ConsoleColor.DarkGreen;
+
+        /// <summary>
+        /// Color of variable.
+        /// </summary>
+        internal static ConsoleColor VariableColor = ConsoleColor.DarkYellow;
+
+        /// <summary>
+        /// Color of label.
+        /// </summary>
+        internal static ConsoleColor LabelColor = ConsoleColor.Yellow;
+
+        /// <summary>
+        /// Color of code.
+        /// </summary>
+        internal static ConsoleColor CodeColor = ConsoleColor.Gray;
+
+        #endregion
 
         #region Printing services
 
-
+        /// <summary>
+        /// Prints the variables of given <see cref="CallContext"/>.
+        /// </summary>
+        /// <param name="context">The context which variables will be printed.</param>
         public static void PrintVariables(CallContext context)
         {
             foreach (var variable in context.Variables)
@@ -60,11 +127,11 @@ namespace MEFEditor.TestConsole
         }
 
         /// <summary>
-        /// Print text with specified color on console output
+        /// Print text with specified color on console output.
         /// </summary>
-        /// <param name="color">Color of printed output</param>
-        /// <param name="text">Text printed to output</param>
-        /// <param name="formatArgs">Format arguments for printed text</param>
+        /// <param name="color">Color of printed output.</param>
+        /// <param name="text">Text printed to output.</param>
+        /// <param name="formatArgs">Format arguments for printed text.</param>
         public static void Print(ConsoleColor color, string text, params object[] formatArgs)
         {
             var output = string.Format(text, formatArgs);
@@ -77,6 +144,10 @@ namespace MEFEditor.TestConsole
             Console.Write(output);
         }
 
+        /// <summary>
+        /// Prints the highlighted form of Instruction Analyzing Language.
+        /// </summary>
+        /// <param name="code">The IAL code.</param>
         public static void PrintIAL(string code)
         {
             code = code.Replace("{", "{{").Replace("}", "}}");
@@ -99,9 +170,9 @@ namespace MEFEditor.TestConsole
         }
 
         /// <summary>
-        /// Print count-times new line on console output
+        /// Print count-times new line on console output.
         /// </summary>
-        /// <param name="count">Number of printed new lines</param>
+        /// <param name="count">Number of printed new lines.</param>
         public static void PrintLines(int count = 1)
         {
             for (int i = 0; i < count; ++i)
@@ -111,19 +182,19 @@ namespace MEFEditor.TestConsole
         /// <summary>
         /// Print text with specified color on console output. Text is suffixed by new line character.
         /// </summary>
-        /// <param name="color">Color of printed output</param>
-        /// <param name="text">Text printed to output</param>
-        /// <param name="formatArgs">Format arguments for printed text</param>
+        /// <param name="color">Color of printed output.</param>
+        /// <param name="text">Text printed to output.</param>
+        /// <param name="formatArgs">Format arguments for printed text.</param>
         public static void Println(ConsoleColor color, string text, params object[] formatArgs)
         {
             Print(color, text + "\n", formatArgs);
         }
 
         /// <summary>
-        /// Format indented source
+        /// Format indented source.
         /// </summary>
-        /// <param name="source">Source to be formatted</param>
-        /// <returns>Formatted source</returns>
+        /// <param name="source">Source to be formatted.</param>
+        /// <returns>Formatted source.</returns>
         public static void PrintCode(string source)
         {
             var result = new StringBuilder();
@@ -160,6 +231,10 @@ namespace MEFEditor.TestConsole
         #endregion
 
 
+        /// <summary>
+        /// Prints the comment.
+        /// </summary>
+        /// <param name="comment">The comment.</param>
         static void printComment(string comment)
         {
             if (comment.StartsWith("["))
@@ -176,6 +251,10 @@ namespace MEFEditor.TestConsole
             }
         }
 
+        /// <summary>
+        /// Prints the instruction.
+        /// </summary>
+        /// <param name="instructionLine">The instruction line.</param>
         static void printInstruction(string instructionLine)
         {
             var instruction = instructionLine.Split(new char[] { ' ' }, 2);
@@ -202,6 +281,12 @@ namespace MEFEditor.TestConsole
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// Prints arguments that are separated by given separator.
+        /// </summary>
+        /// <param name="argumentsPart">The arguments part.</param>
+        /// <param name="separator">The separator.</param>
+        /// <param name="separatorColor">Color of the separator.</param>
         static void printSeparatedArguments(string argumentsPart, string separator, ConsoleColor separatorColor)
         {
             var separedParts = argumentsPart.Split(new string[] { separator }, 2, StringSplitOptions.None);
@@ -213,6 +298,10 @@ namespace MEFEditor.TestConsole
             }
         }
 
+        /// <summary>
+        /// Prints the arguments.
+        /// </summary>
+        /// <param name="argumentsPart">The arguments part of instruction.</param>
         static void printArguments(string argumentsPart)
         {
             var arguments = splitOutOfBrackets(',', argumentsPart);
@@ -232,8 +321,10 @@ namespace MEFEditor.TestConsole
             }
         }
 
-
-
+        /// <summary>
+        /// Prints the argument.
+        /// </summary>
+        /// <param name="argumentPart">The argument part of instruction.</param>
         static void printArgument(string argumentPart)
         {
             if (argumentPart[0] == '[')
@@ -249,6 +340,11 @@ namespace MEFEditor.TestConsole
             }
         }
 
+        /// <summary>
+        /// Prints the value of given type.
+        /// </summary>
+        /// <param name="typePart">The type part of instruction.</param>
+        /// <param name="valuePart">The value part of instruction.</param>
         static void printValue(string typePart, string valuePart)
         {
             typePart = typePart.Trim();
@@ -283,6 +379,12 @@ namespace MEFEditor.TestConsole
             }
         }
 
+        /// <summary>
+        /// Splits the given data according to split character. Brackets are considered.
+        /// </summary>
+        /// <param name="splitCharacter">The split character.</param>
+        /// <param name="data">The data.</param>
+        /// <returns>Split data.</returns>
         private static string[] splitOutOfBrackets(char splitCharacter, string data)
         {
             var result = new List<string>();

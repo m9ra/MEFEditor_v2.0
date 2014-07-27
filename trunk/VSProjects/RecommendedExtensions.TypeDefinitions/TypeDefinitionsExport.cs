@@ -15,9 +15,16 @@ using RecommendedExtensions.Core.Languages.CIL;
 
 namespace RecommendedExtensions.TypeDefinitions
 {
+    /// <summary>
+    /// Exporting class of type definitions that are exposed by <see cref="RecommendedExtensions"/> to
+    /// provide MEF analyzing support.
+    /// </summary>
     [Export(typeof(ExtensionExport))]
     public class TypeDefinitionsExport : ExtensionExport
     {
+        /// <summary>
+        /// Register type definitions of <see cref="RecommendedExtensions"/>.
+        /// </summary>
         protected override void Register()
         {
             Message("Exporting Recommended TypeDefinitions");
@@ -68,6 +75,11 @@ namespace RecommendedExtensions.TypeDefinitions
             ExportDefinition<ConsoleDefinition>();
         }
 
+        /// <summary>
+        /// Exports the types.
+        /// </summary>
+        /// <param name="directTypes">The direct types.</param>
+        /// <param name="mathTypes">The math types.</param>
         private void exportTypes(Type[] directTypes, Type[] mathTypes)
         {
             foreach (var directType in directTypes)
@@ -81,12 +93,21 @@ namespace RecommendedExtensions.TypeDefinitions
             }
         }
 
+        /// <summary>
+        /// Exports the type as <see cref="DirectTypeDefinition"/>.
+        /// </summary>
+        /// <param name="directType">Direct type.</param>
         private void exportDirectType(Type directType)
         {
             var typeDefinition = new DirectTypeDefinition(directType);
             ExportDefinition(typeDefinition);
         }
 
+        /// <summary>
+        /// Exports the type as <see cref="DirectTypeDefinition"/> with
+        /// native support of math operators.
+        /// </summary>
+        /// <param name="mathType">Type of the math.</param>
         private void exportDirectMathType(Type mathType)
         {
             var type = typeof(MathDirectType<>).MakeGenericType(mathType);

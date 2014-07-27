@@ -17,8 +17,15 @@ using MEFEditor.Drawing;
 
 namespace MEFEditor.Plugin.Drawing
 {
+    /// <summary>
+    /// Class representing content drawing displayed instead of recursive <see cref="DiagramItem"/>.
+    /// </summary>
     public class RecursiveDrawing : ContentDrawing
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecursiveDrawing"/> class.
+        /// </summary>
+        /// <param name="item">The recursive item.</param>
         public RecursiveDrawing(DiagramItem item)
             : base(item)
         {

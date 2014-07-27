@@ -16,10 +16,14 @@ using System.Windows.Shapes;
 namespace MEFEditor.TestConsole.Drawings
 {
     /// <summary>
-    /// Interaction logic for TestForm.xaml
+    /// Interaction logic for TestForm.xaml. It is a GUI where
+    /// editor can be loaded outside of Visual Studio.
     /// </summary>
     public partial class TestForm : Window
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestForm"/> class.
+        /// </summary>
         public TestForm()
         {
             InitializeComponent();

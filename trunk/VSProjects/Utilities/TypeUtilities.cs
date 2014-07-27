@@ -7,15 +7,19 @@ using System.Reflection;
 
 namespace Utilities
 {
+    /// <summary>
+    /// Class of utility methods on <see cref="Type"/>.
+    /// </summary>
     public static class TypeUtilities
     {
         /// <summary>
         /// Utility method for dynamic casting of types
-        /// Taken from: http://stackoverflow.com/questions/7351289/how-do-i-perform-explicit-operation-casting-from-reflection
+        /// Taken from: http://stackoverflow.com/questions/7351289/how-do-i-perform-explicit-operation-casting-from-reflection.
         /// </summary>
-        /// <param name="source">Object to be casted</param>
-        /// <param name="destType">Desired type</param>
-        /// <returns>Casted object</returns>
+        /// <param name="source">Object to be casted.</param>
+        /// <param name="destType">Desired type.</param>
+        /// <returns>Casted object.</returns>
+        /// <exception cref="System.InvalidCastException"></exception>
         public static object DynamicCast(object source, Type destType)
         {
             Type srcType = source.GetType();

@@ -8,7 +8,7 @@ namespace MEFEditor
 {
     /// <summary>
     /// Attribute used for marking explicit composition points. Those
-    /// composition points will be displayed in edito's composition points menu. 
+    /// composition points will be displayed in editor's composition points menu. 
     /// </summary>    
     [AttributeUsage(AttributeTargets.Method |AttributeTargets.Constructor,AllowMultiple=false)]
     public class CompositionPointAttribute:Attribute

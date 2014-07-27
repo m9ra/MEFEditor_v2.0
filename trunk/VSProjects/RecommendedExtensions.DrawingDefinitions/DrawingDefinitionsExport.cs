@@ -13,9 +13,16 @@ using RecommendedExtensions.Core.Drawings;
 
 namespace RecommendedExtensions.DrawingDefinitions
 {
+    /// <summary>
+    /// Exporting class of drawing definitions that are exposed by <see cref="RecommendedExtensions"/> to
+    /// provide MEF analyzing support.
+    /// </summary>
     [Export(typeof(ExtensionExport))]
     public class DrawingDefinitionsExport : ExtensionExport
     {
+        /// <summary>
+        /// Register drawing definitions of <see cref="RecommendedExtensions"/>.
+        /// </summary>
         protected override void Register()
         {
             Message("Exporting Recommended DrawingDefinitions");

@@ -5,12 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
+using MEFEditor.Plugin.Drawing;
 using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
 using RecommendedExtensions.Core.Drawings;
 
 namespace MEFEditor.TestConsole.Drawings
 {
+    /// <summary>
+    /// Implementation of diagram factory used for creating drawings.
+    /// </summary>
     class DiagramFactory : AbstractDiagramFactory
     {
 
