@@ -397,6 +397,7 @@ namespace MEFEditor.Plugin.Main
                     //flushing will cause event that refresh drawing again - so 
                     //we dont need to refresh drawing immediately
                     return;
+
                 _guiManager.DoEvents();
                 var compositionPoint = _guiManager.SelectedCompositionPoint;
                 showComposition(compositionPoint);

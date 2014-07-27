@@ -10,17 +10,24 @@ using System.ComponentModel.Composition.Hosting;
 using MEFEditor;
 
 /// <summary>
-/// Is used for loading via Mono.Cecil
+/// Test sources that are loaded in compiled way by Mono.Cecil.
+/// <remarks>These test are used for usage in TestConsole - not in automation tests</remarks>
 /// </summary>
 static class CecilTestSources
 {
     static string data;
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static CecilTestSources()
     {
         data = "initialized";
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static string ForLoop()
     {
         string str = "";
@@ -32,33 +39,51 @@ static class CecilTestSources
         return str;
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static string CrossStart()
     {
         var x = "x";
         return x + CrossCall() + data;
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static string CrossCall()
     {
         return "Cross";
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static string IFaceTest(SimpleIface iface)
     {
         return iface.Test();
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static void RunIfaceTest()
     {
         var iface = new IfaceImplementation();
         var result = IFaceTest(iface);
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static string GenericIfaceTest<T>(T a, GenericIface<T> t)
     {
         return t.Test<string>(a, "abc");
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     [CompositionPoint]
     static void RunGenericIfaceTest()
     {
@@ -66,6 +91,9 @@ static class CecilTestSources
         var result = GenericIfaceTest<int>(5, iface);
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     [CompositionPoint]
     static void RunGenericTest()
     {
@@ -73,24 +101,34 @@ static class CecilTestSources
         impl.Test2<string>(4, "b", "c");
     }
 
-
+    /// <summary>
+    /// Test case
+    /// </summary>
     static T SimpleGenericTest<T>(T input)
     {
         return input;
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static void RunSimpleGenericTest()
     {
         var result = SimpleGenericTest<string>("abcd");
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static void RunImplicitArrayTest()
     {
         var type = typeof(CecilComponent);
         var typeCat = new TypeCatalog(type);
 
     }
-
+    /// <summary>
+    /// Test case
+    /// </summary>
     static void RunExplicitArrayTest()
     {
         var x = new string[]{
@@ -101,6 +139,9 @@ static class CecilTestSources
         var result = x[0] + x[1];
     }
 
+    /// <summary>
+    /// Test case
+    /// </summary>
     static void RunFieldTest()
     {
         var obj = new CECILComponent2();
@@ -111,6 +152,9 @@ static class CecilTestSources
     }
 }
 
+/// <summary>
+/// Test component for loading with Mono.Cecil
+/// </summary>
 class CecilComponent
 {
     [CompositionPoint]

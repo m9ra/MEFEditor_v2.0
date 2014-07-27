@@ -48,14 +48,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
         /// <returns>Created ctor</returns>
         private MethodItem buildImplicitCtor(CodeClass2 element)
         {
-            var initializerName = MethodInfo.IsStatic ? CSharpSyntax.MemberStaticInitializer : CSharpSyntax.MemberInitializer;
-            var initializerInfo = DeclaringAssembly.InfoBuilder.Build(element as CodeElement, initializerName);
-            var ctorGenerator = new DirectGenerator((c) =>
-            {
-                //implicit ctor only calls inicializer
-                c.DynamicCall(initializerInfo.MethodID, c.CurrentArguments[0]);
-            });
-            return new MethodItem(ctorGenerator, MethodInfo);
+            //we use source ctor, because of having navigation edit
+            return buildFromSource(element, "{ }");
         }
 
         /// <summary>
@@ -85,6 +79,17 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
 
             initializerSource.Append("}");
             var sourceCode = initializerSource.ToString();
+            return buildFromSource(element, sourceCode);
+        }
+
+        /// <summary>
+        /// Build implicit ctor or initializer method from given source
+        /// </summary>
+        /// <param name="element">Element which method is built</param>
+        /// <param name="sourceCode">Code of method</param>
+        /// <returns>Built method</returns>
+        private MethodItem buildFromSource(CodeClass2 element, string sourceCode)
+        {
             var namespaces = DeclaringAssembly.GetNamespaces(element as CodeElement);
 
             var activation = new ParsingActivation(sourceCode, MethodInfo, new string[0], namespaces);

@@ -344,9 +344,7 @@ namespace MEFEditor.TestConsole
             Printer.Println(ConsoleColor.Yellow, "Entry source result:");
             Printer.PrintCode(_assembly.GetSource(_entryMethod, _result.View));
         }
-
-
-
+        
         /// <summary>
         /// Find generated contexts without duplicities (check for instruction batch match)
         /// </summary>

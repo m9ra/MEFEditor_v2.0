@@ -294,6 +294,7 @@
     <CopyVsixExtensionFiles>True</CopyVsixExtensionFiles>
     <CopyVsixExtensionLocation>C:\Program Files %28x86%29\Microsoft Visual Studio 10.0\Common7\IDE\Extensions\TestPlugin</CopyVsixExtensionLocation>
     <Optimize>false</Optimize>
+    <DocumentationFile>bin\Debug\MEFEditor.Plugin.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\Release\</OutputPath>
