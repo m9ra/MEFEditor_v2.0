@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 using System.Linq.Expressions;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-using AssemblyProviders.CIL;
-using AssemblyProviders.CSharp;
-using AssemblyProviders.DirectDefinitions;
+using RecommendedExtensions.Core.Services;
+using RecommendedExtensions.Core.Languages.CIL;
+using RecommendedExtensions.Core.Languages.CSharp;
 
-using UnitTesting.RuntimeTypeDefinitions;
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.RuntimeTypeDefinitions;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-namespace UnitTesting.Analyzing_TestUtils.Environment
+namespace MEFEditor.UnitTesting.Analyzing_TestUtils.Environment
 {
     class SettingsProvider
     {

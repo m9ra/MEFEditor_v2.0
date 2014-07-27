@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Analyzing
+namespace MEFEditor.Analyzing
 {
     /// <summary>
     /// MethodID exactly describes concrete method (description can exists without described method existence)

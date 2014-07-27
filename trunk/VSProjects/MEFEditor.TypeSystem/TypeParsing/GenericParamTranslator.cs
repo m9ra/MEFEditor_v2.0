@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using System.Reflection;
 
-namespace TypeSystem.TypeParsing
+namespace MEFEditor.TypeSystem.TypeParsing
 {
     /// <summary>
     /// Provider of methods element (Return type, parameter,..) type 

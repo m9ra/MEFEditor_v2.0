@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Factory used by <see cref="AssemblyLoader"/> for creating <see cref="AssemblyProvider"/> objects.

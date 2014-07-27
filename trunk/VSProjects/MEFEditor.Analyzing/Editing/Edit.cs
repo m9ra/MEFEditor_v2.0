@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Editing.Transformations;
+using MEFEditor.Analyzing.Editing.Transformations;
 
-namespace Analyzing.Editing
+namespace MEFEditor.Analyzing.Editing
 {
     public class Edit
     {

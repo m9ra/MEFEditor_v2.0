@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TypeSystem.TypeParsing
+namespace MEFEditor.TypeSystem.TypeParsing
 {
     /// <summary>
     /// Builder used for TypeDescriptors building

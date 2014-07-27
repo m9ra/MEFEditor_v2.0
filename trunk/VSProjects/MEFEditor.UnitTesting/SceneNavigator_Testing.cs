@@ -5,9 +5,9 @@ using System.Windows;
 
 using MEFEditor.Drawing;
 
-using UnitTesting.Drawing_TestUtils;
+using MEFEditor.UnitTesting.Drawing_TestUtils;
 
-namespace UnitTesting
+namespace MEFEditor.UnitTesting
 {
     /// <summary>
     /// Testing of <see cref="SceneNavigator"/> that is important for collision handling.

@@ -1,0 +1,45 @@
+﻿<dr:ConnectorDrawing x:Class="RecommendedExtensions.Core.Drawings.ExportConnector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:dr="clr-namespace:MEFEditor.Drawing;assembly=MEFEditor.Drawing"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+                   
+             MinHeight="10"
+             MinWidth="10"
+            
+             BorderThickness="0"
+             >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Path Name="Glyph" Grid.Column="0" Grid.Row="0" Stroke="Black" VerticalAlignment="Center">
+            <Path.Fill>
+                <LinearGradientBrush>
+                    <GradientStop Color="White" Offset="0"/>
+                    <GradientStop Color="White" Offset="0.4"/>
+                    <GradientStop Color="Blue" Offset="2"/>
+                </LinearGradientBrush>
+            </Path.Fill>
+            <Path.Data>
+                <GeometryGroup>
+                    <GeometryGroup.Children>
+                        <EllipseGeometry Center="15,5" RadiusX="5" RadiusY="5"/>
+                        <LineGeometry StartPoint="0,5" EndPoint="10,5"/>
+                    </GeometryGroup.Children>
+                </GeometryGroup>
+            </Path.Data>
+        </Path>
+        <StackPanel Name="ErrorOutput"  Orientation="Horizontal" HorizontalAlignment="Left" MaxHeight="25" Margin="5 0" Grid.Column="1" Grid.Row="0"/>
+
+        <TextBlock Name="Contract" Padding="10 0"  Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Left" Grid.Row="1">System.ICollection[string]</TextBlock>
+    </Grid>
+</dr:ConnectorDrawing>

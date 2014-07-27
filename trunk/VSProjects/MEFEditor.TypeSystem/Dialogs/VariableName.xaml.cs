@@ -15,13 +15,13 @@ using System.Windows.Shapes;
 
 using System.Text.RegularExpressions;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-namespace TypeSystem.Dialogs
+namespace MEFEditor.TypeSystem.Dialogs
 {
     /// <summary>
     /// Interaction logic for ComponentTypeDialog.xaml

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Analyzing.Editing
+namespace MEFEditor.Analyzing.Editing
 {
     /// <summary>
     /// Action that can be used for navigation at providing instruction

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 
 using MEFEditor.Drawing;
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem.Runtime;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Factory method for exported drawing definitions

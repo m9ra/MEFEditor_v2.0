@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     public class DirectGenerator:GeneratorBase, GenericMethodGenerator
     {

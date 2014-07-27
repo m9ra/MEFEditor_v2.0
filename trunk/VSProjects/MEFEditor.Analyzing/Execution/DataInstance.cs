@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Analyzing.Execution
+namespace MEFEditor.Analyzing.Execution
 {
     public class DataInstance : Instance
     {

@@ -6,7 +6,7 @@ using System.Text;
 using EnvDTE;
 using EnvDTE80;
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
 
     /// <summary>

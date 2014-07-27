@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
 
-using Analyzing;
-using Analyzing.Editing;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
 
-using TypeSystem.Runtime;
-using TypeSystem.DrawingServices;
+using MEFEditor.TypeSystem.Runtime;
+using MEFEditor.TypeSystem.DrawingServices;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     public class InstanceDrawer
     {

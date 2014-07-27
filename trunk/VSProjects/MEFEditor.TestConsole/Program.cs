@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 
 using System.Diagnostics;
 
-using TypeSystem;
-using UnitTesting.Analyzing_TestUtils;
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.TypeSystem;
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-using AssemblyProviders;
-using AssemblyProviders.CIL;
+using RecommendedExtensions.Core.Languages.CIL;
 
-namespace TestConsole
+namespace MEFEditor.TestConsole
 {
     class Program
     {

@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Utilities;
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Builder helping with creating component info.

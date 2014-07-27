@@ -4,27 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using UnitTesting;
-using UnitTesting.RuntimeTypeDefinitions;
-using UnitTesting.Analyzing_TestUtils;
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting;
+using MEFEditor.UnitTesting.RuntimeTypeDefinitions;
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-using Analyzing;
-using Analyzing.Execution;
-using Analyzing.Editing;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
+using MEFEditor.Analyzing.Editing;
 
-using MEFEditor;
-using MEFAnalyzers;
+using RecommendedExtensions.Core;
+using RecommendedExtensions.Core.TypeDefinitions;
+using RecommendedExtensions.Core.AssemblyProviders.CILAssembly;
+
 using UserExtensions;
 
-using AssemblyProviders.CILAssembly;
-using AssemblyProviders.CIL.Providing;
-using AssemblyProviders.DirectDefinitions;
-
-namespace TestConsole
+namespace MEFEditor.TestConsole
 {
     /// <summary>
     /// Bunch of test cases that can be directly 
@@ -57,10 +55,10 @@ namespace TestConsole
                     ))
 
                 .AddAssembly(cilAssembly)
-                .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
-                .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
-                .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
-                .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+                .AddToRuntime<AggregateCatalogDefinition>()
+                .AddToRuntime<TypeCatalogDefinition>()
+                .AddToRuntime<CompositionContainerDefinition>()
+                .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
            ;
         }
 
@@ -113,10 +111,10 @@ namespace TestConsole
                 toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());            
             ")
 
-           .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
-           .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
-           .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
-           .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+           .AddToRuntime<AggregateCatalogDefinition>()
+           .AddToRuntime<TypeCatalogDefinition>()
+           .AddToRuntime<CompositionContainerDefinition>()
+           .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
 
             .UserAction((c) =>
             {
@@ -136,10 +134,10 @@ namespace TestConsole
                 toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());            
             ")
 
-           .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
-           .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
-           .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
-           .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+           .AddToRuntime<AggregateCatalogDefinition>()
+           .AddToRuntime<TypeCatalogDefinition>()
+           .AddToRuntime<CompositionContainerDefinition>()
+           .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
 
             .UserAction((c) =>
             {

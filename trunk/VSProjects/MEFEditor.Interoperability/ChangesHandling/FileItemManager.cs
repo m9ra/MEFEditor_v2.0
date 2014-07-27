@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using EnvDTE;
 using EnvDTE80;
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
     /// <summary>
     /// Action observed on given element

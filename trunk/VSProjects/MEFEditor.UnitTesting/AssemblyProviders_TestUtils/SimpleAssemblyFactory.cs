@@ -5,11 +5,11 @@ using System.Text;
 
 using System.IO;
 
-using TypeSystem;
+using MEFEditor.TypeSystem;
 
-using AssemblyProviders.CILAssembly;
+using RecommendedExtensions.Core.AssemblyProviders.CILAssembly;
 
-namespace UnitTesting.AssemblyProviders_TestUtils
+namespace MEFEditor.UnitTesting.AssemblyProviders_TestUtils
 {
     public class SimpleAssemblyFactory : AssemblyProviderFactory
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TypeSystem.Core;
+using MEFEditor.TypeSystem.Core;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Runtime representation of assembly, that can be used by <see cref="RuntimeTypeDefinition"/> implementations.

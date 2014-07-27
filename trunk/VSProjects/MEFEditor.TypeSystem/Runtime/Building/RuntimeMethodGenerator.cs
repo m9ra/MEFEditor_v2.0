@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem.Runtime.Building
+namespace MEFEditor.TypeSystem.Runtime.Building
 {
     class RuntimeMethodGenerator : GeneratorBase, GenericMethodGenerator
     {

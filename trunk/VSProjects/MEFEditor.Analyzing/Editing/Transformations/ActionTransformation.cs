@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Analyzing.Editing.Transformations
+namespace MEFEditor.Analyzing.Editing.Transformations
 {
     public class ActionTransformation:Transformation
     {

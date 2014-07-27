@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using System.IO;
 
 using Utilities;
-using Analyzing;
+using MEFEditor.Analyzing;
 
-using TypeSystem.Runtime;
-using TypeSystem.Transactions;
+using MEFEditor.TypeSystem.Runtime;
+using MEFEditor.TypeSystem.Transactions;
 
-namespace TypeSystem.Core
+namespace MEFEditor.TypeSystem.Core
 {
     /// <summary>
     /// Representation of AppDomain, that handle loading/unloading, type resolving and components. Is topmost manager

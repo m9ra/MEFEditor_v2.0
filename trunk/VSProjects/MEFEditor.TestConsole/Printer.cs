@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
-using Analyzing.Execution;
-using AssemblyProviders.CIL;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
+using RecommendedExtensions.Core.Languages.CIL;
 
-using TypeSystem;
+using MEFEditor.TypeSystem;
 
 
 
-namespace TestConsole
+namespace MEFEditor.TestConsole
 {
     /// <summary>
     /// Prints Instruction Analyzing Language program in readable format

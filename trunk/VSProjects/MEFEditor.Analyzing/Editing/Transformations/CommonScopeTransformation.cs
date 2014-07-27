@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Execution;
+using MEFEditor.Analyzing.Execution;
 
-namespace Analyzing.Editing.Transformations
+namespace MEFEditor.Analyzing.Editing.Transformations
 {
     /// <summary>
     /// Handler used for determining if given transformations will be accepted or not

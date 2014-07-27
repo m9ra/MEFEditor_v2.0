@@ -7,22 +7,20 @@ using System.Diagnostics;
 using System.IO;
 
 using MEFEditor.Drawing;
-using Analyzing;
-using Analyzing.Editing;
-using Analyzing.Editing.Transformations;
-using TypeSystem;
-using TypeSystem.Runtime;
-using TypeSystem.Transactions;
-using TypeSystem.DrawingServices;
-using Interoperability;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.Analyzing.Editing.Transformations;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
+using MEFEditor.TypeSystem.Transactions;
+using MEFEditor.TypeSystem.DrawingServices;
+using MEFEditor.Interoperability;
 
-using AssemblyProviders.CIL;
-using AssemblyProviders.CSharp;
-using AssemblyProviders.ProjectAssembly;
-using AssemblyProviders.DirectDefinitions;
-
-using MEFAnalyzers;
-using MEFAnalyzers.Drawings;
+using RecommendedExtensions.Core;
+using RecommendedExtensions.Core.Drawings;
+using RecommendedExtensions.Core.Languages.CIL;
+using RecommendedExtensions.Core.Languages.CSharp;
+using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
 
 using MEFEditor.Plugin.GUI;
 using MEFEditor.Plugin.Drawing;

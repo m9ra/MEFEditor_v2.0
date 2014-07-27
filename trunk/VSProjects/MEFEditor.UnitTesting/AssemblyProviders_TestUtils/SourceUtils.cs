@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UnitTesting.AssemblyProviders_TestUtils
+namespace MEFEditor.UnitTesting.AssemblyProviders_TestUtils
 {
     public static class SourceUtils
     {

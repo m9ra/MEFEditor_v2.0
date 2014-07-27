@@ -1,4 +1,4 @@
-﻿<Window x:Class="TypeSystem.Dialogs.VariableName"
+﻿<Window x:Class="MEFEditor.TypeSystem.Dialogs.VariableName"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 

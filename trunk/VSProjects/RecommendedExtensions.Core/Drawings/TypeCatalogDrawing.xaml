@@ -1,0 +1,28 @@
+﻿<dr:ContentDrawing x:Class="RecommendedExtensions.Core.Drawings.TypeCatalogDrawing"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:dr="clr-namespace:MEFEditor.Drawing;assembly=MEFEditor.Drawing"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+                   
+             MinHeight="50"
+             MinWidth="50"
+            
+             Background="Orange"
+             BorderBrush="DarkOrange"
+             BorderThickness="2"
+                  
+             CornerRadius="10"
+                   
+                   >
+    <DockPanel>
+        <StackPanel Name="Caption" Orientation="Horizontal" DockPanel.Dock="Top" Margin="0 10 10 0" HorizontalAlignment="Center">
+            <Image Name="CaptionIcon" Width="32" Height="32" Margin="10 0"></Image>
+            <TextBlock Name="CaptionText" FontSize="22" Foreground="Black">TypeCatalog</TextBlock>
+        </StackPanel>
+        <TextBlock Name="InstanceID" DockPanel.Dock="Top" FontStyle="Italic" HorizontalAlignment="Center">No id specified</TextBlock>
+                
+        <dr:SlotCanvas Name="Catalogs" Margin="10" MinHeight="200" MinWidth="200" Background="Transparent"></dr:SlotCanvas>
+    </DockPanel>
+</dr:ContentDrawing>

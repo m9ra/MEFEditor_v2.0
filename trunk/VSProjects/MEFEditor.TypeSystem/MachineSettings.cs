@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem.Runtime;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
 
     /// <summary>

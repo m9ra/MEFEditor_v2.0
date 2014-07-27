@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Analyzing.Execution;
+using MEFEditor.Analyzing.Execution;
 
-namespace Analyzing.Editing.Transformations
+namespace MEFEditor.Analyzing.Editing.Transformations
 {
     class InstanceScope
     {

@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Utilities;
-using Analyzing.Editing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.Analyzing.Execution;
 
 
-namespace Analyzing
+namespace MEFEditor.Analyzing
 {
     public abstract class Instance
     {

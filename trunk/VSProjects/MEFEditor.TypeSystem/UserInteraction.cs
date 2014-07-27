@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
 using MEFEditor.Drawing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     public static class UserInteraction
     {

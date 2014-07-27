@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-using MEFAnalyzers.Drawings;
+using RecommendedExtensions.Core.Drawings;
 
-namespace TestConsole.Drawings
+namespace MEFEditor.TestConsole.Drawings
 {
     class DiagramFactory : AbstractDiagramFactory
     {

@@ -2,25 +2,24 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Analyzing.Execution.Instructions;
-using UnitTesting.Analyzing_TestUtils;
-using UnitTesting.TypeSystem_TestUtils;
-using UnitTesting.RuntimeTypeDefinitions;
+using MEFEditor.Analyzing.Execution.Instructions;
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.RuntimeTypeDefinitions;
 
-using Analyzing;
-using Analyzing.Execution;
-using Analyzing.Editing;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
+using MEFEditor.Analyzing.Editing;
 
-using TypeSystem;
-using MEFAnalyzers;
-using AssemblyProviders.CSharp;
-using AssemblyProviders.CSharp.Compiling;
-using AssemblyProviders.DirectDefinitions;
+using MEFEditor.TypeSystem;
+using RecommendedExtensions.Core;
+using RecommendedExtensions.Core.TypeDefinitions;
+using RecommendedExtensions.Core.Languages.CSharp;
+using RecommendedExtensions.Core.Languages.CSharp.Compiling;
 
+using MEFEditor.UnitTesting.AssemblyProviders_TestUtils;
 
-using UnitTesting.AssemblyProviders_TestUtils;
-
-namespace UnitTesting
+namespace MEFEditor.UnitTesting
 {
     /// <summary>
     /// Testing of IAL Edits supported by C# Compiler from Recommended Extensions.
@@ -260,10 +259,10 @@ namespace UnitTesting
                 toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());            
             ")
 
-           .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
-           .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
-           .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
-           .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+           .AddToRuntime<AggregateCatalogDefinition>()
+           .AddToRuntime<TypeCatalogDefinition>()
+           .AddToRuntime<CompositionContainerDefinition>()
+           .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
 
             .UserAction((c) =>
             {
@@ -291,10 +290,10 @@ namespace UnitTesting
                 toAccept.Catalogs.Add(new System.ComponentModel.Composition.Hosting.TypeCatalog());            
             ")
 
-            .AddToRuntime<MEFAnalyzers.AggregateCatalogDefinition>()
-            .AddToRuntime<MEFAnalyzers.TypeCatalogDefinition>()
-            .AddToRuntime<MEFAnalyzers.CompositionContainerDefinition>()
-            .AddToRuntime<MEFAnalyzers.ComposablePartCatalogCollectionDefinition>()
+            .AddToRuntime<AggregateCatalogDefinition>()
+            .AddToRuntime<TypeCatalogDefinition>()
+            .AddToRuntime<CompositionContainerDefinition>()
+            .AddToRuntime<ComposablePartCatalogCollectionDefinition>()
 
             .UserAction((c) =>
             {

@@ -2,21 +2,21 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Analyzing.Execution.Instructions;
-using UnitTesting.Analyzing_TestUtils;
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.Analyzing.Execution.Instructions;
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-using Analyzing;
-using Analyzing.Execution;
-using Analyzing.Editing;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
+using MEFEditor.Analyzing.Editing;
 
-using TypeSystem;
-using AssemblyProviders.CSharp;
-using AssemblyProviders.CSharp.Compiling;
+using MEFEditor.TypeSystem;
+using RecommendedExtensions.Core.Languages.CSharp;
+using RecommendedExtensions.Core.Languages.CSharp.Compiling;
 
-using UnitTesting.AssemblyProviders_TestUtils;
+using MEFEditor.UnitTesting.AssemblyProviders_TestUtils;
 
-namespace UnitTesting
+namespace MEFEditor.UnitTesting
 {
     /// <summary>
     /// Testing of important editor classes
@@ -165,7 +165,7 @@ namespace UnitTesting
         [TestMethod]
         public void InstanceInfo_GenericChainedArgument()
         {
-            Tools.AssertName<TestClass<string>.NestedClass<int>>("UnitTesting.TestClass<System.String>.UnitTesting.NestedClass<System.Int32>");
+            Tools.AssertName<TestClass<string>.NestedClass<int>>("MEFEditor.UnitTesting.TestClass<System.String>.MEFEditor.UnitTesting.NestedClass<System.Int32>");
         }
     }
 }

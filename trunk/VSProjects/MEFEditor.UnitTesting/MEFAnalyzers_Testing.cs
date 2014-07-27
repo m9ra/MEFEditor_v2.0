@@ -3,17 +3,18 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Analyzing;
-using TypeSystem;
-using TypeSystem.Runtime;
-using MEFAnalyzers;
+using MEFEditor.Analyzing;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
+using RecommendedExtensions.Core;
+using RecommendedExtensions.Core.TypeDefinitions;
 
-using UnitTesting.TypeSystem_TestUtils;
-using UnitTesting.AssemblyProviders_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.AssemblyProviders_TestUtils;
 
-using UnitTesting.RuntimeTypeDefinitions;
+using MEFEditor.UnitTesting.RuntimeTypeDefinitions;
 
-namespace UnitTesting
+namespace MEFEditor.UnitTesting
 {
     /// <summary>
     /// Testing of TypeDefinitions for MEF analysis from Recommended Extensions.

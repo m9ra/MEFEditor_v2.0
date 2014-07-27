@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using System.Reflection;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     public class ParameterTypeInfo
     {

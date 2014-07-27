@@ -5,7 +5,7 @@ using System.Text;
 
 using EnvDTE;
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
     /// <summary>
     /// Describes kind of change.

@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 using System.ComponentModel.Composition;
 
-using TypeSystem;
-using TypeSystem.Runtime;
-using MEFAnalyzers;
-using AssemblyProviders;
-using AssemblyProviders.DirectDefinitions;
-using AssemblyProviders.CIL;
-using AssemblyProviders.CSharp;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
+using RecommendedExtensions.Core;
+using RecommendedExtensions.Core.Services;
+using RecommendedExtensions.Core.TypeDefinitions;
+using RecommendedExtensions.Core.Languages.CIL;
 
 namespace RecommendedExtensions.TypeDefinitions
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Exception that should be thrown from parsers when 

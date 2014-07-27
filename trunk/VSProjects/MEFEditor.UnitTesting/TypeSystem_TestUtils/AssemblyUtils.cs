@@ -10,17 +10,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Mono.Cecil;
 
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-using Analyzing;
-using Analyzing.Editing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.Analyzing.Execution;
 
-using UnitTesting.Analyzing_TestUtils;
-using UnitTesting.Analyzing_TestUtils.Environment;
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
+using MEFEditor.UnitTesting.Analyzing_TestUtils.Environment;
 
-namespace UnitTesting.TypeSystem_TestUtils
+namespace MEFEditor.UnitTesting.TypeSystem_TestUtils
 {
     public static class AssemblyUtils
     {

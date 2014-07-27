@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Editing;
-using Analyzing.Execution.Instructions;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.Analyzing.Execution.Instructions;
 
-namespace Analyzing
+namespace MEFEditor.Analyzing
 {
     public class CallBuilder
     {

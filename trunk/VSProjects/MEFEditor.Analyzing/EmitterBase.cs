@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Execution;
+using MEFEditor.Analyzing.Execution;
 
-namespace Analyzing
+namespace MEFEditor.Analyzing
 {
     public abstract class EmitterBase
     {

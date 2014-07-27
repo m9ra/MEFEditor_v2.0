@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 using Utilities;
 
-using Analyzing.Editing;
-using Analyzing.Execution.Instructions;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.Analyzing.Execution.Instructions;
 
-namespace Analyzing.Execution
+namespace MEFEditor.Analyzing.Execution
 {
     public class ExecutedBlock
     {

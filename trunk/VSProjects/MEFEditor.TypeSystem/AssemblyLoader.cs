@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using TypeSystem.Core;
+using MEFEditor.TypeSystem.Core;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     public class AssemblyLoader : LoaderBase
     {

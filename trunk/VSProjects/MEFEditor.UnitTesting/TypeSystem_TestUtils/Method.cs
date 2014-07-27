@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-using TypeSystem;
+using MEFEditor.TypeSystem;
 
-namespace UnitTesting.TypeSystem_TestUtils
+namespace MEFEditor.UnitTesting.TypeSystem_TestUtils
 {
     public static class Method
     {

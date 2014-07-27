@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using EnvDTE;
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
     /// <summary>
     /// Handle changes on <see cref="Project"/>

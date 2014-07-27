@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Utilities;
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-namespace TypeSystem.Runtime
+namespace MEFEditor.TypeSystem.Runtime
 {
     public class Array<ItemType> : IEnumerable<ItemType>, System.Collections.IEnumerable
         where ItemType : InstanceWrap

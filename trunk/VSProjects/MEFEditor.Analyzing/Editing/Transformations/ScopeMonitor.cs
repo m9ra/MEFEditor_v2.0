@@ -5,9 +5,9 @@ using System.Text;
 
 using Utilities;
 
-using Analyzing.Execution;
+using MEFEditor.Analyzing.Execution;
 
-namespace Analyzing.Editing.Transformations
+namespace MEFEditor.Analyzing.Editing.Transformations
 {
     class ScopeMonitor
     {

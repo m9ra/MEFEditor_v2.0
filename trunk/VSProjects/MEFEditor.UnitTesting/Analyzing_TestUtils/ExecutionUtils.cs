@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using TypeSystem;
+using MEFEditor.TypeSystem;
 
-using UnitTesting.TypeSystem_TestUtils;
-using UnitTesting.Analyzing_TestUtils.Environment;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.Analyzing_TestUtils.Environment;
 
-namespace UnitTesting.Analyzing_TestUtils
+namespace MEFEditor.UnitTesting.Analyzing_TestUtils
 {
 
     delegate void EmitDirector(EmitterBase emitter);

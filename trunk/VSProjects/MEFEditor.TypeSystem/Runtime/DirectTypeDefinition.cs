@@ -10,12 +10,12 @@ using System.Linq.Expressions;
 
 using Utilities;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using TypeSystem.Runtime.Building;
+using MEFEditor.TypeSystem.Runtime.Building;
 
-namespace TypeSystem.Runtime
+namespace MEFEditor.TypeSystem.Runtime
 {
     /// <summary>
     /// Represents definitions of types that are stored directly in DirectInstance    

@@ -247,10 +247,6 @@
       <Project>{4e0257a9-5c44-434d-85d0-b2d4906d00fe}</Project>
       <Name>MEFEditor.Analyzing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\VSProjects\AssemblyProviders\AssemblyProviders.csproj">
-      <Project>{7be9c607-8e00-44d7-958c-60519ba569b7}</Project>
-      <Name>AssemblyProviders</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MEFEditor.Drawing\MEFEditor.Drawing.csproj">
       <Project>{dc23fe88-544c-4751-ac71-cd87bf758095}</Project>
       <Name>MEFEditor.Drawing</Name>
@@ -263,9 +259,9 @@
       <Project>{db50ece5-7415-4b4c-8297-a04543996630}</Project>
       <Name>MEFEditor.Interoperability</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MEFAnalyzers\MEFAnalyzers.csproj">
+    <ProjectReference Include="..\RecommendedExtensions.Core\RecommendedExtensions.Core.csproj">
       <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
-      <Name>MEFAnalyzers</Name>
+      <Name>RecommendedExtensions.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\RecommendedExtensions.AssemblyProviders\RecommendedExtensions.AssemblyProviders.csproj">
       <Project>{7c687e56-104d-49a5-b781-b23b5173e2d1}</Project>

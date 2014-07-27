@@ -7,7 +7,7 @@ using System.IO;
 using System.ComponentModel.Composition;
 
 using MEFEditor.Drawing;
-using TypeSystem;
+using MEFEditor.TypeSystem;
 
 namespace UserExtensions
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using UnitTesting.AssemblyProviders_TestUtils;
+using MEFEditor.UnitTesting.AssemblyProviders_TestUtils;
 
-namespace UnitTesting
+namespace MEFEditor.UnitTesting
 {
     /// <summary>
     /// Testing of <see cref="Source"/> correctnes of handling code writing.

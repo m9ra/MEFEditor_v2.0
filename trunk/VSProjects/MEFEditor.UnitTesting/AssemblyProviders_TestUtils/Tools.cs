@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using TypeSystem;
+using MEFEditor.TypeSystem;
 
-using AssemblyProviders.CSharp;
+using RecommendedExtensions.Core.Languages.CSharp;
 
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-namespace UnitTesting.AssemblyProviders_TestUtils
+namespace MEFEditor.UnitTesting.AssemblyProviders_TestUtils
 {
     static class Tools
     {

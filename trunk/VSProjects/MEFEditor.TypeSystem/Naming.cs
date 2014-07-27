@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.ComponentModel.Composition;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Definition of naming conventions used by TypeSystem. Provide MethodID creation methods

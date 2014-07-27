@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq.Expressions;
 
-using Analyzing;
-using Analyzing.Editing;
-using TypeSystem;
-using TypeSystem.Runtime;
-
 using Mono.Cecil;
 
-using AssemblyProviders.CSharp;
-using AssemblyProviders.CSharp.Compiling;
-using AssemblyProviders.CIL;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-using UnitTesting.Analyzing_TestUtils;
-using UnitTesting.Analyzing_TestUtils.Environment;
-using UnitTesting.AssemblyProviders_TestUtils;
+using RecommendedExtensions.Core.Languages.CSharp;
+using RecommendedExtensions.Core.Languages.CSharp.Compiling;
+using RecommendedExtensions.Core.Languages.CIL;
 
-namespace UnitTesting.TypeSystem_TestUtils
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
+using MEFEditor.UnitTesting.Analyzing_TestUtils.Environment;
+using MEFEditor.UnitTesting.AssemblyProviders_TestUtils;
+
+namespace MEFEditor.UnitTesting.TypeSystem_TestUtils
 {
     public delegate void ResultAction(AnalyzingResult result);
 

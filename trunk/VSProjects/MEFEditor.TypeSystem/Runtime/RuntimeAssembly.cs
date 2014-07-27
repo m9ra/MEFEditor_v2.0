@@ -8,13 +8,13 @@ using System.Reflection;
 using System.Linq.Expressions;
 
 using MEFEditor.Drawing;
-using Analyzing;
-using Analyzing.Editing;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
 
-using TypeSystem.DrawingServices;
-using TypeSystem.Runtime.Building;
+using MEFEditor.TypeSystem.DrawingServices;
+using MEFEditor.TypeSystem.Runtime.Building;
 
-namespace TypeSystem.Runtime
+namespace MEFEditor.TypeSystem.Runtime
 {
     delegate RuntimeMethodGenerator GeneratorProvider(RuntimeTypeDefinition definition, MethodInfo method, string name);
 

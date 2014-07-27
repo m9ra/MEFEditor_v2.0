@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-namespace TypeSystem.Runtime
+namespace MEFEditor.TypeSystem.Runtime
 {
     /// <summary>
     /// Handler for field storage in type definition

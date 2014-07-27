@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Execution;
+using MEFEditor.Analyzing.Execution;
 
-namespace Analyzing.Editing
+namespace MEFEditor.Analyzing.Editing
 {
     public delegate T ViewDataProvider<T>()
         where T : ExecutionViewData;

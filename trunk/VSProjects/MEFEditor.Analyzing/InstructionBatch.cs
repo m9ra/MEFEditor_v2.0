@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Execution;
-using Analyzing.Execution.Instructions;
+using MEFEditor.Analyzing.Execution;
+using MEFEditor.Analyzing.Execution.Instructions;
 
-namespace Analyzing
+namespace MEFEditor.Analyzing
 {
     /// <summary>
     /// Represents Instructions emitted by Emitter. 

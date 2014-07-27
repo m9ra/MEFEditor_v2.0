@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
-using Analyzing;
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.Analyzing;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-namespace UnitTesting.RuntimeTypeDefinitions
+namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
 {
     public class StringExport2 : DataTypeDefinition
     {

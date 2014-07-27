@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using System.Diagnostics;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     public class MethodSearcher
     {

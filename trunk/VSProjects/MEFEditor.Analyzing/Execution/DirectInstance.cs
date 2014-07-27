@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Editing;
+using MEFEditor.Analyzing.Editing;
 
-namespace Analyzing.Execution
+namespace MEFEditor.Analyzing.Execution
 {
     public class DirectInstance : Instance
     {

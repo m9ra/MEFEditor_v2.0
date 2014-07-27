@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace UnitTesting.Analyzing_TestUtils
+namespace MEFEditor.UnitTesting.Analyzing_TestUtils
 {
     public class EditAction
     {

@@ -10,9 +10,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MEFEditor.Drawing;
 using MEFEditor.Drawing.ArrangeEngine;
 
-using TypeSystem;
+using MEFEditor.TypeSystem;
 
-namespace UnitTesting.Drawing_TestUtils
+namespace MEFEditor.UnitTesting.Drawing_TestUtils
 {
     class DrawingTest
     {

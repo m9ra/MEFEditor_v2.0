@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TypeSystem.Core
+namespace MEFEditor.TypeSystem.Core
 {
     /// <summary>
     /// Representation of resolved assembly references

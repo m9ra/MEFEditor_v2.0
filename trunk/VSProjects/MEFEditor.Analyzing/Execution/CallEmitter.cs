@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Execution.Instructions;
+using MEFEditor.Analyzing.Execution.Instructions;
 
-namespace Analyzing.Execution
+namespace MEFEditor.Analyzing.Execution
 {
     class CallEmitter : EmitterBase
     {

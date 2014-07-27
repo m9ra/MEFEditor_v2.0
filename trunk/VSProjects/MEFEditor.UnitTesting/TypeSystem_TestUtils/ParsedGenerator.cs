@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
-using TypeSystem;
-using AssemblyProviders.CSharp;
-using AssemblyProviders.CSharp.Compiling;
-using AssemblyProviders.ProjectAssembly;
+using MEFEditor.Analyzing;
+using MEFEditor.TypeSystem;
+using RecommendedExtensions.Core.Languages.CSharp;
+using RecommendedExtensions.Core.Languages.CSharp.Compiling;
+using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
 
-namespace UnitTesting.TypeSystem_TestUtils
+namespace MEFEditor.UnitTesting.TypeSystem_TestUtils
 {
     class ParsedGenerator : GeneratorBase, GenericMethodGenerator
     {

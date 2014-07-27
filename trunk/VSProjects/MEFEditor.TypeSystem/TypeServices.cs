@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-using TypeSystem.Core;
-using TypeSystem.Transactions;
+using MEFEditor.TypeSystem.Core;
+using MEFEditor.TypeSystem.Transactions;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Provides access to information about loaded assemblies

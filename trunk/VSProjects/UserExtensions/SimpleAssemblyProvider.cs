@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using System.IO;
 
-using Analyzing;
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.Analyzing;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
 
 

@@ -8,9 +8,9 @@ using System.Windows;
 
 using MEFEditor.Drawing;
 
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-namespace TestConsole.Drawings
+namespace MEFEditor.TestConsole.Drawings
 {
     public class ContentDrawer
     {

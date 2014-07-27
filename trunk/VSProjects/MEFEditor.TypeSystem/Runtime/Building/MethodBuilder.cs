@@ -8,12 +8,12 @@ using System.Collections;
 using System.Reflection;
 using System.Linq.Expressions;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using TypeSystem.TypeParsing;
+using MEFEditor.TypeSystem.TypeParsing;
 
-namespace TypeSystem.Runtime.Building
+namespace MEFEditor.TypeSystem.Runtime.Building
 {
     /// <summary>
     /// Builder for runtime methods

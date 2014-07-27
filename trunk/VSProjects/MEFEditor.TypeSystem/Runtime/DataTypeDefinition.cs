@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Globalization;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-using TypeSystem.Runtime.Building;
+using MEFEditor.TypeSystem.Runtime.Building;
 
-namespace TypeSystem.Runtime
+namespace MEFEditor.TypeSystem.Runtime
 {
     public class DataTypeDefinition : RuntimeTypeDefinition
     {

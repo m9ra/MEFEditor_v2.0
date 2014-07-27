@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TestConsole.Drawings
+namespace MEFEditor.TestConsole.Drawings
 {
     /// <summary>
     /// Interaction logic for TestForm.xaml

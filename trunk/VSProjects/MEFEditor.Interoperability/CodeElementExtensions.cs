@@ -8,7 +8,7 @@ using EnvDTE;
 
 using System.Runtime.InteropServices;
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
     public static class CodeElementExtensions
     {

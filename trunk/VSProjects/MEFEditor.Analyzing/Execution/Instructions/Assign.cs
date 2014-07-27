@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Analyzing.Execution.Instructions
+namespace MEFEditor.Analyzing.Execution.Instructions
 {
     class Assign : AssignBase
     {

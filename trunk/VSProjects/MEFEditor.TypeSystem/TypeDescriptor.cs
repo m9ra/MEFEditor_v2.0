@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 using System.Text.RegularExpressions;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-using TypeSystem.TypeParsing;
+using MEFEditor.TypeSystem.TypeParsing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Resolver for type parameters. Is used for translating type parameters

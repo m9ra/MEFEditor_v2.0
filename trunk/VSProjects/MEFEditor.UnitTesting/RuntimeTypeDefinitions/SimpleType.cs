@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-namespace UnitTesting.RuntimeTypeDefinitions
+namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
 {
     public class SimpleType : DataTypeDefinition
     {

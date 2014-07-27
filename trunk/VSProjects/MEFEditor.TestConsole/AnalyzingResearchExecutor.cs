@@ -9,22 +9,21 @@ using System.Windows.Threading;
 using System.Diagnostics;
 
 using MEFEditor.Drawing;
-using TypeSystem;
-using TypeSystem.DrawingServices;
-using Analyzing;
-using Analyzing.Editing;
-using Analyzing.Execution;
-using MEFAnalyzers.Drawings;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.DrawingServices;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.Analyzing.Execution;
+using RecommendedExtensions.Core.Drawings;
 
 using MEFEditor.Plugin.GUI;
 
-using TestConsole.Drawings;
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
 
-using UnitTesting.Analyzing_TestUtils;
-using UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.TestConsole.Drawings;
 
-
-namespace TestConsole
+namespace MEFEditor.TestConsole
 {
     delegate IEnumerable<Instance> EntryArgumentsProvider(Machine machine);
 

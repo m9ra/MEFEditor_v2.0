@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Analyzing.Editing
+namespace MEFEditor.Analyzing.Editing
 {
     /// <summary>
     /// Data that can be stored in execution view. Usually there are stored

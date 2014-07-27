@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem.Runtime
+namespace MEFEditor.TypeSystem.Runtime
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class ParameterTypesAttribute : Attribute

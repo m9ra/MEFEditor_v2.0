@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
-using Analyzing;
-using Analyzing.Editing;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
 
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem.Runtime;
 
-namespace TypeSystem.DrawingServices
+namespace MEFEditor.TypeSystem.DrawingServices
 {
     /// <summary>
     /// Drawer used by pipeline for providing general drawing support

@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 
-using Interoperability;
+using MEFEditor.Interoperability;
 
 using MEFEditor.Plugin.GUI;
 using MEFEditor.Plugin.Main;

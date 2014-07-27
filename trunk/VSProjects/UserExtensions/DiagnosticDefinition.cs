@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.ComponentModel.Composition;
 
-using Analyzing;
-using Analyzing.Editing;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Editing;
 
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
 namespace UserExtensions
 {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
 
-using MEFAnalyzers.Drawings;
+using RecommendedExtensions.Core.Drawings;
 
 namespace MEFEditor.Plugin.Drawing
 {

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using AssemblyProviders.CSharp;
+using RecommendedExtensions.Core.Languages.CSharp;
 
-namespace UnitTesting.AssemblyProviders_TestUtils
+namespace MEFEditor.UnitTesting.AssemblyProviders_TestUtils
 {
     public class SourceTest
     {

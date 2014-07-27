@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing.Execution;
-using Analyzing.Editing.Transformations;
+using MEFEditor.Analyzing.Execution;
+using MEFEditor.Analyzing.Editing.Transformations;
 
-namespace Analyzing.Editing
+namespace MEFEditor.Analyzing.Editing
 {
     /// <summary>
     /// Provides value for edit on editedInstance

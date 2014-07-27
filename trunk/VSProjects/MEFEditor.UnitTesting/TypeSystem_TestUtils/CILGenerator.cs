@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 using System.Reflection;
 
-using Analyzing;
-using TypeSystem;
-using AssemblyProviders.CIL;
+using MEFEditor.Analyzing;
+using MEFEditor.TypeSystem;
+using RecommendedExtensions.Core.Languages.CIL;
 
-namespace UnitTesting.TypeSystem_TestUtils
+namespace MEFEditor.UnitTesting.TypeSystem_TestUtils
 {
 
     class CILGenerator : GeneratorBase, GenericMethodGenerator

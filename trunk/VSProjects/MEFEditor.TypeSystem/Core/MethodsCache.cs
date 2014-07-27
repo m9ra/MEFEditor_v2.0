@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 
 using Utilities;
-using Analyzing;
+using MEFEditor.Analyzing;
 
-namespace TypeSystem.Core
+namespace MEFEditor.TypeSystem.Core
 {
     /// <summary>
     /// Provider creating <see cref="GeneratorBase"/> objects which are stored by <see cref="MethodsCache"/>

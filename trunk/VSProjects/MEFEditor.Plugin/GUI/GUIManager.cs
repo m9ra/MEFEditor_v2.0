@@ -12,14 +12,14 @@ using System.Windows.Controls;
 using EnvDTE;
 
 using MEFEditor.Drawing;
-using Analyzing;
+using MEFEditor.Analyzing;
 using MEFEditor;
-using Interoperability;
-using TypeSystem;
-using TypeSystem.Runtime;
-using TypeSystem.Transactions;
+using MEFEditor.Interoperability;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
+using MEFEditor.TypeSystem.Transactions;
 
-using AssemblyProviders.CILAssembly;
+using RecommendedExtensions.Core.AssemblyProviders.CILAssembly;
 
 namespace MEFEditor.Plugin.GUI
 {

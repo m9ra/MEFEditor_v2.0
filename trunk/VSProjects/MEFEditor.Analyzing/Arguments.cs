@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Analyzing
+namespace MEFEditor.Analyzing
 {
     /// <summary>
     /// Store arguments (value variables and type arguments) for call

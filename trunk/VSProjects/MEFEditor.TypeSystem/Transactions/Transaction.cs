@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TypeSystem.Transactions
+namespace MEFEditor.TypeSystem.Transactions
 {
     /// <summary>
     /// Transaction representing bunch of executed tasks that can be named

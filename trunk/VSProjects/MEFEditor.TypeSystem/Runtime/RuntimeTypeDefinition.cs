@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Analyzing;
-using Analyzing.Execution;
+using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
-using Analyzing.Editing;
-using Analyzing.Editing.Transformations;
+using MEFEditor.Analyzing.Editing;
+using MEFEditor.Analyzing.Editing.Transformations;
 
-using TypeSystem.DrawingServices;
-using TypeSystem.Runtime.Building;
+using MEFEditor.TypeSystem.DrawingServices;
+using MEFEditor.TypeSystem.Runtime.Building;
 
 using MEFEditor.Drawing;
 
-namespace TypeSystem.Runtime
+namespace MEFEditor.TypeSystem.Runtime
 {
 
     public delegate string NameProvider(RuntimeTypeDefinition definition, CallContext context);

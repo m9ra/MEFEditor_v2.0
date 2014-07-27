@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Analyzing;
-using TypeSystem;
-using TypeSystem.Runtime;
+using MEFEditor.Analyzing;
+using MEFEditor.TypeSystem;
+using MEFEditor.TypeSystem.Runtime;
 
-using UnitTesting.TypeSystem_TestUtils;
-using UnitTesting.AssemblyProviders_TestUtils;
+using MEFEditor.UnitTesting.TypeSystem_TestUtils;
+using MEFEditor.UnitTesting.AssemblyProviders_TestUtils;
 
-using UnitTesting.RuntimeTypeDefinitions;
+using MEFEditor.UnitTesting.RuntimeTypeDefinitions;
 
-namespace UnitTesting
+namespace MEFEditor.UnitTesting
 {
     /// <summary>
     /// Testing of <see cref="RuntimeTypeDefinition"/> handling by <see cref="RuntimeAssembly"/>.

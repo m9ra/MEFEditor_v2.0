@@ -10,7 +10,7 @@ using EnvDTE;
 using VSLangProj;
 using System.Runtime.InteropServices;
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
     /// <summary>
     /// Services that are used by plugin to interoperate with AssemblyProviders

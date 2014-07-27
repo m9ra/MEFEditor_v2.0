@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TypeSystem.TypeParsing
+namespace MEFEditor.TypeSystem.TypeParsing
 {
     class TypeAdapter : TypeAdapterBase<Type>
     {

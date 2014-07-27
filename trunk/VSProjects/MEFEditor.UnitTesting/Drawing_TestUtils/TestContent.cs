@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 using MEFEditor.Drawing;
 
-namespace UnitTesting.Drawing_TestUtils
+namespace MEFEditor.UnitTesting.Drawing_TestUtils
 {
     class TestContent : ContentDrawing
     {

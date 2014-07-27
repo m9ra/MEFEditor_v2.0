@@ -1,13 +1,13 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Analyzing.Execution.Instructions;
-using UnitTesting.Analyzing_TestUtils;
+using MEFEditor.Analyzing.Execution.Instructions;
+using MEFEditor.UnitTesting.Analyzing_TestUtils;
 
-using Analyzing;
-using TypeSystem;
+using MEFEditor.Analyzing;
+using MEFEditor.TypeSystem;
 
-namespace UnitTesting
+namespace MEFEditor.UnitTesting
 {
     /// <summary>
     /// Testing of IAL interpretaion by Machine

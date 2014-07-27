@@ -8,12 +8,11 @@ using System.ComponentModel.Composition;
 
 using EnvDTE;
 
-using TypeSystem;
-using AssemblyProviders;
-using AssemblyProviders.ProjectAssembly;
-using AssemblyProviders.CILAssembly;
+using MEFEditor.TypeSystem;
+using MEFEditor.Interoperability;
 
-using Interoperability;
+using RecommendedExtensions.Core.AssemblyProviders.CILAssembly;
+using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
 
 namespace RecommendedExtensions.AssemblyProviders
 {

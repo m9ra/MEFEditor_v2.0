@@ -6,7 +6,7 @@ using System.Text;
 using System.IO;
 
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
 
     static class FileSystemChanges

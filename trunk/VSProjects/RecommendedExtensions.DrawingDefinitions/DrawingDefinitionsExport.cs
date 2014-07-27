@@ -8,8 +8,8 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 
 using MEFEditor.Drawing;
-using TypeSystem;
-using MEFAnalyzers.Drawings;
+using MEFEditor.TypeSystem;
+using RecommendedExtensions.Core.Drawings;
 
 namespace RecommendedExtensions.DrawingDefinitions
 {

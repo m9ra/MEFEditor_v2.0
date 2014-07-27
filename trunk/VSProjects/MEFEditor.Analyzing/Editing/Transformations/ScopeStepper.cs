@@ -5,7 +5,7 @@ using System.Text;
 
 using Utilities;
 
-namespace Analyzing.Editing.Transformations
+namespace MEFEditor.Analyzing.Editing.Transformations
 {
     class ScopeStepper
     {

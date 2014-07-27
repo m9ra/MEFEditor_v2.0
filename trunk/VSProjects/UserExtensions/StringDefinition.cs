@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using System.ComponentModel.Composition;
 
-using TypeSystem.Runtime;
+using MEFEditor.TypeSystem.Runtime;
 
 namespace UserExtensions
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Interoperability
+namespace MEFEditor.Interoperability
 {
     /// <summary>
     /// Encapsulates method used for logging entries

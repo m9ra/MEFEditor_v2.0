@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MEFEditor.Drawing;
-using Analyzing.Editing;
+using MEFEditor.Analyzing.Editing;
 
-namespace TypeSystem
+namespace MEFEditor.TypeSystem
 {
     public class EditView : EditViewBase
     {
