@@ -87,6 +87,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyProviders\CSharpAssembly\CSharpAssembly.cs" />
+    <Compile Include="AssemblyProviders\CSharpAssembly\CSharpMethodBuilder.cs" />
+    <Compile Include="AssemblyProviders\CSharpAssembly\CSharpMethodInfoBuilder.cs" />
+    <Compile Include="AssemblyProviders\CSharpAssembly\CSharpNames.cs" />
+    <Compile Include="AssemblyProviders\ProjectAssembly\MethodBuilding\MethodInfoBuilder.cs" />
+    <Compile Include="AssemblyProviders\ProjectAssembly\Traversing\CodeElementNamesProvider.cs" />
     <Compile Include="TypeDefinitions\AggregateCatalogDefinition.cs" />
     <Compile Include="TypeDefinitions\AssemblyDefinition.cs" />
     <Compile Include="TypeDefinitions\AttributedModelServicesDefinition.cs" />
@@ -141,9 +147,8 @@
     <Compile Include="Languages\CSharp\Compiling\VariableInfo.cs" />
     <Compile Include="Languages\CSharp\Interfaces\AST.cs" />
     <Compile Include="Languages\CSharp\Interfaces\Scanning.cs" />
-    <Compile Include="Languages\CSharp\LanguageDefinitions\CSharpSyntax.cs" />
-    <Compile Include="Languages\CSharp\LanguageDefinitions\Layouts.cs" />
-    <Compile Include="Languages\CSharp\LanguageDefinitions\NamespaceDoc.cs" />
+    <Compile Include="Languages\CSharp\CSharpSyntax.cs" />
+    <Compile Include="Languages\CSharp\LanguageLayouts.cs" />
     <Compile Include="Languages\CSharp\Lexer.cs" />
     <Compile Include="Services\LiteralType.cs" />
     <Compile Include="Languages\CSharp\NodeExtensions.cs" />
@@ -170,11 +175,10 @@
     <Compile Include="AssemblyProviders\ProjectAssembly\AttributeInfo.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\CodeElementExtensions.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\MethodBuilding\InitializerGenerator.cs" />
-    <Compile Include="AssemblyProviders\ProjectAssembly\MethodBuilding\MethodBuilder.cs" />
+    <Compile Include="AssemblyProviders\ProjectAssembly\MethodBuilding\MethodItemBuilder.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\MethodBuilding\SourceMethodGenerator.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\OperatorTools.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\ParsingActivation.cs" />
-    <Compile Include="AssemblyProviders\ProjectAssembly\ProjectAssemblyFactory.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\Traversing\CodeElementIterator.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\Traversing\CodeElementSearcher.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\Traversing\CodeElementVisitor.cs" />

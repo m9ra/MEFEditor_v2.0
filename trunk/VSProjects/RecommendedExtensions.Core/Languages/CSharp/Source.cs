@@ -13,7 +13,6 @@ using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
 using RecommendedExtensions.Core.Languages.CSharp.Compiling;
 using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
 using RecommendedExtensions.Core.Languages.CSharp.Primitives;
-
 using RecommendedExtensions.Core.Languages.CSharp.Transformations;
 
 
@@ -99,6 +98,16 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return EditContext(view).Code;
         }
 
+        /// <summary>
+        /// Get implicit namespaces defined for given type
+        /// </summary>
+        /// <param name="type">Type which namespaces are requested</param>
+        /// <returns>Implicit namespaces</returns>
+        public static IEnumerable<string> GetImplicitNamespaces(TypeDescriptor type)
+        {
+            return VsProjectAssembly.GetImplicitNamespaces(type);
+        }
+        
         #endregion
 
         /// <summary>
@@ -497,7 +506,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             if (node.IsConstructor())
             {
                 //constructors has side effects only if they are looked at new node
-                return node.Value == LanguageDefinitions.CSharpSyntax.NewOperator;
+                return node.Value == CSharpSyntax.NewOperator;
             }
 
             if (node.IsCallRoot())
@@ -798,35 +807,6 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             _implicitNamespaces.UnionWith(GetImplicitNamespaces(type));
         }
 
-        public static HashSet<string> GetImplicitNamespaces(TypeDescriptor type)
-        {
-            var implicitNamespaces = new HashSet<string>();
-
-            //add empty namespace
-            implicitNamespaces.Add("");
-
-            //each part creates implicit namespace
-            var parts = Naming.SplitGenericPath(type.TypeName);
-
-            var buffer = new StringBuilder();
-            foreach (var part in parts)
-            {
-                if (buffer.Length > 0)
-                {
-                    //add trailing char
-                    buffer.Append(Naming.PathDelimiter);
-                }
-
-                buffer.Append(part);
-
-                implicitNamespaces.Add(buffer.ToString());
-            }
-
-            return implicitNamespaces;
-        }
-
         #endregion
-
-
     }
 }

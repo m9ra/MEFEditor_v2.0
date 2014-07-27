@@ -299,10 +299,10 @@ namespace MEFEditor.Analyzing.Editing
             var current = block;
             while (current != null)
             {
-                if (call == block.Call)
-                    return block;
+                if (call == current.Call)
+                    return current;
 
-                block = block.Call.CallingBlock;
+                current = current.Call.CallingBlock;
             }
 
             //call is not in blocks call hierarchy

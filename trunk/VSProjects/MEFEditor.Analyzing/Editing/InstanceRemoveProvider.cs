@@ -64,6 +64,7 @@ namespace MEFEditor.Analyzing.Editing
                 return false;
             }
 
+            var hasRemoveProvider = false;
             while (currentBlock != null)
             {
                 var removeProviders = currentBlock.RemoveProviders(instance);
@@ -74,12 +75,14 @@ namespace MEFEditor.Analyzing.Editing
                         //removing is not possible
                         return false;
                     }
+
+                    hasRemoveProvider = true;
                 }
 
                 currentBlock = view.NextBlock(currentBlock);
             }
 
-            return true;
+            return hasRemoveProvider;
         }
     }
 }

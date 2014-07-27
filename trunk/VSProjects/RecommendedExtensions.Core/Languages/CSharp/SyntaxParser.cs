@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
 using RecommendedExtensions.Core.Languages.CSharp.Primitives;
-using RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions;
 
 namespace RecommendedExtensions.Core.Languages.CSharp
 {
@@ -30,12 +29,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
         public string GetSourceCode(string rawCode, out string preCode)
         {
+            preCode = null;
+
+            if (rawCode == null)
+                return "{}";
+
             var trimmed = rawCode.Trim();
             if (!trimmed.StartsWith(":"))
-            {
-                preCode = null;
                 return trimmed;
-            }
 
             var splitChar = trimmed.IndexOf((char)0);
             preCode = trimmed.Substring(1, splitChar - 1).Trim() + ";";

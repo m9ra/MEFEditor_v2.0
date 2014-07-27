@@ -79,7 +79,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             Name = declaration.Arguments[1].Value;
 
             //TODO chained type names, namespace resolvings,..
-            IsImplicitlyTyped = declaration.Arguments[0].Value == LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
+            IsImplicitlyTyped = declaration.Arguments[0].Value == CSharpSyntax.ImplicitVariableType;
             Type = declaredType;
 
             if (!IsImplicitlyTyped && Type == null)

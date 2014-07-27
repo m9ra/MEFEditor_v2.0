@@ -6,7 +6,7 @@ using System.Text;
 using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
 using RecommendedExtensions.Core.Languages.CSharp.Primitives;
 
-namespace RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions
+namespace RecommendedExtensions.Core.Languages.CSharp
 {
     /// <summary>
     /// Encapsulates method returning bool.
@@ -23,7 +23,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions
     /// Layouts for context parsing of C# methods.        
     /// </summary>
     /// <remarks>Layout methods expect source token in _lexer.Current</remarks>
-    class Layouts
+    class LanguageLayouts
     {
         readonly GetNextTree _nextTree;
         readonly ILexer _lexer;
@@ -33,7 +33,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions
         /// </summary>
         /// <param name="nextTree">Method which will be used for getting tree nodes.</param>
         /// <param name="lexer">Source of parsed tokens.</param>
-        public Layouts(GetNextTree nextTree, ILexer lexer)
+        public LanguageLayouts(GetNextTree nextTree, ILexer lexer)
         {
             _nextTree = nextTree;
             _lexer = lexer;

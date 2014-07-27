@@ -52,6 +52,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             _currentPath = null;
         }
 
+        #region Iterator implementation
+
         /// <inheritdoc />
         public override SearchIterator ExtendName(string suffix)
         {
@@ -82,14 +84,28 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         /// <inheritdoc />
         public override IEnumerable<TypeMethodInfo> FindMethods(string searchedName)
         {
-            var methodItems = getMethodItems(searchedName);
+            var methods = new List<TypeMethodInfo>();
 
-            foreach (var methodItem in methodItems)
+            //firstly we test current nodes (because of implicit ctors,..)
+            if (_currentNodes != null)
+                fillWithMatchingInfo(searchedName, _currentNodes, methods);
+
+            fillWithMatchingInfo(searchedName, getActualNodes(), methods);
+
+            var path = PathInfo.Append(_currentPath, searchedName);
+
+            //resolve genericity
+            foreach (var method in methods)
             {
-                yield return methodItem.Info;
+                var resolvedMethod = method;
+                if (_currentPath != null && _currentPath.HasGenericArguments)
+                    resolvedMethod = method.MakeGenericMethod(path);
+
+                yield return resolvedMethod;
             }
         }
 
+        /// <inheritdoc />
         public override IEnumerable<string> GetExpansions()
         {
             if (_currentNodes == null)
@@ -118,6 +134,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             }
         }
 
+        #endregion
+
+        #region Private utilities
+
+        /// <summary>
+        /// Get nodes that are actualy iterated
+        /// </summary>
+        /// <returns>Actual nodes</returns>
         private IEnumerable<CodeElement> getActualNodes()
         {
             //THIS IS PERFORMANCE KILLER - IS IT POSSIBLE TO WORKAROUND VISUAL STUDIO THREADING MODEL?
@@ -143,57 +167,26 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             }
         }
 
-        private IEnumerable<MethodItem> getMethodItems(string searchedName)
+        /// <summary>
+        /// Fill given methods list with matchin <see cref="TypeMethodInfo"/> objects from given nodes
+        /// </summary>
+        /// <param name="searchedName">Name which matching info is searched</param>
+        /// <param name="nodes">Nodes where methods are searched</param>
+        /// <param name="methods">List which will be filled <see cref="TypeMethodInfo"/></param>
+        private void fillWithMatchingInfo(string searchedName, IEnumerable<CodeElement> nodes, List<TypeMethodInfo> methods)
         {
-            var methods = new List<MethodItem>();
-            var path = PathInfo.Append(_currentPath, searchedName);
-            
-            //test if we have constraionts on name
-            var returnAll = searchedName == null;
-            if (returnAll)
-                //HACK because of retrieving getters
-                path = PathInfo.Append(path, Naming.GetterPrefix);
-
-            var nodes = getActualNodes();
-            foreach (CodeElement child in nodes)
+            foreach (var node in nodes)
             {
-                var method = MethodBuilder.Build(child, path.LastPart, _assembly);
-                if (method == null || (method.Info.MethodName != searchedName && !returnAll))
-                    //not everything could be filtered by CodeFunction testing
-                    continue;
-
-                if (_currentPath.HasGenericArguments)
-                    method = method.Make(path);
-
-                methods.Add(method);
-            }
-
-            if (methods.Count == 0 && _currentNodes != null)
-            {
-                //_currentNodes contains parents of actual nodes - here will
-                //be all classes where ctor has been searched for
-                foreach (var node in _currentNodes)
+                var names = _assembly.GetMatchingNames(node, searchedName);
+                foreach (var name in names)
                 {
-                    var classNode = node as CodeClass2;
-                    if (classNode == null)
-                        continue;
-
-                    if (searchedName == Naming.CtorName || returnAll )
-                    {
-                        //get implicit ctor of class (we can create it, 
-                        //because there is no other ctor)
-                        methods.Add(MethodBuilder.BuildImplicitCtor(classNode, _assembly));
-                    }
-                    else if (searchedName == Naming.ClassCtorName || returnAll)
-                    {
-                        //get implicit cctor of class (we can create it,
-                        //because there is no other cctor)
-                        methods.Add(MethodBuilder.BuildImplicitClassCtor(classNode, _assembly));
-                    }
+                    var info = _assembly.InfoBuilder.Build(node, name);
+                    if (info != null)
+                        methods.Add(info);
                 }
             }
-
-            return methods;
         }
+
+        #endregion
     }
 }

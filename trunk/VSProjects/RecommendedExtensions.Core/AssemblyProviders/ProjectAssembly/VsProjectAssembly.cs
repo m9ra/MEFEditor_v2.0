@@ -14,12 +14,9 @@ using VSLangProj80;
 using MEFEditor.Analyzing;
 using MEFEditor.TypeSystem;
 using MEFEditor.TypeSystem.Transactions;
+
 using MEFEditor.Interoperability;
 
-using RecommendedExtensions.Core.Languages;
-using RecommendedExtensions.Core.Languages.CSharp;
-using RecommendedExtensions.Core.Languages.CSharp.Compiling;
-using RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions;
 using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversing;
 using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBuilding;
 
@@ -28,7 +25,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
     /// <summary>
     /// Assembly provider implementation for <see cref="Project"/> assemblies loaded from Visual Studio solutions
     /// </summary>
-    public class VsProjectAssembly : AssemblyProvider
+    public abstract class VsProjectAssembly : AssemblyProvider
     {
         /// <summary>
         /// Represented VsProject assembly
@@ -38,7 +35,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <summary>
         /// Searcher of <see cref="CodeElement"/> objects
         /// </summary>
-        private readonly CodeElementSearcher _searcher;
+        protected readonly CodeElementSearcher Searcher;
 
         /// <summary>
         /// <see cref="CodeClass"/> set that will be discovered when change transaction is closed
@@ -46,28 +43,29 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         private readonly HashSet<CodeClass> _toDiscover = new HashSet<CodeClass>();
 
         /// <summary>
+        /// Provider of element names
+        /// </summary>
+        private readonly CodeElementNamesProvider _namesProvider;
+
+        /// <summary>
         /// <see cref="Project"/> represented by current assembly
         /// </summary>
-        internal Project Project { get { return _assemblyProject.Project; } }
+        public Project Project { get { return _assemblyProject.Project; } }
 
         /// <summary>
         /// Services that are available for assembly
         /// </summary>
-        internal readonly VisualStudioServices VS;
+        public readonly VisualStudioServices VS;
 
         /// <summary>
-        /// Initialize new instance of <see cref="VsProjectAssembly"/> from given <see cref="Project"/>
+        /// Build method info
         /// </summary>
-        /// <param name="assemblyProject">Project that will be represented by initialized assembly</param>
-        /// <param name="vs"></param>
-        public VsProjectAssembly(Project assemblyProject, VisualStudioServices vs)
-        {
-            VS = vs;
-            _assemblyProject = assemblyProject.Object as VSProject;
-            _searcher = new CodeElementSearcher(this);
+        public readonly MethodInfoBuilder InfoBuilder;
 
-            OnTypeSystemInitialized += initializeAssembly;
-        }
+        /// <summary>
+        /// Build method items
+        /// </summary>
+        public readonly MethodItemBuilder ItemBuilder;
 
         /// <summary>
         /// Root <see cref="CodeElement"/> objects of represented <see cref="Project"/>
@@ -84,27 +82,88 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
+        /// Initialize new instance of <see cref="VsProjectAssembly"/> from given <see cref="Project"/>
+        /// </summary>
+        /// <param name="assemblyProject">Project that will be represented by initialized assembly</param>
+        /// <param name="vs"></param>
+        public VsProjectAssembly(Project assemblyProject, VisualStudioServices vs,
+            CodeElementNamesProvider namesProvider, MethodInfoBuilder infoBuilder, MethodItemBuilder itemBuilder)
+        {
+            VS = vs;
+            _assemblyProject = assemblyProject.Object as VSProject;
+            _namesProvider = namesProvider;
+            Searcher = new CodeElementSearcher(this);
+
+            InfoBuilder = infoBuilder;
+            ItemBuilder = itemBuilder;
+
+            InfoBuilder.Initialize(this);
+            ItemBuilder.Initialize(this);
+
+            OnTypeSystemInitialized += initializeAssembly;
+        }
+
+        #region Services that are customizable for concrete languages
+
+        /// <summary>
         /// Provider of method parsing for assembly
         /// </summary>
         /// <param name="activation">Activation for assembly parser</param>
         /// <param name="emitter">Emitter where parsed instructions are emitted</param>
-        internal void ParsingProvider(ParsingActivation activation, EmitterBase emitter)
-        {
-            //TODO make it language independant
-            var w = Stopwatch.StartNew();
-            
-            var source = Compiler.GenerateInstructions(activation, emitter, TypeServices);
+        public abstract void ParsingProvider(ParsingActivation activation, EmitterBase emitter);
 
-            var methodID = activation.Method == null ? new MethodID("$inline", false) : activation.Method.MethodID;
-            VS.Log.Message("Parsing time for {0} {1}ms", methodID, w.ElapsedMilliseconds);
+        /// <summary>
+        /// Translate given path according to aliases and language type conventions
+        /// <remarks>Namespace lookup is not used</remarks>
+        /// </summary>
+        /// <param name="name">Name to be translated</param>
+        /// <returns>Resulting descriptor</returns>
+        public virtual string TranslatePath(string path)
+        {
+            return path;
         }
+
+        /// <summary>
+        /// Determine that given name is possible for given <see cref="CodeElement"/>
+        /// </summary>
+        /// <param name="possibleName">Tested name</param>
+        /// <param name="element">Element which is tested for possible name</param>
+        /// <returns><c>true</c> if element can have possible name, <c>false</c> otherwise</returns>
+        public bool IsPossibleName(string possibleName, CodeElement element)
+        {
+            var signature = PathInfo.GetSignature(possibleName);
+
+            var names = generatePossibleNames(element);
+            return names.Contains(signature);
+        }
+
+        /// <summary>
+        /// Get names that are matching to given node and searchedName constraint
+        /// </summary>
+        /// <param name="node">Node which names are matched</param>
+        /// <param name="searchedName">Constraint on searched name if <c>null</c> no constraint is specified</param>
+        /// <returns>Matching names</returns>
+        internal IEnumerable<string> GetMatchingNames(CodeElement node, string searchedName)
+        {
+            var names = generatePossibleNames(node);
+            if (searchedName == null)
+                //there is no constraint
+                return names;
+
+            if (names.Contains(searchedName))
+                return new[] { searchedName };
+            else
+                return new string[0];
+        }
+
+        #endregion
 
         /// <summary>
         /// Get namespaces that are valid for file where given <see cref="CodeElement"/> is defined
         /// </summary>
         /// <param name="element">Element which namespaces will be returned</param>
         /// <returns>Valida namespaces for file with given element</returns>
-        internal IEnumerable<string> GetNamespaces(CodeElement element)
+        public IEnumerable<string> GetNamespaces(CodeElement element)
         {
             var namespaces = VS.GetNamespaces(element.ProjectItem);
             return namespaces;
@@ -115,29 +174,34 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// </summary>
         /// <param name="type">Type which namespaces will be returned</param>
         /// <returns>Valid namespaces for given method</returns>
-        internal IEnumerable<string> GetImplicitNamespaces(TypeDescriptor type)
+        public static IEnumerable<string> GetImplicitNamespaces(TypeDescriptor type)
         {
-            return Source.GetImplicitNamespaces(type);
-        }
+            var implicitNamespaces = new HashSet<string>();
 
-        /// <summary>
-        /// Translate given path according to aliases and language type conventions
-        /// <remarks>Namespace lookup is not used</remarks>
-        /// </summary>
-        /// <param name="name">Name to be translated</param>
-        /// <returns>Resulting descriptor</returns>
-        internal static string TranslatePath(string path)
-        {
-            var translated = TypeDescriptor.TranslatePath(path, (toResolve) =>
+            //add empty namespace
+            implicitNamespaces.Add("");
+
+            //each part creates implicit namespace
+            var parts = Naming.SplitGenericPath(type.TypeName);
+
+            var buffer = new StringBuilder();
+            foreach (var part in parts)
             {
-                string result;
-                if (CompilationContext.AliasLookup.TryGetValue(toResolve, out result))
-                    return result;
-                return toResolve;
-            }, true);
+                if (buffer.Length > 0)
+                {
+                    //add trailing char
+                    buffer.Append(Naming.PathDelimiter);
+                }
 
-            return translated;
+                buffer.Append(part);
+
+                implicitNamespaces.Add(buffer.ToString());
+            }
+
+            return implicitNamespaces;
         }
+
+        #region Initialization routines
 
         /// <summary>
         /// Initialize assembly
@@ -220,6 +284,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             ReportProgress(e.FullName);
         }
 
+        #endregion
+
         #region Changes handlers
 
         /// <summary>
@@ -228,8 +294,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <param name="node">Affected element node</param>
         private void onAdd(ElementNode node)
         {
-            var fullname = MethodBuilder.GetFullName(node.Element);
-            node.SetTag("Name", fullname);
+            var fullnames = GetFullNames(node.Element).ToArray();
+            node.SetTag("Names", fullnames);
 
             //every component will be reported through add
             //adding member within component is reported as component change
@@ -246,7 +312,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <param name="node">Affected element node</param>
         private void onChange(ElementNode node)
         {
-            var fullname = node.GetTag("Name") as string;
             var fn = node.Element as CodeFunction;
             if (fn == null)
             {
@@ -255,8 +320,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             }
             else
             {
-                //code change within method
-                ReportInvalidation(fullname);
+                var fullnames = node.GetTag("Names") as IEnumerable<string>;
+                foreach (var fullname in fullnames)
+                {
+                    //code change within method
+                    ReportInvalidation(fullname);
+                }
             }
         }
 
@@ -266,13 +335,15 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <param name="node">Affected element node</param>
         private void onRemove(ElementNode node)
         {
-            var tag = node.GetTag("Name") as string;
-            if (tag == null)
+            var fullnames = node.GetTag("Names") as IEnumerable<string>;
+            if (fullnames == null)
                 return;
 
-            ReportInvalidation(tag);
-
-            ComponentRemoveDiscovered(tag);
+            foreach (var fullname in fullnames)
+            {
+                ReportInvalidation(fullname);
+                ComponentRemoveDiscovered(fullname);
+            }
         }
 
         /// <summary>
@@ -292,7 +363,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             {
                 VS.Log.Message("Discovering components in {0}", element.FullName);
                 var searcher = createComponentSearcher();
-                //TODO single level discovering
                 searcher.VisitElement(element as CodeElement);
             }
             _toDiscover.Clear();
@@ -320,7 +390,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <inheritdoc />
         protected override string getAssemblyFullPath()
         {
-            //TODO correct fullpath
             return _assemblyProject.Project.FullName;
         }
 
@@ -358,7 +427,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
 
             //get method implemented on type described by dynamicInfo
             var path = new PathInfo(dynamicInfo.TypeName);
-            var node = getTypeNode(path.Signature);
+            var node = GetTypeNode(path.Signature);
             if (node == null)
                 //type is not defined here
                 return null;
@@ -369,7 +438,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             if (item == null)
             {
                 var baseType = node.Bases.Item(1) as CodeType;
-                alternativeImplementer = MethodBuilder.CreateDescriptor(baseType);
+                alternativeImplementer = InfoBuilder.CreateDescriptor(baseType);
                 return null;
             }
 
@@ -393,7 +462,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <inheritdoc />
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
-            var typeNode = getTypeNode(typePath.Signature);
+            var typeNode = GetTypeNode(typePath.Signature);
 
             if (typeNode == null)
                 //type hasn't been found
@@ -415,6 +484,51 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         #region Method building helpers
 
         /// <summary>
+        /// Get all possible fullnames for given element
+        /// </summary>
+        /// <param name="codeElement">Element which fullnames are requested</param>
+        /// <returns>Possible fullnames</returns>
+        protected IEnumerable<string> GetFullNames(CodeElement codeElement)
+        {
+            var elementFullname = TranslatePath(codeElement.FullName);
+            var path = new PathInfo(elementFullname);
+
+            var nsPath = path.PrePathSignature;
+            var names = generatePossibleNames(codeElement);
+            foreach (var name in names)
+            {
+                if (nsPath == "")
+                    yield return name;
+                else
+                    yield return nsPath + "." + name;
+            }
+        }
+
+        /// <summary>
+        /// Generate possible names of given element
+        /// </summary>
+        /// <param name="element">Element which names will be generated</param>
+        /// <returns>Generated names</returns>
+        private HashSet<string> generatePossibleNames(CodeElement element)
+        {
+            _namesProvider.ReportedNames.Clear();
+            _namesProvider.VisitElement(element);
+
+            var names = _namesProvider.ReportedNames;
+            return names;
+        }
+
+        /// <summary>
+        /// Find node of type specified by given typePathSignature
+        /// </summary>
+        /// <param name="typePathSignature">Path to type in signature form</param>
+        /// <returns>Found node if any, <c>null</c> otherwise</returns>
+        protected CodeType GetTypeNode(string typePathSignature)
+        {
+            return Searcher.Search(typePathSignature).FirstOrDefault() as CodeType;
+        }
+
+        /// <summary>
         /// Get <see cref="MethodItem"/> for method described by given methodID
         /// </summary>
         /// <param name="methodID">Description of desired method</param>
@@ -425,68 +539,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Get <see cref="MethodItem"/> for generic method described by given methodID with specialization according to
-        /// generic Path
-        /// </summary>
-        /// <param name="methodID">Description of desired method</param>
-        /// <param name="methodGenericPath">Method path specifiing generic substitutions</param>
-        /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>null</c> otherwise</returns>
-        private MethodItem getMethodItemFromGeneric(MethodID methodID, PathInfo methodGenericPath)
-        {
-            var searchedMethod = Naming.GetMethodName(methodID);
-            var isInitializer = CSharpSyntax.MemberInitializer == searchedMethod ||
-                CSharpSyntax.MemberStaticInitializer == searchedMethod;
-
-            if (isInitializer)
-            {
-                var declaringType = Naming.GetDeclaringType(methodID);
-                var signature = PathInfo.GetSignature(declaringType);
-                var type = getTypeNode(signature) as EnvDTE80.CodeClass2;
-
-                if (type == null)
-                    return null;
-
-                var isStatic = CSharpSyntax.MemberInitializer != searchedMethod;
-                return MethodBuilder.BuildFrom(type, isStatic, this);
-            }
-
-            //from given nodes find the one with matching id
-            foreach (var node in findMethodNodes(methodGenericPath.Signature))
-            {
-                //create generic specialization 
-                var methodItem = buildGenericMethod(node, methodGenericPath);
-
-                if (methodItem.Info.MethodID.MethodString == methodID.MethodString)
-                    //we have found matching generic specialization 
-                    //omit dynamic resolution flag, because it is transitive-and it dont need to be handled
-                    return methodItem;
-            }
-
-            //check if param less ctor or cctor is needed
-            var needParamLessCtor = Naming.IsParamLessCtor(methodID);
-            var needClassCtor = Naming.IsClassCtor(methodID);
-
-            if (needParamLessCtor || needClassCtor)
-            {
-                //there is no ctor defined and we need paramLessCtor - implicit one should be created
-                var declaringClass = _searcher.Search(Naming.GetDeclaringType(methodID)) as CodeClass;
-                if (declaringClass != null)
-                {
-                    if (needParamLessCtor)
-                    {
-                        return MethodBuilder.BuildImplicitCtor(declaringClass, this);
-                    }
-                    else
-                    {
-                        return MethodBuilder.BuildImplicitClassCtor(declaringClass, this);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Create <see cref="InheritanceChain"/> enumeration from given typeNodes
         /// </summary>
         private IEnumerable<InheritanceChain> createInheritanceChains(CodeElements typeNodes)
@@ -494,13 +546,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             var chains = new List<InheritanceChain>();
             foreach (CodeElement typeNode in typeNodes)
             {
-                var descriptor = MethodBuilder.CreateDescriptor(typeNode);
+                var descriptor = InfoBuilder.CreateDescriptor(typeNode);
                 var chain = TypeServices.GetChain(descriptor);
                 chains.Add(chain);
             }
 
             return chains;
-            //throw new NotImplementedException("TODO is needed to test form of references to other assemblies - because of naming");
         }
 
         /// <summary>
@@ -509,32 +560,29 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// </summary>
         /// <param name="methodPathSignature">Path to method in signature form</param>
         /// <returns>Found methods</returns>
-        private IEnumerable<CodeElement> findMethodNodes(string methodPathSignature)
+        private IEnumerable<CodeElement> findNodesWithMatchingNames(PathInfo path)
         {
-            VS.Log.Message("Searching method nodes for {0}", methodPathSignature);
+            VS.Log.Message("Searching method nodes for {0}", path.Signature);
 
-            foreach (var element in _searcher.SearchAll(methodPathSignature))
+            var prePathSignature = path.PrePathSignature;
+
+            var typeNodes = Searcher.Search(prePathSignature);
+            foreach (var typeNode in typeNodes)
             {
-                switch (element.Kind)
+
+                //even type nodes can generate methods
+                var lastPart = path.LastPartSignature;
+                if (IsPossibleName(lastPart, typeNode))
+                    yield return typeNode;
+
+                //test children
+                var children = typeNode.Children();
+                foreach (CodeElement child in children)
                 {
-                    case vsCMElement.vsCMElementVariable:
-                    case vsCMElement.vsCMElementProperty:
-                    case vsCMElement.vsCMElementFunction:
-                    case vsCMElement.vsCMElementClass:
-                        yield return element;
-                        break;
+                    if (IsPossibleName(lastPart, child))
+                        yield return child;
                 }
             }
-        }
-
-        /// <summary>
-        /// Find node of type specified by given typePathSignature
-        /// </summary>
-        /// <param name="typePathSignature">Path to type in signature form</param>
-        /// <returns>Found node if any, <c>null</c> otherwise</returns>
-        private CodeType getTypeNode(string typePathSignature)
-        {
-            return _searcher.Search(typePathSignature) as CodeType;
         }
 
         /// <summary>
@@ -556,7 +604,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
                 subChains.AddRange(interfaceChains);
             }
 
-            var typeDescriptor = MethodBuilder.CreateDescriptor(typeNode);
+            var typeDescriptor = InfoBuilder.CreateDescriptor(typeNode);
             return TypeServices.CreateChain(typeDescriptor, subChains);
         }
 
@@ -568,14 +616,40 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <returns>Builded <see cref="MethodItem"/></returns>
         private MethodItem buildGenericMethod(CodeElement methodNode, PathInfo methodGenericPath)
         {
-            var methodItem = MethodBuilder.Build(methodNode, methodGenericPath.LastPart, this);
+            var name = methodGenericPath.LastPartSignature;
 
+            var methodItem = ItemBuilder.Build(methodNode, name);
             if (methodGenericPath != null && methodGenericPath.HasGenericArguments)
                 //make generic specialization
                 methodItem = methodItem.Make(methodGenericPath);
 
             VS.Log.Message("Building method {0}", methodItem.Info.Path.Name);
             return methodItem;
+        }
+
+
+        /// <summary>
+        /// Get <see cref="MethodItem"/> for generic method described by given methodID with specialization according to
+        /// generic Path
+        /// </summary>
+        /// <param name="methodID">Description of desired method</param>
+        /// <param name="methodGenericPath">Method path specifiing generic substitutions</param>
+        /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>null</c> otherwise</returns>
+        private MethodItem getMethodItemFromGeneric(MethodID methodID, PathInfo methodGenericPath)
+        {
+            //from given nodes find the one with matching id
+            foreach (var node in findNodesWithMatchingNames(methodGenericPath))
+            {
+                //create generic specialization 
+                var methodItem = buildGenericMethod(node, methodGenericPath);
+
+                if (methodItem.Info.MethodID.MethodString == methodID.MethodString)
+                    //we have found matching generic specialization 
+                    //omit dynamic resolution flag, because it is transitive-and it dont need to be handled
+                    return methodItem;
+            }
+
+            return null;
         }
 
         #endregion

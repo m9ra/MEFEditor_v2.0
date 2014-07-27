@@ -16,7 +16,6 @@ using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
 using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
 using RecommendedExtensions.Core.Languages.CSharp.Primitives;
 using RecommendedExtensions.Core.Languages.CSharp.Compiling;
-using RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions;
 
 namespace RecommendedExtensions.Core.Languages.CSharp
 {
@@ -1182,6 +1181,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
                 //resolve base chaining
                 while (currentNode.Value == CSharpSyntax.BaseVariable)
                 {
+                    if (currentTypeChain == null)
+                        return false;
+
                     var subChains = currentTypeChain.SubChains;
                     if (!subChains.Any())
                         return false;
@@ -1658,6 +1660,17 @@ namespace RecommendedExtensions.Core.Languages.CSharp
                 return true;
             }
 
+            char ch;
+            if (literalToken.StartsWith("'") && 
+                literalToken.EndsWith("'") && 
+                char.TryParse(literalToken.Substring(1, literalToken.Length - 2), out ch))
+            {
+                //char literal
+
+                literal = new LiteralValue(ch, literalNode, Context);
+                return true;
+            }
+
             int num;
             if (int.TryParse(literalToken, out num))
             {
@@ -1675,6 +1688,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
                 literal = new LiteralValue(bl, literalNode, Context);
                 return true;
             }
+
 
             if (literalNode.Value == CSharpSyntax.TypeOfOperator)
             {
@@ -1774,12 +1788,8 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             Debug.Assert(declarationNode.NodeType == NodeTypes.declaration);
             var name = declarationNode.Arguments[1].Value;
 
-            /*  var existingVariable = resolveVariableInfo(name);
-              if (existingVariable != null)
-                  return existingVariable;*/
-
             var typeNode = declarationNode.Arguments[0];
-            var isImplicitlyTyped = typeNode.Value == LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
+            var isImplicitlyTyped = typeNode.Value == CSharpSyntax.ImplicitVariableType;
 
             //resolve type if needed
             TypeDescriptor declaredType = typeHint;
@@ -1949,12 +1959,6 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
             //create activation
             return createCallActivation(selector, calledObject, callNode, arguments);
-        }
-
-        private CallValue tryCreateCall(MethodSearcher searcher, RValueProvider calledObject, INodeAST callNode, params RValueProvider[] argumentValues)
-        {
-            var selector = new MethodSelector(searcher.FoundResult, Context);
-            return tryCreateCall(selector, calledObject, callNode, argumentValues);
         }
 
         private CallValue tryCreateCall(MethodSelector selector, RValueProvider calledObject, INodeAST callNode, params RValueProvider[] argumentValues)

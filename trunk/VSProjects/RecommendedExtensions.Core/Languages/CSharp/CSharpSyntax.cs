@@ -10,7 +10,7 @@ using MEFEditor.TypeSystem;
 using RecommendedExtensions.Core.Languages.CSharp.Primitives;
 using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
 
-namespace RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions
+namespace RecommendedExtensions.Core.Languages.CSharp
 {
     /// <summary>
     /// Provide services for parsing C# syntax.
@@ -131,7 +131,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions
 
         #endregion
 
-        readonly Layouts layouts;
+        readonly LanguageLayouts layouts;
         readonly ILexer _lexer;
 
         static readonly HashSet<string> KnownTokens = new HashSet<string>();
@@ -177,7 +177,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions
         public CSharpSyntax(ILexer lexer, GetNextTree nextTree)
         {
             _lexer = lexer;
-            layouts = new Layouts(nextTree, _lexer);
+            layouts = new LanguageLayouts(nextTree, _lexer);
             KnownTokens.UnionWith(BinOperators.Keys);
             KnownTokens.UnionWith(EndingTokens);
             KnownTokens.UnionWith(PrefOperators);
@@ -195,8 +195,23 @@ namespace RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions
         public static ParsingException ParsingException(INodeAST node, string descriptionFormat, params object[] formatArguments)
         {
             var description = string.Format(descriptionFormat, formatArguments);
-            var error = string.Format("{0} near {1} at offset {2}", description, node, node.StartingToken.Position.Offset);
-            throw new ParsingException(error, () => navigate(node));
+
+            var errorFormat = "{0}";
+            var position = 0;
+            Action navigation = null;
+            if (node != null)
+            {
+                errorFormat += " near {1}";
+                if (node.StartingToken != null)
+                {
+                    errorFormat += " at offset {2}";
+                }
+
+                navigation = () => navigate(node);
+            }
+
+            var error = string.Format(errorFormat, description, node, position);
+            throw new ParsingException(error, navigation);
         }
 
         /// <summary>

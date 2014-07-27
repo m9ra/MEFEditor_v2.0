@@ -8,7 +8,6 @@ using System.Diagnostics;
 using MEFEditor.TypeSystem;
 
 using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
-using RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions;
 
 namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
 {

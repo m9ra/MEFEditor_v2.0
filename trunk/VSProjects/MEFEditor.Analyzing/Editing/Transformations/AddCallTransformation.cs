@@ -37,14 +37,5 @@ namespace MEFEditor.Analyzing.Editing.Transformations
             var subsitutedCall = call.Substitute(instanceScopes.InstanceVariables);
             View.AppendCall(instanceScopes.ScopeBlock, subsitutedCall);
         }
-
-        private void appendInstance(object testedObj, List<Instance> instances)
-        {
-            var inst = testedObj as Instance;
-            if (inst == null)
-                return;
-
-            instances.Add(inst);
-        }
     }
 }

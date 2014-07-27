@@ -94,13 +94,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
                 match = match.NextMatch();
             }
         }
-
-        private void addTokens(params string[] toks)
-        {
-            foreach (var tok in toks)
-                addToken(tok);
-        }
-
+        
         /// <summary>
         /// Add new token into _tokens according to last token
         /// </summary>

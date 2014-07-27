@@ -10,8 +10,9 @@ using EnvDTE;
 using EnvDTE80;
 
 using MEFEditor.TypeSystem;
+using MEFEditor.Interoperability;
 
-using RecommendedExtensions.Core.Languages.CSharp.LanguageDefinitions;
+using RecommendedExtensions.Core.Languages.CSharp;
 
 namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
 {

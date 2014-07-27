@@ -199,7 +199,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Transformations
             }
 
             //assigned type matches to variable type and implicit type convetion is used
-            return LanguageDefinitions.CSharpSyntax.ImplicitVariableType;
+            return CSharpSyntax.ImplicitVariableType;
         }
 
     }

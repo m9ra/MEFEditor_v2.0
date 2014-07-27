@@ -91,7 +91,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         /// <inheritdoc />
         public override void VisitAttribute(CodeAttribute2 e)
         {
-            //TODO maybe catching exceptions for some search level will be advantageous
             var fullname = e.SafeFullname();
 
             if (fullname == Naming.ExportAttribute)
@@ -133,7 +132,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             TypeDescriptor importType;
             if (!getImportTarget(importAttrbute.Element, builder.ComponentType, out importMethodID, out importType))
             {
-                //TODO log that import attribute cannot be handled
+                _assembly.VS.Log.Warning("Cannot parse import attribute on: "+importAttrbute.Element.Name);
                 return;
             }
 
@@ -160,7 +159,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             MethodID exportMethodID;
             if (!getExportTarget(exportAttribute.Element, builder.ComponentType, out exportMethodID, out exportTypeDescriptor))
             {
-                //TODO log that export attribute cannot be handled
+                _assembly.VS.Log.Warning("Cannot parse export attribute on: " + exportAttribute.Element.Name);
                 return;
             }
 
@@ -230,17 +229,17 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
                 case vsCMElement.vsCMElementVariable:
                     //variables are represented by properties within type system
                     exportMethodID = Naming.Method(componentType, Naming.GetterPrefix + name, false, ParameterTypeInfo.NoParams);
-                    exportType = MethodBuilder.CreateDescriptor((target as CodeVariable).Type);
+                    exportType = _assembly.InfoBuilder.CreateDescriptor((target as CodeVariable).Type);
                     return true;
 
                 case vsCMElement.vsCMElementProperty:
                     exportMethodID = Naming.Method(componentType, Naming.GetterPrefix + name, false, ParameterTypeInfo.NoParams);
-                    exportType = MethodBuilder.CreateDescriptor((target as CodeProperty).Type);
+                    exportType = _assembly.InfoBuilder.CreateDescriptor((target as CodeProperty).Type);
                     return true;
 
                 case vsCMElement.vsCMElementClass:
                     //self export doesnt need exportMethodID
-                    exportType = MethodBuilder.CreateDescriptor(target as CodeClass);
+                    exportType = _assembly.InfoBuilder.CreateDescriptor(target as CodeClass);
                     return true;
 
                 default:
@@ -269,14 +268,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             {
                 case vsCMElement.vsCMElementVariable:
                     //variables are represented by properties within type system
-                    importType = MethodBuilder.CreateDescriptor((target as CodeVariable).Type);
+                    importType = _assembly.InfoBuilder.CreateDescriptor((target as CodeVariable).Type);
                     importMethodID = Naming.Method(componentType, Naming.SetterPrefix + name, false,
                         ParameterTypeInfo.Create("value", importType)
                         );
                     return true;
 
                 case vsCMElement.vsCMElementProperty:
-                    importType = MethodBuilder.CreateDescriptor((target as CodeProperty).Type);
+                    importType = _assembly.InfoBuilder.CreateDescriptor((target as CodeProperty).Type);
                     importMethodID = Naming.Method(componentType, Naming.SetterPrefix + name, false,
                         ParameterTypeInfo.Create("value", importType)
                         );
@@ -293,13 +292,13 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         /// <param name="compositionAttrbiute">Attribute defining importing constructor</param>
         private void addImportingConstructor(AttributeInfo compositionAttrbiute)
         {
-            var method = getMethod(compositionAttrbiute.Element);
-            if (method == null)
+            var methodElement = getMethod(compositionAttrbiute.Element) as CodeElement;
+            if (methodElement == null)
             {
-                throw new NotImplementedException("Log that method cannot been loaded");
+                _assembly.VS.Log.Warning("Method marked with importing constructor cannot be loaded");
             }
 
-            var info = MethodBuilder.CreateMethodInfo(method);
+            var info = _assembly.InfoBuilder.Build(methodElement, Naming.CtorName);
 
             var builder = getOrCreateCurrentBuilder(compositionAttrbiute.Element as CodeElement);
             builder.SetImportingCtor(info);
@@ -312,18 +311,24 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         private void addCompositionPoint(AttributeInfo compositionAttrbiute)
         {
             var method = getMethod(compositionAttrbiute.Element);
-            if (method == null)
+            var methodElement = method as CodeElement;
+            if (methodElement == null)
             {
-                throw new NotImplementedException("Log that method cannot been loaded");
+                _assembly.VS.Log.Warning("Method marked with composition point cannot be loaded");
             }
 
-            var info = MethodBuilder.CreateMethodInfo(method);
+            var isCtor=method.FunctionKind==vsCMFunction.vsCMFunctionConstructor;
+            var isStatic=method.IsShared;
+            var ctorName=isStatic?Naming.ClassCtorName:Naming.CtorName;
+            var name = isCtor ? ctorName : methodElement.Name;
+            
+            var info = _assembly.InfoBuilder.Build(methodElement,name);
 
             var builder = getOrCreateCurrentBuilder(compositionAttrbiute.Element as CodeElement);
             builder.AddExplicitCompositionPoint(info.MethodID, createInitializer(compositionAttrbiute, info));
         }
 
-        #region Literal parsing - TODO refactor out
+        #region Literal parsing
 
         private string parseContract(string rawContract, ComponentInfoBuilder builder, CodeAttribute2 attribute)
         {
@@ -395,11 +400,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             if (data.StartsWith(typePrefix))
             {
                 data = data.Substring(typePrefix.Length).Replace(")", "");
-                data = VsProjectAssembly.TranslatePath(data);
+                data = _assembly.TranslatePath(data);
 
                 //find contracted type
 
-                var implicitNamespaces = _assembly.GetImplicitNamespaces(builder.ComponentType);
+                var implicitNamespaces = VsProjectAssembly.GetImplicitNamespaces(builder.ComponentType);
 
                 var namespaces = implicitNamespaces.Concat(_assembly.GetNamespaces(attribute as CodeElement));
                 foreach (var ns in namespaces)
@@ -419,15 +424,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
 
         private GeneratorBase createInitializer(AttributeInfo compositionAttribute, TypeMethodInfo compositionPointInfo)
         {
-            //TODO refactor into VsProjectAssembly
-
-
             if (compositionPointInfo.Parameters.Length == 0)
                 //no arguments are required
                 return null;
 
             if (compositionPointInfo.Parameters.Length != compositionAttribute.PositionalArgumentsCount)
-                //TODO add special logging
                 _assembly.VS.Log.Error("Detected explicit composition point with wrong argument count for {0}", compositionPointInfo.MethodID);
 
             return new InitializerGenerator(_assembly, compositionAttribute, compositionPointInfo);
@@ -474,7 +475,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             ComponentInfoBuilder builder;
             if (!_builtComponents.TryGetValue(currentClass, out builder))
             {
-                _builtComponents[currentClass] = builder = new ComponentInfoBuilder(MethodBuilder.CreateDescriptor(currentClass));
+                _builtComponents[currentClass] = builder = new ComponentInfoBuilder(_assembly.InfoBuilder.CreateDescriptor(currentClass));
             }
 
             return builder;

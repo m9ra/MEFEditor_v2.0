@@ -166,7 +166,6 @@ namespace MEFEditor.Analyzing
 
             _createdInstances.Clear();
             var context = new AnalyzingContext(this, loader);
-
             Exception runtimeException = null;
 
 #if !PassExceptions
@@ -202,7 +201,10 @@ namespace MEFEditor.Analyzing
         /// <param name="context">Properly initialized context</param>        
         private void runContext(AnalyzingContext context)
         {
-            var initialLimit=Settings.ExecutionLimit;
+            if (context.CurrentCall == null)
+                throw new NotSupportedException("Entry method hasn't been found");
+
+            var initialLimit = Settings.ExecutionLimit;
             var executionLimit = initialLimit;
             //interpretation processing
             while (!context.IsExecutionEnd)

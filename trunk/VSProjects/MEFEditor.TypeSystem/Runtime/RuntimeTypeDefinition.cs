@@ -325,24 +325,18 @@ namespace MEFEditor.TypeSystem.Runtime
             {
                 var entryContext = v.EntryBlock.Call;
                 var name = variableNameProvider(this, entryContext);
-
-                var args = argumentsProvider == null ? null : argumentsProvider(v);
-
-                if (v.IsAborted)
-                {
-                    return null;
-                }
-
-                if (args == null)
-                {
-                    args = new object[0];
-                }
-
                 if (name == null)
                 {
                     v.Abort("Name hasn't been selected");
                     return null;
                 }
+
+                var args = argumentsProvider == null ? null : argumentsProvider(v);
+                if (args == null)
+                    args = new object[0];
+
+                if (v.IsAborted)
+                    return null;
 
                 var call = new CallEditInfo(TypeInfo, Naming.CtorName, args);
                 call.ReturnName = name;

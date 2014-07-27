@@ -750,6 +750,7 @@ namespace MEFEditor.Plugin.GUI
             var heading = new TextBox();
             heading.IsReadOnly = true;
             heading.Text = text;
+            heading.TextWrapping = TextWrapping.Wrap;
             heading.BorderBrush = Brushes.Transparent;
             heading.BorderThickness = new Thickness(0);
 
@@ -763,7 +764,6 @@ namespace MEFEditor.Plugin.GUI
         /// <param name="entry">Entry defining navigation</param>
         private void setContextMenu(FrameworkElement element, LogEntry entry)
         {
-
             var toolText = new TextBlock();
             toolText.Text = "Right click to open menu";
 

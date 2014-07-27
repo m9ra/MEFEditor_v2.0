@@ -38,7 +38,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         {
             while (node != null)
             {
-                if (node.Value == LanguageDefinitions.CSharpSyntax.NewOperator)
+                if (node.Value == CSharpSyntax.NewOperator)
                     return true;
 
                 node = node.Parent;

@@ -34,33 +34,31 @@ namespace MEFEditor.TypeSystem
 
         public bool HasGenericArguments { get { return GenericArgs.Count > 0; } }
 
-        /// <summary>
-        /// Determine that path marks method with getter naming conventions
-        /// </summary>
-        public bool IsGetter
+        public string PrePathSignature
         {
             get
             {
-                //TODO this workaround is not nice
-                return Signature.Contains(Naming.PathDelimiter + Naming.GetterPrefix);
+                //we can take last index, because it is short signature
+                var lastDelimiter = ShortSignature.LastIndexOf(Naming.PathDelimiter);
+                if (lastDelimiter < 0)
+                    //there is no prepath
+                    return "";
+
+                return ShortSignature.Substring(0, lastDelimiter);
             }
         }
 
-        public string PrePath
+        public string LastPartSignature
         {
             get
             {
-                var lastPart = ShortSignature.Split('.').Last();
+                //we can take last index, because it is short signature
+                var lastDelimiter = ShortSignature.LastIndexOf(Naming.PathDelimiter);
+                if (lastDelimiter < 0)
+                    //there is no prepath
+                    return "";
 
-                return ShortSignature.Substring(0, ShortSignature.Length - lastPart.Length);
-            }
-        }
-
-        public string LastPart
-        {
-            get
-            {
-                return ShortSignature.Substring(PrePath.Length);
+                return ShortSignature.Substring(lastDelimiter + 1);
             }
         }
 

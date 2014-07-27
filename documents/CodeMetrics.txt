@@ -1,0 +1,9 @@
+^(?([^\r\n])\s)*[^\s+?/]+[^\n]*$
+
+*.cs, *.xaml
+
+Entire solution
+Matching lines: 54460    Matching files: 528    Total files searched: 528
+
+Mono.Cecil
+Matching lines: 18646    Matching files: 127    Total files searched: 127

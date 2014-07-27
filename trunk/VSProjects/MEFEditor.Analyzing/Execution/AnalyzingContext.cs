@@ -408,7 +408,8 @@ namespace MEFEditor.Analyzing.Execution
             }
             else
             {
-                CurrentCall.RegisterCall(call);
+                if (CurrentCall != null)
+                    CurrentCall.RegisterCall(call);
             }
 
             _callStack.Push(call);

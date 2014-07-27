@@ -12,7 +12,7 @@ using MEFEditor.TypeSystem;
 using MEFEditor.Interoperability;
 
 using RecommendedExtensions.Core.AssemblyProviders.CILAssembly;
-using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
+using RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly;
 
 namespace RecommendedExtensions.AssemblyProviders
 {
@@ -32,7 +32,7 @@ namespace RecommendedExtensions.AssemblyProviders
             }
             else
             {
-                ExportAssemblyFactory<Project>((project) => new VsProjectAssembly(project, Services));
+                ExportAssemblyFactory<Project>((project) => new CSharpAssembly(project, Services));
             }
 
             ExportAssemblyFactory<string>((path) => new CILAssembly(path));

@@ -25,10 +25,17 @@ using MEFEditor.TestConsole.Drawings;
 
 namespace MEFEditor.TestConsole
 {
+    /// <summary>
+    /// Provider that is used for creating entry arguments
+    /// </summary>
+    /// <param name="machine">Machine that is used for construction of entry arguments</param>
+    /// <returns>Created arguments</returns>
     delegate IEnumerable<Instance> EntryArgumentsProvider(Machine machine);
 
     /// <summary>
-    /// Executor for running tasks on testing assembly
+    /// Executor for running tasks on testing assembly. Results
+    /// are shown in console or in editor GUI when there are 
+    /// found some drawable instances.
     /// </summary>
     class AnalyzingResearchExecutor
     {
@@ -72,6 +79,11 @@ namespace MEFEditor.TestConsole
         /// </summary>
         private GUIManager _guiManager;
 
+
+        /// <summary>
+        /// Initializes new instance of executor of research test cases.
+        /// </summary>
+        /// <param name="assembly">Assembly</param>
         internal AnalyzingResearchExecutor(TestingAssembly assembly)
         {
             _assembly = assembly;
@@ -88,6 +100,9 @@ namespace MEFEditor.TestConsole
             analyzeResult();
         }
 
+        /// <summary>
+        /// Analyze result of test case running
+        /// </summary>
         private void analyzeResult()
         {
             _entryContext = _result.Execution.EntryContext;
@@ -98,6 +113,9 @@ namespace MEFEditor.TestConsole
             printAdditionalInfo();
         }
 
+        /// <summary>
+        /// Refresh analysis result
+        /// </summary>
         private void refreshResult()
         {
             _watch.Reset();
@@ -108,16 +126,18 @@ namespace MEFEditor.TestConsole
             _watch.Stop();
         }
 
+        /// <summary>
+        /// Refresh drawing in GUI
+        /// </summary>
         private void refreshDrawing()
         {
             refreshResult();
             analyzeResult();
             TryShowDrawings();
         }
-
-
+        
         /// <summary>
-        /// If there are available drawings, display window is opened
+        /// If there are available drawings, display window will be opened
         /// </summary>
         internal void TryShowDrawings()
         {
@@ -146,8 +166,6 @@ namespace MEFEditor.TestConsole
             }
         }
 
-
-
         #region Output building
 
         /// <summary>
@@ -172,14 +190,16 @@ namespace MEFEditor.TestConsole
             _guiManager = new GUIManager(form.GUI);
             _guiManager.Initialize(_assembly.AppDomain, factory);
             _guiManager.CompositionPointSelected += onCompositionPointSelected;
-            /*     _guiManager.HostAssemblyLoaded += (a) => _assembly.AddAssembly(a);
-                 _guiManager.HostAssemblyUnLoaded += (a) => { _assembly.RemoveAssembly(a); };*/
             displayDiagram(_diagramDefinition);
 
             form.Show();
             Dispatcher.Run();
         }
 
+        /// <summary>
+        /// Display diagram according to given definition
+        /// </summary>
+        /// <param name="diagramDefinition">Definition of diagram to be displayed</param>
         private void displayDiagram(DiagramDefinition diagramDefinition)
         {
             diagramDefinition.ShowJoinLines = _guiManager.ShowJoinLines;
@@ -189,6 +209,9 @@ namespace MEFEditor.TestConsole
             _guiManager.Display(diagramDefinition);
         }
 
+        /// <summary>
+        /// Handler called whenever composition point is selected
+        /// </summary>
         private void onCompositionPointSelected()
         {
             var compositionPoint = _guiManager.SelectedCompositionPoint;
@@ -212,15 +235,23 @@ namespace MEFEditor.TestConsole
             refreshDrawing();
         }
 
+        /// <summary>
+        /// Set environment to run default composition point
+        /// </summary>
         private void setDefaultCompositionPoint()
         {
             _entryMethod = Method.EntryInfo.MethodID;
             _entryArgumentsProvider = getDefaultArguments;
         }
 
-        private IEnumerable<Instance> getDefaultArguments(Machine m)
+        /// <summary>
+        /// Create default arguments
+        /// </summary>
+        /// <param name="machine">Machine used for arguments creation</param>
+        /// <returns>Created arguments</returns>
+        private IEnumerable<Instance> getDefaultArguments(Machine machine)
         {
-            yield return m.CreateInstance(TypeDescriptor.Create(Method.EntryClass));
+            yield return machine.CreateInstance(TypeDescriptor.Create(Method.EntryClass));
         }
 
         /// <summary>
@@ -256,6 +287,10 @@ namespace MEFEditor.TestConsole
             _diagramDefinition = pipeline.GetOutput();
         }
 
+        /// <summary>
+        /// General drawer used for every drawed instance
+        /// </summary>
+        /// <param name="instance">Instance to be draw</param>
         private void generalDrawer(DrawedInstance instance)
         {
             var instanceInfo = instance.WrappedInstance.Info;
