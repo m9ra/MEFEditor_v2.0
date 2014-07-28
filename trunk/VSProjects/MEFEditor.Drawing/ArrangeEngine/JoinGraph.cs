@@ -20,92 +20,96 @@ namespace MEFEditor.Drawing.ArrangeEngine
         #region View angle singleton definitions
 
         /// <summary>
-        /// Quadrants angle for top left corner
+        /// Quadrants angle for top left corner.
         /// </summary>
         private static readonly QuadrantAngle TopLeftCorner = new QuadrantAngle(true, true, true, false);
 
         /// <summary>
-        /// Quadrants angle for top right corner
+        /// Quadrants angle for top right corner.
         /// </summary>
         private static readonly QuadrantAngle TopRightCorner = new QuadrantAngle(true, true, false, true);
 
         /// <summary>
-        /// Quadrants angle for bottom left corner
+        /// Quadrants angle for bottom left corner.
         /// </summary>
         private static readonly QuadrantAngle BottomLeftCorner = new QuadrantAngle(false, true, true, true);
 
         /// <summary>
-        /// Quadrants angle for bottom right corner
+        /// Quadrants angle for bottom right corner.
         /// </summary>
         private static readonly QuadrantAngle BottomRightCorner = new QuadrantAngle(true, false, true, true);
 
         /// <summary>
-        /// Quadrants angle that covers all quadrants
+        /// Quadrants angle that covers all quadrants.
         /// </summary>
         private static readonly QuadrantAngle AllAngle = new QuadrantAngle(true, true, true, true);
 
         /// <summary>
-        /// Quadrants angle that doesnt cover any quadrants
+        /// Quadrants angle that doesnt cover any quadrants.
         /// </summary>
         private static readonly QuadrantAngle NoAngle = new QuadrantAngle(false, false, false, false);
 
         /// <summary>
-        /// Quadrants angle for top edge
+        /// Quadrants angle for top edge.
         /// </summary>
         private static readonly QuadrantAngle TopEdge = new QuadrantAngle(true, true, false, false);
 
         /// <summary>
-        /// Quadrants angle for bottom edge
+        /// Quadrants angle for bottom edge.
         /// </summary>
         private static readonly QuadrantAngle BottomEdge = new QuadrantAngle(false, false, true, true);
 
         /// <summary>
-        /// Conus angle for top connectors
+        /// Conus angle for top connectors.
         /// </summary>
         private static readonly ConusAngle TopConus = new ConusAngle(true, true);
 
         /// <summary>
-        /// Conus angle for bottom connectors
+        /// Conus angle for bottom connectors.
         /// </summary>
         private static readonly ConusAngle BottomConus = new ConusAngle(true, false);
 
         /// <summary>
-        /// Conus angle for right connectors
+        /// Conus angle for right connectors.
         /// </summary>
         private static readonly ConusAngle RightConus = new ConusAngle(false, true);
 
         /// <summary>
-        /// Conus angle for left connectors
-        /// </summary>        
+        /// Conus angle for left connectors.
+        /// </summary>
         private static readonly ConusAngle LeftConus = new ConusAngle(false, false);
 
         #endregion
 
         /// <summary>
-        /// Navigator used for checking presence of obstacles between points
+        /// Navigator used for checking presence of obstacles between points.
         /// </summary>
         private readonly SceneNavigator _navigator;
 
         /// <summary>
-        /// Mapping from diagram item to points that it defines
+        /// Mapping from diagram item to points that it defines.
         /// </summary>
         private readonly MultiDictionary<DiagramItem, GraphPoint> _itemPoints = new MultiDictionary<DiagramItem, GraphPoint>();
 
         /// <summary>
-        /// Mapping from connector to corresponding grap points
+        /// Mapping from connector to corresponding grap points.
         /// </summary>
         private readonly Dictionary<ConnectorDrawing, GraphPoint> _connectorPoints = new Dictionary<ConnectorDrawing, GraphPoint>();
 
         /// <summary>
-        /// Queue used for candidate points that are tested for ability to connect with target component
+        /// Queue used for candidate points that are tested for ability to connect with target component.
         /// </summary>
         private readonly Queue<GraphPoint> _fromCandidates = new Queue<GraphPoint>();
 
         /// <summary>
-        /// Set of points that has been already processed during path exploration
+        /// Set of points that has been already processed during path exploration.
         /// </summary>
         private readonly HashSet<GraphPoint> _processed = new HashSet<GraphPoint>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JoinGraph"/> class.
+        /// </summary>
+        /// <param name="navigator">The navigator.</param>
         internal JoinGraph(SceneNavigator navigator)
         {
             _navigator = navigator;
@@ -114,9 +118,9 @@ namespace MEFEditor.Drawing.ArrangeEngine
         #region Public API
 
         /// <summary>
-        /// Connect item into graph
+        /// Connect item into graph.
         /// </summary>
-        /// <param name="item">Item to be connected</param>
+        /// <param name="item">Item to be connected.</param>
         public void AddItem(DiagramItem item)
         {
             var points = generatePoints(item);
@@ -126,10 +130,10 @@ namespace MEFEditor.Drawing.ArrangeEngine
 
         /// <summary>
         /// Run exploration of path between given connectors
-        /// <remarks>Exploration should be runned before path finding</remarks>
+        /// <remarks>Exploration should be runned before path finding</remarks>.
         /// </summary>
-        /// <param name="from">Connector from which path is explored</param>
-        /// <param name="to">Connector to which path is explored</param>
+        /// <param name="from">Connector from which path is explored.</param>
+        /// <param name="to">Connector to which path is explored.</param>
         public void Explore(ConnectorDrawing from, ConnectorDrawing to)
         {
             //initialize global buffers
@@ -141,7 +145,7 @@ namespace MEFEditor.Drawing.ArrangeEngine
             if (fromPoint == null)
                 return;
 
-            //all points on desired component are possible targets (they all are connected withself)
+            //all points on desired component are possible targets (they all are connected with self)
             var toItem = to.OwningItem;
             var toCandidates = _itemPoints.Get(toItem);
 
@@ -165,12 +169,13 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Find path beween from and to connectors. 
-        /// <remarks>Path finding is processed on current explored state of graph</remarks>
+        /// Find path beween from and to connectors.
+        /// <remarks>Path finding is processed on current explored state of graph</remarks>.
         /// </summary>
-        /// <param name="from">Start of desired path</param>
-        /// <param name="to">End of desired path</param>
-        /// <returns>Path if available, <c>null</c> otherwise</returns>
+        /// <param name="from">Start of desired path.</param>
+        /// <param name="to">End of desired path.</param>
+        /// <returns>Path if available, <c>null</c> otherwise.</returns>
+        /// <exception cref="System.NotSupportedException"></exception>
         public Point[] FindPath(ConnectorDrawing from, ConnectorDrawing to)
         {
             //get connector representation on graph
@@ -231,6 +236,11 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return simplified;
         }
 
+        /// <summary>
+        /// Extracts the minimum.
+        /// </summary>
+        /// <param name="toRelax">Edges that will be relaxed.</param>
+        /// <returns>KeyValuePair&lt;GraphPoint, System.Double&gt;.</returns>
         private KeyValuePair<GraphPoint, double> extractMin(Dictionary<GraphPoint, double> toRelax)
         {
 
@@ -252,10 +262,10 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Try to remove points that are not necessary
+        /// Try to remove points that are not necessary.
         /// </summary>
-        /// <param name="path">Path that will be simplified</param>
-        /// <returns>Simplified path</returns>
+        /// <param name="path">Path that will be simplified.</param>
+        /// <returns>Simplified path.</returns>
         private Point[] simplifyPath(GraphPoint[] path)
         {
             if (path == null)
@@ -288,9 +298,9 @@ namespace MEFEditor.Drawing.ArrangeEngine
 
         /// <summary>
         /// Try to enqueue point that is candidate of from points
-        /// if it hasn't already been enqueued
+        /// if it hasn't already been enqueued.
         /// </summary>
-        /// <param name="fromCandidate">Candidate point</param>
+        /// <param name="fromCandidate">Candidate point.</param>
         private void tryEnqueue(GraphPoint fromCandidate)
         {
             if (!_processed.Add(fromCandidate))
@@ -301,10 +311,10 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Enqueue edge between from candidate and given obstacle
+        /// Enqueue edge between from candidate and given obstacle.
         /// </summary>
-        /// <param name="fromCandidate">Candidate from which edge is enqueued</param>
-        /// <param name="obstacle">Obstacle which will be connected</param>
+        /// <param name="fromCandidate">Candidate from which edge is enqueued.</param>
+        /// <param name="obstacle">Obstacle which will be connected.</param>
         private void enqueueWithObstacleEdges(GraphPoint fromCandidate, DiagramItem obstacle)
         {
             if (obstacle == null)
@@ -327,13 +337,13 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Try to add edge between given points if possible
+        /// Try to add edge between given points if possible.
         /// </summary>
-        /// <param name="fromCandidate">Point where edge should start</param>
-        /// <param name="toCandidate">Point where edge should end</param>
-        /// <param name="target">Target that is not considered to be an obstacle</param>
-        /// <param name="obstacle">Obstacle if any is present between from and to candidate, <c>null</c> otherwise</param>
-        /// <returns><c>true</c> if edge can be added, <c>false</c> otherwise</returns>
+        /// <param name="fromCandidate">Point where edge should start.</param>
+        /// <param name="toCandidate">Point where edge should end.</param>
+        /// <param name="target">Target that is not considered to be an obstacle.</param>
+        /// <param name="obstacle">Obstacle if any is present between from and to candidate, <c>null</c> otherwise.</param>
+        /// <returns><c>true</c> if edge can be added, <c>false</c> otherwise.</returns>
         private bool tryAddEdge(GraphPoint fromCandidate, GraphPoint toCandidate, DiagramItem target, out DiagramItem obstacle)
         {
             obstacle = null;
@@ -359,6 +369,12 @@ namespace MEFEditor.Drawing.ArrangeEngine
 
         #region Path finding
 
+        /// <summary>
+        /// Reconstructs the path.
+        /// </summary>
+        /// <param name="toPoint">To point.</param>
+        /// <param name="reachedPoints">The reached points.</param>
+        /// <returns>GraphPoint[].</returns>
         private static GraphPoint[] reconstructPath(GraphPoint toPoint, Dictionary<GraphPoint, GraphPoint> reachedPoints)
         {
             GraphPoint currentPoint;
@@ -387,10 +403,10 @@ namespace MEFEditor.Drawing.ArrangeEngine
 
         /// <summary>
         /// Get contact points defined for given item
-        /// <remarks>Note that because of simple getting contact points we store them as first four</remarks>
+        /// <remarks>Note that because of simple getting contact points we store them as first four</remarks>.
         /// </summary>
-        /// <param name="item">Item which points are generated</param>
-        /// <returns>Generated points</returns>
+        /// <param name="item">Item which points are generated.</param>
+        /// <returns>Generated points.</returns>
         private IEnumerable<GraphPoint> generatePoints(DiagramItem item)
         {
             var span = SceneNavigator.GetSpan(item, item.GlobalPosition);
@@ -422,12 +438,13 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Generate points for given connectors
+        /// Generate points for given connectors.
         /// </summary>
-        /// <param name="connectors">Connectors which points will be generated</param>
-        /// <param name="view">View angle of connectors</param>
-        /// <param name="inputPoint"></param>
-        /// <param name="points"></param>
+        /// <param name="connectors">Connectors which points will be generated.</param>
+        /// <param name="connectorAlign">The connector align.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="points">The points.</param>
+        /// <exception cref="System.NotSupportedException">Connector align  + connectorAlign</exception>
         private void generateConnectorPoints(IEnumerable<ConnectorDrawing> connectors, ConnectorAlign connectorAlign, DiagramItem item, List<GraphPoint> points)
         {
             //detect conus for connector direction
@@ -473,6 +490,16 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
 
+        /// <summary>
+        /// Gets the input slots.
+        /// </summary>
+        /// <param name="connectorIndex">Index of the connector.</param>
+        /// <param name="connectorsCount">The connectors count.</param>
+        /// <param name="connector">The connector.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="contactPoints">The contact points.</param>
+        /// <returns>GraphPoint[].</returns>
+        /// <exception cref="System.NotSupportedException">Connector align  + connectorAlign</exception>
         private GraphPoint[] getInputSlots(int connectorIndex, int connectorsCount, ConnectorDrawing connector, DiagramItem item, List<GraphPoint> contactPoints)
         {
             var connectorAlign = connector.Align;
@@ -548,10 +575,10 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Get points that can be used for connecting given item
+        /// Get points that can be used for connecting given item.
         /// </summary>
-        /// <param name="item">Item which points are requested</param>
-        /// <returns>Contact points of given item</returns>
+        /// <param name="item">Item which points are requested.</param>
+        /// <returns>Contact points of given item.</returns>
         private IEnumerable<GraphPoint> getContactPoints(DiagramItem item)
         {
             var points = _itemPoints.Get(item);
@@ -560,10 +587,10 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Get point representing given connector
+        /// Get point representing given connector.
         /// </summary>
-        /// <param name="connector">Connector which point is requested</param>
-        /// <returns>Point representing given connector if available, <c>null</c> otherwise</returns>
+        /// <param name="connector">Connector which point is requested.</param>
+        /// <returns>Point representing given connector if available, <c>null</c> otherwise.</returns>
         private GraphPoint getPoint(ConnectorDrawing connector)
         {
             GraphPoint connectorPoint;
@@ -572,11 +599,11 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Create point for given connector with given view angle
+        /// Create point for given connector with given view angle.
         /// </summary>
-        /// <param name="connector">Connector which point is created</param>
-        /// <param name="view">View angle of created point</param>
-        /// <returns>Created point</returns>
+        /// <param name="connector">Connector which point is created.</param>
+        /// <param name="view">View angle of created point.</param>
+        /// <returns>Created point.</returns>
         private GraphPoint createPoint(ConnectorDrawing connector, ViewAngle view)
         {
             var position = connector.GlobalConnectPoint;

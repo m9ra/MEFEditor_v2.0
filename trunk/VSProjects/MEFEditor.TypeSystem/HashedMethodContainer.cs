@@ -10,6 +10,11 @@ using Utilities;
 
 namespace MEFEditor.TypeSystem
 {
+    /// <summary>
+    /// Utility class for handling method definitions in sequential structured
+    /// assemblies. It uses hashing for fast method searching. It is not appropriate for
+    /// tree structured assemblies.
+    /// </summary>
     public class HashedMethodContainer
     {
         readonly private MultiDictionary<string, MethodItem> _methodPaths = new MultiDictionary<string, MethodItem>();

@@ -208,7 +208,7 @@ namespace MEFEditor.Drawing.ArrangeEngine
             foreach (var toResetItem in toResetItems)
             {
                 var position = getPosition(toResetItem);
-                _navigator.SetPosition(toResetItem, position);
+                _navigator.RegisterPosition(toResetItem, position);
             }
         }
 
@@ -238,7 +238,7 @@ namespace MEFEditor.Drawing.ArrangeEngine
         {
             //store position into temporary store
             _nonCommitedPositions[item] = position;
-            _navigator.SetPosition(item, position);
+            _navigator.RegisterPosition(item, position);
         }
 
         #endregion

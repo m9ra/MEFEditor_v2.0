@@ -90,6 +90,7 @@ namespace MEFEditor.Drawing.Behaviours
         /// <summary>
         /// Cause that adorner position is updated according to drag events.
         /// </summary>
+        /// <param name="sender">Event sender.</param>
         /// <param name="e">Drag events.</param>
         private void _updatePosition(object sender, DragEventArgs e)
         {

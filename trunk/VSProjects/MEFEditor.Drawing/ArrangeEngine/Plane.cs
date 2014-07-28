@@ -76,6 +76,7 @@ namespace MEFEditor.Drawing.ArrangeEngine
         /// <summary>
         /// Get plane defining coordinate according to plane orientation
         /// </summary>
+        /// <param name="isVertical">Determine that coordinate should be vertical.</param>
         /// <param name="p">Point which coordinate is resolved</param>
         /// <returns>X Coordinate for vertical plane, Y for horizontal</returns>
         internal static double GetPlaneCoordinate(bool isVertical, Point p)

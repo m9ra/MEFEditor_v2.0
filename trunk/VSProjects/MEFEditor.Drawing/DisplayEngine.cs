@@ -381,6 +381,7 @@ namespace MEFEditor.Drawing
         /// Accordingly old positions, default positions,..
         /// </summary>
         /// <param name="item">Item which position will be set</param>
+        /// <param name="cursor">Cursor used for position initialization.</param>
         private void setInitialPosition(PositionCursor cursor, DiagramItem item)
         {
             Point oldPosition;
@@ -414,9 +415,10 @@ namespace MEFEditor.Drawing
         }
 
         /// <summary>
-        /// Repair position
+        /// Check bounds of given items.
         /// </summary>
         /// <param name="globalPosition">Position to repair.</param>
+        /// <param name="item">Checked item</param>
         /// <returns>Repaired position.</returns>
         private Point checkBounds(DiagramItem item, Point globalPosition)
         {

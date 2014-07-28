@@ -10,16 +10,44 @@ using MEFEditor.Analyzing;
 
 namespace MEFEditor.TypeSystem
 {
+    /// <summary>
+    /// Provides <see cref="MEFEditor.TypeSystem"/> services for method signatures searching.
+    /// It is able to handle multiple variants, that are useful for searching method in unknown
+    /// namespace.
+    /// </summary>
     public class MethodSearcher
     {
+        /// <summary>
+        /// Currently active iterators.
+        /// </summary>
         LinkedList<SearchIterator> _activeIterators = new LinkedList<SearchIterator>();
+
+        /// <summary>
+        /// Currently found methods.
+        /// </summary>
         List<TypeMethodInfo> _foundMethods = new List<TypeMethodInfo>();
+
+        /// <summary>
+        /// The assemblies where methods are searched.
+        /// </summary>
         AssemblyProvider[] _assemblies;
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has a results.
+        /// </summary>
+        /// <value><c>true</c> if this instance has results; otherwise, <c>false</c>.</value>
         public bool HasResults { get { return _foundMethods.Count > 0; } }
+
+        /// <summary>
+        /// Gets methods that has been found.
+        /// </summary>
+        /// <value>The search result.</value>
         public IEnumerable<TypeMethodInfo> FoundResult { get { return _foundMethods; } }
-
-
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MethodSearcher" /> class.
+        /// </summary>
+        /// <param name="assemblies">The assemblies where methods will be searched.</param>
         internal MethodSearcher(IEnumerable<AssemblyProvider> assemblies)
         {
             _assemblies = assemblies.ToArray();
@@ -30,19 +58,19 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Extend name according to possible suffixes. Suffixes are searched in paralel        
+        /// Extend name according to possible suffixes. Suffixes are searched in parallel.
         /// </summary>
-        /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel</param>
+        /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel.</param>
         public void ExtendName(params string[] possibleSuffixes)
         {
             extendName(_activeIterators, possibleSuffixes);
         }
 
         /// <summary>
-        /// Extend name according to possible suffixes. Suffixes are searched in paralel        
+        /// Extend name according to possible suffixes. Suffixes are searched in parallel.
         /// </summary>
-        /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel</param>
-        /// <param name="activeIterators">List of active iterators, where extending is processed</param>
+        /// <param name="activeIterators">List of active iterators, where extending is processed.</param>
+        /// <param name="possibleSuffixes">Possible suffixes that are added behind current position in paralel.</param>
         private void extendName(LinkedList<SearchIterator> activeIterators, IEnumerable<string> possibleSuffixes)
         {
             var currentIterator = activeIterators.First;
@@ -79,9 +107,9 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Dispatch currently reached locations according to given name
+        /// Dispatch currently reached locations according to given name.
         /// </summary>
-        /// <param name="searchedMethod">Method that is searched at reached locations</param>
+        /// <param name="searchedMethod">Method that is searched at reached locations.</param>
         public void Dispatch(string searchedMethod)
         {
             expandIterators();
@@ -94,6 +122,9 @@ namespace MEFEditor.TypeSystem
             }
         }
 
+        /// <summary>
+        /// Expands the iterators.
+        /// </summary>
         private void expandIterators()
         {
             var expandPaths = new List<string>();
@@ -133,11 +164,18 @@ namespace MEFEditor.TypeSystem
             }
         }
 
+        /// <summary>
+        /// Clears the current result.
+        /// </summary>
         public void ClearResult()
         {
             _foundMethods.Clear();
         }
 
+        /// <summary>
+        /// Sets the type of called object as base for searching.
+        /// </summary>
+        /// <param name="instanceInfo">Called object's type.</param>
         public void SetCalledObject(InstanceInfo instanceInfo)
         {
             ExtendName(instanceInfo.TypeName);
@@ -146,7 +184,8 @@ namespace MEFEditor.TypeSystem
     }
 
     /// <summary>
-    /// Immutable iterator
+    /// Immutable iterator used for searching method signatures in 
+    /// form of <see cref="TypeMethodInfo"/>.
     /// </summary>
     public abstract class SearchIterator
     {
@@ -158,15 +197,17 @@ namespace MEFEditor.TypeSystem
         public abstract SearchIterator ExtendName(string suffix);
 
         /// <summary>
-        /// Dispatch currently reached locations according to given name
+        /// Find methods in "locations" that has been previously reached by extending
+        /// method name by <see cref="ExtendName"/>.
         /// </summary>
-        /// <param name="searchedMethod">Method that is searched at reached locations, 
+        /// <param name="searchedName">Method that is searched at reached locations, 
         /// <c>null</c> if there is no constraint on searched method. In that case all 
         /// methods of current type should be listed</param>
+        /// <returns>Methods which match given search name and previously extended name.</returns>
         public abstract IEnumerable<TypeMethodInfo> FindMethods(string searchedName);
 
         /// <summary>
-        /// If overriden can cause expanding into multiple iterators
+        /// If overridden can cause expanding into multiple iterators
         /// It is called before <see cref="FindMethods"/>
         /// </summary>
         /// <returns>Fullpaths that will be expanded into new iterators (recursively)</returns>

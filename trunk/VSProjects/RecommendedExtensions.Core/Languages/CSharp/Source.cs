@@ -25,23 +25,24 @@ namespace RecommendedExtensions.Core.Languages.CSharp
     public class Source
     {
         /// <summary>
-        /// Namespaces added by using statements
+        /// Namespaces added by using statements.
         /// </summary>
         private HashSet<string> _explicitNamespaces = new HashSet<string>();
 
         /// <summary>
-        /// Implicit namespaces from contained class
+        /// Implicit namespaces from contained class.
         /// </summary>
         private HashSet<string> _implicitNamespaces = new HashSet<string>();
 
         /// <summary>
-        /// Contains method representing this source (e.g with generic parameters - it can be used for type translation)
+        /// Contains method representing this source (e.g with generic parameters - it can be used for type translation).
         /// </summary>
         internal readonly TypeMethodInfo OriginalMethod;
 
         /// <summary>
-        /// Method path of possible generic ancestors of current method
+        /// Method path of possible generic ancestors of current method.
         /// </summary>
+        /// <value>The original method path.</value>
         public PathInfo OriginalMethodPath { get { return OriginalMethod.Path; } }
 
         /// <summary>
@@ -60,15 +61,21 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         public readonly CompilationInfo CompilationInfo = new CompilationInfo();
 
         /// <summary>
-        /// Original code of source
+        /// Original code of source.
         /// </summary>
         public readonly string OriginalCode;
 
         /// <summary>
-        /// Namespaces available for source of represented method
+        /// Namespaces available for source of represented method.
         /// </summary>
+        /// <value>The namespaces.</value>
         public IEnumerable<string> Namespaces { get { return _implicitNamespaces.Union(_explicitNamespaces); } }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Source"/> class.
+        /// </summary>
+        /// <param name="code">The code.</param>
+        /// <param name="methodInfo">The method information.</param>
         public Source(string code, TypeMethodInfo methodInfo)
         {
             OriginalCode = code;
@@ -79,9 +86,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Public API exposed by Source
 
         /// <summary>
-        /// Navigate user at given offset
+        /// Navigate user at given offset.
         /// </summary>
-        /// <param name="offset"></param>
+        /// <param name="offset">The offset.</param>
         public void Navigate(int offset)
         {
             if (NavigationRequested != null)
@@ -89,20 +96,20 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get code according to given view
+        /// Get code according to given view.
         /// </summary>
-        /// <param name="view">View used for obtaining code</param>
-        /// <returns>Code according to given view</returns>
+        /// <param name="view">View used for obtaining code.</param>
+        /// <returns>Code according to given view.</returns>
         public string GetCode(ExecutionView view)
         {
             return EditContext(view).Code;
         }
 
         /// <summary>
-        /// Get implicit namespaces defined for given type
+        /// Get implicit namespaces defined for given type.
         /// </summary>
-        /// <param name="type">Type which namespaces are requested</param>
-        /// <returns>Implicit namespaces</returns>
+        /// <param name="type">Type which namespaces are requested.</param>
+        /// <returns>Implicit namespaces.</returns>
         public static IEnumerable<string> GetImplicitNamespaces(TypeDescriptor type)
         {
             return VsProjectAssembly.GetImplicitNamespaces(type);
@@ -111,28 +118,28 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #endregion
 
         /// <summary>
-        /// Add namespaces that are imported through using construct
+        /// Add namespaces that are imported through using construct.
         /// </summary>
-        /// <param name="namespaces">Enumeration of imported namespaces</param>
+        /// <param name="namespaces">Enumeration of imported namespaces.</param>
         internal void AddExternalNamespaces(IEnumerable<string> namespaces)
         {
             _explicitNamespaces.UnionWith(namespaces);
         }
 
         /// <summary>
-        /// Get <see cref="EditContext"/> available in given view
+        /// Get <see cref="EditContext" /> available in given view.
         /// </summary>
-        /// <param name="view">View where <see cref="EditContext"/> is needed</param>
-        /// <returns>Created/obtained <see cref="EditContext"/></returns>
+        /// <param name="view">View where <see cref="EditContext" /> is needed.</param>
+        /// <returns>Created/obtained <see cref="EditContext" />.</returns>
         internal EditContext EditContext(ExecutionView view)
         {
             return view.Data(this, () => new EditContext(view, this, OriginalCode));
         }
 
         /// <summary>
-        /// Event notifier fired by <see cref="EditContext"/>
-        /// <param name="commitedContext">Source that has been commited</param>
+        /// Event notifier fired by <see cref="EditContext" /><param name="commitedContext">Source that has been commited</param>.
         /// </summary>
+        /// <param name="commitedContext">The commited context.</param>
         internal void OnCommited(EditContext commitedContext)
         {
             if (SourceChangeCommited != null)
@@ -143,20 +150,20 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Services exposed for transformation implementations
 
         /// <summary>
-        /// Remove node in given view
+        /// Remove node in given view.
         /// </summary>
-        /// <param name="view">View where transformation is processed</param>
-        /// <param name="node">Node that is removed</param>        
+        /// <param name="view">View where transformation is processed.</param>
+        /// <param name="node">Node that is removed.</param>
         internal void RemoveNode(ExecutionView view, INodeAST node)
         {
             markRemoved(view, node, null);
         }
 
         /// <summary>
-        /// Exclude node in given view
+        /// Exclude node in given view.
         /// </summary>
-        /// <param name="view">View where transformation is processed</param>
-        /// <param name="node">Node that is excluded</param>        
+        /// <param name="view">View where transformation is processed.</param>
+        /// <param name="node">Node that is excluded.</param>
         internal void ExcludeNode(ExecutionView view, INodeAST node)
         {
             preserveSideEffect(view, node);
@@ -164,11 +171,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Rewrite given node with code representation of given value
+        /// Rewrite given node with code representation of given value.
         /// </summary>
-        /// <param name="view">View where transformation is processed</param>
-        /// <param name="node">Node that is rewritten</param>
-        /// <param name="value">Value which rewrite given node</param>
+        /// <param name="view">View where transformation is processed.</param>
+        /// <param name="node">Node that is rewritten.</param>
+        /// <param name="value">Value which rewrite given node.</param>
         internal void Rewrite(ExecutionView view, INodeAST node, object value)
         {
             preserveSideEffect(view, node);
@@ -181,11 +188,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Append call at new line after lineNode
+        /// Append call at new line after lineNode.
         /// </summary>
-        /// <param name="view">View where transformation is processed</param>
-        /// <param name="lineNode">Node with line where call will be appended</param>
-        /// <param name="call">Appended call</param>
+        /// <param name="view">View where transformation is processed.</param>
+        /// <param name="lineNode">Node with line where call will be appended.</param>
+        /// <param name="call">Appended call.</param>
         internal void AppendCall(ExecutionView view, INodeAST lineNode, CallEditInfo call)
         {
             var callRepresentation = callToCSharp(call);
@@ -196,11 +203,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Append call at new line after lineNode
+        /// Append call at new line after lineNode.
         /// </summary>
-        /// <param name="view">View where transformation is processed</param>
-        /// <param name="lineNode">Node with line where call will be appended</param>
-        /// <param name="call">Prepended call</param>
+        /// <param name="view">View where transformation is processed.</param>
+        /// <param name="lineNode">Node with line where call will be appended.</param>
+        /// <param name="call">Prepended call.</param>
         internal void PrependCall(ExecutionView view, INodeAST lineNode, CallEditInfo call)
         {
             var callRepresentation = callToCSharp(call);
@@ -211,11 +218,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Add argument to end of argument list of given call
+        /// Add argument to end of argument list of given call.
         /// </summary>
-        /// <param name="view">View where transformation is processed</param>
-        /// <param name="call">Call where argument will be added</param>
-        /// <param name="value">Value that will be passed as argument</param>
+        /// <param name="view">View where transformation is processed.</param>
+        /// <param name="call">Call where argument will be added.</param>
+        /// <param name="value">Value that will be passed as argument.</param>
         internal void AppendArgument(ExecutionView view, INodeAST call, object value)
         {
             var stringRepresentation = toCSharp(value);
@@ -238,11 +245,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Shift shiftedLine behind behindLine in given view
+        /// Shift shiftedLine behind behindLine in given view.
         /// </summary>
-        /// <param name="view">View where transformation is processed</param>
-        /// <param name="shiftedLine">Line that will be shifted behind behindLine</param>
-        /// <param name="behindLine">Line that will be before shiftedLine</param>
+        /// <param name="view">View where transformation is processed.</param>
+        /// <param name="shiftedLine">Line that will be shifted behind behindLine.</param>
+        /// <param name="behindLine">Line that will be before shiftedLine.</param>
         internal void ShiftBehind(ExecutionView view, INodeAST shiftedLine, INodeAST behindLine)
         {
             INodeAST currentShiftedLine;
@@ -258,6 +265,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             move(view, shiftStart, shiftTargetOffset, shiftLen);
         }
 
+        /// <summary>
+        /// Finds the shift lines.
+        /// </summary>
+        /// <param name="shiftedLine">The shifted line.</param>
+        /// <param name="behindLine">The behind line.</param>
+        /// <param name="currentShiftedLine">The current shifted line.</param>
+        /// <param name="currentBehindLine">The current behind line.</param>
         private void findShiftLines(INodeAST shiftedLine, INodeAST behindLine, out INodeAST currentShiftedLine, out INodeAST currentBehindLine)
         {
             var shiftedSubq = getAscendantSubsequences(shiftedLine);
@@ -284,6 +298,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             }
         }
 
+        /// <summary>
+        /// Gets the shifting node.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="subqChain">The subq chain.</param>
+        /// <param name="defaultNode">The default node.</param>
+        /// <returns>INodeAST.</returns>
         private INodeAST getShiftingNode(int index, List<ISeqAST> subqChain, INodeAST defaultNode)
         {
             var i = index + 1;
@@ -293,6 +314,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return getTopParent(subqChain[i].ContainingNode);
         }
 
+        /// <summary>
+        /// Gets the top parent.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns>INodeAST.</returns>
         private INodeAST getTopParent(INodeAST node)
         {
             var current = node.Parent;
@@ -304,6 +330,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return current;
         }
 
+        /// <summary>
+        /// Gets the ascendant subsequences.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns>List&lt;ISeqAST&gt;.</returns>
         private List<ISeqAST> getAscendantSubsequences(INodeAST node)
         {
             var result = new List<ISeqAST>();
@@ -338,9 +369,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// preserved and has to be removed. It is possible to recursively mark parent
         /// and let be removed by the parent.
         /// </summary>
-        /// <param name="view">View where node has been removed</param>
-        /// <param name="removedNode">Node that is removed</param>
-        /// <param name="markingChild">Child that marked its parent as removed</param>
+        /// <param name="view">View where node has been removed.</param>
+        /// <param name="removedNode">Node that is removed.</param>
+        /// <param name="markingChild">Child that marked its parent as removed.</param>
         private void markRemoved(ExecutionView view, INodeAST removedNode, INodeAST markingChild)
         {
             //report parent removing to all children except marking child
@@ -398,10 +429,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Handler called for every node that is removed (recursively from removedNode to descendants)
+        /// Handler called for every node that is removed (recursively from removedNode to descendants).
         /// </summary>
-        /// <param name="view">View where node has been removed</param>
-        /// <param name="removedNode">Node that has been removed</param>
+        /// <param name="view">View where node has been removed.</param>
+        /// <param name="removedNode">Node that has been removed.</param>
+        /// <param name="alreadyRemovedChild">Child that has been already removed.</param>
         private void onNodeRemoved(ExecutionView view, INodeAST removedNode, INodeAST alreadyRemovedChild = null)
         {
             if (removedNode == null)
@@ -424,10 +456,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Is called when parent of given node has been removed. If node has side effect it will be preserved
+        /// Is called when parent of given node has been removed. If node has side effect it will be preserved.
         /// </summary>
-        /// <param name="view">View where parent has been removed</param>
-        /// <param name="node">Node which parent has been removed</param>
+        /// <param name="view">View where parent has been removed.</param>
+        /// <param name="node">Node which parent has been removed.</param>
         private void onParentRemoved(ExecutionView view, INodeAST node)
         {
             if (node == null)
@@ -452,8 +484,8 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// Remove node from source in given view. Is only syntactical. Should be called only after
         /// proper node hierarchy remove handling.
         /// </summary>
-        /// <param name="view">View where source node will be removed</param>
-        /// <param name="node">Node that will be removed</param>
+        /// <param name="view">View where source node will be removed.</param>
+        /// <param name="node">Node that will be removed.</param>
         private void remove(ExecutionView view, INodeAST node)
         {
             int p1, p2;
@@ -463,10 +495,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Remove token from source in given view
+        /// Remove token from source in given view.
         /// </summary>
-        /// <param name="view">View where source node will be removed</param>
-        /// <param name="token">Token that will be removed</param>
+        /// <param name="view">View where source node will be removed.</param>
+        /// <param name="token">Token that will be removed.</param>
         private void remove(ExecutionView view, IToken token)
         {
             var p1 = token.Position.Offset;
@@ -475,10 +507,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Preserve side effect of node in given view
+        /// Preserve side effect of node in given view.
         /// </summary>
-        /// <param name="view">View where side effect is preserved</param>
-        /// <param name="node">Node which side effect is preserved</param>
+        /// <param name="view">View where side effect is preserved.</param>
+        /// <param name="node">Node which side effect is preserved.</param>
         private void preserveSideEffect(ExecutionView view, INodeAST node)
         {
             if (!hasSideEffect(node))
@@ -491,10 +523,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Determine that given node represent expression with side effect
+        /// Determine that given node represent expression with side effect.
         /// </summary>
-        /// <param name="node">Tested node</param>
-        /// <returns><c>true</c> if node represent expression with side effect, <c>false</c> otherwise</returns>
+        /// <param name="node">Tested node.</param>
+        /// <returns><c>true</c> if node represent expression with side effect, <c>false</c> otherwise.</returns>
         private bool hasSideEffect(INodeAST node)
         {
             if (node.Value == "typeof")
@@ -519,11 +551,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Determine that argument is optional in given call
+        /// Determine that argument is optional in given call.
         /// </summary>
-        /// <param name="call">Call which argument is tested</param>
-        /// <param name="argument">Argument which is tested</param>
-        /// <returns><c>true</c> if argument is optional, <c>false</c> otherwise</returns>
+        /// <param name="call">Call which argument is tested.</param>
+        /// <param name="argument">Argument which is tested.</param>
+        /// <returns><c>true</c> if argument is optional, <c>false</c> otherwise.</returns>
         private bool isOptionalArgument(INodeAST call, INodeAST argument)
         {
             var provider = call.Source.CompilationInfo.GetProvider(call);
@@ -536,10 +568,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region AST node utilies
 
         /// <summary>
-        /// Generate code for C# call
+        /// Generate code for C# call.
         /// </summary>
-        /// <param name="call">Call which code will be generated</param>
-        /// <returns>Generated code</returns>
+        /// <param name="call">Call which code will be generated.</param>
+        /// <returns>Generated code.</returns>
         private string callToCSharp(CallEditInfo call)
         {
             var rawThisObj = call.IsExtensionCall ? call.CallArguments[0] : call.ThisObj;
@@ -572,10 +604,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Ensure that required namespaces are present
+        /// Ensure that required namespaces are present.
         /// </summary>
-        /// <param name="view"></param>
-        /// <param name="call">Call which namespaces are required</param>
+        /// <param name="view">The view.</param>
+        /// <param name="call">Call which namespaces are required.</param>
         private void ensureNamespaces(ExecutionView view, CallEditInfo call)
         {
             if (!call.IsExtensionCall)
@@ -592,10 +624,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Converts given value into C# representation
+        /// Converts given value into C# representation.
         /// </summary>
-        /// <param name="value">Converted value</param>
-        /// <returns>Value representation in C# syntax</returns>
+        /// <param name="value">Converted value.</param>
+        /// <returns>Value representation in C# syntax.</returns>
         private string toCSharp(object value)
         {
             var variable = value as MEFEditor.Analyzing.VariableName;
@@ -624,10 +656,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get CSharp representation of type literal shortened by available namespaces
+        /// Get CSharp representation of type literal shortened by available namespaces.
         /// </summary>
-        /// <param name="type">Type to be represented in CSharp</param>
-        /// <returns>CSharp representation of given type shortened by available namespaces</returns>
+        /// <param name="type">Type to be represented in CSharp.</param>
+        /// <returns>CSharp representation of given type shortened by available namespaces.</returns>
         private string toCSharpType(InstanceInfo type)
         {
             var name = type.TypeName;
@@ -649,10 +681,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get Longest applicable implicit namespace for given typename
+        /// Get Longest applicable implicit namespace for given typename.
         /// </summary>
-        /// <param name="typeName">Type name where namespace will be applied</param>
-        /// <returns>Longest applicable namespace if available, <c>null</c> otherwise</returns>
+        /// <param name="typeName">Type name where namespace will be applied.</param>
+        /// <returns>Longest applicable namespace if available, <c>null</c> otherwise.</returns>
         private string getApplicableImplicitNamespace(string typeName)
         {
             string applicableNS = null;
@@ -670,10 +702,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get Longest applicable explicit namespace for given typename
+        /// Get Longest applicable explicit namespace for given typename.
         /// </summary>
-        /// <param name="typeName">Type name where namespace will be applied</param>
-        /// <returns>Applicable namespace if available, <c>null</c> otherwise</returns>
+        /// <param name="typeName">Type name where namespace will be applied.</param>
+        /// <returns>Applicable namespace if available, <c>null</c> otherwise.</returns>
         private string getApplicableExplicitNamespace(string typeName)
         {
             var signature = new PathInfo(typeName).Signature;
@@ -692,10 +724,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Find position which can be used for inserting statement before nodes statement
+        /// Find position which can be used for inserting statement before nodes statement.
         /// </summary>
-        /// <param name="node">Node for that is searched position for inserting previous statement</param>
-        /// <returns>Position before nodes statement</returns>
+        /// <param name="node">Node for that is searched position for inserting previous statement.</param>
+        /// <returns>Position before nodes statement.</returns>
         internal int BeforeStatementOffset(INodeAST node)
         {
             var current = node;
@@ -708,10 +740,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get code represented by given node
+        /// Get code represented by given node.
         /// </summary>
-        /// <param name="node">Node which code is needed</param>
-        /// <returns>Code represented by given node</returns>
+        /// <param name="node">Node which code is needed.</param>
+        /// <returns>Code represented by given node.</returns>
         private string getCode(INodeAST node)
         {
             int p1, p2;
@@ -721,11 +753,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get positions that are borders for given node
+        /// Get positions that are borders for given node.
         /// </summary>
-        /// <param name="node">Node which borders are needed</param>
-        /// <param name="p1">Position before the node</param>
-        /// <param name="p2">Position after the node</param>
+        /// <param name="node">Node which borders are needed.</param>
+        /// <param name="p1">Position before the node.</param>
+        /// <param name="p2">Position after the node.</param>
         private void getBorderPositions(INodeAST node, out int p1, out int p2)
         {
             p1 = node.StartingToken.Position.Offset;
@@ -733,10 +765,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get offset behind given node
+        /// Get offset behind given node.
         /// </summary>
-        /// <param name="node">Resolved node</param>
-        /// <returns>Offset behind node</returns>
+        /// <param name="node">Resolved node.</param>
+        /// <returns>Offset behind node.</returns>
         private int getBehindOffset(INodeAST node)
         {
             if (node == null)
@@ -748,10 +780,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get offset before given node
+        /// Get offset before given node.
         /// </summary>
-        /// <param name="node">Resolved node</param>
-        /// <returns>Offset before node</returns>
+        /// <param name="node">Resolved node.</param>
+        /// <returns>Offset before node.</returns>
         private int getBeforeOffset(INodeAST node)
         {
             if (node == null)
@@ -765,11 +797,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Writing utilities
 
         /// <summary>
-        /// Write data to region between start, end
+        /// Write data to region between start, end.
         /// </summary>
-        /// <param name="start">Start offset of replaced region</param>
-        /// <param name="end">End offset of replaced region</param>
-        /// <param name="data">Written data</param>
+        /// <param name="view">The view.</param>
+        /// <param name="start">Start offset of replaced region.</param>
+        /// <param name="end">End offset of replaced region.</param>
+        /// <param name="data">Written data.</param>
         private void write(ExecutionView view, int start, int end, string data)
         {
             EditContext(view).Strips.Remove(start, end - start);
@@ -780,15 +813,23 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Write data at given start offset
+        /// Write data at given start offset.
         /// </summary>
-        /// <param name="start">Start offset for written data</param>
-        /// <param name="data">Written data</param>
+        /// <param name="view">The view.</param>
+        /// <param name="start">Start offset for written data.</param>
+        /// <param name="data">Written data.</param>
         private void write(ExecutionView view, int start, string data)
         {
             EditContext(view).Strips.Write(start, data);
         }
 
+        /// <summary>
+        /// Moves the specified view.
+        /// </summary>
+        /// <param name="view">The view.</param>
+        /// <param name="p1">The p1.</param>
+        /// <param name="np1">The NP1.</param>
+        /// <param name="length">The length.</param>
         private void move(ExecutionView view, int p1, int np1, int length)
         {
             EditContext(view).Strips.Move(p1, length, np1);
@@ -799,9 +840,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Private utilities
 
         /// <summary>
-        /// Add implicit namespaces that are valid for methods declared witihn given type
+        /// Add implicit namespaces that are valid for methods declared witihn given type.
         /// </summary>
-        /// <param name="type">Type that defines implicit namespaces</param>
+        /// <param name="type">Type that defines implicit namespaces.</param>
         private void addImplicitNamespaces(TypeDescriptor type)
         {
             _implicitNamespaces.UnionWith(GetImplicitNamespaces(type));

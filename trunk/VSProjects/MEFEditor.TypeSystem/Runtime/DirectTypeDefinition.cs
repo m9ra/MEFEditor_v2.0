@@ -18,16 +18,24 @@ using MEFEditor.TypeSystem.Runtime.Building;
 namespace MEFEditor.TypeSystem.Runtime
 {
     /// <summary>
-    /// Represents definitions of types that are stored directly in DirectInstance    
+    /// Represents definitions of types that are stored directly in DirectInstance.
     /// </summary>
-    /// <typeparam name="DirectType">DirectType represented by thid definition</typeparam>
+    /// <typeparam name="DirectType">DirectType represented by this definition</typeparam>
     public class DirectTypeDefinition<DirectType> : DirectTypeDefinition
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectTypeDefinition{DirectType}"/> class.
+        /// </summary>
         public DirectTypeDefinition()
             : base(typeof(DirectType))
         {
         }
 
+        /// <summary>
+        /// Gets strongly typed representation
+        /// of stored direct (native) value.
+        /// </summary>
+        /// <value>The direct value.</value>
         protected DirectType ThisValue
         {
             get
@@ -42,42 +50,55 @@ namespace MEFEditor.TypeSystem.Runtime
     }
 
     /// <summary>
-    /// Represents definitions of types that are stored directly in DirectInstance    
+    /// Represents definitions of types that are stored directly in DirectInstance.
     /// </summary>
     public class DirectTypeDefinition : RuntimeTypeDefinition
     {
         /// <summary>
         /// Method generators added explicitly to direct type
-        /// <remarks>They can replace direct type methods</remarks>
+        /// <remarks>They can replace direct type methods</remarks>.
         /// </summary>
         private readonly List<RuntimeMethodGenerator> _explicitGenerators = new List<RuntimeMethodGenerator>();
 
         /// <summary>
-        /// Type representation of direct type
+        /// <see cref="Type"/> representation of direct type.
         /// </summary>
         internal readonly Type DirectType;
 
         /// <summary>
-        /// Wrapped type representation of direct type
+        /// Wrapped type representation of direct type.
         /// </summary>
+        /// <value>The type of the wrapped direct.</value>
         internal Type WrappedDirectType { get { return getWrappedType(DirectType); } }
 
+        /// <summary>
+        /// Type descriptor that is current definition forced to use.
+        /// </summary>
         public TypeDescriptor ForcedInfo;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectTypeDefinition"/> class.
+        /// </summary>
+        /// <param name="directType">Direct type.</param>
         public DirectTypeDefinition(Type directType)
         {
             DirectType = directType;
             IsInterface = DirectType.IsInterface;
         }
 
+        /// <summary>
+        /// Gets the sub chains.
+        /// </summary>
+        /// <returns>IEnumerable&lt;InheritanceChain&gt;.</returns>
         internal override IEnumerable<InheritanceChain> GetSubChains()
         {
             return GetSubChains(DirectType);
         }
 
         /// <summary>
-        /// Type info of current DirectType (or generic definition if TypeDefinition is marked with IsGeneric)
+        /// Type info of current DirectType (or generic definition if TypeDefinition is marked with IsGeneric).
         /// </summary>
+        /// <value>The type information.</value>
         public override TypeDescriptor TypeInfo
         {
             get
@@ -97,19 +118,20 @@ namespace MEFEditor.TypeSystem.Runtime
 
         /// <summary>
         /// Add explicit method to direct type
-        /// <remarks>Added method can replace existing method in direct type, if it has same method signature</remarks>        
+        /// <remarks>Added method can replace existing method in direct type, if it has same method signature</remarks>.
         /// </summary>
-        /// <param name="method">Added direct method which is invoked on method call</param>
-        /// <param name="methodInfo">Info of added method</param>
+        /// <param name="method">Added direct method which is invoked on method call.</param>
+        /// <param name="methodInfo">Info of added method.</param>
+        /// <param name="implementTypes">The implement types.</param>
         protected void AddMethod(DirectMethod method, TypeMethodInfo methodInfo, params Type[] implementTypes)
         {
             _explicitGenerators.Add(new RuntimeMethodGenerator(method, methodInfo, implementTypes.ToArray()));
         }
 
         /// <summary>
-        /// Get all methods defined for direct type (including explicit methods)
+        /// Get all methods defined for direct type (including explicit methods).
         /// </summary>
-        /// <returns>Defined methods</returns>
+        /// <returns>Defined methods.</returns>
         internal override IEnumerable<RuntimeMethodGenerator> GetMethods()
         {
             //TODO resolve method replacing
@@ -120,10 +142,10 @@ namespace MEFEditor.TypeSystem.Runtime
 
         /// <summary>
         /// Generate direct method for given type
-        /// <remarks>Only direct methods which are in direct cover are generated</remarks>
+        /// <remarks>Only direct methods which are in direct cover are generated</remarks>.
         /// </summary>
-        /// <param name="type">Type which methods will be generated</param>
-        /// <returns>Generated methods</returns>
+        /// <param name="type">Type which methods will be generated.</param>
+        /// <returns>Generated methods.</returns>
         private IEnumerable<RuntimeMethodGenerator> generateDirectMethods(Type type)
         {
             foreach (var method in generatePublicMethods(type))
@@ -139,10 +161,10 @@ namespace MEFEditor.TypeSystem.Runtime
 
         /// <summary>
         /// Generate constructor methods for given type
-        /// <remarks>Only instance constructors are generated (because static constructors cannot be wrapped)</remarks>
+        /// <remarks>Only instance constructors are generated (because static constructors cannot be wrapped)</remarks>.
         /// </summary>
-        /// <param name="type">Type which constructors will be generated</param>
-        /// <returns>Generated constructor methods</returns>
+        /// <param name="type">Type which constructors will be generated.</param>
+        /// <returns>Generated constructor methods.</returns>
         private IEnumerable<RuntimeMethodGenerator> generateConstructorMethods(Type type)
         {
             var wrappedType = getWrappedType(type);
@@ -165,10 +187,10 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Generate public static/instance methods for given type
+        /// Generate public static/instance methods for given type.
         /// </summary>
-        /// <param name="type">Type which methods will be generated</param>
-        /// <returns>Generated methods</returns>
+        /// <param name="type">Type which methods will be generated.</param>
+        /// <returns>Generated methods.</returns>
         private IEnumerable<RuntimeMethodGenerator> generatePublicMethods(Type type)
         {
             var wrappedType = WrappedDirectType;
@@ -201,6 +223,11 @@ namespace MEFEditor.TypeSystem.Runtime
             }
         }
 
+        /// <summary>
+        /// Gets the public methods.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>MethodInfo[].</returns>
         private static MethodInfo[] getPublicMethods(Type type)
         {
             if (!type.IsInterface)
@@ -219,6 +246,13 @@ namespace MEFEditor.TypeSystem.Runtime
             return methods.ToArray();
         }
 
+        /// <summary>
+        /// Gets wrapped form of given type. Wrapping is
+        /// done for generic definitions so their generic parameters
+        /// are replaced by <see cref="InstanceWrap"/>.
+        /// </summary>
+        /// <param name="type">Type to be wrapped.</param>
+        /// <returns>Wrapped type.</returns>
         private static Type getWrappedType(Type type)
         {
             if (type.IsGenericTypeDefinition)
@@ -235,10 +269,10 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Create mapping of method info to types that are implemented by info
+        /// Create mapping of method info to types that are implemented by info.
         /// </summary>
-        /// <param name="type">Type which mapping is created</param>
-        /// <returns>Created mapping</returns>
+        /// <param name="type">Type which mapping is created.</param>
+        /// <returns>Created mapping.</returns>
         private static MultiDictionary<MethodInfo, Type> createImplementedTypesMap(Type type)
         {
             //Get method mapping
@@ -259,10 +293,10 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Get parameters info for given method base
+        /// Get parameters info for given method base.
         /// </summary>
-        /// <param name="method">Base method which parameters will be created</param>
-        /// <returns>Created parameters info</returns>
+        /// <param name="method">Base method which parameters will be created.</param>
+        /// <returns>Created parameters info.</returns>
         private static ParameterTypeInfo[] getParametersInfo(MethodBase method)
         {
             var paramsInfo = new List<ParameterTypeInfo>();
@@ -275,10 +309,10 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Generate direct method for constructor
+        /// Generate direct method for given constructor.
         /// </summary>
-        /// <param name="constructor">Constructor which method is generated</param>
-        /// <returns>Generated method</returns>
+        /// <param name="constructor">Constructor which method is generated.</param>
+        /// <returns>Generated method.</returns>
         private DirectMethod generateDirectCtor(ConstructorInfo constructor)
         {
             var contextType = typeof(AnalyzingContext);
@@ -294,11 +328,11 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Get argument expressions for given method. Argument expression get value from context.CurrentArguments
+        /// Get argument expressions for given method. Argument expression get value from context.CurrentArguments.
         /// </summary>
-        /// <param name="method">Method which arguments</param>
-        /// <param name="contextParameter">Parameter with context object</param>
-        /// <returns>Argument expressions</returns>
+        /// <param name="method">Method which arguments.</param>
+        /// <param name="contextParameter">Parameter with context object.</param>
+        /// <returns>Argument expressions.</returns>
         private IEnumerable<Expression> getArgumentExpressions(MethodBase method, ParameterExpression contextParameter)
         {
             var parameters = method.GetParameters();
@@ -314,11 +348,11 @@ namespace MEFEditor.TypeSystem.Runtime
 
         /// <summary>
         /// Get argument instance according to index
-        /// <remarks>No conversions nor wrapping is made</remarks>
+        /// <remarks>No conversions nor wrapping is made</remarks>.
         /// </summary>
-        /// <param name="index">Zero based index of arguments - zero arguments belongs to this instance</param>
-        /// <param name="contextParameter">Parameter with context object</param>
-        /// <returns>Argument instance</returns>
+        /// <param name="index">Zero based index of arguments - zero arguments belongs to this instance.</param>
+        /// <param name="contextParameter">Parameter with context object.</param>
+        /// <returns>Argument instance.</returns>
         private Expression getArgumentInstance(int index, ParameterExpression contextParameter)
         {
             var contextType = typeof(AnalyzingContext);
@@ -327,12 +361,12 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Get argument expression according to index
+        /// Get argument expression according to index.
         /// </summary>
-        /// <param name="index">Zero based index of arguments - zero arguments belongs to this instance</param>
-        /// <param name="resultType">Expected type of result - wrapping, direct value obtaining is processed</param>
-        /// <param name="contextParameter">Parameter with context object</param>
-        /// <returns>Argument expression</returns>
+        /// <param name="index">Zero based index of arguments - zero arguments belongs to this instance.</param>
+        /// <param name="resultType">Expected type of result - wrapping, direct value obtaining is processed.</param>
+        /// <param name="contextParameter">Parameter with context object.</param>
+        /// <returns>Argument expression.</returns>
         private Expression getArgument(int index, Type resultType, ParameterExpression contextParameter)
         {
             var argumentInstance = getArgumentInstance(index, contextParameter);
@@ -356,20 +390,20 @@ namespace MEFEditor.TypeSystem.Runtime
         #region Direct type services
 
         /// <summary>
-        /// Determine that method is in direct cover
+        /// Determine that method is in direct cover.
         /// </summary>
-        /// <param name="method">Tested method</param>
-        /// <returns>True if method is in direct cover, false otherwise</returns>
+        /// <param name="method">Tested method.</param>
+        /// <returns>True if method is in direct cover, false otherwise.</returns>
         private bool isInDirectCover(MethodInfo method)
         {
             return areParamsInDirectCover(method) && isInDirectCover(method.ReturnType);
         }
 
         /// <summary>
-        /// Determine that parameters of method are in direct cover
+        /// Determine that parameters of method are in direct cover.
         /// </summary>
-        /// <param name="method">Method whic parameters will be tested</param>
-        /// <returns>True if method parameters are in direct cover, false otherwise</returns>
+        /// <param name="method">Method whic parameters will be tested.</param>
+        /// <returns>True if method parameters are in direct cover, false otherwise.</returns>
         private bool areParamsInDirectCover(MethodBase method)
         {
             foreach (var parameter in method.GetParameters())
@@ -384,10 +418,10 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Determine that type is in direct cover
+        /// Determine that type is in direct cover.
         /// </summary>
-        /// <param name="type">Tested type</param>
-        /// <returns>True if type is in direct cover, false otherwise</returns>
+        /// <param name="type">Tested type.</param>
+        /// <returns>True if type is in direct cover, false otherwise.</returns>
         private bool isInDirectCover(Type type)
         {
             return ContainingAssembly.IsInDirectCover(type);

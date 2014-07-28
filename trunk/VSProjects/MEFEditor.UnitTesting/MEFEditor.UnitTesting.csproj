@@ -76,7 +76,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Analyzing_TestUtils\EditAction.cs" />
-    <Compile Include="Analyzing_TestUtils\EmitDirectorGenerator.cs" />
     <Compile Include="Analyzing_TestUtils\EmitDirectorLoader.cs" />
     <Compile Include="Analyzing_TestUtils\Environment\SettingsProvider.cs" />
     <Compile Include="Analyzing_TestUtils\ExecutionUtils.cs" />

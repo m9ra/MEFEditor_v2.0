@@ -9,10 +9,13 @@ using MEFEditor.Analyzing;
 
 namespace MEFEditor.TypeSystem
 {
+    /// <summary>
+    /// Utility class that helps with parsing different kinds of path.
+    /// </summary>
     public class PathInfo
     {
         /// <summary>
-        /// Regex that is used for replacing type parameters in fullname
+        /// Regex that is used for replacing type parameters in fullname.
         /// </summary>
         public static readonly Regex GenericMatcher = new Regex(@"
      <  
@@ -24,16 +27,36 @@ namespace MEFEditor.TypeSystem
      >
 ", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
 
+        /// <summary>
+        /// The name of path (in form of Namespace{T}.Name{T2}).
+        /// </summary>
         public readonly string Name;
 
+        /// <summary>
+        /// The signature of path (in form of Namespace{}.Name{}).
+        /// </summary>
         public readonly string Signature;
 
+        /// <summary>
+        /// The short signature of path (in form of Namespace{}.Name).
+        /// </summary>
         public readonly string ShortSignature;
 
+        /// <summary>
+        /// The generic arguments of path.
+        /// </summary>
         public readonly List<string> GenericArgs = new List<string>();
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has generic arguments.
+        /// </summary>
+        /// <value><c>true</c> if this instance has generic arguments; otherwise, <c>false</c>.</value>
         public bool HasGenericArguments { get { return GenericArgs.Count > 0; } }
 
+        /// <summary>
+        /// Gets the pre path signature (in form of Namespace{}).
+        /// </summary>
+        /// <value>The pre path signature.</value>
         public string PrePathSignature
         {
             get
@@ -48,6 +71,10 @@ namespace MEFEditor.TypeSystem
             }
         }
 
+        /// <summary>
+        /// Gets the last part signature (in form of Name).
+        /// </summary>
+        /// <value>The last part signature.</value>
         public string LastPartSignature
         {
             get
@@ -63,6 +90,10 @@ namespace MEFEditor.TypeSystem
         }
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PathInfo" /> class.
+        /// </summary>
+        /// <param name="name">The path name.</param>
         public PathInfo(string name)
         {
             Name = name;
@@ -70,11 +101,20 @@ namespace MEFEditor.TypeSystem
             ShortSignature = getShortSignature(Signature);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PathInfo" /> class.
+        /// </summary>
+        /// <param name="type">The type which name defines current path.</param>
         public PathInfo(Type type)
             : this(TypeDescriptor.Create(type).TypeName)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PathInfo" /> class.
+        /// </summary>
+        /// <param name="path">The extended path.</param>
+        /// <param name="extendingName">Extending name.</param>
         public PathInfo(PathInfo path, string extendingName)
         {
             if (path.Name == "")
@@ -92,27 +132,42 @@ namespace MEFEditor.TypeSystem
 
 
 
-        public static string GetSignature(string typeName)
+        /// <summary>
+        /// Gets the signature from given path name.
+        /// </summary>
+        /// <param name="pathName">Name of the path.</param>
+        /// <returns>System.String.</returns>
+        public static string GetSignature(string pathName)
         {
             var list = new List<string>();
-            return parseSignature(typeName, list);
+            return parseSignature(pathName, list);
         }
 
+        /// <summary>
+        /// Gets signature of given descriptor.
+        /// </summary>
+        /// <param name="typeDescriptor">The type descriptor.</param>
+        /// <returns>System.String.</returns>
         public static string GetSignature(TypeDescriptor typeDescriptor)
         {
             var list = new List<string>();
             return parseSignature(typeDescriptor.TypeName, list);
         }
 
+        /// <summary>
+        /// Gets the non generic path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.String.</returns>
         public static string GetNonGenericPath(string path)
         {
             return GenericMatcher.Replace(path, "");
         }
 
         /// <summary>
-        /// Creates name according to current generic arguments
+        /// Creates name according to current generic arguments.
         /// </summary>
-        /// <returns>Created name</returns>
+        /// <returns>Created name.</returns>
         public string CreateName()
         {
             var result = new StringBuilder();
@@ -133,6 +188,12 @@ namespace MEFEditor.TypeSystem
             return result.ToString();
         }
 
+        /// <summary>
+        /// Appends the specified path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <returns>PathInfo.</returns>
         public static PathInfo Append(PathInfo path, string suffix)
         {
             if (suffix == null)
@@ -148,6 +209,11 @@ namespace MEFEditor.TypeSystem
             }
         }
 
+        /// <summary>
+        /// Gets the short signature.
+        /// </summary>
+        /// <param name="signature">The signature.</param>
+        /// <returns>System.String.</returns>
         private string getShortSignature(string signature)
         {
             if (!signature.EndsWith(">"))
@@ -158,6 +224,12 @@ namespace MEFEditor.TypeSystem
             return signature.Substring(0, methodTypeArgsStart);
         }
 
+        /// <summary>
+        /// Parses the signature.
+        /// </summary>
+        /// <param name="extendingName">Name of the extending.</param>
+        /// <param name="genericArgs">The generic arguments.</param>
+        /// <returns>System.String.</returns>
         private static string parseSignature(string extendingName, List<string> genericArgs)
         {
             var argument = new StringBuilder();

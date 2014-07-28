@@ -247,7 +247,6 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// <param name="descriptionFormat">Format of error description.</param>
         /// <param name="formatArguments">The format arguments.</param>
         /// <returns>Created exception.</returns>
-        /// <exception cref="ParsingException"></exception>
         public static ParsingException ParsingException(IToken token, string descriptionFormat, params object[] formatArguments)
         {
             var description = string.Format(descriptionFormat, formatArguments);

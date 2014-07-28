@@ -97,20 +97,20 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             _objectType = objectType;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             generateAssignInto(lValue);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             var storage = GenerateStorage();
             E.Return(storage);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -119,7 +119,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             if (_storage == null)
@@ -129,7 +129,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return _storage;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             GenerateStorage();
@@ -221,19 +221,19 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             _literalInfo = TypeDescriptor.Create(_literal.GetType());
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             lValue.AssignLiteral(_literal, _literalNode);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             E.Return(GenerateStorage());
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -242,7 +242,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             var temporaryName = E.GetTemporaryVariable();
@@ -250,7 +250,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return temporaryName;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             //Nothing to generate
@@ -270,19 +270,19 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             _variableNode = variableNode;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             lValue.Assign(_variable.Name, _variableNode);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             E.Return(_variable.Name);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -291,13 +291,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             return _variable.Name;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             //Nothing to generate
@@ -316,19 +316,19 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             _resultType = resultType;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             throw new NotImplementedException();
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             throw new NotImplementedException();
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -337,7 +337,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             var tmp = E.GetTemporaryVariable("default");
@@ -345,7 +345,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return tmp;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             throw new NotImplementedException();
@@ -364,19 +364,19 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             _args = args;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             throw new NotImplementedException();
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             throw new NotImplementedException();
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -385,7 +385,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             var tmp = E.GetTemporaryVariable("param");
@@ -405,7 +405,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return tmp;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             throw new NotImplementedException();
@@ -427,14 +427,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             _activation = activation;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             generateCall();
             lValue.AssignReturnValue(MethodInfo.ReturnType, _activation.CallNode);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             generateCall();
@@ -466,7 +466,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -475,7 +475,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             var tmp = new TemporaryVariableValue(MethodInfo.ReturnType, Context);
@@ -484,7 +484,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return tmp.Storage;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             generateCall();
@@ -520,20 +520,20 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
 
         #region Value provider implementation
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             generateAssignToStorage(lValue);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             var storage = getStorage();
             E.Return(storage);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -542,13 +542,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             return getStorage();
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             //storage is not needed
@@ -667,19 +667,19 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
 
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateAssignInto(LValueProvider lValue)
         {
             lValue.Assign(Storage, null);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void GenerateReturn()
         {
             E.Return(Storage);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override TypeDescriptor Type
         {
             get
@@ -688,13 +688,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override string GenerateStorage()
         {
             return Storage;
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public override void Generate()
         {
             //There is nothing to generate

@@ -6,41 +6,113 @@ using System.Threading.Tasks;
 
 using System.Windows;
 
+
 namespace MEFEditor.Drawing.ArrangeEngine
 {
-
+    /// <summary>
+    /// Kinds of relative positions of point to span.
+    /// </summary>
     [Flags]
     enum SpanRelativePosition
     {
+        /// <summary>
+        /// The inside position.
+        /// </summary>
         Inside = 0,
 
-        Above = 1, Bellow = 2, LeftTo = 4, RightTo = 8,
+        /// <summary>
+        /// The above position.
+        /// </summary>
+        Above = 1,
 
+        /// <summary>
+        /// The bellow position.
+        /// </summary>
+        Bellow = 2,
+
+        /// <summary>
+        /// The left to position.
+        /// </summary>
+        LeftTo = 4,
+
+        /// <summary>
+        /// The right to position.
+        /// </summary>
+        RightTo = 8,
+
+        /// <summary>
+        /// The left above position.
+        /// </summary>
         LeftAbove = Above | LeftTo,
+
+        /// <summary>
+        /// The right above position.
+        /// </summary>
         RightAbove = Above | RightTo,
 
+        /// <summary>
+        /// The left bellow position.
+        /// </summary>
         LeftBellow = Bellow | LeftTo,
+
+        /// <summary>
+        /// The right bellow position.
+        /// </summary>
         RightBellow = Bellow | RightTo
     }
 
+    /// <summary>
+    /// Class SceneNavigator.
+    /// </summary>
     public class SceneNavigator
     {
+        /// <summary>
+        /// The margin that is used for every <see cref="DiagramItem" />.
+        /// </summary>
         public static readonly int Margin = 20;
 
+        /// <summary>
+        /// The top bottom planes.
+        /// </summary>
         private readonly Planes _topBottom = new Planes(false, true);
+
+        /// <summary>
+        /// The bottom up planes.
+        /// </summary>
         private readonly Planes _bottomUp = new Planes(false, false);
+
+        /// <summary>
+        /// The left  to right planes.
+        /// </summary>
         private readonly Planes _leftRight = new Planes(true, true);
+
+        /// <summary>
+        /// The right to left planes.
+        /// </summary>
         private readonly Planes _rightLeft = new Planes(true, false);
 
+        /// <summary>
+        /// Currently registered spans of <see cref="DiagramItem" />.
+        /// </summary>
         private readonly Dictionary<DiagramItem, Rect> _itemSpans = new Dictionary<DiagramItem, Rect>();
 
-
+        /// <summary>
+        /// Gets the graph that is used for searching collision free join paths.
+        /// </summary>
+        /// <value>The graph.</value>
         public JoinGraph Graph { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SceneNavigator" /> class.
+        /// </summary>
         public SceneNavigator()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SceneNavigator" /> class.
+        /// </summary>
+        /// <param name="items">The items.</param>
         public SceneNavigator(IEnumerable<DiagramItem> items)
         {
             foreach (var item in items)
@@ -49,12 +121,19 @@ namespace MEFEditor.Drawing.ArrangeEngine
             }
         }
 
+        /// <summary>
+        /// Adds the item to the scene.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public void AddItem(DiagramItem item)
         {
             var position = item.GlobalPosition;
             position = registerItem(item, position);
         }
 
+        /// <summary>
+        /// Ensures the <see cref="JoinGraph" /> is initialized.
+        /// </summary>
         public void EnsureGraphInitialized()
         {
             if (Graph == null)
@@ -65,7 +144,12 @@ namespace MEFEditor.Drawing.ArrangeEngine
             }
         }
 
-        public void SetPosition(DiagramItem item, Point globalPosition)
+        /// <summary>
+        /// Register position of given item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="globalPosition">The global position.</param>
+        public void RegisterPosition(DiagramItem item, Point globalPosition)
         {
             //remove old position
             _topBottom.RemoveSegment(item);
@@ -78,10 +162,11 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Get span surrounding given diagram item
+        /// Get span surrounding given diagram item.
         /// </summary>
-        /// <param name="item">Diagram item for span</param>
-        /// <returns>Surrounding span for item</returns>
+        /// <param name="item">Diagram item for span.</param>
+        /// <param name="position">The position.</param>
+        /// <returns>Surrounding span for item.</returns>
         public static Rect GetSpan(DiagramItem item, Point position)
         {
             return new Rect(
@@ -89,7 +174,11 @@ namespace MEFEditor.Drawing.ArrangeEngine
                 item.DesiredSize.Width + 2 * Margin, item.DesiredSize.Height + 2 * Margin);
         }
 
-
+        /// <summary>
+        /// Get span surrounding given diagram item.
+        /// </summary>
+        /// <param name="item">Diagram item for span.</param>
+        /// <returns>Surrounding span for item.</returns>
         internal Rect GetSpan(DiagramItem item)
         {
             Rect result;
@@ -103,11 +192,11 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Get coordinate distance between given points
+        /// Get distance between given points.
         /// </summary>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
+        /// <param name="p1">The p1.</param>
+        /// <param name="p2">The p2.</param>
+        /// <returns>Distance.</returns>
         internal double Distance(Point p1, Point p2)
         {
             var dX = p1.X - p2.X;
@@ -116,6 +205,11 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return Math.Abs(dX) + Math.Abs(dY);
         }
 
+        /// <summary>
+        /// Gets colliding items with the given item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>IEnumerable&lt;DiagramItem&gt;.</returns>
         internal IEnumerable<DiagramItem> GetItemsInCollision(DiagramItem item)
         {
             var span = GetSpan(item);
@@ -133,6 +227,12 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return collidingItems;
         }
 
+        /// <summary>
+        /// Registers position of the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="position">The position.</param>
+        /// <returns>Registered position - for possibility of inline notation.</returns>
         private Point registerItem(DiagramItem item, Point position)
         {
             var span = GetSpan(item, position);
@@ -144,6 +244,13 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return position;
         }
 
+        /// <summary>
+        /// Gets the ortho planes between given points.
+        /// </summary>
+        /// <param name="start">The start point.</param>
+        /// <param name="end">The end point.</param>
+        /// <param name="getVertical">if set to <c>true</c> vertical planes are searched.</param>
+        /// <returns>IEnumerable&lt;Plane&gt;.</returns>
         private IEnumerable<Plane> getOrthoPlanesBetween(Point start, Point end, bool getVertical)
         {
             IEnumerable<Plane> planes1, planes2;
@@ -161,6 +268,13 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return planes1.Concat(planes2);
         }
 
+        /// <summary>
+        /// Filters items that defines given planes and are placed between given points.
+        /// </summary>
+        /// <param name="horizontalPlanes">The horizontal planes.</param>
+        /// <param name="start">The start poipnt.</param>
+        /// <param name="end">The end point.</param>
+        /// <returns>IEnumerable&lt;DiagramItem&gt;.</returns>
         private IEnumerable<DiagramItem> filterItems(IEnumerable<Plane> horizontalPlanes, Point start, Point end)
         {
             foreach (var plane in horizontalPlanes)
@@ -173,6 +287,12 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
 
+        /// <summary>
+        /// Gets the first obstacle that is reached when going from given point to given point.
+        /// </summary>
+        /// <param name="from">From point.</param>
+        /// <param name="to">To point.</param>
+        /// <returns>First obstacle if any, <c>null</c> otherwise.</returns>
         public DiagramItem GetFirstObstacle(Point from, Point to)
         {
             var verticalPlane = selectPlanes(from.X, to.X, _leftRight, _rightLeft);
@@ -199,6 +319,14 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return horizontalItem;
         }
 
+        /// <summary>
+        /// Get item that is interseted by ray comming through from point and to point.
+        /// </summary>
+        /// <param name="from">From point.</param>
+        /// <param name="to">To point.</param>
+        /// <param name="planes">The planes where intersection is searched.</param>
+        /// <param name="intersectionPoint">The intersection point.</param>
+        /// <returns>Intersected item.</returns>
         private DiagramItem intersectedItem(Point from, Point to, Planes planes, out Point intersectionPoint)
         {
             if (planes == null)
@@ -211,6 +339,14 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return item;
         }
 
+        /// <summary>
+        /// Selects according to ray direction defined by given points.
+        /// </summary>
+        /// <param name="p1">The p1.</param>
+        /// <param name="p2">The p2.</param>
+        /// <param name="incrementalPlanes">The incremental planes.</param>
+        /// <param name="decrementalPlanes">The decremental planes.</param>
+        /// <returns>Selected planes.</returns>
         private Planes selectPlanes(double p1, double p2, Planes incrementalPlanes, Planes decrementalPlanes)
         {
             switch (Math.Sign(p2 - p1))
@@ -223,14 +359,14 @@ namespace MEFEditor.Drawing.ArrangeEngine
                     return null;
             }
         }
-
-
+        
         /// <summary>
-        /// Get obstacle corners that are visible from given point
+        /// Get obstacle corners that are visible from given point.
         /// </summary>
-        /// <param name="point">Point which can see visible corners</param>
-        /// <param name="obstacle">Obstacle which corners are resolved to visibility</param>
-        /// <returns>Enumertion of visible points</returns>
+        /// <param name="point">Point which can see visible corners.</param>
+        /// <param name="obstacle">Obstacle which corners are resolved to visibility.</param>
+        /// <returns>Enumertion of visible points.</returns>
+        /// <exception cref="System.NotSupportedException">This relative position is not reachable</exception>
         internal IEnumerable<Point> GetVisibleCorners(Point point, DiagramItem obstacle)
         {
             if (obstacle != null)
@@ -311,11 +447,11 @@ namespace MEFEditor.Drawing.ArrangeEngine
         }
 
         /// <summary>
-        /// Get span position relative to given point
+        /// Get span position relative to given point.
         /// </summary>
-        /// <param name="point">Relative point</param>
-        /// <param name="span">Span to be tested</param>
-        /// <returns>Relative position to given point</returns>
+        /// <param name="point">Relative point.</param>
+        /// <param name="span">Span to be tested.</param>
+        /// <returns>Relative position to given point.</returns>
         internal SpanRelativePosition GetRelativePosition(Point point, Rect span)
         {
             var position = SpanRelativePosition.Inside;
@@ -340,6 +476,12 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return position;
         }
 
+        /// <summary>
+        /// Gets the nearest point from enumeration to given point.
+        /// </summary>
+        /// <param name="to">To point.</param>
+        /// <param name="points">The points enumeration.</param>
+        /// <returns>Nearest point.</returns>
         internal Point GetNearest(Point to, IEnumerable<Point> points)
         {
             var nearestDistance = Double.PositiveInfinity;
@@ -357,6 +499,13 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return nearest;
         }
 
+        /// <summary>
+        /// Intersects the span.
+        /// </summary>
+        /// <param name="from">From point.</param>
+        /// <param name="to">To point.</param>
+        /// <param name="intersected">The intersected span.</param>
+        /// <returns>System.Nullable&lt;Point&gt;.</returns>
         private Point? intersectSpan(Point from, Point to, Rect intersected)
         {
             var i = intersected;
@@ -374,6 +523,14 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return null;
         }
 
+        /// <summary>
+        /// Intersects the line.
+        /// </summary>
+        /// <param name="p1">The p1.</param>
+        /// <param name="p2">The p2.</param>
+        /// <param name="p3">The p3.</param>
+        /// <param name="p4">The p4.</param>
+        /// <returns>System.Nullable&lt;Point&gt;.</returns>
         private Point? intersectLine(Point p1, Point p2, Point p3, Point p4)
         {
             var point = new Point();
@@ -397,6 +554,12 @@ namespace MEFEditor.Drawing.ArrangeEngine
             return point;
         }
 
+        /// <summary>
+        /// Inserts the specified from.
+        /// </summary>
+        /// <param name="from">From.</param>
+        /// <param name="inserted">The inserted.</param>
+        /// <param name="categorized">The categorized.</param>
         private void insert(Point from, Point inserted, Point?[] categorized)
         {
             var category = getCategory(from, inserted);
@@ -413,6 +576,12 @@ namespace MEFEditor.Drawing.ArrangeEngine
             categorized[category] = inserted;
         }
 
+        /// <summary>
+        /// Gets the category of relative position.
+        /// </summary>
+        /// <param name="from">From point.</param>
+        /// <param name="relative">The relative point.</param>
+        /// <returns>Category representation.</returns>
         private int getCategory(Point from, Point relative)
         {
             var cat = 0;

@@ -10,8 +10,15 @@ using System.Windows.Controls;
 
 namespace MEFEditor.Drawing
 {
+    /// <summary>
+    /// Canvas that can be used as slot filled by <see cref="DiagramItem"/>.
+    /// Drawing of slot is defined by <see cref="SlotDefinition"/>.
+    /// </summary>
     public class SlotCanvas:DiagramCanvasBase
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SlotCanvas"/> class.
+        /// </summary>
         public SlotCanvas()
         {
             MinHeight = 100;

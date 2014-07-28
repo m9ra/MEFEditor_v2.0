@@ -37,13 +37,13 @@ namespace MEFEditor.TypeSystem.Core
             _assemblyKeys.Remove(assemblyKey);
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         public IEnumerator<object> GetEnumerator()
         {
             return _assemblyKeys.GetEnumerator();
         }
 
-        /// </ inheritdoc>
+        /// <inheritdoc />
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return _assemblyKeys.GetEnumerator();

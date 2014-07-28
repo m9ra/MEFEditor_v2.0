@@ -18,13 +18,6 @@ namespace MEFEditor.UnitTesting.Analyzing_TestUtils
 {
 
     /// <summary>
-    /// Director of emitting method instructions. It can
-    /// be used with <see cref="DirectedGenerator"/>.
-    /// </summary>
-    /// <param name="emitter">The emitter.</param>
-    public delegate void EmitDirector(EmitterBase emitter);
-
-    /// <summary>
     /// Utility methods for <see cref="Machine"/> testing.
     /// </summary>
     public static class ExecutionUtils

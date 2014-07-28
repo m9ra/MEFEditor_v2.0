@@ -221,11 +221,11 @@ namespace MEFEditor.Drawing
         }
 
         /// <summary>
-        /// GUI event handler for opening context menu. It computes 
+        /// GUI event handler for opening context menu. It computes
         /// currently displayed menu items.
         /// </summary>
-        /// <param name="sender">Sender of event</param>
-        /// <param name="e">Event object</param>
+        /// <param name="menu">The menu which is opening.</param>
+        /// <param name="context">The context where menu is displayed.</param>
         private void menu_ContextMenuOpening(ContextMenu menu, DiagramContext context)
         {
             foreach (MenuItem item in menu.Items)
