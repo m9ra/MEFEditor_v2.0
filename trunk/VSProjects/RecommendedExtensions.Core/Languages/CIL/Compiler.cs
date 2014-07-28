@@ -14,26 +14,32 @@ using MEFEditor.TypeSystem;
 namespace RecommendedExtensions.Core.Languages.CIL
 {
     /// <summary>
-    /// Compiler used for CIL transcription. Needs VMStack as direct type in machine settings.
+    /// Compiler used for CIL transcription. Needs <see cref="VMStack"/> as direct type in machine settings.
     /// </summary>
     public class Compiler
     {
         /// <summary>
-        /// Compiled method
+        /// Compiled method.
         /// </summary>
         private readonly CILMethod _method;
 
         /// <summary>
-        /// Info of compiled method
+        /// Info of compiled method.
         /// </summary>
         private readonly TypeMethodInfo _methodInfo;
 
         /// <summary>
-        /// Transcriptor used for compilation
+        /// Transcriptor used for compilation.
         /// </summary>
         private readonly EmitterBase E;
-
-
+        
+        /// <summary>
+        /// Generates the instructions of given method.
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <param name="info">The method information.</param>
+        /// <param name="emitter">The emitter where instructions will be generated.</param>
+        /// <param name="services">The services from <see cref="MEFEditor.TypeSystem"/>.</param>
         public static void GenerateInstructions(CILMethod method, TypeMethodInfo info, EmitterBase emitter, TypeServices services)
         {
             Console.WriteLine(method.ToString());
@@ -44,6 +50,13 @@ namespace RecommendedExtensions.Core.Languages.CIL
             //Console.WriteLine(emitter.GetEmittedInstructions().Code);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Compiler"/> class.
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <param name="methodInfo">The method information.</param>
+        /// <param name="emitter">The emitter.</param>
+        /// <param name="services">The services.</param>
         private Compiler(CILMethod method, TypeMethodInfo methodInfo, EmitterBase emitter, TypeServices services)
         {
             _method = method;
@@ -52,7 +65,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Generate instructions of _method
+        /// Generate instructions of _method.
         /// </summary>
         private void generateInstructions()
         {
@@ -62,7 +75,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Generate header with instructions providing compiler environment
+        /// Generate header with instructions providing compiler environment.
         /// </summary>
         private void compilerPreparations()
         {
@@ -86,7 +99,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Prepare stack object
+        /// Prepare stack object.
         /// </summary>
         private void prepareStack()
         {

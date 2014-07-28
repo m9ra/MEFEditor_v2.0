@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using System.ComponentModel.Composition.Hosting;
+
 using MEFEditor.Drawing;
 
 namespace RecommendedExtensions.Core.Drawings

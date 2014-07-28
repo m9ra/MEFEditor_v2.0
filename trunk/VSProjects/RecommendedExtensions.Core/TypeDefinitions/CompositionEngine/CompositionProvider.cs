@@ -29,7 +29,6 @@ namespace RecommendedExtensions.Core.TypeDefinitions.CompositionEngine
         /// Simulate composition according to given parts.
         /// </summary>
         /// <param name="context">Context of composition, contains list of components to be composed</param>
-        /// <param name="parts">Parts which will be composed.</param>
         /// <returns>CompositionResult which is created according to composition simulation.</returns>
         public static CompositionResult Compose(CompositionContext context)
         {

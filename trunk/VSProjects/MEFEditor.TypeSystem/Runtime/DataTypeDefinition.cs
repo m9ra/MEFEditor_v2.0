@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Globalization;
 
 using MEFEditor.Analyzing;
+using MEFEditor.Analyzing.Execution;
 
 using MEFEditor.TypeSystem.Runtime.Building;
 

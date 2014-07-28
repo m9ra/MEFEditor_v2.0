@@ -11,38 +11,43 @@ using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
 
 namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
 {
+    /// <summary>
+    /// Class CallHierarchyProcessor.
+    /// </summary>
     class CallHierarchyProcessor
     {
         /// <summary>
-        /// Compiler that uses current processor
+        /// Compiler that uses current processor.
         /// </summary>
         private readonly Compiler _compiler;
 
         /// <summary>
-        /// Entry node of hierarchy
+        /// Entry node of hierarchy.
         /// </summary>
         private readonly INodeAST _entryNode;
 
         /// <summary>
-        /// Searcher that is currently used for resolving hierarchies
+        /// Searcher that is currently used for resolving hierarchies.
         /// </summary>
         private MethodSearcher _searcher;
 
         /// <summary>
-        /// Current object where hierarchy is resolved
+        /// Current object where hierarchy is resolved.
         /// </summary>
         private RValueProvider _currentObject;
 
         /// <summary>
-        /// Context available from compiler that uses current processor
+        /// Context available from compiler that uses current processor.
         /// </summary>
+        /// <value>The context.</value>
         protected CompilationContext Context { get { return _compiler.Context; } }
 
 
         /// <summary>
-        /// Initialize <see cref="CallHierarchyProcessor"/> with given node
+        /// Initialize <see cref="CallHierarchyProcessor" /> with given node.
         /// </summary>
-        /// <param name="callHierarchy">Node where call hierarchy starts</param>
+        /// <param name="callHierarchy">Node where call hierarchy starts.</param>
+        /// <param name="compiler">Compiler using current call hierarchy processor.</param>
         internal CallHierarchyProcessor(INodeAST callHierarchy, Compiler compiler)
         {
             _entryNode = callHierarchy;
@@ -50,11 +55,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
         }
 
         /// <summary>
-        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes)
+        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes).
         /// </summary>
-        /// <param name="call">Result representation of call hierarchy</param>
-        /// <param name="calledObject">Object on which call hierarchy starts if any</param>
-        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise</returns>
+        /// <param name="call">Result representation of call hierarchy.</param>
+        /// <param name="calledObject">Object on which call hierarchy starts if any.</param>
+        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise.</returns>
         internal bool TryGetSetter(out LValueProvider call, RValueProvider calledObject)
         {
             var currNode = initializeCallSearch(calledObject, _entryNode.Child == null);
@@ -85,6 +90,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return false;
         }
 
+        /// <summary>
+        /// Initializes the call search.
+        /// </summary>
+        /// <param name="calledObject">The called object.</param>
+        /// <param name="dispatchSetter">if set to <c>true</c> [dispatch setter].</param>
+        /// <returns>INodeAST.</returns>
         private INodeAST initializeCallSearch(RValueProvider calledObject, bool dispatchSetter)
         {
             _searcher = createMethodSearcher(calledObject);
@@ -98,11 +109,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
         }
 
         /// <summary>
-        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes)
+        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes).
         /// </summary>
-        /// <param name="call">Result representation of call hierarchy</param>
-        /// <param name="calledObject">Object on which call hierarchy starts if any</param>
-        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise</returns>
+        /// <param name="call">Result representation of call hierarchy.</param>
+        /// <param name="calledObject">Object on which call hierarchy starts if any.</param>
+        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise.</returns>
         internal bool TryGetCall(out RValueProvider call, RValueProvider calledObject)
         {
             var currNode = initializeCallSearch(calledObject, false);
@@ -121,6 +132,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return _searcher == null;
         }
 
+        /// <summary>
+        /// Processes the l node.
+        /// </summary>
+        /// <param name="currNode">The curr node.</param>
+        /// <returns>SetterLValue.</returns>
         private SetterLValue processLNode(INodeAST currNode)
         {
             dispatchByNode(_searcher, currNode, true);
@@ -133,6 +149,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return null;
         }
 
+        /// <summary>
+        /// Creates the setter value.
+        /// </summary>
+        /// <param name="currNode">The curr node.</param>
+        /// <param name="overloadMethods">The overload methods.</param>
+        /// <returns>SetterLValue.</returns>
         private SetterLValue createSetterValue(INodeAST currNode, IEnumerable<TypeMethodInfo> overloadMethods)
         {
             var overloads = overloadMethods.ToArray();
@@ -157,6 +179,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return new SetterLValue(overloads[0], _currentObject, indexArguments, Context);
         }
 
+        /// <summary>
+        /// Processes the r node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool processRNode(INodeAST node)
         {
             //require available searcher
@@ -187,6 +214,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
+        /// <summary>
+        /// Extends the name.
+        /// </summary>
+        /// <param name="currNode">The curr node.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool extendName(INodeAST currNode)
         {
             if (_currentObject != null)
@@ -207,6 +239,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             }
         }
 
+        /// <summary>
+        /// Sets the called object.
+        /// </summary>
+        /// <param name="currNode">The curr node.</param>
+        /// <param name="dispatchSetter">if set to <c>true</c> [dispatch setter].</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool setCalledObject(INodeAST currNode, bool dispatchSetter)
         {
             var resolvedCall = resolveCall(_currentObject, currNode, _searcher.FoundResult);
@@ -219,6 +257,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return true;
         }
 
+        /// <summary>
+        /// Resolves the call.
+        /// </summary>
+        /// <param name="calledObject">The called object.</param>
+        /// <param name="currNode">The curr node.</param>
+        /// <param name="overloads">The overloads.</param>
+        /// <returns>CallValue.</returns>
         private CallValue resolveCall(RValueProvider calledObject, INodeAST currNode, IEnumerable<TypeMethodInfo> overloads)
         {
             var callActivation = _compiler.CreateCallActivation(calledObject, currNode, overloads);
@@ -231,6 +276,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
             return new CallValue(callActivation, Context);
         }
 
+        /// <summary>
+        /// Sets the current object.
+        /// </summary>
+        /// <param name="calledObject">The called object.</param>
+        /// <param name="currNode">The curr node.</param>
+        /// <param name="dispatchSetter">if set to <c>true</c> [dispatch setter].</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool setCurrentObject(RValueProvider calledObject, INodeAST currNode, bool dispatchSetter)
         {
             if (calledObject != null && currNode != null && currNode.Indexer != null)
@@ -258,9 +310,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
         }
 
         /// <summary>
-        /// Create method searcher filled with valid namespaces according to calledObject
+        /// Create method searcher filled with valid namespaces according to calledObject.
         /// </summary>
-        /// <returns>Created <see cref="MethodSearcher"/></returns>
+        /// <param name="calledObject">The called object.</param>
+        /// <returns>Created <see cref="MethodSearcher" />.</returns>
         private MethodSearcher createMethodSearcher(RValueProvider calledObject)
         {
             //x without base can resolve to:            
@@ -285,12 +338,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
         }
 
         /// <summary>
-        /// Dispatch given searcher by node. It means that dispatch 
-        /// calls on searcher will be called according to node value and structure
+        /// Dispatch given searcher by node. It means that dispatch
+        /// calls on searcher will be called according to node value and structure.
         /// </summary>
-        /// <param name="searcher">Searcher which is dispatched</param>
-        /// <param name="node">Node dispatching searcher</param>
-        /// <param name="dispatchSetter">Determine that only setter will be dispatche, otherwise only getter will be dispatched</param>
+        /// <param name="searcher">Searcher which is dispatched.</param>
+        /// <param name="node">Node dispatching searcher.</param>
+        /// <param name="dispatchSetter">Determine that only setter will be dispatche, otherwise only getter will be dispatched.</param>
+        /// <exception cref="System.NotSupportedException">Cannot resolve given node type inside hierarchy</exception>
         private void dispatchByNode(MethodSearcher searcher, INodeAST node, bool dispatchSetter)
         {
             var name = Context.MapGeneric(node.Value);

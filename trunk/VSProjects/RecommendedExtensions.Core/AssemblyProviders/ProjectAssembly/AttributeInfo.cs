@@ -10,34 +10,35 @@ using EnvDTE80;
 namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
 {
     /// <summary>
-    /// Wrap <see cref="CodeAttribute2"/> and provide additional services for resolving arguments.
+    /// Wrap <see cref="CodeAttribute2" /> and provide additional services for resolving arguments.
     /// </summary>
     class AttributeInfo
     {
         /// <summary>
-        /// Storage for values of named arguments
+        /// Storage for values of named arguments.
         /// </summary>
         private readonly Dictionary<string, string> _namedArguments = new Dictionary<string, string>();
 
         /// <summary>
-        /// Storage for values of positioned arguments
+        /// Storage for values of positioned arguments.
         /// </summary>
         private readonly List<string> _positionalArguments = new List<string>();
 
         /// <summary>
-        /// Wrapped <see cref="CodeAttribute2"/>
+        /// Wrapped <see cref="CodeAttribute2" />.
         /// </summary>
         internal readonly CodeAttribute2 Element;
 
         /// <summary>
-        /// Number of positional arguments
+        /// Number of positional arguments.
         /// </summary>
+        /// <value>The positional arguments count.</value>
         internal int PositionalArgumentsCount { get { return _positionalArguments.Count; } }
 
         /// <summary>
-        /// Initialize instance of <see cref="AttributeInfo"/>
+        /// Initialize instance of <see cref="AttributeInfo" />.
         /// </summary>
-        /// <param name="attribute">Wrapped attribute</param>
+        /// <param name="attribute">Wrapped attribute.</param>
         internal AttributeInfo(CodeAttribute2 attribute)
         {
             Element = attribute;
@@ -59,10 +60,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Get value of named argument with given name or argument at given position
+        /// Get value of named argument with given name or argument at given position.
         /// </summary>
-        /// <param name="name">Name of named argument</param>
-        /// <returns>Value of named argument if any, value of positioned argument otherwise</returns>
+        /// <param name="name">Name of named argument.</param>
+        /// <param name="position">Position of argument.</param>
+        /// <returns>Value of named argument if any, value of positioned argument otherwise.</returns>
         internal string GetArgument(string name, int position)
         {
             var argument = GetArgument(name);
@@ -73,10 +75,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Get value of named argument with given name
+        /// Get value of named argument with given name.
         /// </summary>
-        /// <param name="name">Name of named argument</param>
-        /// <returns>Value of named argument if any, <c>null</c> otherwise</returns>
+        /// <param name="name">Name of named argument.</param>
+        /// <returns>Value of named argument if any, <c>null</c> otherwise.</returns>
         internal string GetArgument(string name)
         {
             string result;
@@ -86,10 +88,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Get value of positioned argument at given zero-based position
+        /// Get value of positioned argument at given zero-based position.
         /// </summary>
-        /// <param name="position">Zero based position of argument</param>
-        /// <returns>Value of positioned argument if any, <c>null</c> otherwise</returns>
+        /// <param name="position">Zero based position of argument.</param>
+        /// <returns>Value of positioned argument if any, <c>null</c> otherwise.</returns>
         internal string GetArgument(int position)
         {
             if (_positionalArguments.Count <= position)
@@ -101,10 +103,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Determine that value of named argumet with given name is set to true
+        /// Determine that value of named argumet with given name is set to true.
         /// </summary>
-        /// <param name="name">Name of named argument</param>
-        /// <returns><c>true</c> if argument is set to true, <c>false</c> otherwise</returns>
+        /// <param name="name">Name of named argument.</param>
+        /// <returns><c>true</c> if argument is set to true, <c>false</c> otherwise.</returns>
         internal bool IsTrue(string name)
         {
             var value = GetArgument(name);

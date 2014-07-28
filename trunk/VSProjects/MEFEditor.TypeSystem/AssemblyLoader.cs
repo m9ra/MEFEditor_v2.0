@@ -12,38 +12,47 @@ using MEFEditor.TypeSystem.Core;
 
 namespace MEFEditor.TypeSystem
 {
+    /// <summary>
+    /// Loader of assemblies used by <see cref="AppDomainServices"/>.
+    /// </summary>
     public class AssemblyLoader : LoaderBase
     {
         /// <summary>
-        /// Manager of loaded assemblies
+        /// Manager of loaded assemblies.
         /// </summary>
         private readonly AssembliesManager _manager;
 
         /// <summary>
-        /// Currently available factories of <see cref="AssemblyProvider"/>
+        /// Currently available factories of <see cref="AssemblyProvider" />.
         /// </summary>
         private readonly AssemblyProviderFactory[] _assemblyFactories;
 
         /// <summary>
-        /// Generators that are registered in current context for given instances
+        /// Generators that are registered in current context for given instances.
         /// </summary>
         private readonly Dictionary<Instance, GeneratorBase> _overridingGenerators = new Dictionary<Instance, GeneratorBase>();
 
         /// <summary>
-        /// Generator used for handling calls on null value
+        /// Generator used for handling calls on null value.
         /// </summary>
         private readonly DirectGenerator _nullCallHandler;
 
         /// <summary>
-        /// Services available
+        /// Available app domain services.
         /// </summary>
         public readonly AppDomainServices AppDomain;
 
         /// <summary>
-        /// Currently available settings
+        /// Currently available settings.
         /// </summary>
+        /// <value>The settings.</value>
         public MachineSettings Settings { get { return _manager.Settings; } }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssemblyLoader" /> class.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <param name="factories">The factories used for loading assemblies.</param>
         public AssemblyLoader(MachineSettings settings, params AssemblyProviderFactory[] factories)
         {
             _manager = new AssembliesManager(this, settings);
@@ -60,9 +69,10 @@ namespace MEFEditor.TypeSystem
         #region Public API
 
         /// <summary>
-        /// Load assembly defined by give assembly key into application domain
+        /// Load assembly defined by give assembly key into application domain.
         /// </summary>
-        /// <param name="assemblyKey">Key used for loading assembly</param>
+        /// <param name="assemblyKey">Key used for loading assembly.</param>
+        /// <returns>AssemblyProvider.</returns>
         public AssemblyProvider LoadRoot(object assemblyKey)
         {
             var loadedAssembly = CreateOrGetAssembly(assemblyKey);
@@ -74,14 +84,18 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Load assembly defined by give assembly key into application domain
+        /// Load assembly defined by give assembly key into application domain.
         /// </summary>
-        /// <param name="assemblyKey">Key used for unloading assembly</param>
+        /// <param name="assemblyKey">Key used for unloading assembly.</param>
+        /// <returns>AssemblyProvider.</returns>
         public AssemblyProvider UnloadRoot(object assemblyKey)
         {
             return _manager.UnloadRoot(assemblyKey);
         }
 
+        /// <summary>
+        /// Unloads the assemblies.
+        /// </summary>
         public void UnloadAssemblies()
         {
             var assembliesCopy = _manager.Assemblies.ToArray();
@@ -95,10 +109,10 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Get <see cref="ComponentInfo"/> for given <see cref="InstanceInfo"/>
+        /// Get <see cref="ComponentInfo" /> for given <see cref="InstanceInfo" />.
         /// </summary>
-        /// <param name="instanceInfo"><see cref="InstanceInfo"/> which defines type of component</param>
-        /// <returns><see cref="ComponentInfo"/> if available, <c>null</c> otherwise.</returns>
+        /// <param name="instanceInfo"><see cref="InstanceInfo" /> which defines type of component.</param>
+        /// <returns><see cref="ComponentInfo" /> if available, <c>null</c> otherwise.</returns>
         public ComponentInfo GetComponentInfo(InstanceInfo instanceInfo)
         {
             return _manager.GetComponentInfo(instanceInfo);
@@ -108,19 +122,34 @@ namespace MEFEditor.TypeSystem
 
         #region LoaderBase implementation
 
-        /// </ inheritdoc>
+        /// <summary>
+        /// Resolve method with static argument info.
+        /// </summary>
+        /// <param name="method">Resolved method.</param>
+        /// <returns>Resolved method name.</returns>
         public override GeneratorBase StaticResolve(MethodID method)
         {
             return _manager.StaticResolve(method);
         }
 
-        /// </ inheritdoc>
+        /// <summary>
+        /// Resolve method with dynamic argument info.
+        /// </summary>
+        /// <param name="method">Resolved method.</param>
+        /// <param name="dynamicArgumentInfo">Dynamic argument info, collected from argument instances.</param>
+        /// <returns>Resolved method which will be asked for generator by StaticResolve.</returns>
         public override MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             return _manager.DynamicResolve(method, dynamicArgumentInfo);
         }
 
-        /// </ inheritdoc>
+        /// <summary>
+        /// When overridden it can inject any generator for any method. Injected generator
+        /// wont be binded with <see cref="MethodID" /> in methods cache.
+        /// </summary>
+        /// <param name="name">Name of resolved method.</param>
+        /// <param name="argumentValues">Arguments of resolved method.</param>
+        /// <returns><c>null</c> if there is no injected generator, injected generator otherwise.</returns>
         public override GeneratorBase GetOverridingGenerator(MethodID name, Instance[] argumentValues)
         {
             if (argumentValues.Length == 0)
@@ -138,11 +167,11 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Register injected generator for given instance. All incomming
+        /// Register injected generator for given instance. All incoming
         /// calls will be replaced with instructions of given generator.
         /// </summary>
-        /// <param name="registeredInstance">Instance which generator is injected</param>
-        /// <param name="generator">Injected generator</param>
+        /// <param name="registeredInstance">Instance which generator is injected.</param>
+        /// <param name="generator">Injected generator.</param>
         internal void RegisterInjectedGenerator(Instance registeredInstance, DirectGenerator generator)
         {
             _overridingGenerators[registeredInstance] = generator;
@@ -153,10 +182,10 @@ namespace MEFEditor.TypeSystem
         #region Assembly loading implementation
 
         /// <summary>
-        /// Create assembly from given key
+        /// Create assembly from given key.
         /// </summary>
-        /// <param name="assemblyKey">Key of created assembly</param>
-        /// <returns>Created assembly if succesful, false otherwise</returns>
+        /// <param name="assemblyKey">Key of created assembly.</param>
+        /// <returns>Created assembly if successful, false otherwise.</returns>
         internal AssemblyProvider CreateOrGetAssembly(object assemblyKey)
         {
             var assembly = _manager.FindLoadedAssemblyProvider(assemblyKey);
@@ -184,7 +213,7 @@ namespace MEFEditor.TypeSystem
         /// <summary>
         /// Handler called whenever call on null instance is detected.
         /// </summary>
-        /// <param name="context">Context used during analysis</param>
+        /// <param name="context">Context used during analysis.</param>
         private void nullCallHandler(AnalyzingContext context)
         {
             AppDomain.Log("WARNING", "Call on null instance detected: " + context.CurrentCall.Name);

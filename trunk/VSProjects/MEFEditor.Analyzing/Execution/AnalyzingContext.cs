@@ -346,7 +346,7 @@ namespace MEFEditor.Analyzing.Execution
         }
 
         /// <summary>
-        /// Get next available instrution
+        /// Get next available instrution.
         /// </summary>
         /// <returns>Instruction that is on turn to be processed, if end of execution returns null</returns>
         internal InstructionBase NextInstruction()
@@ -365,10 +365,10 @@ namespace MEFEditor.Analyzing.Execution
         #region Call stack handling
 
         /// <summary>
-        /// Fetch instructions from given generator
-        /// <param name="arguments">Names of variables where arguments are stored</param>
+        /// Fetch instructions according to given name.
+        /// <param name="argumentValues">Names of variables where arguments are stored</param>
         /// </summary>
-        /// <param name="generator">Generator of fetched instructions</param>
+        /// <param name="name">Name of fetched call.</param>
         internal void FetchCall(MethodID name, Instance[] argumentValues)
         {
             var generator = resolveGenerator(ref name, argumentValues);
@@ -506,10 +506,11 @@ namespace MEFEditor.Analyzing.Execution
         }
 
         /// <summary>
-        /// Get generator for given name
+        /// Get generator for given name and arguments.
         /// </summary>
-        /// <param name="methodName">Name of method generator</param>
-        /// <returns>Instruction generator for given name</returns>
+        /// <param name="method">Name of method generator.</param>
+        /// <param name="arguments">Arguments of call.</param>
+        /// <returns>Instruction generator for given name.</returns>
         private GeneratorBase getGenerator(ref MethodID method, InstanceInfo[] arguments)
         {
             if (method.NeedsDynamicResolving)

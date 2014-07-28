@@ -27,6 +27,9 @@ namespace MEFEditor.UnitTesting
     [TestClass]
     public class Edits_Testing
     {
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_SimpleReject()
         {
@@ -49,6 +52,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RejectWithSideEffect()
         {
@@ -71,8 +77,10 @@ namespace MEFEditor.UnitTesting
                 DirectMethod();
             ");
         }
-
-
+        
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RewriteWithSideEffect()
         {
@@ -95,6 +103,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_AppendWithValidScope()
         {
@@ -123,6 +134,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_AppendScopeEndShifting()
         {
@@ -167,6 +181,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_AppendScopeStartShifting()
         {
@@ -207,6 +224,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_AcceptWithValidScope()
         {
@@ -249,6 +269,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_AcceptAtSemanticEnd_ScopeBlock()
         {
@@ -279,7 +302,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_AcceptAtSemanticEnd_CommonScope()
         {
@@ -311,7 +336,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_AcceptWithEndScopeShifting()
         {
@@ -357,6 +384,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RemoveWithRedeclaration()
         {
@@ -381,6 +411,9 @@ namespace MEFEditor.UnitTesting
          ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RemoveFromOptionalParam()
         {
@@ -403,6 +436,9 @@ namespace MEFEditor.UnitTesting
          ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RemoveFromCallCascade()
         {
@@ -431,6 +467,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RemovePreserveCtor()
         {
@@ -454,6 +493,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RemoveMultiVariable()
         {
@@ -470,7 +512,9 @@ namespace MEFEditor.UnitTesting
             ");
         }
 
-
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RemoveChainedAssign()
         {
@@ -494,6 +538,9 @@ namespace MEFEditor.UnitTesting
          ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_RemoveVariableCall()
         {
@@ -511,6 +558,9 @@ namespace MEFEditor.UnitTesting
          ");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Edit_GroupShifting()
         {

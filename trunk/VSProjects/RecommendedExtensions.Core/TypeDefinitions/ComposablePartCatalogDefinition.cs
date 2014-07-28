@@ -17,7 +17,7 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
     /// <summary>
-    /// Analyzing definition of <see cref="ComposasblePartCatalog" />.
+    /// Analyzing definition of <see cref="ComposablePartCatalog" />.
     /// </summary>
     public class ComposablePartCatalogDefinition : DataTypeDefinition
     {

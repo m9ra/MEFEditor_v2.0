@@ -33,6 +33,9 @@ namespace MEFEditor.UnitTesting
 
         #region Testing transcription of for loop
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Emit_CECILForLoop()
         {
@@ -42,6 +45,10 @@ namespace MEFEditor.UnitTesting
                 ;
         }
 
+        /// <summary>
+        /// CECIL Method that is translated.
+        /// </summary>
+        /// <returns>Test result.</returns>
         static string ForLoop()
         {
             string str = "";
@@ -57,6 +64,9 @@ namespace MEFEditor.UnitTesting
 
         #region Testing transcription of call outside assembly
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Provide_CECILCrossCall()
         {
@@ -68,6 +78,10 @@ namespace MEFEditor.UnitTesting
             }).AssertReturn().HasValue("Outside_Inside");
         }
 
+        /// <summary>
+        /// CECIL Method that is translated.
+        /// </summary>
+        /// <returns>Test result.</returns>
         static string InsideAssembly()
         {
             return "Inside";
@@ -77,6 +91,9 @@ namespace MEFEditor.UnitTesting
 
         #region Testing transcription of static initializers
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Provide_CECILStaticInitializer()
         {
@@ -86,8 +103,14 @@ namespace MEFEditor.UnitTesting
             }).AssertReturn().HasValue("DataInitialized");
         }
 
+        /// <summary>
+        /// Test storage.
+        /// </summary>
         private static string _data;
 
+        /// <summary>
+        /// CECIL Method that is translated.
+        /// </summary>
         static Compiler_CIL_Testing()
         {
             _data = "Initialized";
@@ -98,7 +121,10 @@ namespace MEFEditor.UnitTesting
         #endregion
 
         #region Testing of transcription from instructions loaded by System.Reflection
-        
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Emit_CILSimple()
         {
@@ -112,6 +138,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Emit_CILStaticCall()
         {
@@ -126,6 +155,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Emit_CILObjectCall()
         {
@@ -139,6 +171,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Emit_CILForLoop()
         {
@@ -160,12 +195,22 @@ namespace MEFEditor.UnitTesting
 
         #region Testing utilities
 
+        /// <summary>
+        /// Runs the method with specified name.
+        /// </summary>
+        /// <param name="methodName">Name of the method.</param>
+        /// <returns>TestingAssembly.</returns>
         private TestingAssembly run(string methodName)
         {
             var assemblyFile = GetType().Assembly.Location;
             return AssemblyUtils.RunCECIL(assemblyFile, typeof(Compiler_CIL_Testing).FullName + "." + methodName);
         }
 
+        /// <summary>
+        /// Runs specified method.
+        /// </summary>
+        /// <param name="entryMethod">The entry method.</param>
+        /// <returns>TestingAssembly.</returns>
         private TestingAssembly runWithAssemblyLoad(Func<string> entryMethod)
         {
             var assembly = new CILAssembly(GetType().Assembly.Location);

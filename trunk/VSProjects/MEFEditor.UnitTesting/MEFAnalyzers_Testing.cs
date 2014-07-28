@@ -22,6 +22,9 @@ namespace MEFEditor.UnitTesting
     [TestClass]
     public class MEFAnalyzers_Testing
     {
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compose_StringImport_StringExport()
         {
@@ -39,6 +42,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("importValue").HasValue("Data:ExportedValue");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compose_StringManyArrayImport_StringExport()
         {
@@ -59,6 +65,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compose_StringManyICollectionImport_StringExport()
         {
@@ -81,6 +90,9 @@ namespace MEFEditor.UnitTesting
            ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compose_PrerequisityImport_LoadedAssembly()
         {

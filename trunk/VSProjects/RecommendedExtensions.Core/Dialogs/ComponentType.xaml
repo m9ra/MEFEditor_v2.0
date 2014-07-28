@@ -9,8 +9,8 @@
         Title="Component type dialog"
         WindowStyle="ToolWindow"
         
-        Width="250"
-        Height="300"
+        MinWidth="250"
+        MinHeight="300"
         >
     <Grid Background="LightGray">
         <TextBlock>Select component type</TextBlock>

@@ -424,7 +424,6 @@ namespace MEFEditor.Plugin.GUI
         /// <summary>
         /// Flushes the composition point list updates.
         /// </summary>
-        /// <param name="forceRedraw">Force redrawing of composition scheme</param>
         /// <returns><c>true</c> if list has been changed, <c>false</c> otherwise.</returns>
         internal bool FlushCompositionPointUpdates()
         {

@@ -15,15 +15,25 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
     /// <param name="e">Entered <see cref="CodeNamespace"/></param>
     public delegate void NamespaceEntered(CodeNamespace e);
 
+    /// <summary>
+    /// <see cref="CodeElement"/> visitor that can travers Code model hierarchy.
+    /// </summary>
     public class CodeElementVisitor
     {
+        /// <summary>
+        /// Occurs when [on namespace entered].
+        /// </summary>
         public event NamespaceEntered OnNamespaceEntered;
 
         /// <summary>
-        /// Determine that recursive visiting of elements will be proceeded
+        /// Determine that recursive visiting of elements will be proceeded.
         /// </summary>
         protected bool RecursiveVisit = true;
 
+        /// <summary>
+        /// Visits the element.
+        /// </summary>
+        /// <param name="e">Element to visit</param>
         public virtual void VisitElement(CodeElement e)
         {
             switch (e.Kind)
@@ -60,46 +70,46 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
 
 
         /// <summary>
-        /// <see cref="CodeElement"/> casting helper
+        /// <see cref="CodeElement" /> casting helper.
         /// </summary>
-        /// <param name="e">Element thats visiting hasn't been handled</param>
+        /// <param name="e">Element thats visiting hasn't been handled.</param>
         private void visitUnhandled(object e)
         {
             VisitUnhandled(e as CodeElement);
         }
 
         /// <summary>
-        /// Handler for elements which visiting has no action 
-        /// (is not reimplemented or is not recursive)
+        /// Handler for elements which visiting has no action
+        /// (is not reimplemented or is not recursive).
         /// </summary>
-        /// <param name="e">Element thats visiting hasn't been handled</param>
+        /// <param name="e">Element thats visiting hasn't been handled.</param>
         public virtual void VisitUnhandled(CodeElement e)
         {
             //nothing to do
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitUnknown(CodeElement e)
         {
             VisitUnhandled(e);
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         private void VisitImport(CodeImport e)
         {
             VisitUnhandled(e);
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitProperty(CodeProperty e)
         {
             if (!RecursiveVisit)
@@ -116,9 +126,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitVariable(CodeVariable e)
         {
             if (!RecursiveVisit)
@@ -135,9 +145,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitFunction(CodeFunction2 e)
         {
             if (!RecursiveVisit)
@@ -154,9 +164,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitClass(CodeClass2 e)
         {
             if (!RecursiveVisit)
@@ -173,9 +183,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitAttribute(CodeAttribute2 e)
         {
             if (!RecursiveVisit)
@@ -188,9 +198,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitInterface(CodeInterface2 e)
         {
             if (!RecursiveVisit)
@@ -207,9 +217,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitNamespace(CodeNamespace e)
         {
             if (OnNamespaceEntered != null)
@@ -229,9 +239,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitProject(Project e)
         {
             if (!RecursiveVisit)
@@ -250,9 +260,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         /// <summary>
-        /// Visit given element
+        /// Visit given element.
         /// </summary>
-        /// <param name="e">Element to visit</param>
+        /// <param name="e">Element to visit.</param>
         public virtual void VisitProjectItem(ProjectItem e)
         {
             if (!RecursiveVisit)

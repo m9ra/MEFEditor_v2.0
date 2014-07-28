@@ -15,7 +15,6 @@ namespace MEFEditor.Analyzing
         /// Resolve method with static argument info
         /// </summary>
         /// <param name="method">Resolved method</param>
-        /// <param name="staticArgumentInfo">Static argument info, collected from argument variables</param>
         /// <returns>Resolved method name</returns>
         public abstract GeneratorBase StaticResolve(MethodID method);
 
@@ -28,7 +27,7 @@ namespace MEFEditor.Analyzing
         public abstract MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo);
 
         /// <summary>
-        /// When overriden it can inject any generator for any method. Injected generator
+        /// When overridden it can inject any generator for any method. Injected generator
         /// wont be binded with <see cref="MethodID"/> in methods cache.
         /// </summary>
         /// <param name="name">Name of resolved method</param>
@@ -36,7 +35,7 @@ namespace MEFEditor.Analyzing
         /// <returns><c>null</c> if there is no injected generator, injected generator otherwise</returns>
         public virtual GeneratorBase GetOverridingGenerator(MethodID name, Instance[] argumentValues)
         {
-            //by default we dont have any overriding generator
+            //by default we don't have any overriding generator
             return null;
         }
     }

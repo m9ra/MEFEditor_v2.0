@@ -9,19 +9,29 @@ using MEFEditor.Analyzing.Execution.Instructions;
 
 namespace MEFEditor.Analyzing.Execution
 {
+    /// <summary>
+    /// Representation of call context of call stack of <see cref="Machine"/>.
+    /// </summary>
     public class CallContext
     {
+        /// <summary>
+        /// The declared variables.
+        /// </summary>
         private readonly Dictionary<VariableName, Instance> _variables = new Dictionary<VariableName, Instance>();
 
+        /// <summary>
+        /// Pointer to currently processed instruction.
+        /// </summary>
         private uint _instructionPointer;
 
+        /// <summary>
+        /// Current analyzing context.
+        /// </summary>
         private readonly AnalyzingContext _context;
-
-
 
         /// <summary>
         /// Is used by analyzing context. All chained dynamic calls are executed after current call is popped.
-        /// Nested dynamic calls are chained separately
+        /// Nested dynamic calls are chained separately.
         /// </summary>
         internal DynamicCallEntry ContextsDynamicCalls;
 
@@ -32,32 +42,68 @@ namespace MEFEditor.Analyzing.Execution
         internal DynamicCallEntry FollowingDynamicCalls;
 
         /// <summary>
-        /// Determine that call doesn't have next instructions to proceed
+        /// Determine that call doesn't have next instructions to proceed.
         /// </summary>
+        /// <value><c>true</c> if this instance is call end; otherwise, <c>false</c>.</value>
         internal bool IsCallEnd { get { return _instructionPointer >= Program.Instructions.Length; } }
 
+        /// <summary>
+        /// Gets argument values of represented call.
+        /// </summary>
+        /// <value>The argument values.</value>
         internal Instance[] ArgumentValues { get; private set; }
 
+        /// <summary>
+        /// The transform provider.
+        /// </summary>
         internal readonly CallTransformProvider TransformProvider;
 
+        /// <summary>
+        /// Gets the variables.
+        /// </summary>
+        /// <value>The variables.</value>
         public IEnumerable<VariableName> Variables { get { return _variables.Keys; } }
 
+        /// <summary>
+        /// Gets the current block.
+        /// </summary>
+        /// <value>The current block.</value>
         public ExecutedBlock CurrentBlock { get; private set; }
 
+        /// <summary>
+        /// The entry block.
+        /// </summary>
         public readonly ExecutedBlock EntryBlock;
 
         /// <summary>
-        /// Block from which current call was called
+        /// Block from which current call was called.
         /// </summary>
         public readonly ExecutedBlock CallingBlock;
 
+        /// <summary>
+        /// The name of called method.
+        /// </summary>
         public readonly MethodID Name;
 
+        /// <summary>
+        /// Instructions generated for call.
+        /// </summary>
         public readonly InstructionBatch Program;
 
+        /// <summary>
+        /// Call which invokes current call if available, <c>null</c> otherwise.
+        /// </summary>
         public readonly CallContext Caller;
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CallContext" /> class.
+        /// </summary>
+        /// <param name="context">Current analyzing context.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="transformProvider">The transform provider.</param>
+        /// <param name="generator">The generator of call's instructions.</param>
+        /// <param name="argumentValues">The argument values.</param>
         internal CallContext(AnalyzingContext context, MethodID name, CallTransformProvider transformProvider, GeneratorBase generator, Instance[] argumentValues)
         {
             _context = context;
@@ -84,7 +130,12 @@ namespace MEFEditor.Analyzing.Execution
             CurrentBlock = EntryBlock;
         }
 
-        internal void SetValue(VariableName targetVaraiable, Instance value)
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="targetVariable">The target variable.</param>
+        /// <param name="value">The value.</param>
+        internal void SetValue(VariableName targetVariable, Instance value)
         {
             if (value == null)
             {
@@ -92,14 +143,19 @@ namespace MEFEditor.Analyzing.Execution
             }
 
             Instance oldInstance;
-            _variables.TryGetValue(targetVaraiable, out oldInstance);
-            _variables[targetVaraiable] = value;
+            _variables.TryGetValue(targetVariable, out oldInstance);
+            _variables[targetVariable] = value;
 
             var assignInstruction = Program.Instructions[_instructionPointer - 1] as AssignBase;
 
-            CurrentBlock.RegisterAssign(targetVaraiable, assignInstruction, oldInstance, value);
+            CurrentBlock.RegisterAssign(targetVariable, assignInstruction, oldInstance, value);
         }
 
+        /// <summary>
+        /// Gets the value of given variable.
+        /// </summary>
+        /// <param name="variable">The variable.</param>
+        /// <returns>Instance.</returns>
         public Instance GetValue(VariableName variable)
         {
             Instance value;
@@ -111,14 +167,22 @@ namespace MEFEditor.Analyzing.Execution
 
             return value;
         }
-
-
+        
+        /// <summary>
+        /// Determines whether variable of given name is defined.
+        /// </summary>
+        /// <param name="name">The name of variable.</param>
+        /// <returns><c>true</c> if variable is defined; otherwise, <c>false</c>.</returns>
         public bool IsVariableDefined(string name)
         {
             var variable = new VariableName(name);
             return _variables.ContainsKey(variable);
         }
 
+        /// <summary>
+        /// Get next instruction according to current value of instruction pointer.
+        /// </summary>
+        /// <returns>InstructionBase.</returns>
         internal InstructionBase NextInstrution()
         {
             if (IsCallEnd)
@@ -133,21 +197,38 @@ namespace MEFEditor.Analyzing.Execution
             return instruction;
         }
 
+        /// <summary>
+        /// Determines whether specified variable is defined.
+        /// </summary>
+        /// <param name="targetVariable">The target variable.</param>
+        /// <returns><c>true</c> if variable is defined; otherwise, <c>false</c>.</returns>
         public bool Contains(VariableName targetVariable)
         {
             return _variables.ContainsKey(targetVariable);
         }
 
+        /// <summary>
+        /// Jumps to the specified target.
+        /// </summary>
+        /// <param name="target">The target.</param>
         internal void Jump(Label target)
         {
             _instructionPointer = target.InstructionOffset;
         }
 
+        /// <summary>
+        /// Registers the given call.
+        /// </summary>
+        /// <param name="call">The call.</param>
         internal void RegisterCall(CallContext call)
         {
             CurrentBlock.RegisterCall(call);
         }
 
+        /// <summary>
+        /// Creates new instruction block for given instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction.</param>
         private void setNewBlock(InstructionBase instruction)
         {
             var newExecutedBlock = new ExecutedBlock(instruction.Info, this);

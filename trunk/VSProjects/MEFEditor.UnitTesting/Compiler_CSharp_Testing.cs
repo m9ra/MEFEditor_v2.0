@@ -24,6 +24,9 @@ namespace MEFEditor.UnitTesting
     [TestClass]
     public class Compiler_CSharp_Testing
     {
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Lexer_SimpleGeneric()
         {
@@ -31,6 +34,9 @@ namespace MEFEditor.UnitTesting
             .AssertTokens("a < b . c >");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Lexer_GenericCall()
         {
@@ -38,6 +44,9 @@ namespace MEFEditor.UnitTesting
             .AssertTokens("a", ".", "b<c.d<e>>", "(", "f", ",", "g", ")");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Lexer_ComparisonLikeExpression()
         {
@@ -45,6 +54,9 @@ namespace MEFEditor.UnitTesting
             .AssertTokens("a", "<", "b", "c", ">", "d");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Parse_Basic()
         {
@@ -55,6 +67,9 @@ namespace MEFEditor.UnitTesting
             }", Method.EntryInfo));
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_VariableAssign()
         {
@@ -66,6 +81,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("test2").HasValue("hello");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_Call()
         {
@@ -80,6 +98,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("test").HasValue("ParsedValue");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_StaticCall()
         {
@@ -108,6 +129,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("test").HasValue("InitValue_CallArg");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ObjectCall()
         {
@@ -124,6 +148,9 @@ namespace MEFEditor.UnitTesting
         }
 
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ObjectCall_WithArguments()
         {
@@ -140,6 +167,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("Argument value");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ObjectCreation_FieldsUsage()
         {
@@ -169,6 +199,9 @@ namespace MEFEditor.UnitTesting
         }
 
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ObjectCreation_Alone()
         {
@@ -184,6 +217,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("after");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ObjectCreation_Nested()
         {
@@ -200,6 +236,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("after");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ObjectCreation_Return()
         {
@@ -218,6 +257,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("after");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ObjectCreation_Setter()
         {
@@ -233,7 +275,10 @@ namespace MEFEditor.UnitTesting
 
             .AssertVariable("result").HasValue("after");
         }
-        
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ImplicitThis_Setter()
         {
@@ -269,6 +314,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("ValueToSet");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_Indexer_Setter()
         {
@@ -301,6 +349,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("abc");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_Fibonacci()
         {
@@ -323,6 +374,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue(13);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_SwitchBlock()
         {
@@ -347,6 +401,9 @@ namespace MEFEditor.UnitTesting
              .AssertVariable("result").HasValue(55);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_SwitchBlockContinue()
         {
@@ -373,6 +430,9 @@ namespace MEFEditor.UnitTesting
              .AssertVariable("result").HasValue("a;bc;");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ForLoop()
         {
@@ -387,6 +447,9 @@ namespace MEFEditor.UnitTesting
              .AssertVariable("result").HasValue(21);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ForeachLoop()
         {
@@ -410,6 +473,10 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("0abcdef1");
 
         }
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ForLoopBreak()
         {
@@ -425,6 +492,9 @@ namespace MEFEditor.UnitTesting
              .AssertVariable("result").HasValue(3);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ForLoopContinue()
         {
@@ -442,6 +512,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("incr").HasValue(10);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_WhileLoop()
         {
@@ -458,6 +531,9 @@ namespace MEFEditor.UnitTesting
              .AssertVariable("result").HasValue(21);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_DoWhileLoop()
         {
@@ -474,6 +550,9 @@ namespace MEFEditor.UnitTesting
              .AssertVariable("result").HasValue(21);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_GenericCall()
         {
@@ -507,6 +586,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("Test2_GenericCallArg");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_VirtualCall()
         {
@@ -550,6 +632,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_VirtualGenericCall()
         {
@@ -572,6 +657,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ParamCall()
         {
@@ -583,6 +671,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_Operators()
         {
@@ -600,6 +691,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ArrayCreation()
         {
@@ -615,6 +709,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ArrayInitializer()
         {
@@ -631,6 +728,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ImplicitArrayInitializer()
         {
@@ -647,6 +747,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_CollectionInitializer()
         {
@@ -666,6 +769,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_BaseCalls()
         {
@@ -697,6 +803,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_CompareOperators()
         {
@@ -729,6 +838,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_CompoundOperators()
         {
@@ -752,6 +864,10 @@ namespace MEFEditor.UnitTesting
 
             ;
         }
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_MathBracket()
         {
@@ -765,6 +881,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Compile_ExplicitCast()
         {

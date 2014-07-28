@@ -14,7 +14,7 @@ using System.ComponentModel;
 namespace MEFEditor.Drawing
 {
     /// <summary>
-    /// <see cref="Canvas"/> specialization for providing services of MEFEditor.Drawing library.
+    /// Canvas specialization for providing services of MEFEditor.Drawing library.
     /// It is root of displayed diagram.
     /// </summary>
     public class DiagramCanvas : DiagramCanvasBase

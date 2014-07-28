@@ -23,7 +23,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
     public class CILMethod
     {
         /// <summary>
-        /// Context of transcription if available
+        /// Context of transcription if available.
         /// </summary>
         internal readonly TranscriptionContext Context;
 
@@ -46,7 +46,8 @@ namespace RecommendedExtensions.Core.Languages.CIL
         /// Create CILMethod from MethodInfo representation. Is used for
         /// creating methods from runtime .NET methods.
         /// </summary>
-        /// <param name="method">Runtime .NET method representation</param>
+        /// <param name="method">Runtime .NET method representation.</param>
+        /// <param name="methodInfo">The method information.</param>
         public CILMethod(MethodInfo method, TypeMethodInfo methodInfo)
         {
             //TODO: Reflection methods doesnt support now context generic parameters
@@ -59,10 +60,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Create CILMethod from MethodDefinition representation. Is used for 
+        /// Create CILMethod from MethodDefinition representation. Is used for
         /// creating methods from methods loaded by Mono.Cecil.
         /// </summary>
-        /// <param name="method">Mono.Cecil method</param>
+        /// <param name="method">Mono.Cecil method.</param>
+        /// <param name="methodInfo">The method information.</param>
         public CILMethod(MethodDefinition method, TypeMethodInfo methodInfo)
         {
             var genericTypeParameters = method.DeclaringType.GenericParameters;

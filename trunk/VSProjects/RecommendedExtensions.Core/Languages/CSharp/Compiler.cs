@@ -21,12 +21,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 {
 
     /// <summary>
-    /// Compiler from C# to AIL implementation. Internaly uses <see cref="SyntaxParser"/>. Cover 
+    /// Compiler from C# to AIL implementation. Internally uses <see cref="SyntaxParser" />. Cover
     /// all important .NET constructs that are needed for analyzing MEF composition.
-    /// 
     /// Generate methods - are for instruction emitting
     /// Resolve methods - are for getting result of operation
-    /// Get methods - are for getting value representation of operation
+    /// Get methods - are for getting value representation of operation.
     /// </summary>
     public class Compiler
     {
@@ -44,7 +43,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
               {"&","op_BitwiseAnd"},
               {"|","op_BitwiseOr"},
 
-              //we dont support partial evaluation - use bitwise instead
+              //we don't support partial evaluation - use bitwise instead
               //{"&&","op_LogicalAnd"},
               //{"||","op_LogicalOr"},
               {"&&","op_BitwiseAnd"},
@@ -60,145 +59,150 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
               //Equals is used for compatibility with overriding              
               {"==","Equals"},
-              {"!=","Equals"} //this is workaround, that is specialy handled by compiler
+              {"!=","Equals"} //this is workaround, that is specially handled by compiler
         };
 
         #region Compiler constants
 
         /// <summary>
-        /// Comment used for entry block of method
+        /// Comment used for entry block of method.
         /// </summary>
         private static readonly string EntryComment = "===Compiler initialization===";
 
         /// <summary>
-        /// End of comment emmited for C# instruction
+        /// End of comment emmited for C# instruction.
         /// </summary>
         private static readonly string InstructionCommentEnd = "---";
 
         /// <summary>
-        /// Start of comment emmited for C# instruction
+        /// Start of comment emmited for C# instruction.
         /// </summary>
         private static readonly string InstructionCommentStart = '\n' + InstructionCommentEnd;
 
         /// <summary>
-        /// Caption for labels on true branches
+        /// Caption for labels on true branches.
         /// </summary>
         private static readonly string TrueLabelCaption = "_true";
 
         /// <summary>
-        /// Caption for labels on false branches
+        /// Caption for labels on false branches.
         /// </summary>
         private static readonly string FalseLabelCaption = "_false";
 
         /// <summary>
-        /// Caption for labels on block ends
+        /// Caption for labels on block ends.
         /// </summary>
         private static readonly string EndLabelCaption = "_end";
 
         /// <summary>
-        /// Caption for labels on explicit continue jumps
+        /// Caption for labels on explicit continue jumps.
         /// </summary>
         private static readonly string ContinueLabelCaption = "_continue";
 
         /// <summary>
-        /// Caption for labels on block conditions
+        /// Caption for labels on block conditions.
         /// </summary>
         private static readonly string ConditionLabelCaption = "_test";
 
         /// <summary>
-        /// Caption for labels on block loops
+        /// Caption for labels on block loops.
         /// </summary>
         private static readonly string LoopLabelCaption = "_loop";
 
         /// <summary>
-        /// Caption for labels on case branches
+        /// Caption for labels on case branches.
         /// </summary>
         private static readonly string CaseLabelCaption = "_case";
 
         /// <summary>
-        /// Caption for labels on default switch branch
+        /// Caption for labels on default switch branch.
         /// </summary>
         private static readonly string DefaultLabelCaption = "_default";
 
         /// <summary>
-        /// Descriptor for string type
+        /// Descriptor for string type.
         /// </summary>
         private static readonly TypeDescriptor StringDescriptor = TypeDescriptor.Create<string>();
 
         /// <summary>
-        /// Descriptor for bool type
+        /// Descriptor for bool type.
         /// </summary>
         private static readonly TypeDescriptor BoolDescriptor = TypeDescriptor.Create<bool>();
 
         #endregion
 
         /// <summary>
-        /// Activation that represents request for compiling
+        /// Activation that represents request for compiling.
         /// </summary>
         private readonly ParsingActivation _activation;
 
         /// <summary>
-        /// Source of parsed method
+        /// Source of parsed method.
         /// </summary>
         private readonly Source _source;
 
         /// <summary>
-        /// Parser used for creating tokens and their clasification
+        /// Parser used for creating tokens and their clasification.
         /// </summary>
         private readonly static SyntaxParser _parser = new SyntaxParser();
 
         /// <summary>
-        /// Result of syntax parsing that is already compiled
+        /// Result of syntax parsing that is already compiled.
         /// </summary>
         private readonly CodeNode _method;
 
         /// <summary>
-        /// Result of syntax parsing of precode if available
+        /// Result of syntax parsing of precode if available.
         /// </summary>
         private readonly CodeNode _preLine;
 
         /// <summary>
-        /// Stack of pushed blocks
+        /// Stack of pushed blocks.
         /// </summary>
         private readonly Stack<INodeAST> _blocks = new Stack<INodeAST>();
 
         /// <summary>
-        /// Context of compilation process
+        /// Context of compilation process.
         /// </summary>
         internal readonly CompilationContext Context;
 
         /// <summary>
-        /// Emitter where compiled instructions are emitted
+        /// Emitter where compiled instructions are emitted.
         /// </summary>
+        /// <value>The current emitter.</value>
         private EmitterBase E { get { return Context.Emitter; } }
 
         /// <summary>
-        /// Info that is collected about source during compilation
+        /// Info that is collected about source during compilation.
         /// </summary>
+        /// <value>The compilation information.</value>
         private CompilationInfo CompilationInfo { get { return _source.CompilationInfo; } }
 
         /// <summary>
-        /// Info of method that is compiled
+        /// Info of method that is compiled.
         /// </summary>
+        /// <value>The method information.</value>
         internal TypeMethodInfo MethodInfo { get { return _activation.Method; } }
 
         /// <summary>
-        /// Determine that code will be inlined
+        /// Determine that code will be inlined.
         /// </summary>
+        /// <value><c>true</c> if this instance is inlined; otherwise, <c>false</c>.</value>
         internal bool IsInlined { get { return _activation.IsInline; } }
 
         /// <summary>
-        /// Namespaces that are available for compiled method
+        /// Namespaces that are available for compiled method.
         /// </summary>
+        /// <value>The namespaces.</value>
         internal IEnumerable<string> Namespaces { get { return _source.Namespaces; } }
 
         /// <summary>
         /// API method providing access to compiler instruction emitting services.
         /// </summary>
-        /// <param name="activation">Activation which instructions are generated</param>
-        /// <param name="emitter">Emitter where instructions will be generated</param>
-        /// <param name="services">Services from current type system environment</param>
-        /// <returns><see cref="Source"/> object created for given activation. It contains detailed info collected during compilation</returns>
+        /// <param name="activation">Activation which instructions are generated.</param>
+        /// <param name="emitter">Emitter where instructions will be generated.</param>
+        /// <param name="services">Services from current type system environment.</param>
+        /// <returns><see cref="Source" /> object created for given activation. It contains detailed info collected during compilation.</returns>
         public static Source GenerateInstructions(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
             var compiler = new Compiler(activation, emitter, services);
@@ -208,6 +212,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return compiler._source;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Compiler"/> class.
+        /// </summary>
+        /// <param name="activation">The activation.</param>
+        /// <param name="emitter">The emitter.</param>
+        /// <param name="services">The services.</param>
         private Compiler(ParsingActivation activation, EmitterBase emitter, TypeServices services)
         {
             _activation = activation;
@@ -243,7 +253,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Instruction generating
 
         /// <summary>
-        /// Emit instructions of whole method
+        /// Emit instructions of whole method.
         /// </summary>
         private void generateInstructions()
         {
@@ -274,7 +284,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Emit assigns of arguments and this variable
+        /// Emit assigns of arguments and this variable.
         /// </summary>
         private void generateArgumentsInitialization()
         {
@@ -307,7 +317,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
         /// <summary>
         /// Generate instructions required for initialization purposes
-        /// of constructors
+        /// of constructors.
         /// </summary>
         private void generatePreBodyRoutines()
         {
@@ -321,9 +331,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions from subsequence of given node
+        /// Generate instructions from subsequence of given node.
         /// </summary>
-        /// <param name="node">Node which subsequence instructions will be generated</param>
+        /// <param name="node">Node which subsequence instructions will be generated.</param>
         private void generateSubsequence(INodeAST node)
         {
             var hasSubsequence = node.Subsequence != null;
@@ -350,7 +360,8 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// <summary>
         /// Generate instructions for given block.
         /// </summary>
-        /// <param name="block">Block which instructions are generated</param>
+        /// <param name="block">Block which instructions are generated.</param>
+        /// <exception cref="System.NotSupportedException">Block command ' + block.Value + ' is not supported by C# compiler.</exception>
         private void generateBlock(INodeAST block)
         {
             switch (block.Value)
@@ -385,9 +396,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for switch block
+        /// Generate instructions for switch block.
         /// </summary>
-        /// <param name="switchBlock">Switch block which instructions will be generated</param>
+        /// <param name="switchBlock">Switch block which instructions will be generated.</param>
         private void generateSwitch(INodeAST switchBlock)
         {
             startInfoBlock(switchBlock);
@@ -486,9 +497,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for for block
+        /// Generate instructions for for block.
         /// </summary>
-        /// <param name="forBlock">For block which instructions will be generated</param>
+        /// <param name="forBlock">For block which instructions will be generated.</param>
         private void generateFor(INodeAST forBlock)
         {
             startGroup(forBlock);
@@ -542,9 +553,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for foreach block
+        /// Generate instructions for foreach block.
         /// </summary>
-        /// <param name="foreachBlock">Foreach block which instructions will be generated</param>
+        /// <param name="foreachBlock">Foreach block which instructions will be generated.</param>
         private void generateForeach(INodeAST foreachBlock)
         {
             startGroup(foreachBlock);
@@ -598,6 +609,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             endGroup();
         }
 
+        /// <summary>
+        /// Creates the call.
+        /// </summary>
+        /// <param name="calledObject">The called object.</param>
+        /// <param name="callName">Name of the call.</param>
+        /// <param name="calledObjectNode">The called object node.</param>
+        /// <returns>CallValue.</returns>
         private CallValue createCall(RValueProvider calledObject, string callName, INodeAST calledObjectNode)
         {
             var searcher = Context.CreateSearcher();
@@ -618,9 +636,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for while block
+        /// Generate instructions for while block.
         /// </summary>
-        /// <param name="whileBlock">While block which instructions will be generated</param>
+        /// <param name="whileBlock">While block which instructions will be generated.</param>
         private void generateWhile(INodeAST whileBlock)
         {
             startGroup(whileBlock);
@@ -662,9 +680,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for do block
+        /// Generate instructions for do block.
         /// </summary>
-        /// <param name="block">Do block which instructions will be generated</param>
+        /// <param name="doBlock">Do block which instructions will be generated.</param>
         private void generateDo(INodeAST doBlock)
         {
             startGroup(doBlock);
@@ -708,9 +726,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
         /// <summary>
-        /// Generate instructions for if block
+        /// Generate instructions for if block.
         /// </summary>
-        /// <param name="ifBlock">If block which instructions will be generated</param>
+        /// <param name="ifBlock">If block which instructions will be generated.</param>
         private void generateIf(INodeAST ifBlock)
         {
             startGroup(ifBlock);
@@ -760,9 +778,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions from given line
+        /// Generate instructions from given line.
         /// </summary>
-        /// <param name="line">Line which instructions will be generated</param>
+        /// <param name="line">Line which instructions will be generated.</param>
         private void generateLine(INodeAST line)
         {
             var info = E.StartNewInfoBlock();
@@ -772,9 +790,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions from given statement
+        /// Generate instructions from given statement.
         /// </summary>
-        /// <param name="statement">Statement which instrucitons will be generated</param>
+        /// <param name="statement">Statement which instrucitons will be generated.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         private void generateStatement(INodeAST statement)
         {
             switch (statement.NodeType)
@@ -811,9 +830,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions from given hierarchy node
+        /// Generate instructions from given hierarchy node.
         /// </summary>
-        /// <param name="hierarchy">Node representing hierarchy of value operations</param>
+        /// <param name="hierarchy">Node representing hierarchy of value operations.</param>
         private void generateHierarchy(INodeAST hierarchy)
         {
             var resolvedHierarchy = resolveRHierarchy(hierarchy);
@@ -821,9 +840,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for given keyword
+        /// Generate instructions for given keyword.
         /// </summary>
-        /// <param name="keywordNode">Node representing keyword</param>
+        /// <param name="keywordNode">Node representing keyword.</param>
         private void generateKeyWord(INodeAST keywordNode)
         {
             var keyword = keywordNode.Value;
@@ -846,9 +865,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for given prefix operator node
+        /// Generate instructions for given prefix operator node.
         /// </summary>
-        /// <param name="prefixOperator">Node representing prefix operator</param>
+        /// <param name="prefixOperator">Node representing prefix operator.</param>
         private void generatePrefixOperator(INodeAST prefixOperator)
         {
             var argumentNode = prefixOperator.Arguments[0];
@@ -869,9 +888,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for given postfix operator node
+        /// Generate instructions for given postfix operator node.
         /// </summary>
-        /// <param name="postfixOperator">Node representing postfix operator</param>
+        /// <param name="postfixOperator">Node representing postfix operator.</param>
         private void generatePostfixOperator(INodeAST postfixOperator)
         {
             //there are no postfix operators that couldnt been resolved
@@ -880,9 +899,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for given binary operator node
+        /// Generate instructions for given binary operator node.
         /// </summary>
-        /// <param name="binary">Node representing  binary operation</param>
+        /// <param name="binary">Node representing  binary operation.</param>
         private void generateBinaryOperator(INodeAST binary)
         {
             var resolvedBinary = resolveBinary(binary);
@@ -890,9 +909,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Generate instructions for given call node
+        /// Generate instructions for given call node.
         /// </summary>
-        /// <param name="call">Node representing method call</param>
+        /// <param name="call">Node representing method call.</param>
         private void generateCall(INodeAST call)
         {
             var resolvedCall = resolveRHierarchy(call);
@@ -906,10 +925,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region General value resolving
 
         /// <summary>
-        /// Get provider representing lvalue
+        /// Get provider representing lvalue.
         /// </summary>
-        /// <param name="lValue">Node which lvalue provider is needed</param>
-        /// <returns><see cref="LValueProvider"/> represented by given node</returns>
+        /// <param name="lValue">Node which lvalue provider is needed.</param>
+        /// <param name="typeHint">The type hint.</param>
+        /// <returns><see cref="LValueProvider" /> represented by given node.</returns>
         private LValueProvider getLValue(INodeAST lValue, TypeDescriptor typeHint = null)
         {
             var value = lValue.Value;
@@ -930,10 +950,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get currently registered continue label
+        /// Get currently registered continue label.
         /// </summary>
-        /// <param name="continueNode">Node resolved as continue</param>
-        /// <returns>Label that is currently registered for continue statements</returns>
+        /// <param name="continueNode">Node resolved as continue.</param>
+        /// <returns>Label that is currently registered for continue statements.</returns>
         private Label getContinueLabel(INodeAST continueNode)
         {
             var block = Context.CurrentBlock;
@@ -944,10 +964,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get currently registered break label
+        /// Get currently registered break label.
         /// </summary>
-        /// <param name="breakNode">Node resolved as break</param>
-        /// <returns>Label that is currently registered for break statements</returns>
+        /// <param name="breakNode">Node resolved as break.</param>
+        /// <returns>Label that is currently registered for break statements.</returns>
         private Label getBreakLabel(INodeAST breakNode)
         {
             var block = Context.CurrentBlock;
@@ -958,10 +978,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get provider representing rvalue
+        /// Get provider representing rvalue.
         /// </summary>
-        /// <param name="rValue">Node which rvalue provider is needed</param>
-        /// <returns><see cref="RValueProvider"/> represented by given node</returns>
+        /// <param name="rValue">Node which rvalue provider is needed.</param>
+        /// <returns><see cref="RValueProvider" /> represented by given node.</returns>
         private RValueProvider getRValue(INodeAST rValue)
         {
             RValueProvider result;
@@ -1007,10 +1027,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve hierarchy node providing begining of lvalue expression
+        /// Resolve hierarchy node providing begining of lvalue expression.
         /// </summary>
-        /// <param name="hierarchy">Node where hierarchy of lvalue expression starts</param>
-        /// <returns><see cref="LValueProvider"/> representing lvalue provided by hierarchy</returns>
+        /// <param name="hierarchy">Node where hierarchy of lvalue expression starts.</param>
+        /// <returns><see cref="LValueProvider" /> representing lvalue provided by hierarchy.</returns>
         private LValueProvider resolveLHierarchy(INodeAST hierarchy)
         {
             //hirarchy could looks like [this.]setter or rvalue.setter
@@ -1045,10 +1065,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve explicit casting according to given node
+        /// Resolve explicit casting according to given node.
         /// </summary>
-        /// <param name="explicitCasting">Casting node</param>
-        /// <returns>Casted result</returns>
+        /// <param name="explicitCasting">Casting node.</param>
+        /// <returns>Casted result.</returns>
         private RValueProvider resolveExplicitCast(INodeAST explicitCasting)
         {
             var resultTypeNode = explicitCasting.Arguments[0];
@@ -1077,10 +1097,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve hierarchy node providing begining of rvalue expression
+        /// Resolve hierarchy node providing begining of rvalue expression.
         /// </summary>
-        /// <param name="hierarchy">Node where hierarchy of rvalue expression starts</param>
-        /// <returns><see cref="RValueProvider"/> representing rvalue provided by hierarchy</returns>
+        /// <param name="hierarchy">Node where hierarchy of rvalue expression starts.</param>
+        /// <returns><see cref="RValueProvider" /> representing rvalue provided by hierarchy.</returns>
         private RValueProvider resolveRHierarchy(INodeAST hierarchy)
         {
             var hierarchyValue = hierarchy.Value;
@@ -1119,6 +1139,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
 
+        /// <summary>
+        /// Tries the get setter.
+        /// </summary>
+        /// <param name="callNode">The call node.</param>
+        /// <param name="result">The result.</param>
+        /// <param name="baseObject">The base object.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool tryGetSetter(INodeAST callNode, out LValueProvider result, RValueProvider baseObject = null)
         {
             var processor = new CallHierarchyProcessor(callNode, this);
@@ -1127,12 +1154,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes)
+        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes).
         /// </summary>
-        /// <param name="callHierarchy">Node where call hierarchy starts</param>
-        /// <param name="call">Result representation of call hierarchy</param>
-        /// <param name="calledObject">Object on which call hierarchy starts if any</param>
-        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise</returns>
+        /// <param name="callNode">The call node.</param>
+        /// <param name="call">Result representation of call hierarchy.</param>
+        /// <param name="calledObject">Object on which call hierarchy starts if any.</param>
+        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise.</returns>
         internal bool tryGetCall(INodeAST callNode, out RValueProvider call, RValueProvider calledObject = null)
         {
             var processor = new CallHierarchyProcessor(callNode, this);
@@ -1142,11 +1169,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
         /// <summary>
-        /// Try to get variable providing assign support for given node
+        /// Try to get variable providing assign support for given node.
         /// </summary>
-        /// <param name="variableNode">Node representing needed variable</param>
-        /// <param name="variable">LValue provider of variable if available, <c>null</c> otherwise</param>
-        /// <returns><c>true</c> if variable is available, <c>false</c> otherwise</returns>
+        /// <param name="variableNode">Node representing needed variable.</param>
+        /// <param name="variable">LValue provider of variable if available, <c>null</c> otherwise.</param>
+        /// <returns><c>true</c> if variable is available, <c>false</c> otherwise.</returns>
         private bool tryGetLVariable(INodeAST variableNode, out LValueProvider variable)
         {
             var variableName = variableNode.Value;
@@ -1162,11 +1189,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Try to get variable providing value for given node
+        /// Try to get variable providing value for given node.
         /// </summary>
-        /// <param name="variableNode">Node representing needed variable</param>
-        /// <param name="variable">Value provider of variable if available, <c>null</c> otherwise</param>
-        /// <returns><c>true</c> if variable is available, <c>false</c> otherwise</returns>
+        /// <param name="variableNode">Node representing needed variable.</param>
+        /// <param name="variable">Value provider of variable if available, <c>null</c> otherwise.</param>
+        /// <returns><c>true</c> if variable is available, <c>false</c> otherwise.</returns>
         private bool tryGetRVariable(ref INodeAST variableNode, out RValueProvider variable)
         {
             variable = null;
@@ -1225,10 +1252,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
         /// <summary>
         /// Resolve prefix operation represented by given node.
-        /// <remarks>Only expression prefix operations can be resolved. It means that return operator cannot be resolved here</remarks>
+        /// <remarks>Only expression prefix operations can be resolved. It means that return operator cannot be resolved here</remarks>.
         /// </summary>
-        /// <param name="prefixOperator">Node representing prefix operation</param>
-        /// <returns>Representation of prefix operation result</returns>
+        /// <param name="prefixOperator">Node representing prefix operation.</param>
+        /// <returns>Representation of prefix operation result.</returns>
         private RValueProvider resolvePrefixOperator(INodeAST prefixOperator)
         {
             var operandNode = prefixOperator.Arguments[0];
@@ -1258,10 +1285,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve postfix operation represented by given node.        
+        /// Resolve postfix operation represented by given node.
         /// </summary>
-        /// <param name="postfixOperator">Node representing postfix operation</param>
-        /// <returns>Representation of postfix operation result</returns>
+        /// <param name="postfixOperator">Node representing postfix operation.</param>
+        /// <returns>Representation of postfix operation result.</returns>
         private RValueProvider resolvePostfixOperator(INodeAST postfixOperator)
         {
             var operatorNotation = postfixOperator.Value;
@@ -1292,10 +1319,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve unary operation on given operand
+        /// Resolve unary operation on given operand.
         /// </summary>
-        /// <param name="operandNode">Operand of unary operation</param>
-        /// <returns>Representation of negate operation result</returns>
+        /// <param name="operatorNotation">The operator notation.</param>
+        /// <param name="operandNode">Operand of unary operation.</param>
+        /// <returns>Representation of negate operation result.</returns>
         private RValueProvider tryGetUnary(string operatorNotation, INodeAST operandNode)
         {
             string operatorMethod;
@@ -1311,11 +1339,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Find method representation of unary operator for given nodes
+        /// Find method representation of unary operator for given nodes.
         /// </summary>
-        /// <param name="leftOperandType">Operand</param>
-        /// <param name="operatorMethod">Method belonging to operator</param>
-        /// <returns>Found operator call</returns>
+        /// <param name="operand">The operand.</param>
+        /// <param name="operatorMethod">Method belonging to operator.</param>
+        /// <param name="operatorNode">The operator node.</param>
+        /// <returns>Found operator call.</returns>
         private CallActivation createUnaryOperatorActivation(RValueProvider operand, string operatorMethod, INodeAST operatorNode)
         {
             //translate method according to operators table
@@ -1369,12 +1398,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve adding specified number to given target
+        /// Resolve adding specified number to given target.
         /// </summary>
-        /// <param name="target">Lvalue where value will be added</param>
-        /// <param name="toAdd">Value that is added to lvalue</param>
-        /// <param name="prefixReturn">Determine that result of operation is value after or before adding</param>
-        /// <returns>Representation fo value adding</returns>
+        /// <param name="target">Lvalue where value will be added.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="toAdd">Value that is added to lvalue.</param>
+        /// <param name="prefixReturn">Determine that result of operation is value after or before adding.</param>
+        /// <param name="operatorNode">The operator node.</param>
+        /// <returns>Representation fo value adding.</returns>
         private RValueProvider resolveLValueAdd(LValueProvider target, RValueProvider source, int toAdd, bool prefixReturn, INodeAST operatorNode)
         {
             //determine type because of possible implicit typing
@@ -1446,10 +1477,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Binary operators resolving
 
         /// <summary>
-        /// Resolve binary operation represented by given node
+        /// Resolve binary operation represented by given node.
         /// </summary>
-        /// <param name="binary">Node representing binary operation</param>
-        /// <returns>Representation of binary operation result</returns>
+        /// <param name="binary">Node representing binary operation.</param>
+        /// <returns>Representation of binary operation result.</returns>
         private RValueProvider resolveBinary(INodeAST binary)
         {
             var lNode = binary.Arguments[0];
@@ -1467,12 +1498,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve assign operator on given operands
+        /// Resolve assign operator on given operands.
         /// </summary>
-        /// <param name="lNode">Left operand of assign</param>
-        /// <param name="op">Assign operator notation</param>
-        /// <param name="rNode">Right operand of assign</param>
-        /// <returns>Representation of assign operation result</returns>
+        /// <param name="lNode">Left operand of assign.</param>
+        /// <param name="op">Assign operator notation.</param>
+        /// <param name="rNode">Right operand of assign.</param>
+        /// <returns>Representation of assign operation result.</returns>
         private RValueProvider resolveAssignOperator(INodeAST lNode, string op, INodeAST rNode)
         {
             if (!op.EndsWith(CSharpSyntax.AssignOperator))
@@ -1509,12 +1540,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get math operator on given operands
+        /// Get math operator on given operands.
         /// </summary>
-        /// <param name="lNode">Left operand of math operation</param>
-        /// <param name="op">Math operator notation</param>
-        /// <param name="rNode">Right operand of math operation</param>
-        /// <returns>Representation of math operatorion result</returns>
+        /// <param name="lNode">Left operand of math operation.</param>
+        /// <param name="op">Math operator notation.</param>
+        /// <param name="rNode">Right operand of math operation.</param>
+        /// <returns>Representation of math operatorion result.</returns>
         private RValueProvider getMathOperator(INodeAST lNode, string op, INodeAST rNode)
         {
             var lOperandProvider = getRValue(lNode);
@@ -1524,6 +1555,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return getMathOperator(lOperandProvider, op, rOperandProvider, operatorNode);
         }
 
+        /// <summary>
+        /// Gets the math operator.
+        /// </summary>
+        /// <param name="lOperandProvider">The l operand provider.</param>
+        /// <param name="op">The op.</param>
+        /// <param name="rOperandProvider">The r operand provider.</param>
+        /// <param name="operatorNode">The operator node.</param>
+        /// <returns>RValueProvider.</returns>
         private RValueProvider getMathOperator(RValueProvider lOperandProvider, string op, RValueProvider rOperandProvider, INodeAST operatorNode)
         {
             var operatorActivation = createBinaryOperatorActivation(lOperandProvider, op, rOperandProvider, operatorNode);
@@ -1544,13 +1583,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Find method representation of binary operator for given nodes
+        /// Find method representation of binary operator for given nodes.
         /// </summary>
-        /// <param name="leftOperandType">Left operand</param>
-        /// <param name="op">Operator notation</param>
-        /// <param name="rightOperand">Right operand</param>
-        /// <param name="leftOperand">Node available for operator</param>
-        /// <returns>Found operator</returns>
+        /// <param name="leftOperand">Node available for operator.</param>
+        /// <param name="op">Operator notation.</param>
+        /// <param name="rightOperand">Right operand.</param>
+        /// <param name="operatorNode">The operator node.</param>
+        /// <returns>Found operator.</returns>
         private CallActivation createBinaryOperatorActivation(RValueProvider leftOperand, string op, RValueProvider rightOperand, INodeAST operatorNode)
         {
             //translate method according to operators table
@@ -1603,11 +1642,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Find method representation of given operator
+        /// Find method representation of given operator.
         /// </summary>
-        /// <param name="leftOperand">Left operand</param>
-        /// <param name="op">Operator notation</param>
-        /// <returns>Searcher with found operator</returns>
+        /// <param name="leftOperand">Left operand.</param>
+        /// <param name="op">Operator notation.</param>
+        /// <returns>Searcher with found operator.</returns>
         private MethodSearcher findOperatorMethod(RValueProvider leftOperand, string op)
         {
             var searcher = Context.CreateSearcher();
@@ -1704,11 +1743,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Try to get literal from given literalNode
+        /// Try to get literal from given literalNode.
         /// </summary>
-        /// <param name="literalNode">Node tested for literal presence</param>
-        /// <param name="literal">Literal represented by literalNode</param>
-        /// <returns><c>true</c> if literal is represented by literalNode, <c>false</c> otherwise</returns>
+        /// <param name="literalNode">Node tested for literal presence.</param>
+        /// <param name="literal">Literal represented by literalNode.</param>
+        /// <returns><c>true</c> if literal is represented by literalNode, <c>false</c> otherwise.</returns>
         private bool tryGetLiteral(INodeAST literalNode, out RValueProvider literal)
         {
             var literalToken = literalNode.Value;
@@ -1747,10 +1786,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve type literal represented by argument of typeof operator
+        /// Resolve type literal represented by argument of typeof operator.
         /// </summary>
-        /// <param name="typeofArgument">Argument of typeof operator</param>
-        /// <returns>Literal representation of typeof</returns>
+        /// <param name="typeofArgument">Argument of typeof operator.</param>
+        /// <returns>Literal representation of typeof.</returns>
         private LiteralType resolveTypeofArgument(INodeAST typeofArgument)
         {
             var info = resolveTypeDescriptor(typeofArgument);
@@ -1761,10 +1800,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve suffix name of type described by root of type hierarchy
+        /// Resolve suffix name of type described by root of type hierarchy.
         /// </summary>
-        /// <param name="typeHierarchyRoot">Hierarchy of partly namespaced type</param>
-        /// <returns>Resolved suffix of type name</returns>
+        /// <param name="typeHierarchyRoot">Hierarchy of partly namespaced type.</param>
+        /// <returns>Resolved suffix of type name.</returns>
         private static string resolveSuffixTypeName(INodeAST typeHierarchyRoot)
         {
             var resultType = new StringBuilder();
@@ -1788,10 +1827,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve typename according to available namespaces
+        /// Resolve typename according to available namespaces.
         /// </summary>
-        /// <param name="typeNameSuffix">Type name which is resolved to descriptor</param>
-        /// <returns><see cref="TypeDescriptor"/> resolved from given type name and namespace if available, <c>null</c> otherwise</returns>
+        /// <param name="typeNameSuffix">Type name which is resolved to descriptor.</param>
+        /// <returns><see cref="TypeDescriptor" /> resolved from given type name and namespace if available, <c>null</c> otherwise.</returns>
         private TypeDescriptor resolveTypeDescriptor(string typeNameSuffix)
         {
             var translatedTypeName = Context.MapGeneric(typeNameSuffix);
@@ -1800,10 +1839,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve <see cref="TypeDescriptor"/> of type described by root of type hierarchy
+        /// Resolve <see cref="TypeDescriptor" /> of type described by root of type hierarchy.
         /// </summary>
-        /// <param name="typeHierarchyRoot">Hierarchy of partly namespaced type</param>
-        /// <returns>Resolved <see cref="TypeDescriptor"/> if available, <c>null</c> otherwise</returns>
+        /// <param name="typeHierarchyRoot">Hierarchy of partly namespaced type.</param>
+        /// <returns>Resolved <see cref="TypeDescriptor" /> if available, <c>null</c> otherwise.</returns>
         private TypeDescriptor resolveTypeDescriptor(INodeAST typeHierarchyRoot)
         {
             var suffixTypeName = resolveSuffixTypeName(typeHierarchyRoot);
@@ -1811,10 +1850,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve declaration of variable specified by given declaration node
+        /// Resolves the declaration.
         /// </summary>
-        /// <param name="declarationNode">Node where is variable declared</param>
-        /// <returns>Declared variable<returns>
+        /// <param name="declarationNode">The declaration node.</param>
+        /// <param name="typeHint">The type hint.</param>
+        /// <returns>VariableInfo.</returns>
         private VariableInfo resolveDeclaration(INodeAST declarationNode, TypeDescriptor typeHint)
         {
             Debug.Assert(declarationNode.NodeType == NodeTypes.declaration);
@@ -1840,11 +1880,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Object construction resolving
 
         /// <summary>
-        /// Resolve suffix for constructor name represented by ctorCall
+        /// Resolve suffix for constructor name represented by ctorCall.
         /// </summary>
-        /// <param name="ctorCall">Node where constructor name suffix starts</param>
-        /// <param name="callNode">Node where constructor call is found</param>
-        /// <returns>Suffix for name of constructor</returns>
+        /// <param name="ctorCall">Node where constructor name suffix starts.</param>
+        /// <param name="callNode">Node where constructor call is found.</param>
+        /// <returns>Suffix for name of constructor.</returns>
         private string resolveCtorSuffix(INodeAST ctorCall, out INodeAST callNode)
         {
             var name = new StringBuilder();
@@ -1873,10 +1913,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Resolve operand of new operator
+        /// Resolve operand of new operator.
         /// </summary>
-        /// <param name="newOperand">Operand of new operator</param>
-        /// <returns>Representation of newOperand result</returns>
+        /// <param name="newOperand">Operand of new operator.</param>
+        /// <returns>Representation of newOperand result.</returns>
         private RValueProvider resolveNew(INodeAST newOperand)
         {
             //resolve type
@@ -1905,6 +1945,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return nObject;
         }
 
+        /// <summary>
+        /// Gets the constructor overloads.
+        /// </summary>
+        /// <param name="callNode">The call node.</param>
+        /// <param name="objectType">Type of the object.</param>
+        /// <returns>IEnumerable&lt;TypeMethodInfo&gt;.</returns>
         private IEnumerable<TypeMethodInfo> getConstructorOverloads(INodeAST callNode, TypeDescriptor objectType)
         {
             var searcher = Context.CreateSearcher();
@@ -1920,6 +1966,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
 
+        /// <summary>
+        /// Creates the constructor activation.
+        /// </summary>
+        /// <param name="nObject">The n object.</param>
+        /// <param name="callNode">The call node.</param>
+        /// <param name="overloads">The overloads.</param>
+        /// <param name="constructorArguments">The constructor arguments.</param>
+        /// <returns>CallActivation.</returns>
         private CallActivation createConstructorActivation(NewObjectValue nObject, INodeAST callNode, IEnumerable<TypeMethodInfo> overloads, List<Argument> constructorArguments)
         {
             var selector = new MethodSelector(overloads, Context);
@@ -1927,6 +1981,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return createCallActivation(selector, nObject, callNode, constructorArguments.ToArray());
         }
 
+        /// <summary>
+        /// Resolves the arguments.
+        /// </summary>
+        /// <param name="newOperand">The new operand.</param>
+        /// <param name="callNode">The call node.</param>
+        /// <param name="objectType">Type of the object.</param>
+        /// <param name="initializerArguments">The initializer arguments.</param>
+        /// <param name="constructorArguments">The constructor arguments.</param>
         private void resolveArguments(INodeAST newOperand, INodeAST callNode, ref TypeDescriptor objectType, out List<RValueProvider> initializerArguments, out List<Argument> constructorArguments)
         {
             var isArray = objectType.TypeName.StartsWith("Array<");
@@ -1962,6 +2024,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
 
+        /// <summary>
+        /// Resolves the type of the object.
+        /// </summary>
+        /// <param name="newOperand">The new operand.</param>
+        /// <param name="callNode">The call node.</param>
+        /// <returns>TypeDescriptor.</returns>
         private TypeDescriptor resolveObjectType(INodeAST newOperand, out INodeAST callNode)
         {
             var isImplicitTypedArray = newOperand.Value == "[";
@@ -1976,13 +2044,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Select <see cref="TypeMethodInfo"/> according to callNode arguments and creates
-        /// <see cref="CallActivation"/>.
+        /// Select <see cref="TypeMethodInfo" /> according to callNode arguments and creates
+        /// <see cref="CallActivation" />.
         /// </summary>
-        /// <param name="calledObject">Object which method is called. Is passed only if it is available</param>
-        /// <param name="callNode">Node determining call</param>
-        /// <param name="methods">Methods used for right overloading selection</param>
-        /// <returns>Created call activation</returns>
+        /// <param name="calledObject">Object which method is called. Is passed only if it is available.</param>
+        /// <param name="callNode">Node determining call.</param>
+        /// <param name="methods">Methods used for right overloading selection.</param>
+        /// <param name="forceIndexer">if set to <c>true</c> [force indexer].</param>
+        /// <returns>Created call activation.</returns>
         internal CallActivation CreateCallActivation(RValueProvider calledObject, INodeAST callNode, IEnumerable<TypeMethodInfo> methods, bool forceIndexer = false)
         {
             //prepare arguments
@@ -1993,6 +2062,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return createCallActivation(selector, calledObject, callNode, arguments);
         }
 
+        /// <summary>
+        /// Tries the create call.
+        /// </summary>
+        /// <param name="selector">The selector.</param>
+        /// <param name="calledObject">The called object.</param>
+        /// <param name="callNode">The call node.</param>
+        /// <param name="argumentValues">The argument values.</param>
+        /// <returns>CallValue.</returns>
         private CallValue tryCreateCall(MethodSelector selector, RValueProvider calledObject, INodeAST callNode, params RValueProvider[] argumentValues)
         {
             var arguments = from argumentValue in argumentValues select new Argument(argumentValue);
@@ -2003,6 +2080,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return new CallValue(activation, Context);
         }
 
+        /// <summary>
+        /// Creates the call activation.
+        /// </summary>
+        /// <param name="selector">The selector.</param>
+        /// <param name="calledObject">The called object.</param>
+        /// <param name="callNode">The call node.</param>
+        /// <param name="arguments">The arguments.</param>
+        /// <returns>CallActivation.</returns>
         private CallActivation createCallActivation(MethodSelector selector, RValueProvider calledObject, INodeAST callNode, Argument[] arguments)
         {
             var callActivation = selector.CreateCallActivation(arguments);
@@ -2026,11 +2111,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
         /// <summary>
-        /// Create value provider with implicit this variable
+        /// Create value provider with implicit this variable.
         /// </summary>
-        /// <param name="contextNode">Context node that enforces implicit this creation</param>
-        /// <param name="forcedType">Type which is this object forced to</param>
-        /// <returns>Created provider</returns>
+        /// <param name="contextNode">Context node that enforces implicit this creation.</param>
+        /// <param name="forcedType">Type which is this object forced to.</param>
+        /// <returns>Created provider.</returns>
         internal RValueProvider CreateImplicitThis(INodeAST contextNode, TypeDescriptor forcedType = null)
         {
             if (!MethodInfo.HasThis)
@@ -2045,10 +2130,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get arguments representation that is available on given node
+        /// Get arguments representation that is available on given node.
         /// </summary>
-        /// <param name="node">Node which arguments are needed</param>
-        /// <returns>Arguments available for given node</returns>
+        /// <param name="node">Node which arguments are needed.</param>
+        /// <param name="isIndexer">if set to <c>true</c> [is indexer].</param>
+        /// <returns>Arguments available for given node.</returns>
         internal Argument[] GetArguments(INodeAST node, bool isIndexer)
         {
             var argNodes = node.Arguments;
@@ -2075,19 +2161,19 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         #region Context operations
 
         /// <summary>
-        /// Declare given variable
+        /// Declare given variable.
         /// </summary>
-        /// <param name="variable">Declared variable</param>
+        /// <param name="variable">Declared variable.</param>
         private void declareVariable(VariableInfo variable)
         {
             CompilationInfo.DeclareVariable(variable);
         }
 
         /// <summary>
-        /// Get info about current scoped variable with given name
+        /// Get info about current scoped variable with given name.
         /// </summary>
-        /// <param name="variableName">Name of needed variable</param>
-        /// <returns><see cref="VariableInfo"/> that is currently scoped under variableName</returns>
+        /// <param name="variableName">Name of needed variable.</param>
+        /// <returns><see cref="VariableInfo" /> that is currently scoped under variableName.</returns>
         private VariableInfo resolveVariableInfo(string variableName)
         {
             return CompilationInfo.TryGetVariable(variableName);
@@ -2099,10 +2185,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
         /// <summary>
         /// Start new block of isntructions that can be attached by additional
-        /// information
+        /// information.
         /// </summary>
-        /// <param name="blockDescription">Textual description of started block</param>
-        /// <returns>Info object created for the block</returns>
+        /// <param name="node">The node.</param>
+        /// <param name="blockDescription">Textual description of started block.</param>
+        /// <returns>Info object created for the block.</returns>
         private InstructionInfo startInfoBlock(INodeAST node, string blockDescription = null)
         {
             if (blockDescription == null)
@@ -2115,12 +2202,19 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
 
+        /// <summary>
+        /// Starts the group.
+        /// </summary>
+        /// <param name="node">The node.</param>
         private void startGroup(INodeAST node)
         {
             _blocks.Push(node);
             E.SetCurrentGroup(node);
         }
 
+        /// <summary>
+        /// Ends the group.
+        /// </summary>
         private void endGroup()
         {
             var popped = _blocks.Pop();
@@ -2130,20 +2224,20 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Get text representing node in human readable form
+        /// Get text representing node in human readable form.
         /// </summary>
-        /// <param name="node">Node which textual representation is needed</param>
-        /// <returns>Textual representation of given node</returns>
+        /// <param name="node">Node which textual representation is needed.</param>
+        /// <returns>Textual representation of given node.</returns>
         private string getStatementText(INodeAST node)
         {
             return node.ToString().Trim();
         }
 
         /// <summary>
-        /// Get textual representation of node that represents conditional block
+        /// Get textual representation of node that represents conditional block.
         /// </summary>
-        /// <param name="block">Conditional block which representation is needed</param>
-        /// <returns>Textual representation of given node</returns>
+        /// <param name="block">Conditional block which representation is needed.</param>
+        /// <returns>Textual representation of given node.</returns>
         private string getConditionalBlockText(INodeAST block)
         {
             return string.Format("{0}({1})", block.Value, block.Arguments[0]);
@@ -2155,30 +2249,30 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
         /// <summary>
-        /// Create exception for parsing error detected in context of given node
+        /// Create exception for parsing error detected in context of given node.
         /// </summary>
-        /// <param name="node">Node where error has been found</param>
-        /// <param name="descriptionFormat">Format of error description</param>
-        /// <param name="formatArgs">Arguments for format descritpion</param>
-        /// <returns>Created exception</returns>
+        /// <param name="node">Node where error has been found.</param>
+        /// <param name="descriptionFormat">Format of error description.</param>
+        /// <param name="formatArguments">The format arguments.</param>
+        /// <returns>Created exception.</returns>
         private ParsingException parsingException(INodeAST node, string descriptionFormat, params object[] formatArguments)
         {
             return CSharpSyntax.ParsingException(node, descriptionFormat, formatArguments);
         }
 
         /// <summary>
-        /// Get all namespaces that are valid within compiled method
+        /// Get all namespaces that are valid within compiled method.
         /// </summary>
-        /// <returns>namespaces</returns>
+        /// <returns>namespaces.</returns>
         private string[] getNamespaces()
         {
             return _source.Namespaces.ToArray();
         }
 
         /// <summary>
-        /// Get node corresponding to first line of method
+        /// Get node corresponding to first line of method.
         /// </summary>
-        /// <returns>Node corresponding to first line of method, <c>null</c> if method does not contain any lines</returns>
+        /// <returns>Node corresponding to first line of method, <c>null</c> if method does not contain any lines.</returns>
         private INodeAST getFirstLine()
         {
             if (_method.Subsequence.Lines.Length > 0)
@@ -2192,9 +2286,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Register generic arguments that are available from given activation
+        /// Register generic arguments that are available from given activation.
         /// </summary>
-        /// <param name="activation">Parsing activation where generic arguments and parameters are defined</param>
+        /// <param name="activation">Parsing activation where generic arguments and parameters are defined.</param>
         private void registerGenericArguments(ParsingActivation activation)
         {
             var genericArgs = activation.Method.Path.GenericArgs;

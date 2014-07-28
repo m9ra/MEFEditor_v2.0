@@ -99,7 +99,6 @@
     <Compile Include="TypeDefinitions\AttributedModelServicesDefinition.cs" />
     <Compile Include="AssemblyProviders\CILAssembly\Generators\ArgumentInitializerGenerator.cs" />
     <Compile Include="AssemblyProviders\CILAssembly\CILAssembly.cs" />
-    <Compile Include="AssemblyProviders\CILAssembly\CILAssemblyFactory.cs" />
     <Compile Include="AssemblyProviders\CILAssembly\NamespaceStorage.cs" />
     <Compile Include="AssemblyProviders\CILAssembly\TypeModuleIterator.cs" />
     <Compile Include="Languages\CIL\CILInstruction.cs" />

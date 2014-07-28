@@ -42,7 +42,6 @@ namespace RecommendedExtensions.Core.TypeDefinitions.CompositionEngine
         /// Create composition worker which compose given instances.
         /// </summary>
         /// <param name="context">Services available for interpreting.</param>
-        /// <param name="parts">Parts to compose.</param>
         public CompositionWorker(CompositionContext context)
         {
             _context = context;

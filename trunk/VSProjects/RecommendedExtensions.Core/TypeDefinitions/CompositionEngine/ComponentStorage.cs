@@ -31,7 +31,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions.CompositionEngine
         /// <summary>
         /// Create component storage from given components.
         /// </summary>
-        /// <param name="components">Components which will be stored in storage.</param>
+        /// <param name="context">Context where storage is defined.</param>
         public ComponentStorage(CompositionContext context)
         {
             foreach (var component in context.Components)

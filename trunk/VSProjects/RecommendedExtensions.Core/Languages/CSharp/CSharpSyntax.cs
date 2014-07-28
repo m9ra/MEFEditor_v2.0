@@ -18,126 +18,151 @@ namespace RecommendedExtensions.Core.Languages.CSharp
     public class CSharpSyntax
     {
         /// <summary>
-        /// ID of CSharp language
+        /// ID of CSharp language.
         /// </summary>
         public const string LanguageID = "{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}";
 
         #region Syntax element constants of C#
 
         /// <summary>
-        /// Name of variable where this object is stored
+        /// Name of variable where this object is stored.
         /// </summary>
         internal const string ThisVariable = "this";
 
         /// <summary>
-        /// Name of operator providing access to base members
+        /// Name of operator providing access to base members.
         /// </summary>
         internal const string BaseVariable = "base";
 
         /// <summary>
-        /// Name of member initializer method (virtual method used for implementation purposes)
+        /// Name of member initializer method (virtual method used for implementation purposes).
         /// </summary>
         internal const string MemberInitializer = "#initializer";
 
         /// <summary>
-        /// Name of static member initializer method (virtual method used for implementation purposes)
+        /// Name of static member initializer method (virtual method used for implementation purposes).
         /// </summary>
         internal const string MemberStaticInitializer = "#static_initializer";
 
         /// <summary>
-        /// Name of variable where this object is stored
+        /// Name of variable where this object is stored.
         /// </summary>
         internal const string ImplicitVariableType = "var";
 
         /// <summary>
-        /// Operator used for return statement
+        /// Operator used for return statement.
         /// </summary>
         internal const string ReturnOperator = "return";
 
         /// <summary>
-        /// Operator used for new statement
+        /// Operator used for new statement.
         /// </summary>
         internal const string NewOperator = "new";
 
         /// <summary>
-        /// Operator for typeof expression
+        /// Operator for typeof expression.
         /// </summary>
         internal const string TypeOfOperator = "typeof";
 
         /// <summary>
-        /// Operator used for if based statement
+        /// Operator used for if based statement.
         /// </summary>
         internal const string IfOperator = "if";
 
         /// <summary>
-        /// Operator used for while based statement
+        /// Operator used for while based statement.
         /// </summary>
         internal const string WhileOperator = "while";
 
         /// <summary>
-        /// Operator used for for based statement
+        /// Operator used for for based statement.
         /// </summary>
         internal const string ForOperator = "for";
 
         /// <summary>
-        /// Operator used for for based statement
+        /// Operator used for for based statement.
         /// </summary>
         internal const string ForeachOperator = "foreach";
 
         /// <summary>
-        /// Operator used for for based statement
+        /// Operator used for for based statement.
         /// </summary>
         internal const string SwitchOperator = "switch";
 
         /// <summary>
-        /// Operator used for do based statement
+        /// Operator used for do based statement.
         /// </summary>
         internal const string DoOperator = "do";
 
         /// <summary>
-        /// Operator used for incrementing variable value
+        /// Operator used for incrementing variable value.
         /// </summary>
         internal const string IncrementOperator = "++";
 
         /// <summary>
-        /// Operator used for decrementing variable value
+        /// Operator used for decrementing variable value.
         /// </summary>
         internal const string DecrementOperator = "--";
 
         /// <summary>
-        /// Operator used for negating value
+        /// Operator used for negating value.
         /// </summary>
         internal const string NegateOperator = "!";
 
         /// <summary>
-        /// Operator used for assigning variable value
+        /// Operator used for assigning variable value.
         /// </summary>
         internal const string AssignOperator = "=";
 
         /// <summary>
-        /// Operator used for equality comparison
+        /// Operator used for equality comparison.
         /// </summary>
         internal const string IsEqualOperator = "==";
 
         /// <summary>
-        /// Keyword for break statement
+        /// Keyword for break statement.
         /// </summary>
         internal const string BreakKeyword = "break";
 
         /// <summary>
-        /// Keyword for continue statement
+        /// Keyword for continue statement.
         /// </summary>
         internal const string ContinueKeyword = "continue";
 
         #endregion
 
+        /// <summary>
+        /// The language layouts.
+        /// </summary>
         readonly LanguageLayouts layouts;
+        /// <summary>
+        /// The _lexer.
+        /// </summary>
         readonly ILexer _lexer;
 
+        /// <summary>
+        /// The known tokens.
+        /// </summary>
         static readonly HashSet<string> KnownTokens = new HashSet<string>();
+
+        /// <summary>
+        /// The ending tokens.
+        /// </summary>
         static readonly HashSet<string> EndingTokens = new HashSet<string>() { ";", ":", ",", ")", "}", "]", "in" };
+
+        /// <summary>
+        /// The preference operators.
+        /// </summary>
         static readonly HashSet<string> PrefOperators = new HashSet<string>() { NegateOperator, "throw", "out", "ref", "const", ReturnOperator, NewOperator, "-", "+", IncrementOperator, DecrementOperator, "~" };
+
+        /// <summary>
+        /// The postfix operators.
+        /// </summary>
         static readonly HashSet<string> PostOperators = new HashSet<string>() { IncrementOperator, DecrementOperator };
+
+        /// <summary>
+        /// The binary operators.
+        /// </summary>
         static readonly Dictionary<string, int> BinOperators = new Dictionary<string, int>(){
             {":",50},
             {"=",100},        
@@ -167,10 +192,11 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// <summary>
         /// Determine if there are not next tokens from lexer.
         /// </summary>
+        /// <value><c>true</c> if there are no tokens; otherwise, <c>false</c>.</value>
         public bool End { get { return _lexer.End; } }
 
         /// <summary>
-        /// Create CSharpSyntax object
+        /// Create CSharpSyntax object.
         /// </summary>
         /// <param name="lexer">Lexer which will be used for getting tokens.</param>
         /// <param name="nextTree">Encapsulate method which return next node tree from parser.</param>
@@ -186,12 +212,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
         /// <summary>
-        /// Create exception for parsing error detected in context of given node
+        /// Create exception for parsing error detected in context of given node.
         /// </summary>
-        /// <param name="node">Node where error has been found</param>
-        /// <param name="descriptionFormat">Format of error description</param>
-        /// <param name="formatArgs">Arguments for format descritpion</param>
-        /// <returns>Created exception</returns>
+        /// <param name="node">Node where error has been found.</param>
+        /// <param name="descriptionFormat">Format of error description.</param>
+        /// <param name="formatArguments">Arguments for format description.</param>
+        /// <returns>Created exception.</returns>
         public static ParsingException ParsingException(INodeAST node, string descriptionFormat, params object[] formatArguments)
         {
             var description = string.Format(descriptionFormat, formatArguments);
@@ -215,12 +241,13 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Create exception for parsing error detected in context of given token
+        /// Create exception for parsing error detected in context of given token.
         /// </summary>
-        /// <param name="token">Token where error has been found</param>
-        /// <param name="descriptionFormat">Format of error description</param>
-        /// <param name="formatArgs">Arguments for format descritpion</param>
-        /// <returns>Created exception</returns>
+        /// <param name="token">Token where error has been found.</param>
+        /// <param name="descriptionFormat">Format of error description.</param>
+        /// <param name="formatArguments">The format arguments.</param>
+        /// <returns>Created exception.</returns>
+        /// <exception cref="ParsingException"></exception>
         public static ParsingException ParsingException(IToken token, string descriptionFormat, params object[] formatArguments)
         {
             var description = string.Format(descriptionFormat, formatArguments);
@@ -228,6 +255,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             throw new ParsingException(error, () => navigate(token));
         }
 
+        /// <summary>
+        /// Determines whether [has lesser priority] [the specified node].
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="node2">The node2.</param>
+        /// <returns><c>true</c> if [has lesser priority] [the specified node]; otherwise, <c>false</c>.</returns>
         public bool HasLesserPriority(INodeAST node, INodeAST node2)
         {
             if (!BinOperators.ContainsKey(node.Value)) return false;
@@ -280,29 +313,29 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Helper for source navigation
+        /// Helper for source navigation.
         /// </summary>
-        /// <param name="node">Navigation target</param>
+        /// <param name="node">Navigation target.</param>
         private static void navigate(INodeAST node)
         {
             navigate(node.StartingToken);
         }
 
         /// <summary>
-        /// Helper for source navigation
+        /// Helper for source navigation.
         /// </summary>
-        /// <param name="token">Navigation target</param>
+        /// <param name="token">Navigation target.</param>
         private static void navigate(IToken token)
         {
             token.Position.Navigate();
         }
 
         /// <summary>
-        /// Return next node created from tokens in _lexer
+        /// Return next node created from tokens in _lexer.
         /// </summary>
         /// <param name="withContext">Determine if context should be used for created node.</param>
         /// <returns>Next CodeNode.</returns>
-        public CodeNode Next(bool withContext)
+        internal CodeNode Next(bool withContext)
         {
             var currentToken = _lexer.Current;
             var currentValue = currentToken.Value;

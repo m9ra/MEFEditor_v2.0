@@ -10,10 +10,13 @@ using System.Runtime.InteropServices;
 
 namespace MEFEditor.Interoperability
 {
+    /// <summary>
+    /// Extension methods for <see cref="CodeElement"/>.
+    /// </summary>
     public static class CodeElementExtensions
     {
         /// <summary>
-        /// element kinds, which are watched for changes
+        /// Element kinds, which are watched for changes.
         /// </summary>
         static readonly HashSet<vsCMElement> _watchedElements = new HashSet<vsCMElement>()
         {
@@ -26,7 +29,7 @@ namespace MEFEditor.Interoperability
         };
 
         /// <summary>
-        /// these elements doesnt have any interesting children to watch
+        /// these elements doesnt have any interesting children to watch.
         /// </summary>
         static readonly HashSet<vsCMElement> _noWatchedChildren = new HashSet<vsCMElement>()
         {
@@ -35,26 +38,31 @@ namespace MEFEditor.Interoperability
         };
 
         /// <summary>
-        /// Determine if element is watched for changes
+        /// Determine if element is watched for changes.
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
+        /// <param name="element">The element.</param>
+        /// <returns><c>true</c> if the specified element is watched; otherwise, <c>false</c>.</returns>
         public static bool IsWatched(this CodeElement element)
         {
             return _watchedElements.Contains(element.Kind);
         }
 
         /// <summary>
-        /// Determine if element could have children that has to be watched
+        /// Determine if element could have children that has to be watched.
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
+        /// <param name="element">The element.</param>
+        /// <returns><c>true</c> if element doesn't have children to watch, <c>false</c> otherwise.</returns>
         public static bool NoWatchedChildren(this CodeElement element)
         {
             if (element == null) return true;
             return _noWatchedChildren.Contains(element.Kind);
         }
-        
+
+        /// <summary>
+        /// Childrens of the specified element.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <returns>Childrens.</returns>
         public static CodeElements Children(this CodeElement element)
         {
             switch (element.Kind)
@@ -67,10 +75,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Get <see cref="CodeElement"/> from Parent property. Considers only named code constructs.
+        /// Get <see cref="CodeElement" /> from Parent property. Considers only named code constructs.
         /// </summary>
-        /// <param name="element">Element which parent is needed</param>
-        /// <returns>Parent of given element</returns>
+        /// <param name="element">Element which parent is needed.</param>
+        /// <returns>Parent of given element.</returns>
         public static CodeElement Parent(this CodeElement element)
         {
             var parent = getParent(element) as CodeElement;
@@ -78,10 +86,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Get non-caseted <see cref="CodeElement"/> from Parent property. Considers only named code constructs.
+        /// Get non-caseted <see cref="CodeElement" /> from Parent property. Considers only named code constructs.
         /// </summary>
-        /// <param name="e">Element which parent is needed</param>
-        /// <returns>Parent of given element</returns>
+        /// <param name="e">Element which parent is needed.</param>
+        /// <returns>Parent of given element.</returns>
         private static object getParent(CodeElement e)
         {
             switch (e.Kind)

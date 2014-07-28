@@ -11,13 +11,28 @@ using MEFEditor.Analyzing.Execution;
 
 namespace MEFEditor.TypeSystem.Runtime
 {
+    /// <summary>
+    /// Runtime direct representation of .NET arrays. It can handle wrapping and unwrapping between native arrays.
+    /// </summary>
+    /// <typeparam name="ItemType">The type of the item type.</typeparam>
     public class Array<ItemType> : IEnumerable<ItemType>, System.Collections.IEnumerable
         where ItemType : InstanceWrap
     {
+        /// <summary>
+        /// The stored data.
+        /// </summary>
         private readonly Dictionary<string, ItemType> _data = new Dictionary<string, ItemType>();
 
+        /// <summary>
+        /// Gets the length of array.
+        /// </summary>
+        /// <value>The length.</value>
         public int Length { get; private set; }
 
+        /// <summary>
+        /// Gets the set item method identifier.
+        /// </summary>
+        /// <value>The set item method identivier.</value>
         public MethodID SetItemMethod
         {
             get
@@ -28,17 +43,26 @@ namespace MEFEditor.TypeSystem.Runtime
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Array{ItemType}"/> class.
+        /// </summary>
+        /// <param name="length">The length of array.</param>
         public Array(int length)
-        {
-            //TODO multidimensional array
+        {            
             Length = length;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Array{ItemType}"/> class from given data.
+        /// </summary>
+        /// <param name="data">The data which will initialize current array.</param>
+        /// <param name="context">The context.</param>
         public Array(IEnumerable data, AnalyzingContext context)
         {
             int i = 0;
             foreach (var item in data)
             {
+                //handle wrapping
                 var toSet = item as InstanceWrap;
                 if (toSet == null)
                 {
@@ -50,19 +74,30 @@ namespace MEFEditor.TypeSystem.Runtime
                     toSet = new InstanceWrap(instance);
                 }
 
-
+                //set item
                 set_Item(i, toSet as ItemType);
                 ++i;
             }
             Length = _data.Count;
         }
+
         #region Supported array members
 
+        /// <summary>
+        /// Set value at given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="instance">The instance.</param>
         public void set_Item(int index, ItemType instance)
         {
             _data[getKey(index)] = instance;
         }
 
+        /// <summary>
+        /// Get value from given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>The instance.</returns>
         public ItemType get_Item(int index)
         {
             var key = getKey(index);
@@ -77,12 +112,20 @@ namespace MEFEditor.TypeSystem.Runtime
 
         #region IEnumerable implementations
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection.</returns>
         /// <inheritdoc />
         public IEnumerator<ItemType> GetEnumerator()
         {
             return _data.Values.GetEnumerator();
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -91,14 +134,23 @@ namespace MEFEditor.TypeSystem.Runtime
 
         #endregion
 
+        /// <summary>
+        /// Get value from given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>Requested value.</returns>
         private string getKey(int index)
         {
             return index.ToString();
         }
 
+        /// <summary>
+        /// Unwraps array to native form.
+        /// </summary>
+        /// <typeparam name="ResultType">The type of the result type.</typeparam>
+        /// <returns>Unwrapped array.</returns>
         internal ResultType Unwrap<ResultType>()
         {
-            //TODO multidimensional array
             var elementType = typeof(ResultType).GetElementType();
             var array = Array.CreateInstance(elementType, Length);
 
@@ -109,7 +161,7 @@ namespace MEFEditor.TypeSystem.Runtime
                 object value;
                 if (typeof(Instance).IsAssignableFrom(elementType))
                 {
-                    //instance shouldnt been unwrapped
+                    //instance shouldn't been unwrapped
                     value = item.Wrapped;
                 }
                 else if (item.Wrapped is DirectInstance)

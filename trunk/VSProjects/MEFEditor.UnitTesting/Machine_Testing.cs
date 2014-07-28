@@ -15,6 +15,10 @@ namespace MEFEditor.UnitTesting
     [TestClass]
     public class Machine_Testing
     {
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Assign()
         {
@@ -28,6 +32,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("var2").HasValue(1);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void DirectCall()
         {
@@ -42,6 +49,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("var2").HasValue("hello");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void DirectCall_WithArguments()
         {
@@ -57,6 +67,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("var2").HasValue(25.ToString("Number: {0}"));
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void InjectedMethodCall_adding()
         {
@@ -72,6 +85,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("var3").HasValue(40 + 2);
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void ConditionalLoop_Iteration()
         {
@@ -98,7 +114,5 @@ namespace MEFEditor.UnitTesting
             })
             .AssertVariable("increment").HasValue(100);
         }
-
-
     }
 }

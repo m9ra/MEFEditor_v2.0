@@ -13,49 +13,120 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using MEFEditor.Drawing.ArrangeEngine;
+
 namespace MEFEditor.Drawing
 {
     /// <summary>
-    /// Interaction logic for TestControl.xaml
+    /// Interaction logic for TestControl.xaml.
     /// </summary>
     public partial class DiagramItem : UserControl
     {
+        /// <summary>
+        /// The is highlighted flag.
+        /// </summary>
         private bool _isHighlighted;
 
+        /// <summary>
+        /// The items connectors.
+        /// </summary>
         private readonly Dictionary<ConnectorDefinition, ConnectorDrawing> _connectors = new Dictionary<ConnectorDefinition, ConnectorDrawing>();
 
+        /// <summary>
+        /// The children.
+        /// </summary>
         private readonly List<DiagramItem> _children = new List<DiagramItem>();
 
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <value>The children.</value>
         internal IEnumerable<DiagramItem> Children { get { return _children; } }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is root item.
+        /// </summary>
+        /// <value><c>true</c> if this instance is root item; otherwise, <c>false</c>.</value>
         internal bool IsRootItem { get { return ParentItem == null; } }
 
+        /// <summary>
+        /// Gets the parent identifier.
+        /// </summary>
+        /// <value>The parent identifier.</value>
         internal string ParentID { get { return IsRootItem ? "" : ParentItem.ID; } }
 
+        /// <summary>
+        /// Gets or sets the position cursor.
+        /// </summary>
+        /// <value>The position cursor.</value>
+        internal PositionCursor PositionCursor { get; set; }
+
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
         internal string ID { get { return Definition.ID; } }
 
+        /// <summary>
+        /// The parent item.
+        /// </summary>
         internal readonly DiagramItem ParentItem;
 
+        /// <summary>
+        /// Gets the output drawing.
+        /// </summary>
+        /// <value>The output.</value>
         internal DiagramCanvas Output { get { return DiagramContext.Provider.Engine.Output; } }
 
+        /// <summary>
+        /// The containing diagram canvas.
+        /// </summary>
         internal readonly DiagramCanvasBase ContainingDiagramCanvas;
 
+        /// <summary>
+        /// Gets the parent exclude edit.
+        /// </summary>
+        /// <value>The parent exclude edit.</value>
         internal EditDefinition ParentExcludeEdit { get; private set; }
 
+        /// <summary>
+        /// The accept edits.
+        /// </summary>
         internal readonly List<EditDefinition> AcceptEdits = new List<EditDefinition>();
 
+        /// <summary>
+        /// Gets a value indicating whether this instance can exclude from parent.
+        /// </summary>
+        /// <value><c>true</c> if this instance can be excluded from parent; otherwise, <c>false</c>.</value>
         internal bool CanExcludeFromParent { get { return ParentExcludeEdit != null; } }
 
         #region Public API for drawing extension implementors
 
+        /// <summary>
+        /// The diagram context where item is displayed.
+        /// </summary>
         public readonly DiagramContext DiagramContext;
 
+        /// <summary>
+        /// The definition current diagram item.
+        /// </summary>
         public readonly DiagramItemDefinition Definition;
 
+        /// <summary>
+        /// Determine that item is recursive.
+        /// </summary>
         public bool IsRecursive;
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has position.
+        /// </summary>
+        /// <value><c>true</c> if this instance has position; otherwise, <c>false</c>.</value>
         public bool HasPosition { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is highlighted.
+        /// </summary>
+        /// <value><c>true</c> if this instance is highlighted; otherwise, <c>false</c>.</value>
         public bool IsHighlighted
         {
             get
@@ -74,6 +145,10 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the top connector drawings.
+        /// </summary>
+        /// <value>The top connector drawings.</value>
         public IEnumerable<ConnectorDrawing> TopConnectorDrawings
         {
             get
@@ -82,6 +157,10 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the bottom connector drawings.
+        /// </summary>
+        /// <value>The bottom connector drawings.</value>
         public IEnumerable<ConnectorDrawing> BottomConnectorDrawings
         {
             get
@@ -90,6 +169,10 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the left connector drawings.
+        /// </summary>
+        /// <value>The left connector drawings.</value>
         public IEnumerable<ConnectorDrawing> LeftConnectorDrawings
         {
             get
@@ -98,6 +181,10 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the right connector drawings.
+        /// </summary>
+        /// <value>The right connector drawings.</value>
         public IEnumerable<ConnectorDrawing> RightConnectorDrawings
         {
             get
@@ -106,6 +193,10 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the connector definitions of contained connectors.
+        /// </summary>
+        /// <value>The connector definitions.</value>
         public IEnumerable<ConnectorDefinition> ConnectorDefinitions
         {
             get
@@ -114,6 +205,10 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the global position of current item.
+        /// </summary>
+        /// <value>The global position.</value>
         public Point GlobalPosition
         {
             get
@@ -135,6 +230,10 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the local position of current item.
+        /// </summary>
+        /// <value>The local position.</value>
         public Point LocalPosition
         {
             get
@@ -143,6 +242,11 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Get global position computed to local coordinates.
+        /// </summary>
+        /// <param name="globalPosition">The global position.</param>
+        /// <returns>Local position.</returns>
         internal Point AsLocalPosition(Point globalPosition)
         {
             var diff = GlobalPosition - globalPosition;
@@ -154,6 +258,11 @@ namespace MEFEditor.Drawing
             return localPos;
         }
 
+        /// <summary>
+        /// Fills the slot canvas with instances according to given slot definition.
+        /// </summary>
+        /// <param name="slotCanvas">The slot canvas that will be filled.</param>
+        /// <param name="slot">The slot definition.</param>
         public void FillSlot(SlotCanvas slotCanvas, SlotDefinition slot)
         {
             //recursive check is required only for diagram items 
@@ -181,6 +290,11 @@ namespace MEFEditor.Drawing
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagramItem" /> class.
+        /// </summary>
+        /// <param name="definition">The definition.</param>
+        /// <param name="diagramContext">The diagram context.</param>
         internal DiagramItem(DiagramItemDefinition definition, DiagramContext diagramContext)
         {
             Definition = definition;
@@ -190,6 +304,12 @@ namespace MEFEditor.Drawing
             initialize();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagramItem" /> class.
+        /// </summary>
+        /// <param name="definition">The definition.</param>
+        /// <param name="parentItem">The parent item.</param>
+        /// <param name="slot">The slot.</param>
         internal DiagramItem(DiagramItemDefinition definition, DiagramItem parentItem, SlotCanvas slot)
         {
             ContainingDiagramCanvas = slot;
@@ -201,6 +321,11 @@ namespace MEFEditor.Drawing
             initialize();
         }
 
+        /// <summary>
+        /// Attach the specified connector.
+        /// </summary>
+        /// <param name="connector">The connector.</param>
+        /// <exception cref="System.NotSupportedException">Given align is not supported</exception>
         internal void Attach(ConnectorDrawing connector)
         {
             _connectors.Add(connector.Definition, connector);
@@ -226,6 +351,10 @@ namespace MEFEditor.Drawing
             connectors.Children.Add(connector);
         }
 
+        /// <summary>
+        /// Sets the content.
+        /// </summary>
+        /// <param name="content">The content.</param>
         internal void SetContent(ContentDrawing content)
         {
             ContentDrawing.Content = content;
@@ -240,11 +369,19 @@ namespace MEFEditor.Drawing
             BottomConnectors.Margin = new Thickness(cr.BottomLeft, 0, cr.BottomRight, 0);
         }
 
+        /// <summary>
+        /// Gets the connector.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <returns>ConnectorDrawing.</returns>
         internal ConnectorDrawing GetConnector(ConnectorDefinition point)
         {
             return _connectors[point];
         }
 
+        /// <summary>
+        /// Initializes this instance.
+        /// </summary>
         private void initialize()
         {
             if (Definition.GlobalPosition.HasValue)
@@ -260,6 +397,9 @@ namespace MEFEditor.Drawing
             setEdits();
         }
 
+        /// <summary>
+        /// Sets the edits.
+        /// </summary>
         private void setEdits()
         {
             var menu = new ContextMenu();
@@ -289,6 +429,12 @@ namespace MEFEditor.Drawing
                 menu.Visibility = System.Windows.Visibility.Hidden;
         }
 
+        /// <summary>
+        /// Adds the menu edit.
+        /// </summary>
+        /// <param name="menu">The menu.</param>
+        /// <param name="edit">The edit.</param>
+        /// <exception cref="System.NotSupportedException">Cannot specify multiple exclude edits</exception>
         private void addMenuEdit(ContextMenu menu, EditDefinition edit)
         {
             if (!edit.IsActive(DiagramContext.Diagram.InitialView))
@@ -315,11 +461,21 @@ namespace MEFEditor.Drawing
             }
         }
 
+        /// <summary>
+        /// Gets the connector drawings.
+        /// </summary>
+        /// <param name="align">The align.</param>
+        /// <returns>IEnumerable&lt;ConnectorDrawing&gt;.</returns>
         private IEnumerable<ConnectorDrawing> getConnectorDrawings(ConnectorAlign align)
         {
             return _connectors.Values.Where((connector) => connector.Align == align);
         }
 
+        /// <summary>
+        /// Adds the menu command.
+        /// </summary>
+        /// <param name="menu">The menu.</param>
+        /// <param name="command">The command.</param>
         private void addMenuCommand(ContextMenu menu, CommandDefinition command)
         {
             var item = new MenuItem();
@@ -329,11 +485,20 @@ namespace MEFEditor.Drawing
             item.Click += (e, s) => command.Command();
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             return string.Format("Item: {0}", Definition.ID);
         }
 
+        /// <summary>
+        /// Determine that point is out of item bounds.
+        /// </summary>
+        /// <param name="globalPosition">The global position.</param>
+        /// <returns><c>true</c> if global position is out of bounds, <c>false</c> otherwise.</returns>
         internal bool OutOfBounds(ref Point globalPosition)
         {
             if (IsRootItem)
@@ -378,7 +543,5 @@ namespace MEFEditor.Drawing
 
             return outOfBounds;
         }
-
-        internal ArrangeEngine.PositionCursor PositionCursor { get; set; }
     }
 }

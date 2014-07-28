@@ -24,41 +24,52 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
     public class CILAssembly : AssemblyProvider
     {
         /// <summary>
-        /// Windows path
+        /// Windows path.
         /// </summary>
         private readonly static string windowsFullpath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+        /// <summary>
+        /// The gac_net2 path.
+        /// </summary>
         private readonly static string gac_net2 = Path.Combine(windowsFullpath, "assembly");
+
+        /// <summary>
+        /// The gac_net4 path.
+        /// </summary>
         private readonly static string gac_net4 = Path.Combine(windowsFullpath, "Microsoft.NET\\assembly");
 
+        /// <summary>
+        /// The gac_paths.
+        /// </summary>
         private readonly static string[] gac_paths = new[]{
             gac_net2,
             gac_net4
         };
 
         /// <summary>
-        /// Full path of represented assembly
+        /// Full path of represented assembly.
         /// </summary>
         private readonly string _fullPath;
 
         /// <summary>
-        /// Type builder used for translating TypeReferences into TypeDescriptors at assembly scope (no substitutions)
+        /// Type builder used for translating TypeReferences into TypeDescriptors at assembly scope (no substitutions).
         /// </summary>
         private readonly TypeReferenceHelper _typeBuilder = new TypeReferenceHelper();
 
         /// <summary>
-        /// Represented assembly
+        /// Represented assembly.
         /// </summary>
         private readonly AssemblyDefinition _assembly;
 
         /// <summary>
-        /// Storage where available namespaces are stored
+        /// Storage where available namespaces are stored.
         /// </summary>
         private readonly NamespaceStorage _namespaces = new NamespaceStorage();
 
         /// <summary>
         /// Create CIL assembly provider from file loaded from given file. If loading fails, appropriate exception is thrown.
         /// </summary>
-        /// <param name="assemblyPath"></param>
+        /// <param name="assemblyPath">The assembly path.</param>
         public CILAssembly(string assemblyPath)
         {
             _fullPath = Path.GetFullPath(assemblyPath);
@@ -78,7 +89,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         #region Assembly initialization routines
 
         /// <summary>
-        /// Initialize assembly
+        /// Initialize assembly.
         /// </summary>
         private void initializeAssembly()
         {
@@ -88,7 +99,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Hook handler that will recieve change events in project
+        /// Hook handler that will recieve change events in project.
         /// </summary>
         private void hookChangesHandler()
         {
@@ -96,7 +107,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Scan namespaces within assembly - because of iterators prunning
+        /// Scan namespaces within assembly - because of iterators prunning.
         /// </summary>
         private void scanNamespaces()
         {
@@ -109,7 +120,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         #region Reference resolving
 
         /// <summary>
-        /// Set references according to project referencies
+        /// Set references according to project referencies.
         /// </summary>
         private void initializeReferences()
         {
@@ -126,7 +137,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Add references to current assembly
+        /// Add references to current assembly.
         /// </summary>
         private void addReferences()
         {
@@ -142,6 +153,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
 
+        /// <summary>
+        /// Resolves the full path.
+        /// </summary>
+        /// <param name="reference">The reference.</param>
+        /// <returns>System.String.</returns>
         private string resolveFullPath(AssemblyNameReference reference)
         {
             var gac_assembly = GetAssemblyGac(reference);
@@ -163,10 +179,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// <remarks>Changed implementation from https://github.com/icsharpcode/ILSpy/blob/master/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs </remarks>
+        /// <remarks>Changed implementation from https://github.com/icsharpcode/ILSpy/blob/master/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs </remarks>.
         /// </summary>
-        /// <param name="reference"></param>
-        /// <returns></returns>
+        /// <param name="reference">The reference.</param>
+        /// <returns>System.String.</returns>
         string GetAssemblyGac(AssemblyNameReference reference)
         {
             var gacs = new[] { "GAC_MSIL", "GAC_32", "GAC" };
@@ -187,12 +203,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// <remarks>Changed implementation from https://github.com/icsharpcode/ILSpy/blob/master/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs </remarks>
+        /// <remarks>Changed implementation from https://github.com/icsharpcode/ILSpy/blob/master/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs </remarks>.
         /// </summary>
-        /// <param name="reference"></param>
-        /// <param name="prefix"></param>
-        /// <param name="gac"></param>
-        /// <returns></returns>
+        /// <param name="reference">The reference.</param>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="gac">The gac.</param>
+        /// <returns>System.String.</returns>
         static string GetAssemblyGacFile(AssemblyNameReference reference, string prefix, string gac)
         {
             var gac_folder = new StringBuilder()
@@ -233,10 +249,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
 
 
         /// <summary>
-        /// Determine that given type defines component
+        /// Determine that given type defines component.
         /// </summary>
-        /// <param name="type">Tested type</param>
-        /// <returns>True if type defines component, false otherwise</returns>
+        /// <param name="type">Tested type.</param>
+        /// <returns>True if type defines component, false otherwise.</returns>
         private bool isComponent(TypeDefinition type)
         {
             foreach (var attribute in type.CustomAttributes)
@@ -288,10 +304,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Create component info for given type
+        /// Create component info for given type.
         /// </summary>
-        /// <param name="componentType">type that will create component</param>
-        /// <returns>Created component info</returns>
+        /// <param name="componentType">type that will create component.</param>
+        /// <returns>Created component info.</returns>
         private ComponentInfo createComponentInfo(TypeDefinition componentType)
         {
             var componentDescriptor = getDescriptor(componentType);
@@ -306,10 +322,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Report self exports defined on componentType
+        /// Report self exports defined on componentType.
         /// </summary>
-        /// <param name="componentType">Type of component which self exports are reported</param>
-        /// <param name="infoBuilder">Builder where self exports will be added</param>
+        /// <param name="componentType">Type of component which self exports are reported.</param>
+        /// <param name="infoBuilder">Builder where self exports will be added.</param>
         private void reportSelfExports(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
             foreach (var attribute in componentType.CustomAttributes)
@@ -327,6 +343,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             }
         }
 
+        /// <summary>
+        /// Explores the meta data.
+        /// </summary>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="infoBuilder">The information builder.</param>
         private void exploreMetaData(IEnumerable<CustomAttribute> attributes, ComponentInfoBuilder infoBuilder)
         {
             foreach (var attribute in attributes)
@@ -354,10 +375,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Report composition related fields defined by component type into infoBuilder
+        /// Report composition related fields defined by component type into infoBuilder.
         /// </summary>
-        /// <param name="componentType">Type defining component</param>
-        /// <param name="infoBuilder">Builder where imports/exports are reported</param>
+        /// <param name="componentType">Type defining component.</param>
+        /// <param name="infoBuilder">Builder where imports/exports are reported.</param>
         private void reportComponentFields(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
             foreach (var field in componentType.Fields)
@@ -384,10 +405,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Report composition related properties defined by component type into infoBuilder
+        /// Report composition related properties defined by component type into infoBuilder.
         /// </summary>
-        /// <param name="componentType">Type defining component</param>
-        /// <param name="infoBuilder">Builder where imports/exports are reported</param>
+        /// <param name="componentType">Type defining component.</param>
+        /// <param name="infoBuilder">Builder where imports/exports are reported.</param>
         private void reportComponentProperties(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
             foreach (var property in componentType.Properties)
@@ -416,10 +437,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Report composition related methods defined by component type into infoBuilder
+        /// Report composition related methods defined by component type into infoBuilder.
         /// </summary>
-        /// <param name="componentType">Type defining component</param>
-        /// <param name="infoBuilder">Builder where methods are reported</param>
+        /// <param name="componentType">Type defining component.</param>
+        /// <param name="infoBuilder">Builder where methods are reported.</param>
         private void reportComponentMethods(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
             foreach (var method in componentType.Methods)
@@ -457,11 +478,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Add composition point into infoBuilder
+        /// Add composition point into infoBuilder.
         /// </summary>
-        /// <param name="infoBuilder">Info builder where export will be added</param>
-        /// <param name="method">Composition point method</param>
-        /// <param name="attribute">Attribute defining composition point</param>
+        /// <param name="infoBuilder">Info builder where export will be added.</param>
+        /// <param name="method">Composition point method.</param>
+        /// <param name="attribute">Attribute defining composition point.</param>
         private void addCompositionPoint(ComponentInfoBuilder infoBuilder, MethodDefinition method, CustomAttribute attribute)
         {
             GeneratorBase argumentsInitializer = null;
@@ -475,11 +496,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Add importing constructor into infoBuilder
+        /// Add importing constructor into infoBuilder.
         /// </summary>
-        /// <param name="infoBuilder">Info builder where constructor will be added</param>
-        /// <param name="method">Importing construcotr that is added</param>
-        /// <param name="attribute">Attribute defining importing constructor</param>
+        /// <param name="infoBuilder">Info builder where constructor will be added.</param>
+        /// <param name="method">Importing construcotr that is added.</param>
+        /// <param name="attribute">Attribute defining importing constructor.</param>
         private void addImportingConstructor(ComponentInfoBuilder infoBuilder, MethodDefinition method, CustomAttribute attribute)
         {
             var methodItem = createItem(infoBuilder.ComponentType, method);
@@ -487,11 +508,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Add export method into infoBuilder
+        /// Add export method into infoBuilder.
         /// </summary>
-        /// <param name="infoBuilder">Info builder where export will be added</param>
-        /// <param name="field">Exported field</param>
-        /// <param name="attribute">Attribute defining export</param>
+        /// <param name="infoBuilder">Info builder where export will be added.</param>
+        /// <param name="field">Exported field.</param>
+        /// <param name="attribute">Attribute defining export.</param>
         private void addExport(ComponentInfoBuilder infoBuilder, FieldDefinition field, CustomAttribute attribute)
         {
             var getter = buildAutoGetter(infoBuilder.ComponentType, field);
@@ -505,12 +526,13 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Add export method into infoBuilder
+        /// Add export method into infoBuilder.
         /// </summary>
-        /// <param name="infoBuilder">Info builder where export will be added</param>
-        /// <param name="method">Export method</param>
-        /// <param name="methodId">Id of export method</param>
-        /// <param name="attribute">Attribute defining export</param>
+        /// <param name="infoBuilder">Info builder where export will be added.</param>
+        /// <param name="method">Export method.</param>
+        /// <param name="methodId">Id of export method.</param>
+        /// <param name="attribute">Attribute defining export.</param>
+        /// <param name="exportingAttributes">The exporting attributes.</param>
         private void addExport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute, IEnumerable<CustomAttribute> exportingAttributes)
         {
             var exportType = getDescriptor(method.ReturnType);
@@ -522,11 +544,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Add import method into infoBuilder
+        /// Add import method into infoBuilder.
         /// </summary>
-        /// <param name="infoBuilder">Info builder where import will be added</param>
-        /// <param name="field">Imported field</param>
-        /// <param name="attribute">Attribute defining import</param>
+        /// <param name="infoBuilder">Info builder where import will be added.</param>
+        /// <param name="field">Imported field.</param>
+        /// <param name="attribute">Attribute defining import.</param>
+        /// <param name="isManyImport">if set to <c>true</c> [is many import].</param>
         private void addImport(ComponentInfoBuilder infoBuilder, FieldDefinition field, CustomAttribute attribute, bool isManyImport)
         {
             var setter = buildAutoSetter(infoBuilder.ComponentType, field);
@@ -540,12 +563,13 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Add import method into infoBuilder
+        /// Add import method into infoBuilder.
         /// </summary>
-        /// <param name="infoBuilder">Info builder where import will be added</param>
-        /// <param name="method">Import method</param>
-        /// <param name="methodId">Id of import method</param>
-        /// <param name="attribute">Attribute defining import</param>
+        /// <param name="infoBuilder">Info builder where import will be added.</param>
+        /// <param name="method">Import method.</param>
+        /// <param name="methodId">Id of import method.</param>
+        /// <param name="attribute">Attribute defining import.</param>
+        /// <param name="isManyImport">if set to <c>true</c> [is many import].</param>
         private void addImport(ComponentInfoBuilder infoBuilder, MethodDefinition method, MethodID methodId, CustomAttribute attribute, bool isManyImport)
         {
             var importType = getDescriptor(method.Parameters[0].ParameterType);
@@ -557,10 +581,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Determine that given attribute defines component
+        /// Determine that given attribute defines component.
         /// </summary>
-        /// <param name="attribute">Tested attribute</param>
-        /// <returns>True if attribute define component, false otherwise</returns>
+        /// <param name="attribute">Tested attribute.</param>
+        /// <returns>True if attribute define component, false otherwise.</returns>
         private bool isComponentAttribute(CustomAttribute attribute)
         {
             var fullname = attribute.AttributeType.FullName;
@@ -574,22 +598,23 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Creates type info for given import type
+        /// Creates type info for given import type.
         /// </summary>
-        /// <param name="importType">Type of import</param>
-        /// <param name="isManyImport">Determine that import allows importing multiple items</param>
-        /// <returns>Created ImportTypeInfo</returns>
+        /// <param name="importType">Type of import.</param>
+        /// <param name="isManyImport">Determine that import allows importing multiple items.</param>
+        /// <returns>Created ImportTypeInfo.</returns>
         private ImportTypeInfo getImportTypeInfo(TypeDescriptor importType, bool isManyImport)
         {
             return ImportTypeInfo.ParseFromMany(importType, isManyImport, TypeServices);
         }
 
         /// <summary>
-        /// Get contract defined by given exportAttribute
+        /// Get contract defined by given exportAttribute.
         /// </summary>
-        /// <param name="exportAttribute">Attribute where export contract is defined</param>
-        /// <param name="defaultContract">Describe type which is used as default contract</param>
-        /// <returns>Contract for given export attribute</returns>
+        /// <param name="exportAttribute">Attribute where export contract is defined.</param>
+        /// <param name="defaultContract">Describe type which is used as default contract.</param>
+        /// <returns>Contract for given export attribute.</returns>
+        /// <exception cref="System.NotSupportedException">Unknown export attribute constructor with argument count:  + exportAttribute.ConstructorArguments.Count</exception>
         private string getExportContract(CustomAttribute exportAttribute, TypeDescriptor defaultContract)
         {
             //syntactically same as getImportContract, but semantically different
@@ -608,11 +633,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Get contract defined by given importAttribute
+        /// Get contract defined by given importAttribute.
         /// </summary>
-        /// <param name="importAttribute">Attribute where import contract is defined</param>
-        /// <param name="defaultContract">Describe type which is used as default contract</param>
-        /// <returns>Contract for given import attribute</returns>
+        /// <param name="importAttribute">Attribute where import contract is defined.</param>
+        /// <param name="defaultContract">Describe type which is used as default contract.</param>
+        /// <returns>Contract for given import attribute.</returns>
+        /// <exception cref="System.NotSupportedException">Unknown import attribute constructor with argument count:  + importAttribute.ConstructorArguments.Count</exception>
         private string getImportContract(CustomAttribute importAttribute, TypeDescriptor defaultContract)
         {
             //syntactically same as getExportContract, but semantically different
@@ -630,6 +656,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             }
         }
 
+        /// <summary>
+        /// Tries the get attribute data.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="constructorIndex">Index of the constructor.</param>
+        /// <param name="namedProperty">The named property.</param>
+        /// <param name="data">The data.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool tryGetAttributeData(CustomAttribute attribute, int constructorIndex, string namedProperty, out object data)
         {
             if (!attribute.HasConstructorArguments || attribute.ConstructorArguments.Count <= constructorIndex)
@@ -641,6 +675,13 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             return true;
         }
 
+        /// <summary>
+        /// Tries the get attribute data.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="namedProperty">The named property.</param>
+        /// <param name="data">The data.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool tryGetAttributeData(CustomAttribute attribute, string namedProperty, out object data)
         {
             foreach (var property in attribute.Properties)
@@ -657,10 +698,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Get indicator that import allow default value
+        /// Get indicator that import allow default value.
         /// </summary>
-        /// <param name="importAttribute">Attribute where allow default is defined</param>
-        /// <returns>AllowDefault indicator for given import attribute</returns>
+        /// <param name="importAttribute">Attribute where allow default is defined.</param>
+        /// <returns>AllowDefault indicator for given import attribute.</returns>
         private bool getAllowDefault(CustomAttribute importAttribute)
         {
             foreach (var property in importAttribute.Properties)
@@ -676,10 +717,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
 
 
         /// <summary>
-        /// Resolve contract from given attribute argument
+        /// Resolve contract from given attribute argument.
         /// </summary>
-        /// <param name="contractArgument">Attribute defining contract</param>
-        /// <returns>Resolved contract</returns>
+        /// <param name="contractArgument">Attribute defining contract.</param>
+        /// <returns>Resolved contract.</returns>
+        /// <exception cref="System.NotImplementedException">Missing support for contract argument of type:  + argumentType</exception>
         private string resolveContract(CustomAttributeArgument contractArgument)
         {
             var argumentType = contractArgument.Type.FullName;
@@ -700,10 +742,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         #region Method building
 
         /// <summary>
-        /// Resolve objects from arguments of <see cref="CustomAttributeArgument"/> objects
+        /// Resolve objects from arguments of <see cref="CustomAttributeArgument" /> objects.
         /// </summary>
-        /// <param name="argumentObject">Object that can be present in <see cref="CustomAttributeArgument.Value"/></param>
-        /// <returns>Resolved custom argument</returns>
+        /// <param name="argumentObject">Object that can be present in <see cref="CustomAttributeArgument.Value" />.</param>
+        /// <returns>Resolved custom argument.</returns>
         public static object ResolveCustomAttributeArgument(object argumentObject)
         {
             if (argumentObject is CustomAttributeArgument)
@@ -735,11 +777,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Create complete method info for given method definition
+        /// Create complete method info for given method definition.
         /// </summary>
-        /// <param name="declaringType">Type where method is declared</param>
-        /// <param name="method">Method which info is retrieved</param>
-        /// <returns>Created method info</returns>
+        /// <param name="declaringType">Type where method is declared.</param>
+        /// <param name="method">Method which info is retrieved.</param>
+        /// <returns>Created method info.</returns>
         internal TypeMethodInfo CreateMethodInfo(TypeDescriptor declaringType, MethodDefinition method)
         {
             return CILInstruction.CreateMethodInfo(method, method.IsAbstract, null);
@@ -747,10 +789,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
 
         /// <summary>
         /// Creates method item from given method definition.
-        /// Static constructors checking is proceeded
+        /// Static constructors checking is proceeded.
         /// </summary>
-        /// <param name="method">Method definition</param>
-        /// <returns>Created method item</returns>
+        /// <param name="declaringType">Type of the declaring.</param>
+        /// <param name="method">Method definition.</param>
+        /// <returns>Created method item.</returns>
         private MethodItem createItem(TypeDescriptor declaringType, MethodDefinition method)
         {
             //TODO cache results
@@ -764,11 +807,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Build getter method providing field value
+        /// Build getter method providing field value.
         /// </summary>
-        /// <param name="declaringType">Type where getter is defined</param>
-        /// <param name="field">Field which value is provided</param>
-        /// <returns>Builded method</returns>
+        /// <param name="declaringType">Type where getter is defined.</param>
+        /// <param name="field">Field which value is provided.</param>
+        /// <returns>Builded method.</returns>
         private MethodItem buildAutoGetter(TypeDescriptor declaringType, FieldDefinition field)
         {
             //TODO caching is needed because of components
@@ -788,11 +831,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Build setter method setting field value
+        /// Build setter method setting field value.
         /// </summary>
-        /// <param name="declaringType">Type where setter is defined</param>
-        /// <param name="field">Field which value is set</param>
-        /// <returns>Builded method</returns>
+        /// <param name="declaringType">Type where setter is defined.</param>
+        /// <param name="field">Field which value is set.</param>
+        /// <returns>Builded method.</returns>
         private MethodItem buildAutoSetter(TypeDescriptor declaringType, FieldDefinition field)
         {
             //TODO caching is needed because of components
@@ -814,10 +857,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Build constructor methods for given type
+        /// Build constructor methods for given type.
         /// </summary>
-        /// <param name="type">Type which constructors are builded</param>
-        /// <returns>Builded methods</returns>
+        /// <param name="type">Type which constructors are builded.</param>
+        /// <returns>Builded methods.</returns>
         private IEnumerable<MethodItem> buildConstructors(TypeDefinition type)
         {
             var info = getDescriptor(type);
@@ -832,10 +875,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Build method for static initializer for given type
+        /// Build method for static initializer for given type.
         /// </summary>
-        /// <param name="type">Type which initializer is builded</param>
-        /// <returns>Builded method</returns>
+        /// <param name="type">Type which initializer is builded.</param>
+        /// <returns>Builded method.</returns>
         private MethodItem buildStaticInitilizer(TypeDefinition type)
         {
             var info = getDescriptor(type);
@@ -861,11 +904,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Get method ID for given method definition
+        /// Get method ID for given method definition.
         /// </summary>
-        /// <param name="method">Method which id is retrieved</param>
-        /// <param name="declaringType">Type where method is declared</param>
-        /// <returns>Method ID of given method definition</returns>
+        /// <param name="declaringType">Type where method is declared.</param>
+        /// <param name="method">Method which id is retrieved.</param>
+        /// <returns>Method ID of given method definition.</returns>
         private MethodID getMethodId(TypeDescriptor declaringType, MethodDefinition method)
         {
             var methodItem = createItem(declaringType, method);
@@ -878,11 +921,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         #region Method searching
 
         /// <summary>
-        /// Get methods defined on type with given typeFullName
+        /// Get methods defined on type with given typeFullName.
         /// </summary>
-        /// <param name="typeFullName">FullName of type where method is searched (In Mono.Cecil notation)</param>
-        /// <param name="searchedMethodName">Name of method that is searched</param>
-        /// <returns>All methods defined on given type with corresponding name</returns>
+        /// <param name="typeFullName">FullName of type where method is searched (In Mono.Cecil notation).</param>
+        /// <param name="searchedMethodName">Name of method that is searched.</param>
+        /// <returns>All methods defined on given type with corresponding name.</returns>
         internal IEnumerable<MethodItem> GetMethods(string typeFullName, string searchedMethodName)
         {
             var foundType = getType(typeFullName);
@@ -891,11 +934,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         }
 
         /// <summary>
-        /// Get methods defined on type with given typeFullName
+        /// Get methods defined on type with given typeFullName.
         /// </summary>
-        /// <param name="typeFullName">FullName of type where method is searched (In Mono.Cecil notation)</param>
-        /// <param name="searchedMethodName">Name of method that is searched</param>
-        /// <returns>All methods defined on given type with corresponding name</returns>
+        /// <param name="type">The type.</param>
+        /// <param name="searchedMethodName">Name of method that is searched.</param>
+        /// <returns>All methods defined on given type with corresponding name.</returns>
         internal IEnumerable<MethodItem> GetMethods(TypeDefinition type, string searchedMethodName)
         {
             if (type != null)
@@ -942,8 +985,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         /// <summary>
         /// Get method according to given ID. Works only for non-generic methods.
         /// </summary>
-        /// <param name="methodID">ID of method that is searched</param>
-        /// <returns>Found method, or null if desired method isn't found</returns>
+        /// <param name="methodID">ID of method that is searched.</param>
+        /// <returns>Found method, or null if desired method isn't found.</returns>
         internal MethodItem GetMethod(MethodID methodID)
         {
             //TODO caching here will have great performance benefit 
@@ -966,9 +1009,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         /// <summary>
         /// Get substituted method according to given ID. Works only for generic methods.
         /// </summary>
-        /// <param name="methodID">ID of method that is searched</param>
+        /// <param name="methodID">ID of method that is searched.</param>
         /// <param name="substitutionInfo">Path info that is used for subtitution of generic arguments.</param>
-        /// <returns>Found method, or null if desired method isn't found</returns>
+        /// <returns>Found method, or null if desired method isn't found.</returns>
         internal MethodItem GetGenericMethod(MethodID methodID, PathInfo substitutionInfo)
         {
             //find declaring type and method name
@@ -999,20 +1042,20 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
 
         /// <summary>
         /// Determine that types prefixed with given path may be available within assembly
-        /// <remarks>It is used for prunning hash iterators</remarks>
+        /// <remarks>It is used for prunning hash iterators</remarks>.
         /// </summary>
-        /// <param name="path">Path which is tested</param>
-        /// <returns><c>true</c> if it may be included, <c>false</c> otherwise</returns>
+        /// <param name="path">Path which is tested.</param>
+        /// <returns><c>true</c> if it may be included, <c>false</c> otherwise.</returns>
         internal bool MayInclude(string path)
         {
             return _namespaces.CanContains(path);
         }
 
         /// <summary>
-        /// Find param less ctor for given type
+        /// Find param less ctor for given type.
         /// </summary>
-        /// <param name="type">Type which param less ctor is searched</param>
-        /// <returns><see cref="MethodDefinition"/> belonging to param less ctor if available, <c>null</c> otherwise</returns>
+        /// <param name="type">Type which param less ctor is searched.</param>
+        /// <returns><see cref="MethodDefinition" /> belonging to param less ctor if available, <c>null</c> otherwise.</returns>
         internal static MethodDefinition FindParamLessCtor(TypeDefinition type)
         {
             return type.Methods.FirstOrDefault((method) =>
@@ -1028,8 +1071,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         /// <summary>
         /// Build type descriptor from given type reference. No substitutions are resolved.
         /// </summary>
-        /// <param name="type">Type reference which descriptor is builded</param>
-        /// <returns>Builded type descriptor</returns>
+        /// <param name="type">Type reference which descriptor is builded.</param>
+        /// <returns>Builded type descriptor.</returns>
         private TypeDescriptor getDescriptor(TypeReference type)
         {
             return _typeBuilder.BuildDescriptor(type);
@@ -1037,10 +1080,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
 
         /// <summary>
         /// Find type definition in represented assembly according to typePath.
-        /// Translation into mono cecil format is provided
+        /// Translation into mono cecil format is provided.
         /// </summary>
-        /// <param name="typePath">Path where to search for definition</param>
-        /// <returns>Found type definition or null if type doesn't exists</returns>
+        /// <param name="typePath">Path where to search for definition.</param>
+        /// <returns>Found type definition or null if type doesn't exists.</returns>
         private TypeDefinition getType(PathInfo typePath)
         {
             var typeFullname = typePath.Name;
@@ -1055,8 +1098,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         /// <summary>
         /// Find type according to type fullname.
         /// </summary>
-        /// <param name="fullname">Fullname in Mono.Cecil notation</param>
-        /// <returns>Found type or null if type doesn't exists</returns>
+        /// <param name="fullname">Fullname in Mono.Cecil notation.</param>
+        /// <returns>Found type or null if type doesn't exists.</returns>
         private TypeDefinition getType(string fullname)
         {
             if (fullname == null)
@@ -1072,8 +1115,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         /// <summary>
         /// Creates inheritance chain for given type.
         /// </summary>
-        /// <param name="type">Type of desired inheritnace chain</param>
-        /// <returns>Created inheritnace chain</returns>
+        /// <param name="type">Type of desired inheritnace chain.</param>
+        /// <returns>Created inheritnace chain.</returns>
         private InheritanceChain createChain(TypeDefinition type)
         {
             //caching is provided outside assembly
@@ -1105,20 +1148,34 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
 
         #region Assembly provider implementation
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Gets the assembly full path.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        /// <inheritdoc />
         protected override string getAssemblyFullPath()
         {
             return _fullPath;
         }
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Gets the name of the assembly.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        /// <inheritdoc />
         protected override string getAssemblyName()
         {
             //assembly name is determined by name found in compiled assembly
             return _assembly.Name.Name;
         }
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Gets the method generator for given method identifier.
+        /// For performance purposes no generic search has to be done.
+        /// </summary>
+        /// <param name="method">The method identifier.</param>
+        /// <returns>GeneratorBase.</returns>
+        /// <inheritdoc />
         public override GeneratorBase GetMethodGenerator(MethodID method)
         {
             //Try to find given method
@@ -1131,7 +1188,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             return methodItem.Generator;
         }
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Gets the generic method generator for given method identifier.
+        /// Generic has to be resolved according to given search path.
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <param name="searchPath">The search path.</param>
+        /// <returns>GeneratorBase.</returns>
+        /// <inheritdoc />
         public override GeneratorBase GetGenericMethodGenerator(MethodID method, PathInfo searchPath)
         {
             //Try to find given generic method
@@ -1144,13 +1208,25 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             return methodItem.Generator;
         }
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Creates the root iterator. That is used for
+        /// searching method definitions.
+        /// </summary>
+        /// <returns>SearchIterator.</returns>
+        /// <inheritdoc />
         public override SearchIterator CreateRootIterator()
         {
             return new TypeModuleIterator(this);
         }
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Gets identifier of implementing method for given abstract method.
+        /// </summary>
+        /// <param name="method">The abstract method identifier.</param>
+        /// <param name="dynamicInfo">The dynamic information.</param>
+        /// <param name="alternativeImplementer">The alternative implementer which can define requested method.</param>
+        /// <returns>Identifier of implementing method.</returns>
+        /// <inheritdoc />
         public override MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer)
         {
             alternativeImplementer = null;
@@ -1166,7 +1242,15 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             return result.Info.MethodID;
         }
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Gets identifier of implementing method for given abstract method.
+        /// </summary>
+        /// <param name="methodID">The abstract method identifier.</param>
+        /// <param name="methodSearchPath">The method search path.</param>
+        /// <param name="implementingTypePath">The implementing type path.</param>
+        /// <param name="alternativeImplementer">The alternative implementer which can define requested method.</param>
+        /// <returns>Identifier of implementing method.</returns>
+        /// <inheritdoc />
         public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath, out PathInfo alternativeImplementer)
         {
             alternativeImplementer = null;
@@ -1183,7 +1267,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             return result.Info.MethodID;
         }
 
-        ///<inheritdoc />
+        /// <summary>
+        /// Gets inheritance chain for type described by given path.
+        /// </summary>
+        /// <param name="typePath">The type path.</param>
+        /// <returns>InheritanceChain.</returns>
+        /// <inheritdoc />
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
             var type = getType(typePath);

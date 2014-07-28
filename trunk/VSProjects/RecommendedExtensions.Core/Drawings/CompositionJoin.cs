@@ -11,19 +11,38 @@ using MEFEditor.Drawing;
 
 namespace RecommendedExtensions.Core.Drawings
 {
+    /// <summary>
+    /// Represent drawing of join between import and export connectors.
+    /// </summary>
     public class CompositionJoin : JoinDrawing
     {
+        /// <summary>
+        /// The error property name.
+        /// Here can be stored error for the join.
+        /// </summary>
         public const string ErrorPropertyName = "Error";
 
+        /// <summary>
+        /// The warning property name.
+        /// Here can be stored warning for the join.
+        /// </summary>
         public const string WarningPropertyName = "Warning";
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositionJoin"/> class.
+        /// </summary>
+        /// <param name="definition">The join definition.</param>
         public CompositionJoin(JoinDefinition definition) :
             base(definition)
         {
             this.AllowDrop = false;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is error join.
+        /// </summary>
+        /// <value><c>true</c> if this instance is error join; otherwise, <c>false</c>.</value>
         public bool IsErrorJoin
         {
             get
@@ -32,6 +51,10 @@ namespace RecommendedExtensions.Core.Drawings
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is warning join.
+        /// </summary>
+        /// <value><c>true</c> if this instance is warning join; otherwise, <c>false</c>.</value>
         public bool IsWarningJoin
         {
             get
@@ -40,6 +63,11 @@ namespace RecommendedExtensions.Core.Drawings
             }
         }
 
+        /// <summary>
+        /// Determines whether connector has defined specified property.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns><c>true</c> if property is defend; otherwise, <c>false</c>.</returns>
         private bool isConnectorPropertyDefined(string propertyName)
         {
             var fromError = Definition.To.GetPropertyValue(propertyName) != null;
@@ -52,10 +80,12 @@ namespace RecommendedExtensions.Core.Drawings
         /// <summary>
         /// Create arrow geometry.
         /// </summary>
+        /// <value>The defining geometry.</value>
         protected override Geometry DefiningGeometry
         {
             get
             {
+                //select color according to error level
                 if (IsErrorJoin)
                 {
                     Stroke = Brushes.Red;
@@ -69,11 +99,11 @@ namespace RecommendedExtensions.Core.Drawings
                     Stroke = Brushes.DimGray;
                 }
                 
+                //highlighted joins will be stronger
                 this.StrokeThickness = IsHighlighted ? 4 : 2;
                 
+                //draw join to geometry
                 var points = PointPath.ToArray();
-
-
                 var arrGeom = new StreamGeometry();
                 using (var context = arrGeom.Open())
                 {
@@ -90,6 +120,11 @@ namespace RecommendedExtensions.Core.Drawings
             }
         }
 
+        /// <summary>
+        /// Draws the join with given context.
+        /// </summary>
+        /// <param name="points">The points of join.</param>
+        /// <param name="context">The context of geometry.</param>
         private static void drawJoin(Point[] points, StreamGeometryContext context)
         {
             context.BeginFigure(points[0], true, false);
@@ -109,11 +144,8 @@ namespace RecommendedExtensions.Core.Drawings
                 var controlPoint1 = controlPoints1[i];
                 var controlPoint2 = controlPoints2[i];
 
-                /*/
-                context.BezierTo(controlPoint1, controlPoint2, to, true, true);
-                /*/
+                //context.BezierTo(controlPoint1, controlPoint2, to, true, true);
                 context.LineTo(to, true, true);
-                /**/
             }
 
             Point arm1;
@@ -125,6 +157,13 @@ namespace RecommendedExtensions.Core.Drawings
             context.LineTo(arm2, true, true);
         }
 
+        /// <summary>
+        /// Computes the arms.
+        /// </summary>
+        /// <param name="from">From.</param>
+        /// <param name="to">To.</param>
+        /// <param name="arm1">The arm1.</param>
+        /// <param name="arm2">The arm2.</param>
         private static void computeArms(ref Point from, ref Point to, out Point arm1, out Point arm2)
         {
             var extraAng = Math.Atan2(to.Y - from.Y, to.X - from.X);

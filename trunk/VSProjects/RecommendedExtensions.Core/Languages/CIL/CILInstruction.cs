@@ -29,7 +29,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         private static readonly Dictionary<string, OpCode> OpCodesTable = new Dictionary<string, OpCode>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Starting address of instruction
+        /// Starting address of instruction.
         /// </summary>
         public readonly int Address;
 
@@ -66,7 +66,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         public readonly TypeMethodInfo GetterOperand;
 
         /// <summary>
-        /// Descriptor of type operand
+        /// Descriptor of type operand.
         /// </summary>
         public readonly TypeDescriptor TypeOperand;
 
@@ -88,6 +88,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         /// Create CILInstruction from runtime .NET representation of instruction.
         /// </summary>
         /// <param name="instruction">Runtime .NET representation of instruction.</param>
+        /// <param name="context">The context of transcription.</param>
         internal CILInstruction(ILInstruction instruction, TranscriptionContext context)
         {
             Address = instruction.Address;
@@ -106,9 +107,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Create CILInstruction from Mono.Cecil instruction representation of instructino.
+        /// Create CILInstruction from Mono.Cecil instruction representation of instruction.
         /// </summary>
-        /// <param name="instruction">Mono.Cecil representation of instruction</param>
+        /// <param name="instruction">Mono.Cecil representation of instruction.</param>
+        /// <param name="context">The context of transcription.</param>
         internal CILInstruction(Instruction instruction, TranscriptionContext context)
         {
             Address = instruction.Offset;
@@ -124,11 +126,12 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// TODO this should been refactored out into some helper class
+        /// Creates method info for given method.
         /// </summary>
-        /// <param name="method"></param>
-        /// <param name="needsDynamicResolution"></param>
-        /// <returns></returns>
+        /// <param name="method">The method.</param>
+        /// <param name="needsDynamicResolution">if set to <c>true</c> [needs dynamic resolution].</param>
+        /// <param name="context">The context.</param>
+        /// <returns>TypeMethodInfo.</returns>
         internal static TypeMethodInfo CreateMethodInfo(MethodReference method, bool needsDynamicResolution, TranscriptionContext context)
         {
             if (method == null)
@@ -171,10 +174,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         #region Reflection instruction processing
 
         /// <summary>
-        /// Create getter info for given field
+        /// Create getter info for given field.
         /// </summary>
-        /// <param name="field">Field which getter is needed</param>
-        /// <returns>Created getter</returns>
+        /// <param name="field">Field which getter is needed.</param>
+        /// <returns>Created getter.</returns>
         private TypeMethodInfo createGetter(FieldInfo field)
         {
             if (field == null)
@@ -191,10 +194,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Create setter info for given field
+        /// Create setter info for given field.
         /// </summary>
-        /// <param name="field">Field which setter is needed</param>
-        /// <returns>Created setter</returns>
+        /// <param name="field">Field which setter is needed.</param>
+        /// <returns>Created setter.</returns>
         private TypeMethodInfo createSetter(FieldInfo field)
         {
             if (field == null)
@@ -213,9 +216,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Get offset of branch target according to instruction
+        /// Get offset of branch target according to instruction.
         /// </summary>
-        /// <returns>Target offset</returns>
+        /// <param name="instruction">The instruction.</param>
+        /// <returns>Target offset.</returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         private int getBranchOffset(ILInstruction instruction)
         {
             switch (instruction.OpCode.OperandType)
@@ -230,10 +235,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Create TypeMethodInfo from given methodInfo
+        /// Create TypeMethodInfo from given methodInfo.
         /// </summary>
-        /// <param name="methodInfo">method which TypeMethodInfo is created</param>
-        /// <returns>Created TypeMethodInfo</returns>
+        /// <param name="methodInfo">method which TypeMethodInfo is created.</param>
+        /// <returns>Created TypeMethodInfo.</returns>
         private TypeMethodInfo createMethodInfo(MethodInfo methodInfo)
         {
             if (methodInfo == null)
@@ -248,10 +253,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         #region Mono Cecil instruction processing
 
         /// <summary>
-        /// Determine that instruction with given opcode needs dynamic method resolving
+        /// Determine that instruction with given opcode needs dynamic method resolving.
         /// </summary>
-        /// <param name="opcode">Opcode of instruction</param>
-        /// <returns>True if dynamic resolving is needed, false otherwise</returns>
+        /// <param name="opcode">Opcode of instruction.</param>
+        /// <returns>True if dynamic resolving is needed, false otherwise.</returns>
         private bool needsDynamicResolving(OpCode opcode)
         {
             switch (opcode.Name)
@@ -264,11 +269,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Create getter info for given field
+        /// Create getter info for given field.
         /// </summary>
-        /// <param name="field">Field which getter is needed</param>
-        /// <param name="context">Context of transcription</param>
-        /// <returns>Created getter</returns>
+        /// <param name="field">Field which getter is needed.</param>
+        /// <param name="context">Context of transcription.</param>
+        /// <returns>Created getter.</returns>
         private TypeMethodInfo createGetter(FieldReference field, TranscriptionContext context)
         {
             if (field == null)
@@ -284,6 +289,13 @@ namespace RecommendedExtensions.Core.Languages.CIL
                 isStatic, TypeDescriptor.NoDescriptors);
         }
 
+        /// <summary>
+        /// Resolves that field is static.
+        /// </summary>
+        /// <param name="field">The field.</param>
+        /// <param name="context">The context.</param>
+        /// <returns><c>true</c> if field is static, <c>false</c> otherwise.</returns>
+        /// <exception cref="System.NotImplementedException">Resolve shared field</exception>
         private bool resolveIsStatic(FieldReference field, TranscriptionContext context)
         {
             var definition = field as FieldDefinition;
@@ -294,11 +306,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Create setter info for given field
+        /// Create setter info for given field.
         /// </summary>
-        /// <param name="field">Field which setter is needed</param>
-        /// <param name="context">Context of transcription</param>
-        /// <returns>Created setter</returns>
+        /// <param name="field">Field which setter is needed.</param>
+        /// <param name="context">Context of transcription.</param>
+        /// <returns>Created setter.</returns>
         private TypeMethodInfo createSetter(FieldReference field, TranscriptionContext context)
         {
             if (field == null)
@@ -318,9 +330,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Get offset of branch target according to instruction
+        /// Get offset of branch target according to instruction.
         /// </summary>
-        /// <returns>Target offset</returns>
+        /// <param name="instruction">The instruction.</param>
+        /// <returns>Target offset.</returns>
         private int getBranchOffset(Instruction instruction)
         {
             if (instruction == null)
@@ -330,11 +343,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Create type info for given reference in given context
+        /// Create type info for given reference in given context.
         /// </summary>
-        /// <param name="typeReference">Reference of created type</param>
-        /// <param name="context">Context of transcription</param>
-        /// <returns>Created type descriptor</returns>
+        /// <param name="typeReference">Reference of created type.</param>
+        /// <param name="context">Context of transcription.</param>
+        /// <returns>Created type descriptor.</returns>
         private TypeDescriptor createTypeInfo(TypeReference typeReference, TranscriptionContext context)
         {
             if (typeReference == null)

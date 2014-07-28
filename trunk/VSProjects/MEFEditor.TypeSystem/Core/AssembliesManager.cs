@@ -367,12 +367,10 @@ namespace MEFEditor.TypeSystem.Core
         /// <remarks>This is used by <see cref="AssemblyProvider"/> to create information about inheritance</remarks>
         /// </summary>
         /// <param name="type">Type which inheritance chain is created</param>
-        /// <param name="subChains"><see cref="InheritanceChains"/> of sub types</param>
+        /// <param name="subChains"><see cref="InheritanceChain"/> of sub types</param>
         /// <returns>Created chain</returns>
         internal InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
-            //TODO caching
-
             return new InheritanceChain(type, subChains);
         }
 

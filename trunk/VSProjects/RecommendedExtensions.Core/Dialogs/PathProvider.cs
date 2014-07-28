@@ -9,15 +9,34 @@ using System.Windows.Forms;
 
 namespace RecommendedExtensions.Core.Dialogs
 {
+    /// <summary>
+    /// Dialog providing assembly paths.
+    /// </summary>
     public static class PathProvider
     {
+        /// <summary>
+        /// The assembly filter.
+        /// </summary>
         public static readonly string AssemblyFilter = "Assembly files (*.dll;*.exe)|*.exe;*.dll|All files (*.*)|*.*";
 
+        /// <summary>
+        /// Gets the assembly path.
+        /// </summary>
+        /// <param name="initialPath">The initial path.</param>
+        /// <param name="basePath">The base path.</param>
+        /// <returns>System.String.</returns>
         public static string GetAssemblyPath(string initialPath, string basePath = null)
         {
             return GetFilePath(initialPath, AssemblyFilter);
         }
 
+        /// <summary>
+        /// Gets the file path according to users selection.
+        /// </summary>
+        /// <param name="initialPath">The initial path.</param>
+        /// <param name="fileFilter">The file filter.</param>
+        /// <param name="basePath">The base path.</param>
+        /// <returns>Selected path.</returns>
         public static string GetFilePath(string initialPath, string fileFilter, string basePath = null)
         {
             if (initialPath == null)
@@ -44,6 +63,12 @@ namespace RecommendedExtensions.Core.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets the folder path according to users selection.
+        /// </summary>
+        /// <param name="initialPath">The initial path.</param>
+        /// <param name="basePath">The base path.</param>
+        /// <returns>Selected folder.</returns>
         public static string GetFolderPath(string initialPath, string basePath = null)
         {
             var dialog = new FolderBrowserDialog();

@@ -11,6 +11,10 @@ namespace MEFEditor.UnitTesting
     [TestClass]
     public class SourceWriting_Testing
     {
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void WriteMapping()
         {
@@ -32,6 +36,9 @@ namespace MEFEditor.UnitTesting
             );
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void WriteToMoveMapping1()
         {
@@ -50,6 +57,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void WriteToMoveMapping2()
         {
@@ -64,6 +74,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void WriteToMoveMapping3()
         {

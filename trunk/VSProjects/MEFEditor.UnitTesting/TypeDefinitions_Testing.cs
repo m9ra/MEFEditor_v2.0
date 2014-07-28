@@ -21,6 +21,10 @@ namespace MEFEditor.UnitTesting
     [TestClass]
     public class TypeDefinitions_Testing
     {
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void RuntimeType_Call()
         {
@@ -36,6 +40,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void RuntimeType_CallWithDefault()
         {
@@ -51,6 +58,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void RuntimeType_DirectClassType()
         {
@@ -69,6 +79,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void RuntimeType_DirectGenericClassType()
         {
@@ -86,6 +99,9 @@ namespace MEFEditor.UnitTesting
             ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void RuntimeType_DirectWrappedGenericClassType()
         {
@@ -102,6 +118,9 @@ namespace MEFEditor.UnitTesting
 
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void RuntimeType_DirectWrappedGenericMethod()
         {
@@ -115,6 +134,9 @@ namespace MEFEditor.UnitTesting
             .AssertVariable("result").HasValue("Result");
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void RuntimeType_ArrayReturnValueSupport()
         {

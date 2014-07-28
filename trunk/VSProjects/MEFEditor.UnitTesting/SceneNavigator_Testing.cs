@@ -15,6 +15,10 @@ namespace MEFEditor.UnitTesting
     [TestClass]
     public class SceneNavigator_Testing
     {
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Scene_ItemIntersection()
         {
@@ -32,6 +36,9 @@ namespace MEFEditor.UnitTesting
                 ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Scene_TargetIntersection()
         {
@@ -49,6 +56,9 @@ namespace MEFEditor.UnitTesting
                 ;
         }
 
+        /// <summary>
+        /// Test case.
+        /// </summary>
         [TestMethod]
         public void Scene_DiagonalIntersection()
         {

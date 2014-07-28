@@ -10,15 +10,58 @@ using System.Windows.Controls;
 
 namespace MEFEditor.Drawing
 {
-    public enum ConnectorAlign { Top, Bottom, Left, Right }
+    /// <summary>
+    /// Determine where connector is aligned at <see cref="DiagramItem" />.
+    /// </summary>
+    public enum ConnectorAlign
+    {
+        /// <summary>
+        /// The top align.
+        /// </summary>
+        Top,
+        /// <summary>
+        /// The bottom align.
+        /// </summary>
+        Bottom,
+        /// <summary>
+        /// The left align.
+        /// </summary>
+        Left,
+        /// <summary>
+        /// The right align.
+        /// </summary>
+        Right
+    }
 
+    /// <summary>
+    /// Base of connector drawing.
+    /// </summary>
     public abstract class ConnectorDrawing : Border
     {
+        /// <summary>
+        /// The align of connector definition.
+        /// </summary>
         public readonly ConnectorAlign Align;
+        /// <summary>
+        /// The owning item.
+        /// </summary>
         public readonly DiagramItem OwningItem;
+        /// <summary>
+        /// The definition of connector.
+        /// </summary>
         public readonly ConnectorDefinition Definition;
+        /// <summary>
+        /// Gets the connect point.
+        /// </summary>
+        /// <value>The connect point.</value>
         public abstract Point ConnectPoint { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectorDrawing" /> class.
+        /// </summary>
+        /// <param name="definition">The definition.</param>
+        /// <param name="align">The align.</param>
+        /// <param name="owningItem">The owning item.</param>
         public ConnectorDrawing(ConnectorDefinition definition, ConnectorAlign align, DiagramItem owningItem)
         {
             Align = align;
@@ -38,37 +81,13 @@ namespace MEFEditor.Drawing
                     break;
             }
         }
-
-        internal Point OutOfItemPoint
-        {
-            //TODO connect with item margin settings
-            get
-            {
-                var point = GlobalConnectPoint;
-                var shift = 40;
-                switch (Align)
-                {
-                    case ConnectorAlign.Top:
-                        point.Y -= shift;
-                        break;
-                    case ConnectorAlign.Bottom:
-                        point.Y += shift;
-                        break;
-                    case ConnectorAlign.Left:
-                        point.X -= shift;
-                        break;
-                    case ConnectorAlign.Right:
-                        point.X += shift;
-                        break;
-                }
-
-                return GlobalConnectPoint;
-            }
-        }
-
+               
+        /// <summary>
+        /// Gets the global connect point.
+        /// </summary>
+        /// <value>The global connect point.</value>
         public Point GlobalConnectPoint
         {
-            //TODO try cache this value
             get
             {
                 var connectPoint = new Point(-ConnectPoint.X, -ConnectPoint.Y);

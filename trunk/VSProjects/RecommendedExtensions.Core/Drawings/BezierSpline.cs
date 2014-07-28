@@ -16,7 +16,7 @@ namespace RecommendedExtensions.Core.Drawings
     /// Implementation is taken from http://www.codeproject.com/Articles/31859/Draw-a-Smooth-Curve-through-a-Set-of-D-Points-wit
     /// 
     /// 
-    /// Modified: Peter Lee (peterlee.com.cn < at > gmail.com)
+    /// Modified: Peter Lee (peterlee.com.cn [at] gmail.com)
     ///   Update: 2009-03-16
     /// 
     /// see also:

@@ -21,20 +21,27 @@ using RecommendedExtensions.Core.Drawings;
 namespace RecommendedExtensions.Core.Dialogs
 {
     /// <summary>
-    /// Interaction logic for ComponentTypeDialog.xaml
+    /// Dialog window for selecting type of component.
     /// </summary>
     public partial class ComponentType : Window
     {
+        /// <summary>
+        /// Gets the selected component.
+        /// </summary>
+        /// <value>The selected component.</value>
         public InstanceInfo SelectedComponent { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComponentType"/> class.
+        /// </summary>
+        /// <param name="components">The components that will be offered.</param>
         public ComponentType(IEnumerable<ComponentInfo> components)
         {
             InitializeComponent();
 
             foreach (var component in components)
             {
-                //TODO add assembly info
-
+                //display all ocmponents
                 var componentType = component.ComponentType;
 
                 var item = new ListBoxItem();

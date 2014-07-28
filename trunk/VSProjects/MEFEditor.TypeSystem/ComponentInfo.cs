@@ -8,7 +8,6 @@ using MEFEditor.Analyzing;
 
 namespace MEFEditor.TypeSystem
 {
-
     /// <summary>
     /// Information about composition point.
     /// </summary>
@@ -26,15 +25,22 @@ namespace MEFEditor.TypeSystem
         public readonly MethodID EntryMethod;
 
         /// <summary>
-        /// Component where composition point is declared
+        /// Component where composition point is declared.
         /// </summary>
         public readonly TypeDescriptor DeclaringComponent;
 
         /// <summary>
-        /// Generator providing values for composition point arguments if available
+        /// Generator providing values for composition point arguments if available.
         /// </summary>
         public readonly GeneratorBase ArgumentProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositionPoint"/> class.
+        /// </summary>
+        /// <param name="declaringComponent">The declaring component.</param>
+        /// <param name="entryMethod">The entry method.</param>
+        /// <param name="isExplicit">if set to <c>true</c> it is explicit composition point.</param>
+        /// <param name="argumentProvider">The argument provider.</param>
         public CompositionPoint(TypeDescriptor declaringComponent, MethodID entryMethod, bool isExplicit, GeneratorBase argumentProvider)
         {
             IsExplicit = isExplicit;
@@ -43,12 +49,21 @@ namespace MEFEditor.TypeSystem
             ArgumentProvider = argumentProvider;
         }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
         /// <inheritdoc />
         public override int GetHashCode()
         {
             return EntryMethod.GetHashCode();
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" /> is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
@@ -66,7 +81,7 @@ namespace MEFEditor.TypeSystem
     public class ComponentInfo
     {
         /// <summary>
-        /// Type of component
+        /// Type of component.
         /// </summary>
         public readonly InstanceInfo ComponentType;
 
@@ -96,13 +111,23 @@ namespace MEFEditor.TypeSystem
         public readonly MethodID ImportingConstructor;
 
         /// <summary>
-        /// Assembly where current component was defined
+        /// Assembly where current component was defined.
         /// </summary>
+        /// <value>The defining assembly.</value>
         public TypeAssembly DefiningAssembly { get; internal set; }
 
-        public ComponentInfo(InstanceInfo thisType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports, CompositionPoint[] compositionPoints)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComponentInfo"/> class.
+        /// </summary>
+        /// <param name="componentType">Type of the component.</param>
+        /// <param name="importingCtor">The importing ctor.</param>
+        /// <param name="imports">The imports.</param>
+        /// <param name="exports">The exports.</param>
+        /// <param name="selfExports">The self exports.</param>
+        /// <param name="compositionPoints">The composition points.</param>
+        public ComponentInfo(InstanceInfo componentType, MethodID importingCtor, Import[] imports, Export[] exports, Export[] selfExports, CompositionPoint[] compositionPoints)
         {
-            ComponentType = thisType;
+            ComponentType = componentType;
             SelfExports = selfExports;
             Exports = exports;
             Imports = imports;
@@ -110,12 +135,21 @@ namespace MEFEditor.TypeSystem
             CompositionPoints = compositionPoints;
         }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
         /// <inheritdoc />
         public override int GetHashCode()
         {
             return ComponentType.GetHashCode();
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" /> is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
@@ -126,6 +160,10 @@ namespace MEFEditor.TypeSystem
             return ComponentType.Equals(o.ComponentType);
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         /// <inheritdoc />
         public override string ToString()
         {
@@ -134,12 +172,12 @@ namespace MEFEditor.TypeSystem
     }
 
     /// <summary>
-    /// Item of exported metadata
+    /// Item of exported metadata.
     /// </summary>
     public class MetaItem
     {
         /// <summary>
-        /// Exporting key of meta item
+        /// Exporting key of meta item.
         /// </summary>
         public readonly string Key;
 
@@ -151,10 +189,16 @@ namespace MEFEditor.TypeSystem
 
         /// <summary>
         /// Exported metadata - note that only direct metadata
-        /// can be used for composition
+        /// can be used for composition.
         /// </summary>
         public readonly IEnumerable<object> Data;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetaItem"/> class.
+        /// </summary>
+        /// <param name="key">The key of meta item.</param>
+        /// <param name="isMultiple">if set to <c>true</c> it is multiple item.</param>
+        /// <param name="items">The items.</param>
         public MetaItem(string key, bool isMultiple, IEnumerable<object> items)
         {
             Key = key;
@@ -169,20 +213,21 @@ namespace MEFEditor.TypeSystem
     public class MetaExport
     {
         /// <summary>
-        /// All exported metadata
+        /// All exported metadata.
         /// </summary>
         private readonly Dictionary<string, MetaItem> _data;
 
         /// <summary>
-        /// Keys that has been exported
+        /// Keys that has been exported.
         /// </summary>
+        /// <value>The exported keys.</value>
         public IEnumerable<string> ExportedKeys { get { return _data.Keys; } }
 
         /// <summary>
-        /// Get <see cref="MetaItem"/> according to given key
+        /// Get <see cref="MetaItem" /> according to given key.
         /// </summary>
-        /// <param name="key">Key of item</param>
-        /// <returns><see cref="MetaItem"/> if available for given key, <c>null</c> otherwise.</returns>
+        /// <param name="key">Key of item.</param>
+        /// <returns><see cref="MetaItem" /> if available for given key, <c>null</c> otherwise.</returns>
         public MetaItem GetItem(string key)
         {
             MetaItem result;
@@ -190,6 +235,10 @@ namespace MEFEditor.TypeSystem
             return result;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetaExport"/> class.
+        /// </summary>
+        /// <param name="items">The items.</param>
         public MetaExport(IEnumerable<MetaItem> items)
         {
             _data = new Dictionary<string, MetaItem>();
@@ -227,10 +276,18 @@ namespace MEFEditor.TypeSystem
         public readonly TypeDescriptor ExportType;
 
         /// <summary>
-        /// Determine that export is inherited
+        /// Determine that export is inherited.
         /// </summary>
         public readonly bool IsInherited;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Export"/> class.
+        /// </summary>
+        /// <param name="exportType">Type of the export.</param>
+        /// <param name="isInherited">if set to <c>true</c> export is inherited.</param>
+        /// <param name="getter">The getter.</param>
+        /// <param name="contract">The contract.</param>
+        /// <param name="meta">The meta.</param>
         public Export(TypeDescriptor exportType, bool isInherited, MethodID getter, string contract, MetaExport meta)
         {
             ExportType = exportType;
@@ -247,17 +304,17 @@ namespace MEFEditor.TypeSystem
     public class ImportTypeInfo
     {
         /// <summary>
-        /// True, if ItemType is wrapped in lazy object
+        /// True, if ItemType is wrapped in lazy object.
         /// </summary>
         public readonly bool IsItemLazy;
 
         /// <summary>
-        /// True if ImportType is wrapped in lazy object
+        /// True if ImportType is wrapped in lazy object.
         /// </summary>
         public readonly bool IsLazy;
 
         /// <summary>
-        /// Type of one item, without lazy, collection,... 
+        /// Type of one item, without lazy, collection,...
         /// Should be used as default Contract.
         /// </summary>
         public readonly TypeDescriptor ItemType;
@@ -272,6 +329,12 @@ namespace MEFEditor.TypeSystem
         /// </summary>
         public readonly TypeDescriptor ImportType;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImportTypeInfo"/> class.
+        /// </summary>
+        /// <param name="importType">Type of the import.</param>
+        /// <param name="itemType">Type of the imported item.</param>
+        /// <exception cref="System.ArgumentNullException">importType</exception>
         private ImportTypeInfo(TypeDescriptor importType, TypeDescriptor itemType)
         {
             if (importType == null)
@@ -296,11 +359,12 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// In ManyImport there can be Array{}, IEnumerable{} or anything derived from ICollection{}
+        /// In ManyImport there can be Array{}, IEnumerable{} or anything derived from ICollection{}.
         /// </summary>
-        /// <param name="importManyType"></param>
-        /// <param name="services"></param>
-        /// <returns></returns>
+        /// <param name="importManyType">Type of the import many.</param>
+        /// <param name="allowMany">if set to <c>true</c> importing many items is allowed.</param>
+        /// <param name="services">The services.</param>
+        /// <returns>ImportTypeInfo.</returns>
         public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, bool allowMany, TypeServices services)
         {
             if (allowMany)
@@ -319,6 +383,12 @@ namespace MEFEditor.TypeSystem
             return new ImportTypeInfo(importManyType, importManyType);
         }
 
+        /// <summary>
+        /// In ManyImport there can be Array{}, IEnumerable{} or anything derived from ICollection{}.
+        /// </summary>
+        /// <param name="importManyType">Type of the import many.</param>
+        /// <param name="itemType">Type of the item.</param>
+        /// <returns>ImportTypeInfo.</returns>
         public static ImportTypeInfo ParseFromMany(TypeDescriptor importManyType, TypeDescriptor itemType)
         {
             return new ImportTypeInfo(importManyType, itemType);
@@ -327,10 +397,10 @@ namespace MEFEditor.TypeSystem
         #region ImportMany ItemType parsing
 
         /// <summary>
-        /// Find ItemType from given type representing many imports
+        /// Find ItemType from given type representing many imports.
         /// </summary>
-        /// <param name="manyType">Many imports representation</param>
-        /// <returns>ItemType if found according to MEF rules, null otherwise</returns>
+        /// <param name="manyType">Many imports representation.</param>
+        /// <returns>ItemType if found according to MEF rules, null otherwise.</returns>
         private static TypeDescriptor findManyItemDescriptor(InheritanceChain manyType)
         {
             var signature = manyType.Path.Signature;
@@ -350,10 +420,10 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Find ItemType from given type representing many imports in ICollection{}
+        /// Find ItemType from given type representing many imports in ICollection{}.
         /// </summary>
-        /// <param name="manyType">Many imports representation</param>
-        /// <returns>ItemType if found within ICollection according to MEF rules, null otherwise</returns>
+        /// <param name="manyType">Many imports representation.</param>
+        /// <returns>ItemType if found within ICollection according to MEF rules, null otherwise.</returns>
         private static TypeDescriptor findICollectionItemDescriptor(InheritanceChain manyType)
         {
             var signature = manyType.Path.Signature;
@@ -382,7 +452,7 @@ namespace MEFEditor.TypeSystem
     public class Import
     {
         /// <summary>
-        /// Contract specified in Import attribute, or default contract according to import type
+        /// Contract specified in Import attribute, or default contract according to import type.
         /// </summary>
         public readonly string Contract;
 
@@ -392,26 +462,35 @@ namespace MEFEditor.TypeSystem
         public readonly ImportTypeInfo ImportTypeInfo;
 
         /// <summary>
-        /// Setter, which set instance to requested target        
-        /// is null, if import was obtained from importing constructor
+        /// Setter, which set instance to requested target
+        /// is null, if import was obtained from importing constructor.
         /// </summary>
         public readonly MethodID Setter;
 
         /// <summary>
-        /// Determine if this import has to be satisfied before instance constructing
+        /// Determine if this import has to be satisfied before instance constructing.
         /// </summary>
+        /// <value><c>true</c> if this instance is prerequisity; otherwise, <c>false</c>.</value>
         public bool IsPrerequisity { get { return Setter == null; } }
 
         /// <summary>
-        /// Determine if value can be default (no export needed)
+        /// Determine if value can be default (no export needed).
         /// </summary>
         public readonly bool AllowDefault;
 
         /// <summary>
-        /// Determine if import can accept more than one export
+        /// Determine if import can accept more than one export.
         /// </summary>
         public readonly bool AllowMany;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Import"/> class.
+        /// </summary>
+        /// <param name="importTypeInfo">The import type information.</param>
+        /// <param name="setter">The setter.</param>
+        /// <param name="contract">The contract.</param>
+        /// <param name="allowMany">if set to <c>true</c> [allow many].</param>
+        /// <param name="allowDefault">if set to <c>true</c> [allow default].</param>
         public Import(ImportTypeInfo importTypeInfo, MethodID setter, string contract, bool allowMany = false, bool allowDefault = false)
         {
             ImportTypeInfo = importTypeInfo;

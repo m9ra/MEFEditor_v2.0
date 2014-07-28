@@ -9,7 +9,7 @@ using MEFEditor.Analyzing;
 namespace RecommendedExtensions.Core.TypeDefinitions.CompositionEngine
 {
     /// <summary>
-    /// Result of composition engine.
+    /// Result of composition engine. Informs about composition and its errors.
     /// </summary>
     public class CompositionResult
     {
@@ -33,18 +33,23 @@ namespace RecommendedExtensions.Core.TypeDefinitions.CompositionEngine
         /// </summary>
         public readonly JoinPoint[] Points;
 
+        /// <summary>
+        /// The context where composition has been analyzed.
+        /// </summary>
         public readonly CompositionContext Context;
 
         /// <summary>
-        /// Generator for instructions providing composition
+        /// Generator for instructions providing composition.
         /// </summary>
         internal readonly CompositionGenerator Generator;
 
         /// <summary>
         /// Create CompositionResult.
         /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="joins">Collected joins.</param>
-        /// <param name="points">Collected points</param>
+        /// <param name="points">Collected points.</param>
+        /// <param name="generator">The generator.</param>
         /// <param name="error">Error which appeared during composition.</param>
         internal CompositionResult(CompositionContext context, Join[] joins, JoinPoint[] points, CompositionGenerator generator, string error)
         {

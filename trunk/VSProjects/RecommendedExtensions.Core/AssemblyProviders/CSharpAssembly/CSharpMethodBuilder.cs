@@ -16,7 +16,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
 {
 
     /// <summary>
-    /// Method builder enahnced for C# - it added support for class member initializers
+    /// Method builder enhanced for C# - it added support for class member initializers
     /// and indexers.
     /// </summary>
     public class CSharpMethodBuilder : MethodItemBuilder
@@ -24,11 +24,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
         #region Builders
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given <see cref="CodeClass2"/> element
+        /// Build <see cref="MethodItem" /> from given <see cref="CodeClass2" /> element.
         /// </summary>
-        /// <param name="element">Method definition element</param>
-        /// <param name="buildGetter">Determine that getter or setter should be builded</param>
-        /// <returns>Built method</returns>
+        /// <param name="element">Method definition element.</param>
+        /// <returns>Built method.</returns>
         protected MethodItem BuildFrom(CodeClass2 element)
         {
             var isImplicitCtor = Naming.IsParamLessCtor(MethodInfo.MethodID) || Naming.IsClassCtor(MethodInfo.MethodID);
@@ -42,10 +41,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
         }
 
         /// <summary>
-        /// Build implicit ctor for given class
+        /// Build implicit ctor for given class.
         /// </summary>
-        /// <param name="element">Class which ctor will be created</param>
-        /// <returns>Created ctor</returns>
+        /// <param name="element">Class which ctor will be created.</param>
+        /// <returns>Created ctor.</returns>
         private MethodItem buildImplicitCtor(CodeClass2 element)
         {
             //we use source ctor, because of having navigation edit
@@ -53,10 +52,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
         }
 
         /// <summary>
-        /// Build inicializer for given class
+        /// Build inicializer for given class.
         /// </summary>
-        /// <param name="element">Class which initializer will be created</param>
-        /// <returns>Created initializer</returns>
+        /// <param name="element">Class which initializer will be created.</param>
+        /// <returns>Created initializer.</returns>
         private MethodItem buildInitializer(CodeClass2 element)
         {
             var initializerSource = new StringBuilder();
@@ -83,11 +82,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
         }
 
         /// <summary>
-        /// Build implicit ctor or initializer method from given source
+        /// Build implicit ctor or initializer method from given source.
         /// </summary>
-        /// <param name="element">Element which method is built</param>
-        /// <param name="sourceCode">Code of method</param>
-        /// <returns>Built method</returns>
+        /// <param name="element">Element which method is built.</param>
+        /// <param name="sourceCode">Code of method.</param>
+        /// <returns>Built method.</returns>
         private MethodItem buildFromSource(CodeClass2 element, string sourceCode)
         {
             var namespaces = DeclaringAssembly.GetNamespaces(element as CodeElement);
@@ -103,6 +102,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
 
         #region Visitor overrides
 
+        /// <summary>
+        /// Visits the property.
+        /// </summary>
+        /// <param name="e">The e.</param>
         /// <inheritdoc />
         public override void VisitProperty(CodeProperty e)
         {
@@ -110,6 +113,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
             base.VisitProperty(e);
         }
 
+        /// <summary>
+        /// Visit given element.
+        /// </summary>
+        /// <param name="e">Element to visit.</param>
         /// <inheritdoc />
         public override void VisitClass(CodeClass2 e)
         {

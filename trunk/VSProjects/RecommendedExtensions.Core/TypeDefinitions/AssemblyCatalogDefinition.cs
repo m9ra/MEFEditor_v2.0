@@ -19,12 +19,34 @@ namespace RecommendedExtensions.Core.TypeDefinitions
     /// </summary>
     public class AssemblyCatalogDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// The contained components.
+        /// </summary>
         public readonly Field<List<Instance>> Components;
+
+        /// <summary>
+        /// Path of assembly.
+        /// </summary>
         public readonly Field<string> Path;
+
+        /// <summary>
+        /// The assembly name.
+        /// </summary>
         public readonly Field<string> AssemblyName;
+
+        /// <summary>
+        /// The full path.
+        /// </summary>
         public readonly Field<string> FullPath;
+
+        /// <summary>
+        /// The error.
+        /// </summary>
         public readonly Field<string> Error;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssemblyCatalogDefinition" /> class.
+        /// </summary>
         public AssemblyCatalogDefinition()
         {
             Simulate<AssemblyCatalog>();
@@ -41,6 +63,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions
         /// <summary>
         /// Runtime member definition.
         /// </summary>
+        /// <param name="path">The path.</param>
         public void _method_ctor(string path)
         {
             Path.Value = path;
@@ -53,6 +76,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions
         /// <summary>
         /// Runtime member definition.
         /// </summary>
+        /// <param name="assembly">The assembly.</param>
         [ParameterTypes(typeof(System.Reflection.Assembly))]
         public void _method_ctor(Instance assembly)
         {
@@ -66,6 +90,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions
         /// <summary>
         /// Runtime member definition.
         /// </summary>
+        /// <returns>Instance[].</returns>
         public Instance[] _get_Parts()
         {
             return Components.Get().ToArray();
@@ -74,6 +99,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions
         /// <summary>
         /// Runtime member definition.
         /// </summary>
+        /// <returns>System.String.</returns>
         public string _get_Path()
         {
             return Path.Get();
@@ -82,6 +108,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions
         /// <summary>
         /// Runtime member definition.
         /// </summary>
+        /// <returns>System.String.</returns>
         public string _get_FullPath()
         {
             return FullPath.Get();
@@ -91,11 +118,20 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #region Private utilities
 
+        /// <summary>
+        /// Resolves the full path.
+        /// </summary>
+        /// <param name="relativePath">The relative path.</param>
+        /// <returns>System.String.</returns>
         private string resolveFullPath(string relativePath)
         {
             return DirectoryCatalogDefinition.ResolveFullPath(relativePath, Services);
         }
 
+        /// <summary>
+        /// Loads the components from path.
+        /// </summary>
+        /// <param name="path">The path.</param>
         private void loadComponentsFromPath(string path)
         {
             var components = new List<Instance>();
@@ -132,6 +168,9 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #region Edits handling
 
+        /// <summary>
+        /// Sets the ctor edits.
+        /// </summary>
         private void setCtorEdits()
         {
             RewriteArg(1, "Change path", _pathInput);
@@ -140,9 +179,13 @@ namespace RecommendedExtensions.Core.TypeDefinitions
                 ));
         }
 
+        /// <summary>
+        /// Dialog for path input.
+        /// </summary>
+        /// <param name="view">View where path edit will be processed.</param>
+        /// <returns>System.Object.</returns>
         private object _pathInput(ExecutionView view)
         {
-            //TODO resolve base path
             var oldPath = FullPath.Get();
             var path = Dialogs.PathProvider.GetAssemblyPath(oldPath);
 
@@ -157,6 +200,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #endregion
 
+        /// <summary>
+        /// Export data from represented <see cref="Instance" /> by using given drawer.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of editors workspace.</remarks>.
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
         protected override void draw(InstanceDrawer drawer)
         {
             drawer.SetProperty("Path", Path.Value);
