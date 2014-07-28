@@ -10,57 +10,69 @@ namespace MEFEditor.Interoperability
 {
 
     /// <summary>
-    /// used for wraping elements, because of changes handling
+    /// Wrapper class for <see cref="CodeElement"/> that doesn't suffer for unexpected changes
+    /// and exceptions. It can also tracks precise changes based on watching text changes.
     /// </summary>
     public class ElementNode
     {
         /// <summary>
-        /// Children of current node
+        /// Children of current node.
         /// </summary>
         readonly Dictionary<CodeElement, ElementNode> _children = new Dictionary<CodeElement, ElementNode>();
 
         /// <summary>
-        /// Tags stored for current node
+        /// Tags stored for current node.
         /// </summary>
         readonly Dictionary<string, object> _tags = new Dictionary<string, object>();
 
         /// <summary>
-        /// CodeElements cached from wrapped element
+        /// CodeElements cached from wrapped element.
         /// </summary>
         CodeElements _elements;
 
         /// <summary>
-        /// File item manager which owns this element node
+        /// File item manager which owns this element node.
         /// </summary>
         FileItemManager _owner;
 
         /// <summary>
-        /// Element which belongs to this node
+        /// Element which belongs to this node.
         /// </summary>
         public readonly CodeElement Element;
+
         /// <summary>
-        /// Node is root ElementNode
+        /// Determine that current node is root.
         /// </summary>
+        /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
         public bool IsRoot { get { return Element == null; } }
 
         /// <summary>
-        /// Children of current node
+        /// Children of current node.
         /// </summary>
+        /// <value>The children.</value>
         public IEnumerable<ElementNode> Children { get { return _children.Values; } }
 
         /// <summary>
-        /// Absolute offset start of wrapped element
+        /// Absolute offset start of wrapped element.
         /// </summary>
         private int Start;
+
         /// <summary>
-        /// Absolute offset end of wrapped element
+        /// Absolute offset end of wrapped element.
         /// </summary>
         private int End;
+
         /// <summary>
-        /// Indicates that this span was already removed
+        /// Indicates that this span was already removed.
         /// </summary>
         public bool Removed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ElementNode"/> class.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <param name="owner">The owner.</param>
+        /// <exception cref="System.ArgumentNullException">element</exception>
         internal ElementNode(CodeElement element, FileItemManager owner)
         {
             _owner = owner;
@@ -73,6 +85,12 @@ namespace MEFEditor.Interoperability
             refreshOffset(); //initialize offset
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ElementNode"/> class.
+        /// </summary>
+        /// <param name="codeElements">The code elements.</param>
+        /// <param name="owner">The owner.</param>
+        /// <exception cref="System.ArgumentNullException">codeElements</exception>
         internal ElementNode(CodeElements codeElements, FileItemManager owner)
         {
             _owner = owner;
@@ -81,11 +99,21 @@ namespace MEFEditor.Interoperability
         }
 
 
+        /// <summary>
+        /// Sets the tag for current node.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="tag">The tag.</param>
         public void SetTag(string tagName, object tag)
         {
             _tags[tagName] = tag;
         }
 
+        /// <summary>
+        /// Gets the tag for current node..
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <returns>System.Object.</returns>
         public object GetTag(string tagName)
         {
             object result;
@@ -94,10 +122,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// refresh Start,End offsets
-        /// return true, if offsets differs from stored ones, else return false
+        /// Refresh Start,End offsets
+        /// return true, if offsets differs from stored ones, else return false.
         /// </summary>
-        /// <returns></returns>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool refreshOffset()
         {
             vsCMPart partS, partE;
@@ -112,7 +140,7 @@ namespace MEFEditor.Interoperability
                         partE = vsCMPart.vsCMPartWholeWithAttributes;//to get whole end
 
                         var f2 = Element as CodeFunction2;
-                        if (f2.MustImplement) return false; //doesnt have body
+                        if (f2.MustImplement) return false; //doesn't have body
                         break;
 
                     default:
@@ -139,9 +167,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Check which descendants were added/removed or are misplaced according to ApplyEdits
+        /// Check which descendants were added/removed or are misplaced according to ApplyEdits.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="result">The result.</param>
+        /// <returns>List&lt;ElementChange&gt;.</returns>
         internal List<ElementChange> CheckChildren(List<ElementChange> result = null)
         {
             if (result == null) result = new List<ElementChange>();
@@ -197,11 +226,11 @@ namespace MEFEditor.Interoperability
 
         /// <summary>
         /// Apply position changes and return list of changed descendants
-        /// Element is changed, if no its children wrap whole change        
+        /// Element is changed, if no its children wrap whole change.
         /// </summary>
-        /// <param name="change"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
+        /// <param name="change">The change.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>List&lt;ElementChange&gt;.</returns>
         internal List<ElementChange> ApplyEdit(LineChange change, List<ElementChange> result = null)
         {
             if (result == null) result = new List<ElementChange>();
@@ -226,9 +255,10 @@ namespace MEFEditor.Interoperability
 
 
         /// <summary>
-        /// Remove all children recursively. These removings are in returned changes
+        /// Remove all children recursively. These removings are in returned changes.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="result">The result.</param>
+        /// <returns>List&lt;ElementChange&gt;.</returns>
         internal List<ElementChange> RemoveChildren(List<ElementChange> result = null)
         {
             if (result == null) result = new List<ElementChange>();
@@ -243,11 +273,11 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// return true, if change was inside this element.
-        /// NOTE: Removing is handled in checkChildren, here are checked only inside changes
+        /// Rearange offsets according to registered changed. Return true, if change was inside this element.
+        /// NOTE: Removing is handled in checkChildren, here are checked only inside changes.
         /// </summary>
-        /// <param name="change"></param>
-        /// <returns></returns>
+        /// <param name="change">The change.</param>
+        /// <returns><c>true</c> if change was inside element, <c>false</c> otherwise.</returns>
         private bool rearangeOffsets(LineChange change)
         {
             //  return shorting(change.Start, change.End, change.Shortening);         
@@ -267,6 +297,10 @@ namespace MEFEditor.Interoperability
             return changed;
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             var itm = Element.ProjectItem;
@@ -276,6 +310,11 @@ namespace MEFEditor.Interoperability
             return "Start: " + Start + " " + bufferText.Substring(Start - 1, End - Start);
         }
 
+        /// <summary>
+        /// Reports change in namespace.
+        /// </summary>
+        /// <param name="result">Reported change.</param>
+        /// <returns>List&lt;ElementChange&gt;.</returns>
         internal List<ElementChange> NamespaceChange(List<ElementChange> result = null)
         {
             if (result == null) result = new List<ElementChange>();

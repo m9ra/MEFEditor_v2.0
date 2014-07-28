@@ -6,7 +6,7 @@ using MEFEditor.UnitTesting.AssemblyProviders_TestUtils;
 namespace MEFEditor.UnitTesting
 {
     /// <summary>
-    /// Testing of <see cref="Source"/> correctnes of handling code writing.
+    /// Testing of <see cref="RecommendedExtensions.Core.Languages.CSharp.Source"/> correctness of handling code changes.
     /// </summary>
     [TestClass]
     public class SourceWriting_Testing

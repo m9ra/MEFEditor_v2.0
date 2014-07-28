@@ -41,7 +41,7 @@ namespace MEFEditor.Analyzing.Editing
         public bool IsCommitted { get; private set; }
 
         /// <summary>
-        /// Provider of remove transformation on <see cref="Instances"/> from current view.
+        /// Provider of remove transformation on <see cref="Instance"/> from current view.
         /// </summary>
         private readonly InstanceRemoveProvider _instanceRemoveProvider;
 

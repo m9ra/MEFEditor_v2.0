@@ -9,29 +9,40 @@ using MEFEditor.Analyzing.Execution;
 
 namespace MEFEditor.Analyzing
 {
+    /// <summary>
+    /// Base class for generators providing methods instruction.
+    /// It also provides caching services for generated instructions, therefore
+    /// after each method change new generator should be created.
+    /// </summary>
     public abstract class GeneratorBase
     {
-        private AnalyzingContext _lastCachedContext;
-
+        /// <summary>
+        /// Gets the emitted instructions.
+        /// </summary>
+        /// <value>The emitted instructions.</value>
         public InstructionBatch EmittedInstructions { get; private set; }
 
         /// <summary>
-        /// Generate instructions through given emitter
-        /// <remarks>Throwing any exception will immediately stops analyzing</remarks>
+        /// Generate instructions through given emitter.
+        /// <remarks>Throwing any exception will immediately stops analyzing.</remarks>
         /// </summary>
-        /// <param name="emitter">Emitter used for instruction generating</param>
+        /// <param name="emitter">The emitter which will be used for instruction generation.</param>
         protected abstract void generate(EmitterBase emitter);
 
-        internal void Generate(EmitterBase emitter){
-            if (EmittedInstructions != null /*&& _lastCachedContext==emitter.Context*/)
+        /// <summary>
+        /// Generates instructions which will be available in <see cref="EmittedInstructions"/> property.
+        /// </summary>
+        /// <param name="emitter">The emitter which will be used for instruction generation.</param>
+        internal void Generate(EmitterBase emitter)
+        {
+            if (EmittedInstructions != null)
             {
                 //we cache previous instructions generation
                 emitter.InsertInstructions(EmittedInstructions);
                 return;
             }
-          
+
             generate(emitter);
-            _lastCachedContext = emitter.Context;
             EmittedInstructions = emitter.GetEmittedInstructions();
         }
     }

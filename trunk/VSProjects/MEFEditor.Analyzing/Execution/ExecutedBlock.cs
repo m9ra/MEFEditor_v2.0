@@ -11,33 +11,67 @@ using MEFEditor.Analyzing.Execution.Instructions;
 
 namespace MEFEditor.Analyzing.Execution
 {
+    /// <summary>
+    /// Class ExecutedBlock.
+    /// </summary>
     public class ExecutedBlock
     {
+        /// <summary>
+        /// Stored scope starts.
+        /// </summary>
         private MultiDictionary<Instance, VariableName> _scopeStarts = new MultiDictionary<Instance, VariableName>();
+
+        /// <summary>
+        /// Stored scope ends.
+        /// </summary>
         private MultiDictionary<Instance, VariableName> _scopeEnds = new MultiDictionary<Instance, VariableName>();
+
+        /// <summary>
+        /// Currently available remove providers.
+        /// </summary>
         private MultiDictionary<Instance, RemoveTransformProvider> _assignRemoveProviders = new MultiDictionary<Instance, RemoveTransformProvider>();
 
+        /// <summary>
+        /// The instances affected in current block.
+        /// </summary>
         private HashSet<Instance> _affectedInstances = new HashSet<Instance>();
 
+        /// <summary>
+        /// The calls made from current block.
+        /// </summary>
         private LinkedList<CallContext> _calls;
 
+        /// <summary>
+        /// Next block.
+        /// </summary>
         private ExecutedBlock _nextBlock;
 
+        /// <summary>
+        /// Information stored to block of instructions.
+        /// </summary>
         public readonly InstructionInfo Info;
 
         /// <summary>
-        /// Call where this block has been executed
+        /// Call where this block has been executed.
         /// </summary>
         public readonly CallContext Call;
 
+        /// <summary>
+        /// Gets the previous block.
+        /// </summary>
+        /// <value>The previous block.</value>
         public ExecutedBlock PreviousBlock { get; private set; }
 
         /// <summary>
         /// Instances that were affected during execution of current block
-        /// TODO: Other than assigns affecting, deep calls affecting
         /// </summary>
+        /// <value>The affected instances.</value>
         public IEnumerable<Instance> AffectedInstances { get { return _affectedInstances; } }
 
+        /// <summary>
+        /// Gets the first block of analysis.
+        /// </summary>
+        /// <value>The first block.</value>
         public ExecutedBlock FirstBlock
         {
             get
@@ -50,6 +84,10 @@ namespace MEFEditor.Analyzing.Execution
             }
         }
 
+        /// <summary>
+        /// Gets the next block.
+        /// </summary>
+        /// <value>The next block.</value>
         public ExecutedBlock NextBlock
         {
             get
@@ -64,25 +102,30 @@ namespace MEFEditor.Analyzing.Execution
         }
 
         /// <summary>
-        /// Determine which variables for given instance has scope start on this block
+        /// Determine which variables for given instance has scope start on this block.
         /// </summary>
-        /// <param name="instance">Scoped instance</param>
-        /// <returns>Names of variables</returns>
+        /// <param name="instance">Scoped instance.</param>
+        /// <returns>Names of variables.</returns>
         public IEnumerable<VariableName> ScopeStarts(Instance instance)
         {
             return _scopeStarts.Get(instance);
         }
 
         /// <summary>
-        /// Determine which variables for given instance has scope end on this block
+        /// Determine which variables for given instance has scope end on this block.
         /// </summary>
-        /// <param name="instance">Scoped instance</param>
-        /// <returns>Names of variables</returns>
+        /// <param name="instance">Scoped instance.</param>
+        /// <returns>Names of variables.</returns>
         public IEnumerable<VariableName> ScopeEnds(Instance instance)
         {
             return _scopeEnds.Get(instance);
         }
 
+        /// <summary>
+        /// Get available remove providers for given instance.
+        /// </summary>
+        /// <param name="instance">The instance which remove providers are requested.</param>
+        /// <returns>IEnumerable&lt;RemoveTransformProvider&gt;.</returns>
         public IEnumerable<RemoveTransformProvider> RemoveProviders(Instance instance)
         {
             //remove from assigns
@@ -116,6 +159,10 @@ namespace MEFEditor.Analyzing.Execution
         }
 
 
+        /// <summary>
+        /// Gets calls invoked from current block.
+        /// </summary>
+        /// <value>The calls.</value>
         public IEnumerable<CallContext> Calls
         {
             get
@@ -131,12 +178,21 @@ namespace MEFEditor.Analyzing.Execution
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExecutedBlock" /> class.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="call">The call.</param>
         internal ExecutedBlock(InstructionInfo info, CallContext call)
         {
             Info = info;
             Call = call;
         }
 
+        /// <summary>
+        /// Register call called from current block.
+        /// </summary>
+        /// <param name="callContext">Context of the call.</param>
         internal void RegisterCall(CallContext callContext)
         {
             if (_calls == null)
@@ -146,6 +202,13 @@ namespace MEFEditor.Analyzing.Execution
             _calls.AddLast(callContext);
         }
 
+        /// <summary>
+        /// Registers the assign processed by given instruction..
+        /// </summary>
+        /// <param name="scopedVariable">The scoped variable.</param>
+        /// <param name="assignInstruction">The assign instruction.</param>
+        /// <param name="oldInstance">The old instance.</param>
+        /// <param name="assignedInstance">The assigned instance.</param>
         internal void RegisterAssign(VariableName scopedVariable, AssignBase assignInstruction, Instance oldInstance, Instance assignedInstance)
         {
             if (scopedVariable.Name.StartsWith("$"))
@@ -174,6 +237,10 @@ namespace MEFEditor.Analyzing.Execution
             _assignRemoveProviders.Add(assignedInstance, removeProvider);
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             if (Info.Comment == null)

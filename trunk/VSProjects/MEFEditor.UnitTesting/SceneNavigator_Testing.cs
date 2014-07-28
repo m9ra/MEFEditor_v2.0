@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 
 using MEFEditor.Drawing;
+using MEFEditor.Drawing.ArrangeEngine;
 
 using MEFEditor.UnitTesting.Drawing_TestUtils;
 

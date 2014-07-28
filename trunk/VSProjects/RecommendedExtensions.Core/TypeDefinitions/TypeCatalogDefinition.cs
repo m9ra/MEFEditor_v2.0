@@ -86,7 +86,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         /// <summary>
         /// Export data from represented <see cref="Instance" /> by using given drawer.
-        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas" /></remarks>.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="MEFEditor.Drawing.DiagramCanvas" /></remarks>.
         /// </summary>
         /// <param name="drawer">The drawer.</param>
         protected override void draw(InstanceDrawer drawer)

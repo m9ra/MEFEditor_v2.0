@@ -69,7 +69,7 @@ namespace MEFEditor.Interoperability
         /// <param name="level">Level of log entry.</param>
         /// <param name="message">Logged message.</param>
         /// <param name="description">Description of logged message.</param>
-        /// <param name="position">Navigation position of log entry.</param>
+        /// <param name="navigate">Navigation action of log entry.</param>
         public LogEntry(LogLevels level, string message, string description, Action navigate)
         {
             Level = level;

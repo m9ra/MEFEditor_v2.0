@@ -9,51 +9,54 @@ using EnvDTE;
 namespace MEFEditor.Interoperability
 {
     /// <summary>
-    /// Handle changes on <see cref="Project"/>
-    /// <remarks>All changes made are buffered until <see cref="FlushChanges"/> is called</remarks>
+    /// Handle changes on <see cref="Project" /><remarks>All changes made are buffered until <see cref="FlushChanges" /> is called</remarks>.
     /// </summary>
     class ProjectManager
     {
         /// <summary>
-        /// Assembly which <see cref="Project"/> will be watched after Hooking
+        /// Assembly which <see cref="Project" /> will be watched after Hooking.
         /// </summary>
         private readonly Project _project;
 
         /// <summary>
-        /// Available services
+        /// Available services.
         /// </summary>
         private readonly VisualStudioServices _vs;
 
         /// <summary>
-        /// Determine that all items has been already registered by manager
+        /// Determine that all items has been already registered by manager.
         /// </summary>
         private bool _isAllRegistered;
 
         /// <summary>
-        /// Items that has been registered for watching changes
+        /// Items that has been registered for watching changes.
         /// </summary>
         private readonly Dictionary<ProjectItem, FileItemManager> _watchedItems = new Dictionary<ProjectItem, FileItemManager>();
 
         /// <summary>
-        /// File item managers that have recieved change
+        /// File item managers that have received change.
         /// </summary>
         private readonly HashSet<FileItemManager> _changedFileManagers = new HashSet<FileItemManager>();
 
         /// <summary>
-        /// Event fired whenever element is added (top most)
+        /// Event fired whenever element is added (top most).
         /// </summary>
         internal event ElementNodeHandler ElementAdded;
 
         /// <summary>
-        /// Event fired whenever element is removed (every)
+        /// Event fired whenever element is removed (every).
         /// </summary>
         internal event ElementNodeHandler ElementRemoved;
 
         /// <summary>
-        /// Event fired whenever element is added (every)
+        /// Event fired whenever element is added (every).
         /// </summary>
         internal event ElementNodeHandler ElementChanged;
 
+        /// <summary>
+        /// Gets the root nodes in FileCodeModel of manager.
+        /// </summary>
+        /// <value>The root nodes.</value>
         internal IEnumerable<ElementNode> RootNodes
         {
             get
@@ -77,35 +80,48 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Initialize manager
+        /// Initialize manager.
         /// </summary>
-        /// <param name="project"><see cref="Project"/> that will be watched after Hooking</param>
+        /// <param name="project"><see cref="Project" /> that will be watched after Hooking.</param>
+        /// <param name="vs">Visual studio services.</param>
         public ProjectManager(Project project, VisualStudioServices vs)
         {
             _project = project;
             _vs = vs;
         }
 
+        /// <summary>
+        /// Registers the add handler.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
         internal void RegisterAddHandler(ElementNodeHandler handler)
         {
             ElementAdded += handler;
         }
 
+        /// <summary>
+        /// Registers the remove handler.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
         internal void RegisterRemoveHandler(ElementNodeHandler handler)
         {
             ElementRemoved += handler;
         }
 
+        /// <summary>
+        /// Registers the change handler.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
         internal void RegisterChangeHandler(ElementNodeHandler handler)
         {
             ElementChanged += handler;
         }
 
         /// <summary>
-        /// Get <see cref="FileItemManager"/> watching given item
+        /// Get <see cref="FileItemManager" /> watching given item.
         /// </summary>
-        /// <param name="item">Item which manager is needed</param>
-        /// <returns>Founded <see cref="FileItemManager"/> if available, or new one that is created</returns>
+        /// <param name="item">Item which manager is needed.</param>
+        /// <returns>Founded <see cref="FileItemManager" /> if available, or new one that is created.</returns>
         internal FileItemManager GetFileManager(ProjectItem item)
         {
             FileItemManager fileManager;
@@ -118,7 +134,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Register all items that are contained within project
+        /// Register all items that are contained within project.
         /// </summary>
         internal void RequireRegisterAllItems()
         {
@@ -132,7 +148,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Remove all registered items
+        /// Remove all registered items.
         /// </summary>
         internal void RemoveAll()
         {
@@ -144,9 +160,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Register removing of given <see cref="ProjectItem"/>
+        /// Register removing of given <see cref="ProjectItem" />.
         /// </summary>
-        /// <param name="item">Project item that is removed</param>
+        /// <param name="item">Project item that is removed.</param>
         internal void RegisterRemove(ProjectItem item)
         {
             FileItemManager manager;
@@ -161,18 +177,18 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Register adding of given <see cref="ProjectItem"/>
+        /// Register adding of given <see cref="ProjectItem" />.
         /// </summary>
-        /// <param name="item">Project item that is added</param>
+        /// <param name="item">Project item that is added.</param>
         internal void RegisterAdd(ProjectItem item)
         {
             registerItem(item);
         }
 
         /// <summary>
-        /// Register <see cref="LineChange"/> that has been made within watched project
+        /// Register <see cref="LineChange" /> that has been made within watched project.
         /// </summary>
-        /// <param name="change">Registered change</param>
+        /// <param name="change">Registered change.</param>
         internal void RegisterChange(LineChange change)
         {
             FileItemManager fileManager;
@@ -195,7 +211,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Flush all waiting changes
+        /// Flush all waiting changes.
         /// </summary>
         internal void FlushChanges()
         {
@@ -210,10 +226,10 @@ namespace MEFEditor.Interoperability
         #region Private utilities
 
         /// <summary>
-        /// Register given <see cref="ProjectItem"/>
+        /// Register given <see cref="ProjectItem" />.
         /// </summary>
-        /// <param name="item">Project item that is registered</param>
-        /// <returns><see cref="FileItemManager"/> created for given item if any</returns>
+        /// <param name="item">Project item that is registered.</param>
+        /// <returns><see cref="FileItemManager" /> created for given item if any.</returns>
         private FileItemManager registerItem(ProjectItem item)
         {
             if (_watchedItems.ContainsKey(item))

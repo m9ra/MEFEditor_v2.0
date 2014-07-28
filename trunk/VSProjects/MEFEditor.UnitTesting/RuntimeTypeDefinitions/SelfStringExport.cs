@@ -11,10 +11,19 @@ using MEFEditor.TypeSystem.Runtime;
 
 namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
 {
+    /// <summary>
+    /// Type definition used for testing purposes.
+    /// </summary>
     public class SelfStringExport : DataTypeDefinition
     {
+        /// <summary>
+        /// Member field representation.
+        /// </summary>
         protected Field<string> Export;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelfStringExport" /> class.
+        /// </summary>
         public SelfStringExport()
         {
             FullName = "SelfStringExport";
@@ -24,6 +33,10 @@ namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
             ComponentInfo = builder.BuildWithImplicitCtor();
         }
 
+        /// <summary>
+        /// Member representation.
+        /// </summary>
+        /// <param name="toExport">To export.</param>
         public void _method_ctor(string toExport)
         {
 

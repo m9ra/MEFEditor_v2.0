@@ -14,83 +14,82 @@ using System.Runtime.InteropServices;
 namespace MEFEditor.Interoperability
 {
     /// <summary>
-    /// Services that are used by plugin to interoperate with AssemblyProviders
-    /// 
-    /// TODO here will be top level handling of Changes
+    /// Provides simplified access to services from Visual Studio that are used by MEFEditor.
     /// </summary>
     public class VisualStudioServices
     {
         /// <summary>
-        /// Projects that are registered for watching
+        /// Projects that are registered for watching.
         /// </summary>
         private readonly Dictionary<Project, ProjectManager> _watchedProjects = new Dictionary<Project, ProjectManager>();
 
         /// <summary>
-        /// List of changes that is managed because of lazy changes handling
+        /// List of changes that is managed because of lazy changes handling.
         /// </summary>
         private readonly List<LineChange> _changes = new List<LineChange>();
 
         /// <summary>
-        /// Timer for lazy waiting on changes
+        /// Timer for lazy waiting on changes.
         /// </summary>
         private readonly DispatcherTimer _changeWait = new DispatcherTimer();
 
         /// <summary>
         /// Timer for waiting until solution starts to been processed. This waiting
-        /// is needed for getting attribute and other fullnames resolved
+        /// is needed for getting attribute and other fullnames resolved.
         /// </summary>
         private readonly DispatcherTimer _solutionWait = new DispatcherTimer();
 
         /// <summary>
-        /// Visual studio object used for interoperability
+        /// Visual studio object used for interoperability.
         /// </summary>
         private readonly DTE _dte;
 
         /// <summary>
-        /// Visual studio events object which reference is needed because of unwanted garbage collection
+        /// Visual studio events object which reference is needed because of unwanted garbage collection.
         /// </summary>
         private readonly Events _events;
 
         /// <summary>
-        /// Visual studio events object which reference is needed because of unwanted garbage collection
+        /// Visual studio events object which reference is needed because of unwanted garbage collection.
         /// </summary>
         private readonly Events2 _events2;
 
         /// <summary>
-        /// Events provided by text editor
+        /// Events provided by text editor.
         /// </summary>
         private readonly TextEditorEvents _textEditorEvents;
 
         /// <summary>
-        /// Events provided by active solution
+        /// Events provided by active solution.
         /// </summary>
         private readonly SolutionEvents _solutionEvents;
 
         /// <summary>
-        /// Events provided for <see cref="ProjectItems"/> that
+        /// Events provided for <see cref="ProjectItems" /> that
         /// are directly in SOLUTION.
         /// </summary>
         private readonly ProjectItemsEvents _solutionItemEvents;
 
         /// <summary>
-        /// Events provided for <see cref="ProjectItems"/> that
-        /// are in PROJECT
+        /// Events provided for <see cref="ProjectItems" /> that
+        /// are in PROJECT.
         /// </summary>
         private readonly ProjectItemsEvents _projectItemEvents;
 
         /// <summary>
-        /// Storage for <see cref="HasWaitingChanges"/>
-        /// </summary>        
+        /// Storage for <see cref="HasWaitingChanges" />.
+        /// </summary>
         private bool _hasWaitingChanges = false;
 
         /// <summary>
-        /// Determine that last solution has been closed
+        /// Determine that last solution has been closed.
         /// </summary>
         private bool _wasSolutionClosed = true;
 
         /// <summary>
-        /// Determine that change has been registered and not flushed yet
+        /// Determine that change has been registered and not flushed yet.
         /// </summary>
+        /// <value><c>true</c> if this instance has waiting changes; otherwise, <c>false</c>.</value>
         public bool HasWaitingChanges
         {
             get { return _hasWaitingChanges; }
@@ -110,18 +109,20 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Logging service that can be used for displaying messages to user
+        /// Logging service that can be used for displaying messages to user.
         /// </summary>
         public readonly Log Log;
 
         /// <summary>
-        /// Projects that are discovered in current solution
+        /// Projects that are discovered in current solution.
         /// </summary>
+        /// <value>The solution projects.</value>
         public IEnumerable<Project> SolutionProjects { get { return _watchedProjects.Keys; } }
 
         /// <summary>
-        /// Determine that solution is opened
+        /// Determine that solution is opened.
         /// </summary>
+        /// <value><c>true</c> if this instance is solution opened; otherwise, <c>false</c>.</value>
         public bool IsSolutionOpened { get { return _dte.Solution != null && _dte.Solution.IsOpen; } }
 
         /// <summary>
@@ -137,17 +138,17 @@ namespace MEFEditor.Interoperability
         #region Forwarded events
 
         /// <summary>
-        /// Event fired whenever new <see cref="Project"/> is added into active solution
+        /// Event fired whenever new <see cref="Project" /> is added into active solution
         /// </summary>
         public event _dispSolutionEvents_ProjectAddedEventHandler ProjectAdded;
 
         /// <summary>
-        /// Event fired whenever new <see cref="Project"/> starts to be added into active solution
+        /// Event fired whenever new <see cref="Project" /> starts to be added into active solution
         /// </summary>
         public event _dispSolutionEvents_ProjectAddedEventHandler ProjectAddingStarted;
 
         /// <summary>
-        /// Event fired whenever <see cref="Project"/> is removed from active solution
+        /// Event fired whenever <see cref="Project" /> is removed from active solution
         /// </summary>
         public event _dispSolutionEvents_ProjectRemovedEventHandler ProjectRemoved;
 
@@ -169,9 +170,9 @@ namespace MEFEditor.Interoperability
         #endregion
 
         /// <summary>
-        /// Initialize services available from Visual Studio
+        /// Initialize services available from Visual Studio.
         /// </summary>
-        /// <param name="dte">Entry object for Visual Studio services</param>
+        /// <param name="dte">Entry object of Visual Studio services.</param>
         public VisualStudioServices(DTE dte)
         {
             Log = new Log();
@@ -197,7 +198,7 @@ namespace MEFEditor.Interoperability
 
 
         /// <summary>
-        /// Starts listening to visual studio events
+        /// Starts listening to visual studio events.
         /// </summary>
         public void StartListening()
         {
@@ -224,25 +225,31 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Get output path defined for given <see cref="Project"/>
+        /// Get output path defined for given <see cref="Project" />.
         /// </summary>
-        /// <param name="project">Project which output path is required</param>
-        /// <returns>Output path if available, <c>null</c> otherwise</returns>
+        /// <param name="project">Project which output path is required.</param>
+        /// <returns>Output path if available, <c>null</c> otherwise.</returns>
         public string GetOutputPath(Project project)
         {
             return ReadConfigurationProperty(project, "OutputPath");
         }
 
         /// <summary>
-        /// Determine whether given <see cref="Project"/> is compiled as library
+        /// Determine whether given <see cref="Project" /> is compiled as library.
         /// </summary>
-        /// <param name="project">Tested project</param>
-        /// <returns><c>true</c> for library, <c>false</c> otherwise</returns>
+        /// <param name="project">Tested project.</param>
+        /// <returns><c>true</c> for library, <c>false</c> otherwise.</returns>
         public string GetOutputType(Project project)
         {
             return ReadProperty(project, "OutputType");
         }
 
+        /// <summary>
+        /// Reads the <see cref="Project"/> property.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns>System.String.</returns>
         public string ReadProperty(Project project, string propertyName)
         {
             if (project.ConfigurationManager == null || project.ConfigurationManager.ActiveConfiguration == null)
@@ -261,6 +268,12 @@ namespace MEFEditor.Interoperability
             return property.Value.ToString();
         }
 
+        /// <summary>
+        /// Reads the <see cref="Project"/> configuration property.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns>System.String.</returns>
         public string ReadConfigurationProperty(Project project, string propertyName)
         {
             if (project.ConfigurationManager == null || project.ConfigurationManager.ActiveConfiguration == null)
@@ -279,10 +292,10 @@ namespace MEFEditor.Interoperability
 
 
         /// <summary>
-        /// Get namespaces that are valid for given <see cref="ProjectItem"/>        
+        /// Get namespaces that are valid for given <see cref="ProjectItem" />.
         /// </summary>
-        /// <param name="projectItem">Project item</param>
-        /// <returns>Valid namespaces for given projectItem</returns>
+        /// <param name="projectItem">Project item.</param>
+        /// <returns>Valid namespaces for given projectItem.</returns>
         public IEnumerable<string> GetNamespaces(ProjectItem projectItem)
         {
             var manager = findFileManager(projectItem);
@@ -293,13 +306,18 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Force immediate flushing of all changes that are buffered
+        /// Force immediate flushing of all changes that are buffered.
         /// </summary>
         public void ForceFlushChanges()
         {
             flushChanges(null, null);
         }
 
+        /// <summary>
+        /// Gets the root elements of given <see cref="VSProject"/>.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <returns>IEnumerable&lt;ElementNode&gt;.</returns>
         public IEnumerable<ElementNode> GetRootElements(VSProject project)
         {
             var manager = findProjectManager(project.Project);
@@ -310,10 +328,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Register add changes on elements in given <see cref="VSProject"/>
+        /// Register add changes on elements in given <see cref="VSProject" />.
         /// </summary>
-        /// <param name="project">Project where changes are listened</param>
-        /// <param name="handler">Handler fired when element is added</param>
+        /// <param name="project">Project where changes are listened.</param>
+        /// <param name="handler">Handler fired when element is added.</param>
         public void RegisterElementAdd(VSProject project, ElementNodeHandler handler)
         {
             var manager = findProjectManager(project.Project);
@@ -323,10 +341,10 @@ namespace MEFEditor.Interoperability
 
 
         /// <summary>
-        /// Register remove changes on elements in given <see cref="VSProject"/>
+        /// Register remove changes on elements in given <see cref="VSProject" />.
         /// </summary>
-        /// <param name="project">Project where changes are listened</param>
-        /// <param name="handler">Handler fired when element is removed</param>
+        /// <param name="project">Project where changes are listened.</param>
+        /// <param name="handler">Handler fired when element is removed.</param>
         public void RegisterElementRemove(VSProject project, ElementNodeHandler handler)
         {
             var manager = findProjectManager(project.Project);
@@ -336,10 +354,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Register changes on elements in given <see cref="VSProject"/>
+        /// Register changes on elements in given <see cref="VSProject" />.
         /// </summary>
-        /// <param name="project">Project where changes are listened</param>
-        /// <param name="handler">Handler fired when element is changed</param>
+        /// <param name="project">Project where changes are listened.</param>
+        /// <param name="handler">Handler fired when element is changed.</param>
         public void RegisterElementChange(VSProject project, ElementNodeHandler handler)
         {
             var manager = findProjectManager(project.Project);
@@ -353,9 +371,9 @@ namespace MEFEditor.Interoperability
         #region Visual Studio Event handlers
 
         /// <summary>
-        /// Handler called whenever <see cref="Project"/> is added into active solution
+        /// Handler called whenever <see cref="Project" /> is added into active solution.
         /// </summary>
-        /// <param name="addedProject">Project that has been added</param>
+        /// <param name="addedProject">Project that has been added.</param>
         private void onProjectAdded(Project addedProject)
         {
             if (!onProjectAdded_silent(addedProject))
@@ -367,9 +385,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Report handler for reporting added project
+        /// Report handler for reporting added project.
         /// </summary>
-        /// <param name="addedProject"></param>
+        /// <param name="addedProject">The added project.</param>
         private void onProjectAdded_report(Project addedProject)
         {
             if (ProjectAddingStarted != null)
@@ -385,10 +403,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Silent handler that can be used for loading without reporting
+        /// Silent handler that can be used for loading without reporting.
         /// </summary>
-        /// <param name="addedProject">Project that has been added</param>
-        /// <returns><c>True</c> if adding should be reported, <c>false</c> otherwise</returns>
+        /// <param name="addedProject">Project that has been added.</param>
+        /// <returns><c>True</c> if adding should be reported, <c>false</c> otherwise.</returns>
         private bool onProjectAdded_silent(Project addedProject)
         {
             if (isMiscellanaeous(addedProject))
@@ -407,6 +425,10 @@ namespace MEFEditor.Interoperability
             return true;
         }
 
+        /// <summary>
+        /// Flushes the manager changes.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
         private void flushManagerChanges(ProjectManager manager)
         {
             if (BeforeFlushingChanges != null)
@@ -419,9 +441,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Handler called whenever <see cref="Project"/> is removed from active solution
+        /// Handler called whenever <see cref="Project" /> is removed from active solution.
         /// </summary>
-        /// <param name="removedProject">Project that has been removed</param>
+        /// <param name="removedProject">Project that has been removed.</param>
         private void onProjectRemoved(Project removedProject)
         {
             ProjectManager removedManager;
@@ -441,9 +463,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Handler called whenever <see cref="ProjectItem"/> is removed
+        /// Handler called whenever <see cref="ProjectItem" /> is removed.
         /// </summary>
-        /// <param name="item">Removed project item</param>
+        /// <param name="item">Removed project item.</param>
         private void onProjectItemRemoved(ProjectItem item)
         {
             var manager = findProjectManager(item);
@@ -456,9 +478,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Handler called whenever new <see cref="ProjectItem"/> is added
+        /// Handler called whenever new <see cref="ProjectItem" /> is added.
         /// </summary>
-        /// <param name="item">Added project item</param>
+        /// <param name="item">Added project item.</param>
         private void onProjectItemAdded(ProjectItem item)
         {
             var manager = findProjectManager(item);
@@ -473,9 +495,9 @@ namespace MEFEditor.Interoperability
         /// <summary>
         /// Handler called whenever line of some file is changed.
         /// </summary>
-        /// <param name="startPoint">Start point of change</param>
-        /// <param name="endPoint">End point of change</param>
-        /// <param name="hint">Hint determining type of change</param>
+        /// <param name="startPoint">Start point of change.</param>
+        /// <param name="endPoint">End point of change.</param>
+        /// <param name="hint">Hint determining type of change.</param>
         private void onLineChanged(TextPoint startPoint, TextPoint endPoint, int hint)
         {
             //reset change flushing timer
@@ -529,7 +551,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Handler called whenever active solution is closed
+        /// Handler called whenever active solution is closed.
         /// </summary>
         private void solutionClosed()
         {
@@ -550,7 +572,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Handler called whenever active solution is opened
+        /// Handler called whenever active solution is opened.
         /// </summary>
         private void solutionOpened()
         {
@@ -566,8 +588,8 @@ namespace MEFEditor.Interoperability
         /// <summary>
         /// Handler called after some time from opening solution.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void solutionOpenedAfterWait(object sender, EventArgs e)
         {
             _solutionWait.Stop();
@@ -595,11 +617,11 @@ namespace MEFEditor.Interoperability
         #endregion
 
         /// <summary>
-        /// Find <see cref="ProjectManager"/> containing given <see cref="ProjectItem"/>.
-        /// If manager cannot be found, log entries are emitted
+        /// Find <see cref="ProjectManager" /> containing given <see cref="ProjectItem" />.
+        /// If manager cannot be found, log entries are emitted.
         /// </summary>
-        /// <param name="item">Item which manager has to be found</param>
-        /// <returns>Found <see cref="ProjectManager"/> if available, <c>null</c> otherwise</returns>
+        /// <param name="item">Item which manager has to be found.</param>
+        /// <returns>Found <see cref="ProjectManager" /> if available, <c>null</c> otherwise.</returns>
         private ProjectManager findProjectManager(ProjectItem item)
         {
             var containingProject = item.ContainingProject;
@@ -613,11 +635,11 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Find <see cref="ProjectManager"/> containing given <see cref="Project"/>.
-        /// If manager cannot be found, log entries are emitted
+        /// Find <see cref="ProjectManager" /> containing given <see cref="Project" />.
+        /// If manager cannot be found, log entries are emitted.
         /// </summary>
-        /// <param name="project">Project which manager has to be found</param>
-        /// <returns>Found <see cref="ProjectManager"/> if available, <c>null</c> otherwise</returns>
+        /// <param name="project">Project which manager has to be found.</param>
+        /// <returns>Found <see cref="ProjectManager" /> if available, <c>null</c> otherwise.</returns>
         private ProjectManager findProjectManager(Project project)
         {
             ProjectManager manager;
@@ -629,11 +651,11 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Find <see cref="FileItemManager"/> according to given <see cref="ProjectItem"/>.
-        /// If manager cannot be found, log entries are emitted
+        /// Find <see cref="FileItemManager" /> according to given <see cref="ProjectItem" />.
+        /// If manager cannot be found, log entries are emitted.
         /// </summary>
-        /// <param name="item">Item which manager has to be found</param>
-        /// <returns>Found <see cref="FileItemManager"/> if available, <c>null</c> otherwise</returns>
+        /// <param name="item">Item which manager has to be found.</param>
+        /// <returns>Found <see cref="FileItemManager" /> if available, <c>null</c> otherwise.</returns>
         private FileItemManager findFileManager(ProjectItem item)
         {
             var projectManager = findProjectManager(item);
@@ -644,10 +666,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// changes are applied with some delay, based on user activities
+        /// changes are applied with some delay, based on user activities.
         /// </summary>
-        /// <param name="sender">Sender of event</param>
-        /// <param name="e">Arguments of event</param>        
+        /// <param name="sender">Sender of event.</param>
+        /// <param name="e">Arguments of event.</param>
         private void flushChanges(object sender, EventArgs e)
         {
             try
@@ -694,10 +716,10 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Determine if given project is used only for miscelanaeous files
+        /// Determine if given project is used only for miscelanaeous files.
         /// </summary>
-        /// <param name="project">Tested project</param>
-        /// <returns><c>True</c> if project has only miscelneous files, <c>false</c> otherwise</returns>
+        /// <param name="project">Tested project.</param>
+        /// <returns><c>True</c> if project has only miscelneous files, <c>false</c> otherwise.</returns>
         private bool isMiscellanaeous(Project project)
         {
             try
@@ -717,7 +739,7 @@ namespace MEFEditor.Interoperability
         #region Exception tools
 
         /// <summary>
-        /// Handle all exceptions, which can occur during executing invoke info.       
+        /// Handle all exceptions, which can occur during executing invoke info.
         /// </summary>
         /// <param name="action">Method which will be checked for exceptions.</param>
         /// <param name="actionDescription">Description which will be included in error description.</param>
@@ -733,7 +755,7 @@ namespace MEFEditor.Interoperability
             }
         }
         /// <summary>
-        /// Handle all exceptions, which can occur during processing CodeModel objects.       
+        /// Handle all exceptions, which can occur during processing CodeModel objects.
         /// </summary>
         /// <param name="action">Method which will be checked for exceptions.</param>
         /// <param name="actionDescription">Description which will be included in error description.</param>
@@ -754,7 +776,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Handle all exceptions, which can occur during drawing.       
+        /// Handle all exceptions, which can occur during drawing.
         /// </summary>
         /// <param name="action">Method which will be checked for exceptions.</param>
         /// <param name="actionDescription">Description which will be included in error description.</param>
@@ -771,7 +793,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Handle all exceptions, which can occur during editor loading..       
+        /// Handle all exceptions, which can occur during editor loading..
         /// </summary>
         /// <param name="action">Method which will be checked for exceptions.</param>
         /// <param name="actionDescription">Description which will be included in error description.</param>
@@ -792,8 +814,8 @@ namespace MEFEditor.Interoperability
         /// </summary>
         /// <param name="msg">Message for log entry.</param>
         /// <param name="description">Description for log entry.</param>
-        /// <param name="navigate">Navigate to error position</param>
-        /// <returns>Log entry according to specified parameters</returns>
+        /// <param name="navigate">Navigate to error position.</param>
+        /// <returns>Log entry according to specified parameters.</returns>
         public LogEntry LogErrorEntry(string msg, string description, Action navigate = null)
         {
             var entry = new LogEntry(LogLevels.Error, msg, description, navigate);
@@ -806,7 +828,7 @@ namespace MEFEditor.Interoperability
         /// <summary>
         /// Logs the exception described by given message.
         /// </summary>
-        /// <param name="ex">The exception that is logged</param>
+        /// <param name="ex">The exception that is logged.</param>
         /// <param name="messageFormat">The message format.</param>
         /// <param name="formatArguments">The format arguments.</param>
         /// <returns>Logged entry.</returns>
@@ -841,9 +863,11 @@ namespace MEFEditor.Interoperability
         /// <summary>
         /// Run function with exception handler and logging service.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="function">The function that will be run.</param>
         /// <param name="messageFormat">The message format displayed in log.</param>
         /// <param name="formatArguments">The format arguments.</param>
+        /// <returns>T.</returns>
         public T RunSafe<T>(Func<T> function, string messageFormat, params object[] formatArguments)
         {
             try

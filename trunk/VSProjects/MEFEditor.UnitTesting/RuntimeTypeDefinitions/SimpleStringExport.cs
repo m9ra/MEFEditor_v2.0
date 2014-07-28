@@ -10,10 +10,19 @@ using MEFEditor.TypeSystem.Runtime;
 
 namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
 {
+    /// <summary>
+    /// Type definition used for testing purposes.
+    /// </summary>
     public class SimpleStringExport : DataTypeDefinition
     {
+        /// <summary>
+        /// Member field representation.
+        /// </summary>
         protected Field<string> Export;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SimpleStringExport"/> class.
+        /// </summary>
         public SimpleStringExport()
         {
             FullName = "SimpleStringExport";
@@ -25,16 +34,27 @@ namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
             ComponentInfo = builder.BuildWithImplicitCtor();
         }
 
+        /// <summary>
+        /// Member representation.
+        /// </summary>
         public void _method_ctor()
         {
             Export.Set("SimpleExportValue");
         }
 
+        /// <summary>
+        /// Member representation.
+        /// </summary>
+        /// <returns>System.String.</returns>
         public string _get_Export()
         {
             return Export.Get();
         }
 
+        /// <summary>
+        /// Draws the specified services.
+        /// </summary>
+        /// <param name="services">The services.</param>
         protected override void draw(InstanceDrawer services)
         {
             services.PublishField("Export", Export);

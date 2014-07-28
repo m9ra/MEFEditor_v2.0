@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MEFEditor.Drawing
 {
     /// <summary>
-    /// Definition of connector that can be drawn at <see cref="DiagramCanvas" />.
+    /// Definition of connector that can be drawn at <see cref="MEFEditor.Drawing.DiagramCanvas" />.
     /// </summary>
     public class ConnectorDefinition
     {

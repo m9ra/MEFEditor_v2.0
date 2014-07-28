@@ -86,7 +86,6 @@
     <Compile Include="AssemblyProviders_TestUtils\SourceUtils.cs" />
     <Compile Include="Compiler_CIL_Testing.cs" />
     <Compile Include="Drawing_TestUtils\DrawingTest.cs" />
-    <Compile Include="Drawing_TestUtils\Extensions.cs" />
     <Compile Include="Drawing_TestUtils\TestContent.cs" />
     <Compile Include="Drawing_TestUtils\TestDrawingFactory.cs" />
     <Compile Include="EditorInternals_Testing.cs" />
