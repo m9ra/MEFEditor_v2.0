@@ -66,6 +66,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
             var specializedMethod = Activation.Method.MakeGenericMethod(methodPath);
 
             var activation = new ParsingActivation(Activation.SourceCode, specializedMethod, Activation.GenericParameters, Activation.Namespaces);
+            activation.NavigationRequested += Activation.OnNavigated;
+            activation.SourceChangeCommited += Activation.OnCommited;
+
             var specializedGenerator = new SourceMethodGenerator(activation, _parsingProvider);
 
             return new MethodItem(specializedGenerator, specializedMethod);

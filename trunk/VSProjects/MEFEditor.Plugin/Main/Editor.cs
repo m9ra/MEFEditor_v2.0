@@ -28,103 +28,105 @@ using MEFEditor.Plugin.Drawing;
 namespace MEFEditor.Plugin.Main
 {
     /// <summary>
-    /// Implementation of Enahnced MEF Component Architecture Editor behaviour
+    /// Implementation of Enhanced MEF Component Architecture Editor behavior.
     /// </summary>
     class Editor
     {
         #region Private members
 
         /// <summary>
-        /// Services used for interconnection with visual studio
+        /// Services used for interconnection with visual studio.
         /// </summary>
         private readonly VisualStudioServices _vs;
 
         /// <summary>
-        /// Manager of GUI used by editor
+        /// Manager of GUI used by editor.
         /// </summary>
         private GUIManager _guiManager;
 
         /// <summary>
-        /// Loader used for loading assemblies into <see cref="AppDomain"/>
+        /// Loader used for loading assemblies into <see cref="AppDomain" />.
         /// </summary>
         private AssemblyLoader _loader;
 
         /// <summary>
-        /// Machine that is used for composition point analyzing
+        /// Machine that is used for composition point analyzing.
         /// </summary>
         private Machine _machine;
 
         /// <summary>
-        /// Settings used for machine
+        /// Settings used for machine.
         /// </summary>
         private MachineSettings _settings;
 
         /// <summary>
-        /// Content drawers that were loaded through extensions
+        /// Content drawers that were loaded through extensions.
         /// </summary>
         private ContentDrawer[] _contentDrawers;
 
         /// <summary>
-        /// Transaction used for handling changes
+        /// Transaction used for handling changes.
         /// </summary>
         private Transaction _changesTransaction;
 
         /// <summary>
-        /// Transaction used for handling project adding
+        /// Transaction used for handling project adding.
         /// </summary>
         private Transaction _projectAddTransaction;
 
         /// <summary>
-        /// Transaction used for handling solution opening
+        /// Transaction used for handling solution opening.
         /// </summary>
         private Transaction _solutionOpenTransaction;
 
         /// <summary>
-        /// Current result of analysis
+        /// Current result of analysis.
         /// </summary>
         private AnalyzingResult _currentResult;
 
         /// <summary>
-        /// Arguments of current result of analysis
+        /// Arguments of current result of analysis.
         /// </summary>
         private Instance[] _currentArguments;
 
         /// <summary>
-        /// Error of last analysis run if any, <c>null</c> otherwise
+        /// Error of last analysis run if any, <c>null</c> otherwise.
         /// </summary>
         private LogEntry _analysisError;
 
         /// <summary>
-        /// Determine that transactions should be displayed in loading
+        /// Determine that transactions should be displayed in loading.
         /// </summary>
         private volatile bool _showProgress;
 
         /// <summary>
-        /// Watches used for filtering too often progress changes
+        /// Watches used for filtering too often progress changes.
         /// </summary>
         private Stopwatch _progressWatch = new Stopwatch();
 
         #endregion
 
         /// <summary>
-        /// GUI used by editor
+        /// GUI used by editor.
         /// </summary>
         internal readonly EditorGUI GUI;
 
         /// <summary>
-        /// Runtime used by editor
+        /// Runtime used by editor.
         /// </summary>
+        /// <value>The runtime.</value>
         internal RuntimeAssembly Runtime { get { return _loader.Settings.Runtime; } }
 
         /// <summary>
-        /// Transaction available in current domain
+        /// Transaction available in current domain.
         /// </summary>
+        /// <value>The transactions.</value>
         internal TransactionManager Transactions { get { return _loader.AppDomain.Transactions; } }
 
         /// <summary>
-        /// Initialize instance of <see cref="Editor"/> which
+        /// Initialize instance of <see cref="Editor" /> which provides editor services to user.
         /// </summary>
-        /// <param name="vs"></param>
+        /// <param name="vs">Services for Visual Studio interoperability.</param>
         internal Editor(VisualStudioServices vs)
         {
             _vs = vs;
@@ -135,7 +137,7 @@ namespace MEFEditor.Plugin.Main
         #region Initialization routines
 
         /// <summary>
-        /// Initialize editor - extensions and environmennt is loaded, event handlers hooked
+        /// Initialize editor - extensions and environment is loaded, event handlers hooked.
         /// </summary>
         internal void Initialize()
         {
@@ -143,18 +145,47 @@ namespace MEFEditor.Plugin.Main
             _machine = new Machine(_settings);
             _guiManager = new GUIManager(GUI, _vs);
 
-            loadUserExtensions();
-            _settings.Runtime.BuildAssembly();
+            //try to load users extensions
+            Exception loadingException = null;
+            try
+            {
+                loadUserExtensions();
+                _settings.Runtime.BuildAssembly();
+            }
+            catch (Exception ex)
+            {
+                loadingException = ex;
+            }
 
-            var factory = new DiagramFactory(_contentDrawers);
-            _guiManager.Initialize(_loader.AppDomain, factory);
+            //try to initialize gui manager
+            try
+            {
+                var factory = new DiagramFactory(_contentDrawers);
+                _guiManager.Initialize(_loader.AppDomain, factory);
 
-            hookHandlers();
-            _vs.Log.Message("EDITOR INITIALIZED");
+                if (loadingException != null)
+                {
+                    //we can report failing loading now
+                    var entry = _vs.LogException(loadingException, "Loading user extensions failed with exception");
+                    _guiManager.DisplayEntry(entry);
+                }
+            }
+            catch (Exception ex)
+            {
+                loadingException = ex;
+                _vs.LogException(ex, "GUI initialization failed");
+            }
+
+            //hook handlers if loading was successful
+            if (loadingException == null)
+            {
+                hookHandlers();
+                _vs.Log.Message("EDITOR INITIALIZED");
+            }
         }
 
         /// <summary>
-        /// Hook all event handlers that are used for editor interaction
+        /// Hook all event handlers that are used for editor interaction.
         /// </summary>
         private void hookHandlers()
         {
@@ -179,6 +210,8 @@ namespace MEFEditor.Plugin.Main
 
             _loader.AppDomain.MethodInvalidated += methodInvalidated;
             _loader.AppDomain.CompositionSchemeInvalidated += requireRedraw;
+            _loader.AppDomain.ComponentAdded += (c) => requireRedraw();
+            _loader.AppDomain.ComponentRemoved += (c) => requireRedraw();
 
             _vs.StartListening();
         }
@@ -189,7 +222,7 @@ namespace MEFEditor.Plugin.Main
         #region User extensions loading
 
         /// <summary>
-        /// Load user extensions from extension assemblies
+        /// Load user extensions from extension assemblies.
         /// </summary>
         private void loadUserExtensions()
         {
@@ -213,13 +246,22 @@ namespace MEFEditor.Plugin.Main
             _contentDrawers = drawingProviders.ToArray();
         }
 
+        /// <summary>
+        /// Registers the export.
+        /// </summary>
+        /// <param name="export">The registered export.</param>
         private void registerExport(ExtensionExport export)
         {
-            hookLogging(export);
+            hookExportLogging(export);
 
             _vs.EditorLoadingExceptions(() => export.LoadExports(_settings.Runtime), "Registering exports");
         }
 
+        /// <summary>
+        /// Creates the content drawers defined by given export.
+        /// </summary>
+        /// <param name="export">The export that defines content drawers.</param>
+        /// <returns>IEnumerable&lt;ContentDrawer&gt;.</returns>
         private IEnumerable<ContentDrawer> createContentDrawers(ExtensionExport export)
         {
             foreach (var exportedDrawer in export.ExportedDrawers)
@@ -228,11 +270,20 @@ namespace MEFEditor.Plugin.Main
             }
         }
 
-        private void hookLogging(ExtensionExport export)
+        /// <summary>
+        /// Hooks logging of given export.
+        /// </summary>
+        /// <param name="export">The hooked export.</param>
+        private void hookExportLogging(ExtensionExport export)
         {
             export.OnLog += logHandler;
         }
 
+
+        /// <summary>
+        /// Collects all exports.
+        /// </summary>
+        /// <returns>Collected exportts.</returns>
         private IEnumerable<ExtensionExport> collectExports()
         {
             //TODO load extensions from Extensions directory
@@ -250,9 +301,9 @@ namespace MEFEditor.Plugin.Main
         #region Drawing providing routines
 
         /// <summary>
-        /// Show composition based on analysis of given method
+        /// Show composition based on analysis of given method.
         /// </summary>
-        /// <param name="compositionPoint">Composition point to be analyzed</param>
+        /// <param name="compositionPoint">Composition point to be analyzed.</param>
         private void showComposition(CompositionPoint compositionPoint)
         {
             if (_currentResult != null)
@@ -290,9 +341,9 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Run analysis on given composition point
+        /// Run analysis on given composition point.
         /// </summary>
-        /// <param name="compositionPoint">Composition point to be analyzed</param>
+        /// <param name="compositionPoint">Composition point to be analyzed.</param>
         private void runAnalysis(CompositionPoint compositionPoint)
         {
             _analysisError = null;
@@ -321,6 +372,11 @@ namespace MEFEditor.Plugin.Main
             }
         }
 
+        /// <summary>
+        /// Gets code base in context of given method.
+        /// </summary>
+        /// <param name="entryMethod">The context entry method.</param>
+        /// <returns>Code base if available, empty <c>string</c> otherwise.</returns>
         private string getCodeBase(MethodID entryMethod)
         {
             var entryAssembly = _loader.AppDomain.GetDefiningAssemblyProvider(entryMethod);
@@ -335,9 +391,9 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Handle exception that could be thrown at analysis runtime
+        /// Handle exception that could be thrown at analysis runtime.
         /// </summary>
-        /// <param name="exception">Runtime exception</param>
+        /// <param name="exception">Runtime exception.</param>
         private void handleRuntimeException(Exception exception)
         {
             if (exception == null)
@@ -355,10 +411,11 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Get arguments for given composition point
+        /// Get arguments for given composition point.
         /// </summary>
-        /// <param name="compositionPoint">Composition point which arguments are requested</param>
-        /// <returns>Composition point's arguments</returns>
+        /// <param name="compositionPoint">Composition point which arguments are requested.</param>
+        /// <returns>Composition point's arguments.</returns>
+        /// <exception cref="System.InvalidOperationException">Preparing composition point arguments failed</exception>
         private Instance[] getCompositionPointArguments(CompositionPoint compositionPoint)
         {
             var entryMethod = compositionPoint.EntryMethod;
@@ -387,7 +444,7 @@ namespace MEFEditor.Plugin.Main
 
         /// <summary>
         /// Refresh drawing according to current composition point
-        /// <remarks>Is called only</remarks>
+        /// <remarks>Is called only</remarks>.
         /// </summary>
         private void refreshDrawing()
         {
@@ -395,7 +452,7 @@ namespace MEFEditor.Plugin.Main
             {
                 if (_guiManager.FlushCompositionPointUpdates())
                     //flushing will cause event that refresh drawing again - so 
-                    //we dont need to refresh drawing immediately
+                    //we don't need to refresh drawing immediately
                     return;
 
                 _guiManager.DoEvents();
@@ -405,8 +462,10 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Create drawings from given result
+        /// Create drawings from given result.
         /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns>DiagramDefinition.</returns>
         private DiagramDefinition createDrawings(AnalyzingResult result)
         {
             var pipeline = _loader.Settings.Runtime.CreateDrawingPipeline(generalDrawer, result);
@@ -430,8 +489,8 @@ namespace MEFEditor.Plugin.Main
 
             var definition = pipeline.GetOutput();
 
-            definition.AddEditsMenu("Add Component", createComponentEdits);
-            definition.AddCommand(new CommandDefinition("Reset workspace", _guiManager.ResetWorkspace));
+            definition.AddEditsMenu("Add Component", componentCreationEdits);
+            definition.AddCommand(new CommandDefinition("Reset workspace", () => _vs.RunSafeAction(_guiManager.ResetWorkspace, "Resetting workspace failed")));
             definition.UseItemAvoidance = _guiManager.UseItemAvoidance;
             definition.UseJoinAvoidance = _guiManager.UseJoinAvoidance;
             definition.ShowJoinLines = _guiManager.ShowJoinLines;
@@ -439,7 +498,11 @@ namespace MEFEditor.Plugin.Main
             return definition;
         }
 
-        private IEnumerable<EditDefinition> createComponentEdits()
+        /// <summary>
+        /// Creates edits for creating components.
+        /// </summary>
+        /// <returns>Edits for creating components.</returns>
+        private IEnumerable<EditDefinition> componentCreationEdits()
         {
             var result = new List<EditDefinition>();
 
@@ -463,11 +526,14 @@ namespace MEFEditor.Plugin.Main
 
                 var edit = new EditDefinition("Create " + component.ComponentType.TypeName, (v) =>
                 {
-                    var transformation = new AddCallTransformation((exV) => addComponent(component, exV));
+                    return _vs.RunSafe(() =>
+                    {
+                        var transformation = new AddCallTransformation((exV) => addComponent(component, exV));
 
-                    var view = (v as EditView).CopyView();
-                    view.Apply(transformation);
-                    return EditView.Wrap(view);
+                        var view = (v as EditView).CopyView();
+                        view.Apply(transformation);
+                        return EditView.Wrap(view);
+                    }, "Creation edit failed");
                 }, (v) => true);
 
                 result.Add(edit);
@@ -477,6 +543,12 @@ namespace MEFEditor.Plugin.Main
 
         }
 
+        /// <summary>
+        /// Add component into composition point.
+        /// </summary>
+        /// <param name="component">The component to add.</param>
+        /// <param name="v">View of composition point.</param>
+        /// <returns>Edit info for component adding.</returns>
         private CallEditInfo addComponent(ComponentInfo component, ExecutionView v)
         {
             var call = new CallEditInfo(component.ComponentType, Naming.CtorName);
@@ -494,19 +566,26 @@ namespace MEFEditor.Plugin.Main
 
         /// <summary>
         /// General drawing provider that is commonly used for all instances
-        /// Drawings of required instances are specialized by concrete drawers
+        /// Drawings of required instances are specialized by concrete drawers.
         /// </summary>
-        /// <param name="instance">Instance to be drawn</param>
+        /// <param name="instance">Instance to be drawn.</param>
         private void generalDrawer(DrawedInstance instance)
         {
             if (instance.WrappedInstance.CreationNavigation != null)
-                instance.Drawing.AddCommand(new CommandDefinition("Navigate to", () => instance.WrappedInstance.CreationNavigation()));
+                instance.Drawing.AddCommand(new CommandDefinition("Navigate to", () =>
+                {
+                    _vs.RunSafeAction(() => instance.WrappedInstance.CreationNavigation(),
+                        "Instance navigation failed");
+                }));
 
             instance.Drawing.AddEdit(new EditDefinition("Remove", (v) =>
             {
-                var view = (v as EditView).CopyView();
-                view.Remove(instance.WrappedInstance);
-                return EditView.Wrap(view);
+                return _vs.RunSafe(() =>
+                 {
+                     var view = (v as EditView).CopyView();
+                     view.Remove(instance.WrappedInstance);
+                     return EditView.Wrap(view);
+                 }, "Removing edit failed");
             }, (v) =>
             {
                 var view = (v as EditView).CopyView();
@@ -519,6 +598,7 @@ namespace MEFEditor.Plugin.Main
             var assembly = _loader.AppDomain.GetDefiningAssembly(instanceInfo);
             if (assembly != null)
                 instance.SetProperty("DefiningAssembly", assembly.Name);
+
             GeneralDefinitionProvider.Draw(instance, componentInfo);
         }
 
@@ -527,7 +607,7 @@ namespace MEFEditor.Plugin.Main
         #region Transaction handling
 
         /// <summary>
-        /// Attach refreshRedraw routine into root transaction
+        /// Attach refreshRedraw routine into root transaction.
         /// </summary>
         private void requireRedraw()
         {
@@ -540,10 +620,10 @@ namespace MEFEditor.Plugin.Main
         #region Event handlers
 
         /// <summary>
-        /// Handler for log events from TypeSystem
+        /// Handler for log events from TypeSystem.
         /// </summary>
-        /// <param name="category">Category of logged message</param>
-        /// <param name="message">Logged message</param>
+        /// <param name="category">Category of logged message.</param>
+        /// <param name="message">Logged message.</param>
         private void logHandler(string category, string message)
         {
             LogLevels level;
@@ -568,9 +648,9 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Try to show progress of given <see cref="Transaction"/>
+        /// Try to show progress of given <see cref="Transaction" />.
         /// </summary>
-        /// <param name="transaction">Transaction which progress can be shown</param>
+        /// <param name="transaction">Transaction which progress can be shown.</param>
         private void tryShowProgress(Transaction transaction)
         {
             if (!_showProgress)
@@ -593,9 +673,9 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Handler called for methods that has been invalidated
+        /// Handler called for methods that has been invalidated.
         /// </summary>
-        /// <param name="invalidatedMethod">Identifier of invalidated method</param>
+        /// <param name="invalidatedMethod">Identifier of invalidated method.</param>
         private void methodInvalidated(MethodID invalidatedMethod)
         {
             _vs.Log.Message("Method invalidation {0}", invalidatedMethod);
@@ -615,7 +695,7 @@ namespace MEFEditor.Plugin.Main
         /// <summary>
         /// Handler called before project is added. Transaction for project adding is started.
         /// </summary>
-        /// <param name="project">Project that will be added</param>
+        /// <param name="project">Project that will be added.</param>
         void _vs_ProjectAddingStarted(EnvDTE.Project project)
         {
             _projectAddTransaction = Transactions.StartNew("Loading project " + project.Name);
@@ -624,7 +704,7 @@ namespace MEFEditor.Plugin.Main
         /// <summary>
         /// Handler called when project is added.
         /// </summary>
-        /// <param name="project">Added project</param>
+        /// <param name="project">Added project.</param>
         private void _vs_ProjectAdded(EnvDTE.Project project)
         {
             _loader.LoadRoot(project);
@@ -634,9 +714,9 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Handler called when project is removed
+        /// Handler called when project is removed.
         /// </summary>
-        /// <param name="project">Removed project</param>
+        /// <param name="project">Removed project.</param>
         void _vs_ProjectRemoved(EnvDTE.Project project)
         {
             var tr = Transactions.StartNew("Removing project");
@@ -645,7 +725,7 @@ namespace MEFEditor.Plugin.Main
         }
 
         /// <summary>
-        /// Handler called before solution is opened. Here opening solution trancasction
+        /// Handler called before solution is opened. Here opening solution transaction
         /// is started.
         /// </summary>
         void _vs_SolutionOpeningStarted()
@@ -677,7 +757,7 @@ namespace MEFEditor.Plugin.Main
         /// <summary>
         /// Set visibility of progress informing.
         /// </summary>
-        /// <param name="isShown">Determine that progress will be shown or not</param>
+        /// <param name="isShown">Determine that progress will be shown or not.</param>
         private void setProgressVisibility(bool isShown)
         {
             if (isShown)

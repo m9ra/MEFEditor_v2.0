@@ -93,7 +93,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         {
             var fullname = e.SafeFullname();
 
-            if (fullname == Naming.ExportAttribute)
+            if (
+                fullname == Naming.ExportAttribute ||
+                fullname == Naming.InheritedExportAttribute
+                )
             {
                 addExport(new AttributeInfo(e));
             }
@@ -122,24 +125,24 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         /// <summary>
         /// Add import according to given <see cref="CodeAttribute"/>
         /// </summary>
-        /// <param name="importAttrbute">Attribute defining import</param>
+        /// <param name="importAttribute">Attribute defining import</param>
         /// <param name="forceMany">Determine that explicit <c>AllowMany</c> is used</param>
-        private void addImport(AttributeInfo importAttrbute, bool forceMany = false)
+        private void addImport(AttributeInfo importAttribute, bool forceMany = false)
         {
-            var builder = getOrCreateCurrentBuilder(importAttrbute.Element as CodeElement);
+            var builder = getOrCreateCurrentBuilder(importAttribute.Element as CodeElement);
 
             MethodID importMethodID;
             TypeDescriptor importType;
-            if (!getImportTarget(importAttrbute.Element, builder.ComponentType, out importMethodID, out importType))
+            if (!getImportTarget(importAttribute.Element, builder.ComponentType, out importMethodID, out importType))
             {
-                _assembly.VS.Log.Warning("Cannot parse import attribute on: "+importAttrbute.Element.Name);
+                _assembly.VS.Log.Warning("Cannot parse import attribute on: " + importAttribute.Element.Name);
                 return;
             }
 
-            var explicitContract = parseContract(importAttrbute.GetArgument(0), builder, importAttrbute.Element);
+            var explicitContract = parseContract(importAttribute.GetArgument(0), builder, importAttribute.Element);
 
-            var allowMany = forceMany || importAttrbute.IsTrue("AllowMany");
-            var allowDefault = forceMany || importAttrbute.IsTrue("AllowDefault");
+            var allowMany = forceMany || importAttribute.IsTrue("AllowMany");
+            var allowDefault = forceMany || importAttribute.IsTrue("AllowDefault");
 
             var importTypeInfo = ImportTypeInfo.ParseFromMany(importType, allowMany, _services);
             var contract = explicitContract == null ? importTypeInfo.ItemType.TypeName : explicitContract;
@@ -166,16 +169,17 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             var explicitContract = parseContract(exportAttribute.GetArgument(0), builder, exportAttribute.Element);
             var contract = explicitContract == null ? exportTypeDescriptor.TypeName : explicitContract;
             var isSelfExport = exportMethodID == null;
+            var isInherited = exportAttribute.Element.FullName == Naming.InheritedExportAttribute;
 
             exploreMetaData(exportAttribute, builder);
 
             if (isSelfExport)
             {
-                builder.AddSelfExport(contract);
+                builder.AddSelfExport(isInherited, contract);
             }
             else
             {
-                builder.AddExport(exportTypeDescriptor, exportMethodID, contract);
+                builder.AddExport(exportTypeDescriptor, exportMethodID, isInherited, contract);
             }
         }
 
@@ -201,7 +205,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         private void buildMetaExport(AttributeInfo info, ComponentInfoBuilder builder)
         {
             var isMultiple = info.GetArgument("IsMultiple") == "true";
-            var name = parseString(info.GetArgument("Name", 0));
+            var name = parseObject(info.GetArgument("Name", 0), builder, info.Element) as string;
             var value = parseObject(info.GetArgument("Value", 1), builder, info.Element);
 
             builder.AddMeta(name, value, isMultiple);
@@ -214,7 +218,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         /// <param name="componentType">Type of defining component</param>
         /// <param name="exportMethodID">Id of method that can be used for export. It is <c>null</c> for self exports</param>
         /// <param name="exportType">Type of defined export</param>
-        /// <returns><c>true</c> if target has been succesfully found, <c>false</c> otherwise</returns>
+        /// <returns><c>true</c> if target has been successfully found, <c>false</c> otherwise</returns>
         private bool getExportTarget(CodeAttribute2 attribute, TypeDescriptor componentType, out MethodID exportMethodID, out TypeDescriptor exportType)
         {
             var target = attribute.Parent as CodeElement;
@@ -254,7 +258,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         /// <param name="componentType">Type of defining component</param>
         /// <param name="importMethodID">Id of method that can be used for import. It is <c>null</c> for self exports</param>
         /// <param name="importType">Type of defined export</param>
-        /// <returns><c>true</c> if target has been succesfully found, <c>false</c> otherwise</returns>
+        /// <returns><c>true</c> if target has been successfully found, <c>false</c> otherwise</returns>
         private bool getImportTarget(CodeAttribute2 attribute, TypeDescriptor componentType, out MethodID importMethodID, out TypeDescriptor importType)
         {
             var target = attribute.Parent as CodeElement;
@@ -307,25 +311,25 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         /// <summary>
         /// Add CompositionPoint according to given <see cref="CodeAttribute"/>
         /// </summary>
-        /// <param name="compositionAttrbiute">Attribute defining export</param>
-        private void addCompositionPoint(AttributeInfo compositionAttrbiute)
+        /// <param name="compositionAttribute">Attribute defining export</param>
+        private void addCompositionPoint(AttributeInfo compositionAttribute)
         {
-            var method = getMethod(compositionAttrbiute.Element);
+            var method = getMethod(compositionAttribute.Element);
             var methodElement = method as CodeElement;
             if (methodElement == null)
             {
                 _assembly.VS.Log.Warning("Method marked with composition point cannot be loaded");
             }
 
-            var isCtor=method.FunctionKind==vsCMFunction.vsCMFunctionConstructor;
-            var isStatic=method.IsShared;
-            var ctorName=isStatic?Naming.ClassCtorName:Naming.CtorName;
+            var isCtor = method.FunctionKind == vsCMFunction.vsCMFunctionConstructor;
+            var isStatic = method.IsShared;
+            var ctorName = isStatic ? Naming.ClassCtorName : Naming.CtorName;
             var name = isCtor ? ctorName : methodElement.Name;
-            
-            var info = _assembly.InfoBuilder.Build(methodElement,name);
 
-            var builder = getOrCreateCurrentBuilder(compositionAttrbiute.Element as CodeElement);
-            builder.AddExplicitCompositionPoint(info.MethodID, createInitializer(compositionAttrbiute, info));
+            var info = _assembly.InfoBuilder.Build(methodElement, name);
+
+            var builder = getOrCreateCurrentBuilder(compositionAttribute.Element as CodeElement);
+            builder.AddExplicitCompositionPoint(info.MethodID, createInitializer(compositionAttribute, info));
         }
 
         #region Literal parsing
@@ -335,89 +339,19 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             if (rawContract == null)
                 return null;
 
-            var type = parseType(rawContract, builder, attribute);
+            var parsed = parseObject(rawContract, builder, attribute);
+            var type = parsed as InstanceInfo;
             if (type != null)
                 return type.TypeName;
 
-            return parseString(rawContract);
+            return parsed as string;
         }
 
-        private string parseString(string data)
-        {
-            if (data.StartsWith("@\"") && data.Length > 2)
-                return data.Substring(2, data.Length - 3).Replace("\"\"", "\"");
 
-            if (data.StartsWith("\"") && data.Length > 1)
-                return data.Substring(1, data.Length - 2);
-
-            return null;
-        }
 
         private object parseObject(string data, ComponentInfoBuilder builder, CodeAttribute2 attribute)
         {
-            object result;
-            result = parseType(data, builder, attribute);
-
-            if (result == null)
-                result = parseString(data);
-
-            if (result == null)
-            {
-                var value = parseBool(data);
-                if (value.HasValue)
-                    result = value.Value;
-            }
-
-            if (result != null)
-                return result;
-
-            char ch;
-            if (char.TryParse(data, out ch))
-                return ch;
-
-            int intNum;
-            if (int.TryParse(data, out intNum))
-                return intNum;
-
-            double doubNum;
-            if (double.TryParse(data, out doubNum))
-                return doubNum;
-
-            return null;
-        }
-
-        private bool? parseBool(string data)
-        {
-            if (data == "true" || data == "false")
-                return data == "true";
-
-            return null;
-        }
-
-        private TypeDescriptor parseType(string data, ComponentInfoBuilder builder, CodeAttribute2 attribute)
-        {
-            var typePrefix = "typeof(";
-            if (data.StartsWith(typePrefix))
-            {
-                data = data.Substring(typePrefix.Length).Replace(")", "");
-                data = _assembly.TranslatePath(data);
-
-                //find contracted type
-
-                var implicitNamespaces = VsProjectAssembly.GetImplicitNamespaces(builder.ComponentType);
-
-                var namespaces = implicitNamespaces.Concat(_assembly.GetNamespaces(attribute as CodeElement));
-                foreach (var ns in namespaces)
-                {
-                    var prefix = ns == "" ? "" : ns + ".";
-
-                    var descriptor = TypeDescriptor.Create(prefix + data);
-                    if (_services.GetChain(descriptor) != null)
-                        return descriptor;
-                }
-            }
-
-            return null;
+            return _assembly.ParseValue(data, builder.ComponentType, attribute as CodeElement);
         }
 
         #endregion

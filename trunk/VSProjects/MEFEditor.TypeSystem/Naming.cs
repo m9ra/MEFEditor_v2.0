@@ -28,6 +28,11 @@ namespace MEFEditor.TypeSystem
         public static readonly string ExportAttribute = typeof(ExportAttribute).FullName;
 
         /// <summary>
+        /// Fullname of InheritedExportAttribute type
+        /// </summary>
+        public static readonly string InheritedExportAttribute = typeof(InheritedExportAttribute).FullName;
+
+        /// <summary>
         /// Fullname of ExportMetadataAttribute type
         /// </summary>
         public static readonly string ExportMetadataAttribute = typeof(ExportMetadataAttribute).FullName;
@@ -233,7 +238,7 @@ namespace MEFEditor.TypeSystem
         /// <summary>
         /// Get index of last path delimiter within given method path
         /// </summary>
-        /// <param name="methodPath">Method path where delimiter is searche</param>
+        /// <param name="methodPath">Method path where delimiter is search</param>
         /// <returns>Index of path delimiter if found, -1 otherwise</returns>
         public static int GetLastNonNestedPathDelimiterIndex(string methodPath)
         {
@@ -277,7 +282,10 @@ namespace MEFEditor.TypeSystem
             var parts = method.MethodString.Split(new char[] { PartDelimiter }, 2);
 
             path = parts[0];
-            paramDescription = parts[1];
+            if (parts.Length > 1)
+                paramDescription = parts[1];
+            else
+                paramDescription = null;
         }
 
         #endregion

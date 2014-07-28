@@ -121,7 +121,7 @@
     <value>Enhanced MEF Component Architecture Editor</value>
   </data>
   <data name="112" xml:space="preserve">
-    <value>Information about my package</value>
+    <value>Managed Extensibility Framework allows development of component based .NET applications. Relations between components may be complex. To simplify the development of component based applications it is good to visualize these relations and to provide their editing. That is why we created an editor plugin for the Microsoft Visual Studio 2010 that allows viewing the composition schema based on an analysis of a source code. In the displayed schema it provides editing, which results in modifying the source code. Possibilities of the analysis and the editing are influenced by users extensions, which are available for the editor. As part of this work, we implemented the editor with extensions that allow its use in application projects written in C#. In these applications it helps to detect a composition errors and simplifies changes in the applications component architecture.</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="400" type="System.Resources.ResXFileRef, System.Windows.Forms">

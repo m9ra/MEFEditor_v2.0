@@ -111,6 +111,22 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return ComponentType.GetHashCode();
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            var o = obj as ComponentInfo;
+            if (o == null)
+                return false;
+
+            return ComponentType.Equals(o.ComponentType);
+        }
+
+        /// <inheritdoc />
         public override string ToString()
         {
             return "[Component]" + ComponentType.TypeName;
@@ -126,7 +142,7 @@ namespace MEFEditor.TypeSystem
         /// Exporting key of meta item
         /// </summary>
         public readonly string Key;
-        
+
         /// <summary>
         /// Determine if item appeared with multiple indicator.
         /// IsMultiple values are stored in lists.
@@ -139,7 +155,8 @@ namespace MEFEditor.TypeSystem
         /// </summary>
         public readonly IEnumerable<object> Data;
 
-        public MetaItem(string key, bool isMultiple,IEnumerable<object> items){
+        public MetaItem(string key, bool isMultiple, IEnumerable<object> items)
+        {
             Key = key;
             IsMultiple = isMultiple;
             Data = items.ToArray();
@@ -209,12 +226,18 @@ namespace MEFEditor.TypeSystem
         /// </summary>
         public readonly TypeDescriptor ExportType;
 
-        public Export(TypeDescriptor exportType, MethodID getter, string contract, MetaExport meta)
+        /// <summary>
+        /// Determine that export is inherited
+        /// </summary>
+        public readonly bool IsInherited;
+
+        public Export(TypeDescriptor exportType, bool isInherited, MethodID getter, string contract, MetaExport meta)
         {
             ExportType = exportType;
             Contract = contract;
             Getter = getter;
             Meta = meta;
+            IsInherited = isInherited;
         }
     }
 
@@ -260,7 +283,7 @@ namespace MEFEditor.TypeSystem
             IsItemLazy = itemType.TypeName.StartsWith("System.Lazy<");
             if (IsItemLazy)
             {
-                var lazyTypeArguments=itemType.Arguments.ToArray();
+                var lazyTypeArguments = itemType.Arguments.ToArray();
                 //item type wont contain 
                 ItemType = lazyTypeArguments[0];
 

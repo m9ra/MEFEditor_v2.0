@@ -4,14 +4,21 @@
     <Name>Enhanced MEF Component Architecture Editor</Name>
     <Author>Bc. Vodolán Miroslav</Author>
     <Version>2.0</Version>
-    <Description xml:space="preserve">Enhanced MEF Component Architecture Editor</Description>
+    <Description xml:space="preserve">Managed Extensibility Framework allows development of component based .NET applications. However relations between components can be quite complex. So it would be advantageous to visualise these relations to user to simplify the development of component based applications and to provide their editing. This thesis provides a solutioin in form of an editor plugin for the Microsoft Visual Studio 2010 allowing to view a composition schema based on analysis of a source code. The editor allows user to edit the generated composition schema and is able to correct the original source code according to user made changes. Possibilities of the analysis and the offered editing actions are influenced by users extensions, the editor is extensible with. As part of this thesis, we implemented the editor with extensions allowing to use it in application projects written in C# language.</Description>
     <Locale>1033</Locale>
+    <MoreInfoUrl>https://github.com/m9ra/MEFEditor_v2.0</MoreInfoUrl>
+    <Icon>Preview_icon.png</Icon>
+    <PreviewImage>Preview_icon.png</PreviewImage>
     <InstalledByMsi>false</InstalledByMsi>
     <SupportedProducts>
       <VisualStudio Version="10.0">
+        <Edition>Ultimate</Edition>
+        <Edition>Premium</Edition>
         <Edition>Pro</Edition>
       </VisualStudio>
       <VisualStudio Version="11.0">
+        <Edition>Ultimate</Edition>
+        <Edition>Premium</Edition>
         <Edition>Pro</Edition>
       </VisualStudio>
     </SupportedProducts>

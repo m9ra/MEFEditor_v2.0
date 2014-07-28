@@ -12,8 +12,16 @@ using MEFEditor.TypeSystem.DrawingServices;
 
 namespace RecommendedExtensions.Core.Drawings
 {
+    /// <summary>
+    /// Provider of general drawing used for every draw <see cref="DiagramItem"/>.
+    /// </summary>
     public static class GeneralDefinitionProvider
     {
+        /// <summary>
+        /// Draws the specified instance.
+        /// </summary>
+        /// <param name="instance">The draw instance.</param>
+        /// <param name="info">The component information available for draw instance.</param>
         public static void Draw(DrawedInstance instance, ComponentInfo info)
         {
             if (instance.WrappedInstance.IsDirty)
@@ -36,6 +44,7 @@ namespace RecommendedExtensions.Core.Drawings
             {
                 var connector = instance.GetJoinPoint(export);
 
+                setInherited(connector, export);
                 setProperty(connector, "Kind", "Export");
                 setProperty(connector, "Contract", export.Contract);
                 setProperty(connector, "ContractType", export.ExportType);
@@ -47,6 +56,7 @@ namespace RecommendedExtensions.Core.Drawings
             {
                 var connector = instance.GetJoinPoint(export);
 
+                setInherited(connector, export);
                 setProperty(connector, "Kind", "SelfExport");
                 setProperty(connector, "Contract", export.Contract);
                 setProperty(connector, "ContractType", export.ExportType);
@@ -69,6 +79,21 @@ namespace RecommendedExtensions.Core.Drawings
             }
         }
 
+        /// <summary>
+        /// Sets the inherited flag.
+        /// </summary>
+        /// <param name="connector">The connector where flag will be set.</param>
+        /// <param name="export">The export which flag will be set.</param>
+        private static void setInherited(ConnectorDefinition connector, Export export)
+        {
+            if (export.IsInherited)
+                setProperty(connector, "IsInherited", "True");
+        }
+
+        /// <summary>
+        /// Handles the entry instance.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
         private static void handleEntryInstance(DrawedInstance instance)
         {
             //instance that was pasted on analysis start
@@ -87,6 +112,12 @@ namespace RecommendedExtensions.Core.Drawings
             }
         }
 
+        /// <summary>
+        /// Sets the meta information to properties with given prefix.
+        /// </summary>
+        /// <param name="connector">The connector where meta properties will be available.</param>
+        /// <param name="propertyPrefix">The property prefix.</param>
+        /// <param name="meta">The meta information.</param>
         private static void setMetaProperties(ConnectorDefinition connector, string propertyPrefix, MetaExport meta)
         {
             foreach (var key in meta.ExportedKeys)
@@ -107,11 +138,23 @@ namespace RecommendedExtensions.Core.Drawings
             }
         }
 
+        /// <summary>
+        /// Sets value of the property for given connector.
+        /// </summary>
+        /// <param name="connector">The connector.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyValue">The property value.</param>
         private static void setProperty(ConnectorDefinition connector, string propertyName, object propertyValue)
         {
             connector.SetProperty(new DrawingProperty(propertyName, propertyValue.ToString()));
         }
 
+        /// <summary>
+        /// Sets value of the property for given connector.
+        /// </summary>
+        /// <param name="connector">The connector to set.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="info">The information.</param>
         private static void setProperty(ConnectorDefinition connector, string propertyName, InstanceInfo info)
         {
             setProperty(connector, propertyName, info.TypeName);

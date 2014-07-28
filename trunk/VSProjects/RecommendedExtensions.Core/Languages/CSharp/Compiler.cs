@@ -1634,8 +1634,77 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
         #region Literal value resolving
 
+
         /// <summary>
-        /// Try to get litral from given literalNode
+        /// Tries to parse give value into native .NET representation.
+        /// </summary>
+        /// <param name="valueRepresentation">The value representation.</param>
+        /// <param name="result">The result of parsing.</param>
+        /// <returns><c>true</c> if value can be parsed, <c>false</c> otherwise.</returns>
+        public static bool TryParseValue(string valueRepresentation, out object result)
+        {
+            if (valueRepresentation == null)
+            {
+                result = null;
+                return false;
+            }
+
+            if (valueRepresentation == "null")
+            {
+                result = new Null();
+                return true;
+            }
+
+            if (valueRepresentation.Length > 1 && valueRepresentation[0] == '"' && valueRepresentation[valueRepresentation.Length-1] == '"')
+            {
+                //"string literal"
+                valueRepresentation = valueRepresentation.Substring(1, valueRepresentation.Length - 2);
+                //escaping
+                result = valueRepresentation.Replace(@"\", @"\\");
+                return true;
+            }
+
+            if (valueRepresentation.Length > 2 && valueRepresentation[0] == '@' && valueRepresentation[1] == '"' && valueRepresentation[valueRepresentation.Length-1] == '"')
+            {
+                //@"string literal"
+                valueRepresentation = valueRepresentation.Substring(2, valueRepresentation.Length - 3);
+                //escaping
+                result = valueRepresentation.Replace("\"\"", "\"");
+                return true;
+            }
+
+            char ch;
+            if (valueRepresentation.StartsWith("'") &&
+                valueRepresentation.EndsWith("'") &&
+                char.TryParse(valueRepresentation.Substring(1, valueRepresentation.Length - 2), out ch))
+            {
+                //char literal
+                result = ch;
+                return true;
+            }
+
+            int num;
+            if (int.TryParse(valueRepresentation, out num))
+            {
+                //int literal
+                result = num;
+                return true;
+            }
+
+            bool bl;
+            if (bool.TryParse(valueRepresentation, out bl))
+            {
+                //bool literal
+                result = bl;
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Try to get literal from given literalNode
         /// </summary>
         /// <param name="literalNode">Node tested for literal presence</param>
         /// <param name="literal">Literal represented by literalNode</param>
@@ -1643,54 +1712,17 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         private bool tryGetLiteral(INodeAST literalNode, out RValueProvider literal)
         {
             var literalToken = literalNode.Value;
+            object literalValue;
 
-            if (literalToken == "null")
+            //resolve simple literals
+            if (TryParseValue(literalToken, out literalValue))
             {
-                literal = new LiteralValue(new Null(), literalNode, Context);
+                literal = new LiteralValue(literalValue, literalNode, Context);
                 return true;
             }
 
-            if (literalToken.Contains('"'))
-            {
-                //string literal
-
-                //TODO correct string escaping
-                literalToken = literalToken.Replace("\"", "");
-                literal = new LiteralValue(literalToken, literalNode, Context);
-                return true;
-            }
-
-            char ch;
-            if (literalToken.StartsWith("'") && 
-                literalToken.EndsWith("'") && 
-                char.TryParse(literalToken.Substring(1, literalToken.Length - 2), out ch))
-            {
-                //char literal
-
-                literal = new LiteralValue(ch, literalNode, Context);
-                return true;
-            }
-
-            int num;
-            if (int.TryParse(literalToken, out num))
-            {
-                //int literal
-
-                literal = new LiteralValue(num, literalNode, Context);
-                return true;
-            }
-
-            bool bl;
-            if (bool.TryParse(literalToken, out bl))
-            {
-                //bool literal
-
-                literal = new LiteralValue(bl, literalNode, Context);
-                return true;
-            }
-
-
-            if (literalNode.Value == CSharpSyntax.TypeOfOperator)
+            //resolving typeof is more complicated
+            if (literalToken== CSharpSyntax.TypeOfOperator)
             {
                 //typeof(TypeLiteral) expression
                 if (literalNode.Arguments.Length == 0)
@@ -1709,7 +1741,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
                 return true;
             }
 
-            //literalToken doesnt describe any literal
+            //literalToken doesn't describe any literal
             literal = null;
             return false;
         }

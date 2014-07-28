@@ -27,8 +27,8 @@ namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
             builder.AddExplicitCompositionPoint(Naming.Method(TypeInfo, Naming.CtorName, false));
 
 
-            builder.AddSelfExport(FullName);
-            builder.AddSelfExport(FullName);
+            builder.AddSelfExport(false, FullName);
+            builder.AddSelfExport(false, FullName);
             ComponentInfo = builder.BuildWithImplicitCtor();
         }
 

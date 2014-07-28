@@ -112,11 +112,21 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <param name="emitter">Emitter where parsed instructions are emitted</param>
         public abstract void ParsingProvider(ParsingActivation activation, EmitterBase emitter);
 
+
+        /// <summary>
+        /// Parses the given value to native object.
+        /// </summary>
+        /// <param name="valueRepresentation">The value representation.</param>
+        /// <param name="contextType">Context type where value has been found.</param>
+        /// <param name="contextElement">The context element where has been found.</param>
+        /// <returns>Parsed object if available, <c>null</c> otherwise</returns>
+        public abstract object ParseValue(string valueRepresentation, TypeDescriptor contextType, CodeElement contextElement);
+
         /// <summary>
         /// Translate given path according to aliases and language type conventions
         /// <remarks>Namespace lookup is not used</remarks>
         /// </summary>
-        /// <param name="name">Name to be translated</param>
+        /// <param name="path">Path to be translated</param>
         /// <returns>Resulting descriptor</returns>
         public virtual string TranslatePath(string path)
         {
@@ -208,16 +218,23 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// </summary>
         private void initializeAssembly()
         {
-            var outputType = VS.GetOutputType(_assemblyProject.Project);
-            var extension = outputType == "2" ? ".dll" : ".exe";
-            var name = getAssemblyName();
-            var outputPath = VS.GetOutputPath(_assemblyProject.Project);
+            try
+            {
+                var outputType = VS.GetOutputType(_assemblyProject.Project);
+                var extension = outputType == "2" ? ".dll" : ".exe";
+                var name = getAssemblyName();
+                var outputPath = VS.GetOutputPath(_assemblyProject.Project);
 
-            var assemblyDir = Path.GetDirectoryName(getAssemblyFullPath());
-            FullPathMapping = Path.GetFullPath(Path.Combine(assemblyDir, outputPath, name + extension));
+                var assemblyDir = Path.GetDirectoryName(getAssemblyFullPath());
+                FullPathMapping = Path.GetFullPath(Path.Combine(assemblyDir, outputPath, name + extension));
 
-            hookChangesHandler();
-            initializeReferences();
+                hookChangesHandler();
+                initializeReferences();
+            }
+            catch (Exception ex)
+            {
+                VS.LogException(ex, "Initilizing assembly {0} failed", Name);
+            }
         }
 
         /// <summary>
@@ -225,9 +242,16 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// </summary>
         private void hookChangesHandler()
         {
-            VS.RegisterElementAdd(_assemblyProject, onAdd);
-            VS.RegisterElementRemove(_assemblyProject, onRemove);
-            VS.RegisterElementChange(_assemblyProject, onChange);
+            try
+            {
+                VS.RegisterElementAdd(_assemblyProject, onAdd);
+                VS.RegisterElementRemove(_assemblyProject, onRemove);
+                VS.RegisterElementChange(_assemblyProject, onChange);
+            }
+            catch (Exception ex)
+            {
+                VS.LogException(ex, "Hooking changes handlers in assembly {0} failed", Name);
+            }
         }
 
         /// <summary>
@@ -235,9 +259,16 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// </summary>
         private void initializeReferences()
         {
-            StartTransaction("Collecting references");
-            addReferences();
-            CommitTransaction();
+            try
+            {
+                StartTransaction("Collecting references");
+                addReferences();
+                CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                VS.LogException(ex, "Initializing references for {0} failed", Name);
+            }
         }
 
         /// <summary>
@@ -359,13 +390,23 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// </summary>
         private void flushDiscovering()
         {
-            foreach (var element in _toDiscover)
+            try
             {
-                VS.Log.Message("Discovering components in {0}", element.FullName);
-                var searcher = createComponentSearcher();
-                searcher.VisitElement(element as CodeElement);
+                foreach (var element in _toDiscover)
+                {
+                    VS.Log.Message("Discovering components in {0}", element.FullName);
+                    var searcher = createComponentSearcher();
+                    searcher.VisitElement(element as CodeElement);
+                }
             }
-            _toDiscover.Clear();
+            catch (Exception ex)
+            {
+                VS.LogException(ex, "Discovering components in {0} failed", Name);
+            }
+            finally
+            {
+                _toDiscover.Clear();
+            }
         }
 
         #endregion
@@ -637,22 +678,34 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>null</c> otherwise</returns>
         private MethodItem getMethodItemFromGeneric(MethodID methodID, PathInfo methodGenericPath)
         {
-            //from given nodes find the one with matching id
-            foreach (var node in findNodesWithMatchingNames(methodGenericPath))
+            try
             {
-                //create generic specialization 
-                var methodItem = buildGenericMethod(node, methodGenericPath);
+                //from given nodes find the one with matching id
+                foreach (var node in findNodesWithMatchingNames(methodGenericPath))
+                {
+                    //create generic specialization 
+                    var methodItem = buildGenericMethod(node, methodGenericPath);
 
-                if (methodItem.Info.MethodID.MethodString == methodID.MethodString)
-                    //we have found matching generic specialization 
-                    //omit dynamic resolution flag, because it is transitive-and it dont need to be handled
-                    return methodItem;
+                    if (methodItem.Info.MethodID.MethodString == methodID.MethodString)
+                        //we have found matching generic specialization 
+                        //omit dynamic resolution flag, because it is transitive-and it dont need to be handled
+                        return methodItem;
+                }
+            }
+            catch (NullReferenceException ex)
+            {
+                //code model can generate unexpected exceptions
+                VS.LogException(ex, "Code model in Visual Studio causes NullReferenceException in {0}", Name);
+            }
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                //code model can generate unexpected exceptions
+                VS.LogException(ex, "Code model in Visual Studio causes COMException in {0}", Name);
             }
 
             return null;
         }
 
         #endregion
-
     }
 }

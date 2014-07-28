@@ -102,10 +102,10 @@ namespace MEFEditor.TypeSystem
         /// <param name="exportType">Type of exported value</param>
         /// <param name="propertyName">Name of exporting property</param>
         /// <param name="contract">Contract of export</param>
-        public void AddPropertyExport(TypeDescriptor exportType, string propertyName, string contract = null)
+        public void AddPropertyExport(TypeDescriptor exportType, string propertyName, bool isInherited = false, string contract = null)
         {
             var getterID = Naming.Method(ComponentType, Naming.GetterPrefix + propertyName, false, new ParameterTypeInfo[0]);
-            AddExport(exportType, getterID, contract);
+            AddExport(exportType, getterID, isInherited, contract);
         }
 
         public void AddMeta(string key, object data, bool isMultiple)
@@ -123,8 +123,9 @@ namespace MEFEditor.TypeSystem
         /// </summary>
         /// <param name="exportType">Type of exported value</param>
         /// <param name="getterID">Id of exporting method</param>
+        /// <param name="isInherited">Determine that export is marked as inherited</param>
         /// <param name="contract">Contract of export</param>
-        public void AddExport(TypeDescriptor exportType, MethodID getterID, string contract = null)
+        public void AddExport(TypeDescriptor exportType, MethodID getterID, bool isInherited, string contract = null)
         {
             if (contract == null)
             {
@@ -132,7 +133,7 @@ namespace MEFEditor.TypeSystem
             }
 
             var meta = buildMeta();
-            var export = new Export(exportType, getterID, contract, meta);
+            var export = new Export(exportType, isInherited, getterID, contract, meta);
             AddExport(export);
         }
 
@@ -149,10 +150,11 @@ namespace MEFEditor.TypeSystem
         /// Add self export of component
         /// </summary>
         /// <param name="contract">Contract of export</param>
-        public void AddSelfExport(string contract)
+        /// <param name="isInherited">Determine that self export is marked as inherited</param>
+        public void AddSelfExport(bool isInherited, string contract)
         {
             var meta = buildMeta();
-            var export = new Export(ComponentType, null, contract, meta);
+            var export = new Export(ComponentType, isInherited, null, contract, meta);
 
             _selfExports.Add(export);
         }

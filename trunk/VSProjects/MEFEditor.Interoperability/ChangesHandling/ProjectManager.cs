@@ -60,10 +60,11 @@ namespace MEFEditor.Interoperability
             {
                 var result = new List<ElementNode>();
 
-
-
                 foreach (var file in _watchedItems.Values)
                 {
+                    if (file.Root == null)
+                        continue;
+
                     foreach (var node in file.Root.Children)
                     {
                         //yield return node;
@@ -148,7 +149,15 @@ namespace MEFEditor.Interoperability
         /// <param name="item">Project item that is removed</param>
         internal void RegisterRemove(ProjectItem item)
         {
-            throw new NotImplementedException();
+            FileItemManager manager;
+            if (!_watchedItems.TryGetValue(item, out manager))
+                //manager is not present
+                return;
+
+            _watchedItems.Remove(item);
+
+            manager.Disconnect();
+            _changedFileManagers.Add(manager);
         }
 
         /// <summary>
@@ -226,7 +235,7 @@ namespace MEFEditor.Interoperability
             }
             else
             {
-                //item is source code file so it needs to be registered
+                //item is source code file so it needs to be registered                
                 var manager = new FileItemManager(_vs, fileCodeModel);
                 manager.ElementAdded += (e) =>
                 {

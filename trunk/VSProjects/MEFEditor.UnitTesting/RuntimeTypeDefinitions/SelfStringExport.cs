@@ -19,7 +19,7 @@ namespace MEFEditor.UnitTesting.RuntimeTypeDefinitions
         {
             FullName = "SelfStringExport";
             var builder = new ComponentInfoBuilder(GetTypeInfo());
-            builder.AddSelfExport(typeof(string).FullName);
+            builder.AddSelfExport(false,typeof(string).FullName);
             builder.SetImportingCtor(TypeDescriptor.Create<string>());
             ComponentInfo = builder.BuildWithImplicitCtor();
         }

@@ -316,12 +316,13 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             {
                 var fullname = attribute.AttributeType.FullName;
 
-                if (fullname == Naming.ExportAttribute)
+                if (fullname == Naming.ExportAttribute || fullname == Naming.InheritedExportAttribute)
                 {
                     exploreMetaData(componentType.CustomAttributes, infoBuilder);
 
                     var contract = getExportContract(attribute, infoBuilder.ComponentType);
-                    infoBuilder.AddSelfExport(contract);
+                    var isInherited = fullname == Naming.InheritedExportAttribute;
+                    infoBuilder.AddSelfExport(isInherited, contract);
                 }
             }
         }
@@ -421,8 +422,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         /// <param name="infoBuilder">Builder where methods are reported</param>
         private void reportComponentMethods(TypeDefinition componentType, ComponentInfoBuilder infoBuilder)
         {
-            var hasExplicitCompositionPoint = false;
-
             foreach (var method in componentType.Methods)
             {
                 foreach (var attribute in method.CustomAttributes)
@@ -434,7 +433,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
                     {
                         //explicit composition point has been found
                         addCompositionPoint(infoBuilder, method, attribute);
-                        hasExplicitCompositionPoint = true;
                     }
 
                     if (fullname == Naming.ImportingConstructorAttribute)
@@ -444,14 +442,16 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
                 }
             }
 
-            if (!hasExplicitCompositionPoint)
+            var implicitCtor = FindParamLessCtor(componentType); ;
+            if (!infoBuilder.HasImportingCtor && implicitCtor != null)
+            {
+                //add implicit constructor if available
+                addImportingConstructor(infoBuilder, implicitCtor, null);
+            }
+
+            if (!infoBuilder.HasCompositionPoint && implicitCtor != null)
             {
                 //add implicit composition point if available
-                var implicitCtor = FindParamLessCtor(componentType);
-                if (implicitCtor == null)
-                    //there is no implicit ctor
-                    return;
-
                 addCompositionPoint(infoBuilder, implicitCtor, null);
             }
         }
@@ -500,7 +500,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             var contract = getExportContract(attribute, exportType);
 
             exploreMetaData(field.CustomAttributes, infoBuilder);
-            infoBuilder.AddExport(exportType, getter.Info.MethodID, contract);
+            var isInherited = attribute.AttributeType.FullName == Naming.InheritedExportAttribute;
+            infoBuilder.AddExport(exportType, getter.Info.MethodID, isInherited, contract);
         }
 
         /// <summary>
@@ -516,7 +517,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
             var contract = getExportContract(attribute, exportType);
 
             exploreMetaData(exportingAttributes, infoBuilder);
-            infoBuilder.AddExport(exportType, methodId, contract);
+            var isInherited = attribute.AttributeType.FullName == Naming.InheritedExportAttribute;
+            infoBuilder.AddExport(exportType, methodId, isInherited, contract);
         }
 
         /// <summary>
@@ -1057,6 +1059,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
         /// <returns>Found type or null if type doesn't exists</returns>
         private TypeDefinition getType(string fullname)
         {
+            if (fullname == null)
+                return null;
+
             return _assembly.MainModule.GetType(fullname);
         }
 

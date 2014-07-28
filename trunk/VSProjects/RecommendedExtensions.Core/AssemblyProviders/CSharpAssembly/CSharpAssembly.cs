@@ -50,6 +50,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
             return translated;
         }
 
+        #region CSharp parsing
+
         /// <inheritdoc />
         public override void ParsingProvider(ParsingActivation activation, EmitterBase emitter)
         {
@@ -60,5 +62,51 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
             var methodID = activation.Method == null ? new MethodID("$inline", false) : activation.Method.MethodID;
             VS.Log.Message("Parsing time for {0} {1}ms", methodID, w.ElapsedMilliseconds);
         }
+
+        /// <inheritdoc />
+        public override object ParseValue(string valueRepresentation, TypeDescriptor contextType, CodeElement contextElement)
+        {
+            object value;
+            if (Compiler.TryParseValue(valueRepresentation, out value))
+                return value;
+
+            return parseType(ref valueRepresentation, contextType, contextElement);
+        }
+        
+        /// <summary>
+        /// Parses typeof representation.
+        /// </summary>
+        /// <param name="valueRepresentation">The value representation.</param>
+        /// <param name="contextType">Type of the context.</param>
+        /// <param name="contextElement">The context element.</param>
+        /// <returns>Descriptor of type if available, <c>null</c> otherwise.</returns>
+        private TypeDescriptor parseType(ref string valueRepresentation, TypeDescriptor contextType, CodeElement contextElement)
+        {
+            var typePrefix = "typeof(";
+            if (valueRepresentation.StartsWith(typePrefix))
+            {
+                valueRepresentation = valueRepresentation.Substring(typePrefix.Length).Replace(")", "");
+                valueRepresentation = TranslatePath(valueRepresentation);
+
+                //find  type
+
+                var implicitNamespaces = GetImplicitNamespaces(contextType);
+
+                var namespaces = implicitNamespaces.Concat(GetNamespaces(contextElement));
+                foreach (var ns in namespaces)
+                {
+                    var prefix = ns == "" ? "" : ns + ".";
+
+                    var descriptor = TypeDescriptor.Create(prefix + valueRepresentation);
+                    if (TypeServices.GetChain(descriptor) != null)
+                        return descriptor;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
     }
 }

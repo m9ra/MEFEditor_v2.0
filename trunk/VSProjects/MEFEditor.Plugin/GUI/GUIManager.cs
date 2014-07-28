@@ -209,7 +209,11 @@ namespace MEFEditor.Plugin.GUI
         {
             DispatchedAction(() =>
             {
-                _gui.ShowWorkspace();
+                if (diagram != null)
+                    //prevent showing workspace when
+                    //there is no diagram
+                    _gui.ShowWorkspace();
+
                 _drawingProvider.Display(diagram);
             });
         }
@@ -420,6 +424,7 @@ namespace MEFEditor.Plugin.GUI
         /// <summary>
         /// Flushes the composition point list updates.
         /// </summary>
+        /// <param name="forceRedraw">Force redrawing of composition scheme</param>
         /// <returns><c>true</c> if list has been changed, <c>false</c> otherwise.</returns>
         internal bool FlushCompositionPointUpdates()
         {
@@ -640,7 +645,8 @@ namespace MEFEditor.Plugin.GUI
         {
             DispatchedAction(() =>
             {
-                var action = new TransactionAction(() => FlushCompositionPointUpdates(), "UpdateCompositionPoints", (t) => t.Name == "UpdateCompositionPoints", this);
+                var action = new TransactionAction(() => FlushCompositionPointUpdates()
+                 , "UpdateCompositionPoints", (t) => t.Name == "UpdateCompositionPoints", this);
                 Transactions.AttachAfterAction(null, action);
             });
         }
@@ -686,7 +692,7 @@ namespace MEFEditor.Plugin.GUI
             {
                 _desiredCompositionPointMethod = null;
             };
-            
+
             return item;
         }
 
@@ -838,14 +844,14 @@ namespace MEFEditor.Plugin.GUI
             {
                 var navigate = new MenuItem();
                 navigate.Header = "Navigate to";
-                navigate.Click += (s, e) => entry.Navigate();
+                navigate.Click += (s, e) => _vs.RunSafeAction(entry.Navigate, "Navigation fialed");
                 contextMenu.Items.Add(navigate);
             }
 
             var copy = new MenuItem();
             copy.Header = "Copy to clipboard";
             copy.Click += (s, e) =>
-                Clipboard.SetText(entry.ToString());
+                _vs.RunSafeAction(() => Clipboard.SetText(entry.ToString()), "Clipboard text setting failed");
             contextMenu.Items.Add(copy);
         }
 

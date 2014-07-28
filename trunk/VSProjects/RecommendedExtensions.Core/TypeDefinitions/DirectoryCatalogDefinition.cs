@@ -51,7 +51,7 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             try
             {
                 fullPath = ResolveFullPath(path, Services);
-                FileChangesWatcher.WatchFolder(path, Services.CompositionSchemeInvalidation, true);
+                FileChangesWatcher.WatchFolder(fullPath, Services.CompositionSchemeInvalidation, true);
             }
             catch (Exception)
             {
@@ -137,7 +137,10 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             try
             {
                 if (!Directory.Exists(path))
+                {
+                    System.Windows.MessageBox.Show("Desired path doesn't exists","Path not found",System.Windows.MessageBoxButton.OK,System.Windows.MessageBoxImage.Warning);
                     return;
+                }
 
                 System.Diagnostics.Process.Start("explorer.exe", path);
             }

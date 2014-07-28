@@ -46,8 +46,10 @@ namespace RecommendedExtensions.AssemblyProviders
             {
                 ExportAssemblyFactory<Project>((project) =>
                 {
-                    var language = project.CodeModel.Language;
-                    if (language == CSharpSyntax.LanguageID)
+                    if (
+                        project.CodeModel != null &&
+                        project.CodeModel.Language == CSharpSyntax.LanguageID
+                        )
                         return new CSharpAssembly(project, Services);
                     else
                         return null;

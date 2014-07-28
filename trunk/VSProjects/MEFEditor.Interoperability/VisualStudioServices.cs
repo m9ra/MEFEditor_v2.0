@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 
 using EnvDTE;
+using EnvDTE80;
 using VSLangProj;
 using System.Runtime.InteropServices;
 
@@ -51,6 +52,11 @@ namespace MEFEditor.Interoperability
         private readonly Events _events;
 
         /// <summary>
+        /// Visual studio events object which reference is needed because of unwanted garbage collection
+        /// </summary>
+        private readonly Events2 _events2;
+
+        /// <summary>
         /// Events provided by text editor
         /// </summary>
         private readonly TextEditorEvents _textEditorEvents;
@@ -61,7 +67,14 @@ namespace MEFEditor.Interoperability
         private readonly SolutionEvents _solutionEvents;
 
         /// <summary>
-        /// Events provided for <see cref="ProjectItems"/>
+        /// Events provided for <see cref="ProjectItems"/> that
+        /// are directly in SOLUTION.
+        /// </summary>
+        private readonly ProjectItemsEvents _solutionItemEvents;
+
+        /// <summary>
+        /// Events provided for <see cref="ProjectItems"/> that
+        /// are in PROJECT
         /// </summary>
         private readonly ProjectItemsEvents _projectItemEvents;
 
@@ -171,9 +184,13 @@ namespace MEFEditor.Interoperability
 
             _dte = dte;
             _events = _dte.Events;
+            _events2 = _dte.Events as Events2;
             _textEditorEvents = _events.TextEditorEvents;
             _solutionEvents = _events.SolutionEvents;
-            _projectItemEvents = _events.SolutionItemsEvents;          
+            if (_events2 != null)
+                _projectItemEvents = _events2.ProjectItemsEvents;
+
+            _solutionItemEvents = _events.SolutionItemsEvents;
         }
 
         #region Exposed services
@@ -191,8 +208,14 @@ namespace MEFEditor.Interoperability
             _solutionEvents.ProjectAdded += onProjectAdded;
             _solutionEvents.ProjectRemoved += onProjectRemoved;
 
-            _projectItemEvents.ItemAdded += onProjectItemAdded;
-            _projectItemEvents.ItemRemoved += onProjectItemRemoved;
+            _solutionItemEvents.ItemAdded += onProjectItemAdded;
+            _solutionItemEvents.ItemRemoved += onProjectItemRemoved;
+
+            if (_projectItemEvents != null)
+            {
+                _projectItemEvents.ItemAdded += onProjectItemAdded;
+                _projectItemEvents.ItemRemoved += onProjectItemRemoved;
+            }
 
             if (IsSolutionOpened)
             {
@@ -230,7 +253,7 @@ namespace MEFEditor.Interoperability
             var properties = project.Properties;
             if (properties == null)
                 return null;
-            
+
             var property = properties.Item(propertyName);
             if (property == null || property.Value == null)
                 return null;
@@ -338,7 +361,9 @@ namespace MEFEditor.Interoperability
             if (!onProjectAdded_silent(addedProject))
                 return;
 
-            onProjectAdded_report(addedProject);
+            Log.Message("Reloading solution because {0} has been added", addedProject.Name);
+            solutionClosed();
+            solutionOpened();
         }
 
         /// <summary>
@@ -530,7 +555,7 @@ namespace MEFEditor.Interoperability
         private void solutionOpened()
         {
             if (!_wasSolutionClosed)
-            {                
+            {
                 solutionClosed();
             }
 
@@ -766,18 +791,72 @@ namespace MEFEditor.Interoperability
         /// Create log entry with specified description, description and position.
         /// </summary>
         /// <param name="msg">Message for log entry.</param>
-        /// <param name="descr">Description for log entry.</param>
+        /// <param name="description">Description for log entry.</param>
         /// <param name="navigate">Navigate to error position</param>
         /// <returns>Log entry according to specified parameters</returns>
-        public LogEntry LogErrorEntry(string msg, string descr, Action navigate = null)
+        public LogEntry LogErrorEntry(string msg, string description, Action navigate = null)
         {
-            var entry = new LogEntry(LogLevels.Error, msg, descr, navigate);
+            var entry = new LogEntry(LogLevels.Error, msg, description, navigate);
             Log.Entry(entry);
 
             return entry;
         }
 
-        #endregion
 
+        /// <summary>
+        /// Logs the exception described by given message.
+        /// </summary>
+        /// <param name="ex">The exception that is logged</param>
+        /// <param name="messageFormat">The message format.</param>
+        /// <param name="formatArguments">The format arguments.</param>
+        /// <returns>Logged entry.</returns>
+        public LogEntry LogException(Exception ex, string messageFormat, params object[] formatArguments)
+        {
+            var message = string.Format(messageFormat, formatArguments);
+            var entry = new LogEntry(LogLevels.Error, message, ex.ToString(), null);
+
+            Log.Entry(entry);
+            return entry;
+        }
+
+        /// <summary>
+        /// Run action with exception handler and logging service.
+        /// </summary>
+        /// <param name="action">The action that will be run.</param>
+        /// <param name="messageFormat">The message format displayed in log.</param>
+        /// <param name="formatArguments">The format arguments.</param>
+        public void RunSafeAction(Action action, string messageFormat, params object[] formatArguments)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, messageFormat, formatArguments);
+            }
+        }
+
+
+        /// <summary>
+        /// Run function with exception handler and logging service.
+        /// </summary>
+        /// <param name="function">The function that will be run.</param>
+        /// <param name="messageFormat">The message format displayed in log.</param>
+        /// <param name="formatArguments">The format arguments.</param>
+        public T RunSafe<T>(Func<T> function, string messageFormat, params object[] formatArguments)
+        {
+            try
+            {
+                return function();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, messageFormat, formatArguments);
+            }
+
+            return default(T);
+        }
+        #endregion
     }
 }

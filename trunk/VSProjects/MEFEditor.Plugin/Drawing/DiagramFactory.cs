@@ -10,15 +10,18 @@ using RecommendedExtensions.Core.Drawings;
 
 namespace MEFEditor.Plugin.Drawing
 {
-    class DiagramFactory:AbstractDiagramFactory
+    class DiagramFactory : AbstractDiagramFactory
     {
-        
+
         private ContentDrawer _defaultContentDrawer;
 
         private Dictionary<string, ContentDrawer> _contentDrawers = new Dictionary<string, ContentDrawer>();
 
         internal DiagramFactory(params ContentDrawer[] drawers)
         {
+            if (drawers == null)
+                return;
+
             foreach (var drawer in drawers)
             {
                 if (drawer.IsDefaultDrawer)
@@ -40,6 +43,9 @@ namespace MEFEditor.Plugin.Drawing
             if (_contentDrawers.TryGetValue(definition.DrawedType, out drawer))
                 return drawer.Provider(owningItem);
 
+            if (_defaultContentDrawer == null)
+                return null;
+
             return _defaultContentDrawer.Provider(owningItem);
         }
 
@@ -50,7 +56,7 @@ namespace MEFEditor.Plugin.Drawing
 
         public override ConnectorDrawing CreateConnector(ConnectorDefinition definition, DiagramItem owningItem)
         {
-            var kind=definition.GetProperty("Kind");
+            var kind = definition.GetProperty("Kind");
             switch (kind.Value)
             {
                 case "Import":
