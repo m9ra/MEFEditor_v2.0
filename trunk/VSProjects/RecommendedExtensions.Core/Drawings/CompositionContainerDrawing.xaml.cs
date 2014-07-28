@@ -18,12 +18,19 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Drawing definition for <see cref="CompositionContainer" />.
     /// </summary>
     public partial class CompositionContainerDrawing : ContentDrawing
     {
+        /// <summary>
+        /// Cached image for icon.
+        /// </summary>
         protected static readonly CachedImage Image = new CachedImage(Icons.Composition);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositionContainerDrawing"/> class.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public CompositionContainerDrawing(DiagramItem item)
             : base(item)
         {

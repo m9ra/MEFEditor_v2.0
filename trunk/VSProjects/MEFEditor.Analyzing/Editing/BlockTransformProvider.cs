@@ -12,7 +12,6 @@ namespace MEFEditor.Analyzing.Editing
     /// </summary>
     public abstract class BlockTransformProvider
     {
-
         /// <summary>
         /// Shifts current instruction block before block described by given provider.
         /// </summary>

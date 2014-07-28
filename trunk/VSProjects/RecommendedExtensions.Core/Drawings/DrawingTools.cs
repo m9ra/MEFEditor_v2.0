@@ -15,12 +15,12 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Tools for usual drawing routines
+    /// Tools for usual drawing routines.
     /// </summary>
     public static class DrawingTools
     {
         /// <summary>
-        /// Cache for bitmap images
+        /// Cache for bitmap images.
         /// </summary>
         private static readonly Dictionary<System.Drawing.Bitmap, BitmapSource> _bitmapCache = new Dictionary<System.Drawing.Bitmap, BitmapSource>();
 
@@ -28,8 +28,7 @@ namespace RecommendedExtensions.Core.Drawings
         /// Delay for ToolTips, which are displayed immediately.
         /// </summary>
         public const int ToolTip_Quick = 25;
-
-
+        
         /// <summary>
         /// Create TextBlock for given text.
         /// </summary>
@@ -41,14 +40,13 @@ namespace RecommendedExtensions.Core.Drawings
             block.Text = text;
             return block;
         }
-
-
+        
         /// <summary>
-        /// Code is extracted from sample usage of <see cref="BezierSpline"/> from 
-        /// http://www.codeproject.com/Articles/31859/Draw-a-Smooth-Curve-through-a-Set-of-D-Points-wit
+        /// Code is extracted from sample usage of <see cref="BezierSpline" /> from
+        /// http://www.codeproject.com/Articles/31859/Draw-a-Smooth-Curve-through-a-Set-of-D-Points-wit.
         /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
+        /// <param name="points">The points.</param>
+        /// <returns>Path.</returns>
         public static Path GetSmoothPath(Point[] points)
         {
             // Get Bezier Spline Control Points.
@@ -83,6 +81,12 @@ namespace RecommendedExtensions.Core.Drawings
             return target;
         }
 
+        /// <summary>
+        /// Appends the heading text.
+        /// </summary>
+        /// <param name="heading">The heading.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="target">The target.</param>
         internal static void AppendHeadingText(string heading, string text, StackPanel target)
         {
             var hblock = GetText(heading);
@@ -98,7 +102,6 @@ namespace RecommendedExtensions.Core.Drawings
         /// Set ToolTip from content with specified delay to parent.
         /// </summary>
         /// <param name="parent">Element where ToolTip will be displayed.</param>
-        /// <param name="delay">Delay before ToolTip is displayed.</param>      
         /// <param name="content">Content to be displayed in ToolTip.</param>
         internal static void SetToolTip(FrameworkElement parent, FrameworkElement content)
         {
@@ -112,26 +115,27 @@ namespace RecommendedExtensions.Core.Drawings
         /// Set ToolTip from content with specified delay to parent.
         /// </summary>
         /// <param name="target">Target which ToolTip will be set.</param>
+        /// <param name="toolTipText">The tool tip text.</param>
         internal static void SetToolTip(FrameworkElement target, string toolTipText)
         {
             SetToolTip(target, DrawingTools.GetText(toolTipText));
         }
 
         /// <summary>
-        /// Set image to given target
+        /// Set image to given target.
         /// </summary>
-        /// <param name="target">Target for image</param>
-        /// <param name="image">Image that will be set</param>
+        /// <param name="target">Target for image.</param>
+        /// <param name="image">Image that will be set.</param>
         internal static void SetImage(Image target, CachedImage image)
         {
             target.Source = image.ImageData;
         }
 
         /// <summary>
-        /// Convert bitmap into wpf usable bitmap source
+        /// Convert bitmap into wpf usable bitmap source.
         /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
+        /// <param name="source">The source.</param>
+        /// <returns>BitmapSource.</returns>
         internal static BitmapSource Convert(System.Drawing.Bitmap source)
         {
             BitmapSource result;

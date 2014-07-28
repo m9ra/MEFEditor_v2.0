@@ -16,18 +16,31 @@ using MEFEditor.Drawing;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="Type" />.
+    /// </summary>
     public class TypeDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeDefinition" /> class.
+        /// </summary>
         public TypeDefinition()
         {
             Simulate<Type>();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _static_method_cctor()
         {
             //nothing to do
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>System.String.</returns>
         public string _get_FullName()
         {
             var storedType = Context.GetField(This, "Type") as TypeDescriptor;

@@ -17,14 +17,39 @@ using RecommendedExtensions.Core.Services;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="DirectoryCatalog" />.
+    /// </summary>
     public class DirectoryCatalogDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// The contained components.
+        /// </summary>
         public readonly Field<List<Instance>> Components;
+
+        /// <summary>
+        /// The given path.
+        /// </summary>
         public readonly Field<string> GivenPath;
+
+        /// <summary>
+        /// The full path.
+        /// </summary>
         public readonly Field<string> FullPath;
+
+        /// <summary>
+        /// The pattern.
+        /// </summary>
         public readonly Field<string> Pattern;
+
+        /// <summary>
+        /// The error.
+        /// </summary>
         public readonly Field<string> Error;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectoryCatalogDefinition" /> class.
+        /// </summary>
         public DirectoryCatalogDefinition()
         {
             Simulate<DirectoryCatalog>();
@@ -38,12 +63,20 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #region Type members implementation
 
-
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="path">The path.</param>
         public void _method_ctor(string path)
         {
             _method_ctor(path, "*.dll");
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="pattern">The pattern.</param>
         public void _method_ctor(string path, string pattern)
         {
             string fullPath = null;
@@ -75,16 +108,28 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             setCtorEdits();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>Instance[].</returns>
         public Instance[] _get_Parts()
         {
             return Components.Get().ToArray();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>System.String.</returns>
         public string _get_Path()
         {
             return GivenPath.Get();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>System.String.</returns>
         public string _get_FullPath()
         {
             return FullPath.Get();
@@ -117,6 +162,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return Uri.UnescapeDataString(path1Uri.MakeRelativeUri(path2Uri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
 
+        /// <summary>
+        /// Resolves the full path.
+        /// </summary>
+        /// <param name="relativePath">The relative path.</param>
+        /// <param name="services">The services.</param>
+        /// <returns>System.String.</returns>
         public static string ResolveFullPath(string relativePath, TypeServices services)
         {
             var codeBase = services.CodeBaseFullPath;
@@ -146,17 +197,17 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             }
             catch
             {
-                //opening wasnt successfull
+                //opening wasn't successful
             }
         }
 
         /// <summary>
-        /// Fill given list with components collectd from assemblies specified by fullpath and pattern
+        /// Fill given list with components collected from assemblies specified by fullpath and pattern.
         /// </summary>
-        /// <param name="result">Here are stored found components</param>
-        /// <param name="fullpath">Fullpath of directory where assemblies are searched</param>
-        /// <param name="pattern">Pattern for an assembly</param>
-        /// <returns>Error if any, null otherwise</returns>
+        /// <param name="result">Here are stored found components.</param>
+        /// <param name="fullpath">Fullpath of directory where assemblies are searched.</param>
+        /// <param name="pattern">Pattern for an assembly.</param>
+        /// <returns>Error if any, null otherwise.</returns>
         private string fillWithComponents(List<Instance> result, string fullpath, string pattern)
         {
             var files = Services.GetFiles(fullpath);
@@ -186,6 +237,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
         }
 
 
+        /// <summary>
+        /// Fills the list with components from given assembly.
+        /// </summary>
+        /// <param name="result">The result list.</param>
+        /// <param name="assembly">The assembly with components</param>
         private void fillWithComponents(List<Instance> result, TypeAssembly assembly)
         {
             foreach (var componentInfo in assembly.GetComponents())
@@ -199,6 +255,9 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #region Edits handling
 
+        /// <summary>
+        /// Sets the ctor edits.
+        /// </summary>
         private void setCtorEdits()
         {
             AddActionEdit("Open folder", () => OpenPathInExplorer(FullPath.Value));
@@ -207,6 +266,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             RewriteArg(2, "Change search pattern", _patternInput);
         }
 
+        /// <summary>
+        /// Dialog for getting pattern input.
+        /// </summary>
+        /// <param name="view">The view.</param>
+        /// <returns>System.Object.</returns>
         private object _patternInput(ExecutionView view)
         {
             var oldPattern = Pattern.Get();
@@ -221,6 +285,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return inputPattern;
         }
 
+        /// <summary>
+        /// Dialog for getting path input.
+        /// </summary>
+        /// <param name="view">The view.</param>
+        /// <returns>System.Object.</returns>
         private object _pathInput(ExecutionView view)
         {
             var oldPath = FullPath.Get();
@@ -243,6 +312,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #endregion
 
+        /// <summary>
+        /// Export data from represented <see cref="Instance" /> by using given drawer.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas" /></remarks>.
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
         protected override void draw(InstanceDrawer drawer)
         {
             drawer.SetProperty("Path", GivenPath.Get());

@@ -18,16 +18,29 @@ using RecommendedExtensions.Core.Dialogs;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="TypeCatalog" />.
+    /// </summary>
     public class TypeCatalogDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// The contained parts.
+        /// </summary>
         protected Field<List<Instance>> Parts;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeCatalogDefinition" /> class.
+        /// </summary>
         public TypeCatalogDefinition()
         {
             AddCreationEdit("Add TypeCatalog");
             Simulate<TypeCatalog>();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="types">The types.</param>
         [ParameterTypes(typeof(Type[]))]
         public void _method_ctor(params Instance[] types)
         {
@@ -62,11 +75,20 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             }
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>Instance[].</returns>
         public Instance[] _get_Parts()
         {
             return Parts.Get().ToArray();
         }
 
+        /// <summary>
+        /// Export data from represented <see cref="Instance" /> by using given drawer.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas" /></remarks>.
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
         protected override void draw(InstanceDrawer drawer)
         {
             var slot = drawer.AddSlot();
@@ -84,6 +106,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             drawer.ForceShow();
         }
 
+        /// <summary>
+        /// Dialog for adding component type.
+        /// </summary>
+        /// <param name="callerAssembly">The caller assembly.</param>
+        /// <param name="v">View where component type will be added.</param>
+        /// <returns>System.Object.</returns>
         private object addComponentTypeProvider(TypeAssembly callerAssembly, ExecutionView v)
         {
             var components = getComponents(callerAssembly);
@@ -100,11 +128,15 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             }
         }
 
+        /// <summary>
+        /// Gets components defined in given assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <returns>IEnumerable&lt;ComponentInfo&gt;.</returns>
         private IEnumerable<ComponentInfo> getComponents(TypeAssembly assembly)
         {
             var result = new List<ComponentInfo>(assembly.GetReferencedComponents());
-
-
+            
             //runtime is implicitly referenced from every assembly 
             var runtimeComponents = Services.GetComponents(ContainingAssembly);
             result.AddRange(runtimeComponents);

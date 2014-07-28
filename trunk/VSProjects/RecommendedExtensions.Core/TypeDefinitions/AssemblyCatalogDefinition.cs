@@ -14,6 +14,9 @@ using MEFEditor.TypeSystem.Runtime;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="AssemblyCatalog" />.
+    /// </summary>
     public class AssemblyCatalogDefinition : DataTypeDefinition
     {
         public readonly Field<List<Instance>> Components;
@@ -35,6 +38,9 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #region Type members implementation
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _method_ctor(string path)
         {
             Path.Value = path;
@@ -44,6 +50,9 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             setCtorEdits();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         [ParameterTypes(typeof(System.Reflection.Assembly))]
         public void _method_ctor(Instance assembly)
         {
@@ -54,16 +63,25 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             });
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public Instance[] _get_Parts()
         {
             return Components.Get().ToArray();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public string _get_Path()
         {
             return Path.Get();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public string _get_FullPath()
         {
             return FullPath.Get();

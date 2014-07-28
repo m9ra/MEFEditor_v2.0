@@ -16,14 +16,25 @@ using MEFEditor.Drawing;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="AttributedModelServices" />.
+    /// </summary>
     public class AttributedModelServicesDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributedModelServicesDefinition"/> class.
+        /// </summary>
         public AttributedModelServicesDefinition()
         {
             //static class cannot be simulated
             FullName = "System.ComponentModel.Composition.AttributedModelServices";
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="parts">The parts.</param>
         [ParameterTypes(typeof(CompositionContainer),typeof(object[]))]
         public void _static_method_ComposeParts(Instance container, params Instance[] parts)
         {

@@ -18,12 +18,19 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Drawing definition for <see cref="TypeCatalog"/>.
     /// </summary>
     public partial class TypeCatalogDrawing : ContentDrawing
     {
+        /// <summary>
+        /// Cached image for icon.
+        /// </summary>
         protected static readonly CachedImage Image = new CachedImage(Icons.Type);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeCatalogDrawing"/> class.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public TypeCatalogDrawing(DiagramItem item)
             : base(item)
         {

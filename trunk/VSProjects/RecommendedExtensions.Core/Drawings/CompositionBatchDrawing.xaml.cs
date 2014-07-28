@@ -17,10 +17,20 @@ using MEFEditor.Drawing;
 
 namespace RecommendedExtensions.Core.Drawings
 {
+    /// <summary>
+    /// Drawing definition for <see cref="CompositionBatch" />.
+    /// </summary>
     public partial class CompositionBatchDrawing : ContentDrawing
     {
+        /// <summary>
+        /// Cached image for icon.
+        /// </summary>
         protected static readonly CachedImage Image = new CachedImage(Icons.Batch);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositionBatchDrawing"/> class.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public CompositionBatchDrawing(DiagramItem item)
             : base(item)
         {

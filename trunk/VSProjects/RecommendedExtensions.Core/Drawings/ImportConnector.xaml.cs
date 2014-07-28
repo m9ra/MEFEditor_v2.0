@@ -18,10 +18,13 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Drawing definition for import connector.
     /// </summary>
     public partial class ImportConnector : ConnectorDrawing
     {
+        /// <summary>
+        /// The import properties.
+        /// </summary>
         private static readonly Dictionary<string, string> ImportProperties = new Dictionary<string, string>()
         {
              {"Contract","Contract"},
@@ -32,6 +35,11 @@ namespace RecommendedExtensions.Core.Drawings
              {"IsPrerequisity","Is prerequisity"}
         };
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImportConnector" /> class.
+        /// </summary>
+        /// <param name="definition">The definition.</param>
+        /// <param name="owningItem">The owning item.</param>
         public ImportConnector(ConnectorDefinition definition, DiagramItem owningItem)
             : base(definition, ConnectorAlign.Left, owningItem)
         {
@@ -42,6 +50,10 @@ namespace RecommendedExtensions.Core.Drawings
             ConnectorTools.SetMessages(ErrorOutput, definition);
         }
 
+        /// <summary>
+        /// Gets the connect point.
+        /// </summary>
+        /// <value>The connect point.</value>
         public override Point ConnectPoint
         {
             get

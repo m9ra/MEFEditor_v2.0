@@ -18,14 +18,24 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Drawing definition for component drawing.
     /// </summary>
     public partial class ComponentDrawing : ContentDrawing
     {
+        /// <summary>
+        /// Cached image for icon.
+        /// </summary>
         protected static readonly CachedImage Image = new CachedImage(Icons.Component);
 
+        /// <summary>
+        /// Cached image for remove icon.
+        /// </summary>
         protected static readonly CachedImage RemoveImage = new CachedImage(Icons.Remove);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComponentDrawing"/> class.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public ComponentDrawing(DiagramItem item)
             : base(item)
         {

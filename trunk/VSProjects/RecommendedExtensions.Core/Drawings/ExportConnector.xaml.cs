@@ -18,17 +18,26 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Drawing definition for export connector.
     /// </summary>
     public partial class ExportConnector : ConnectorDrawing
     {
+        /// <summary>
+        /// The export properties.
+        /// </summary>
         private static readonly Dictionary<string, string> ExportProperties = new Dictionary<string, string>()
         {
              {"Contract","Contract"},
              {"ContractType","Contract type"},             
-             {"ItemType","Item type"}
+             {"ItemType","Item type"},
+             {"IsInherited","Is inherited export"}
         };
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExportConnector" /> class.
+        /// </summary>
+        /// <param name="definition">The definition.</param>
+        /// <param name="owningItem">The owning item.</param>
         public ExportConnector(ConnectorDefinition definition, DiagramItem owningItem)
             : base(definition, ConnectorAlign.Right, owningItem)
         {
@@ -39,6 +48,10 @@ namespace RecommendedExtensions.Core.Drawings
             ConnectorTools.SetMessages(ErrorOutput, definition);
         }
 
+        /// <summary>
+        /// Gets the connect point.
+        /// </summary>
+        /// <value>The connect point.</value>
         public override Point ConnectPoint
         {
             get

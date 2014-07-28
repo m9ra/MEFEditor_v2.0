@@ -13,33 +13,45 @@ using MEFEditor.TypeSystem.Runtime.Building;
 
 namespace MEFEditor.TypeSystem.Runtime
 {
+    /// <summary>
+    /// Runtime definition of type for <see cref="DataInstance" />.
+    /// </summary>
     public class DataTypeDefinition : RuntimeTypeDefinition
     {
         /// <summary>
-        /// Fields defined in type definition
+        /// Fields defined in type definition.
         /// </summary>
         private readonly List<Field> _fields = new List<Field>();
 
+        /// <summary>
+        /// Children of represented <see cref="Instance" />.
+        /// </summary>
         private readonly Field<HashSet<Instance>> _children;
 
+        /// <summary>
+        /// The represented type.
+        /// </summary>
         private Type _simulatedType;
 
         /// <summary>
-        /// Fullname of defined type
+        /// Fullname of defined type.
         /// </summary>
+        /// <value>The full name.</value>
         internal protected string FullName { get; protected set; }
 
         /// <summary>
-        /// Create info for defined type by its FullName
+        /// Create info for defined type, by its FullName.
         /// </summary>
+        /// <value>The type information.</value>
         public override TypeDescriptor TypeInfo
         {
             get { return TypeDescriptor.Create(FullName); }
         }
 
         /// <summary>
-        /// All reported children for current instance
+        /// All reported children for current instance.
         /// </summary>
+        /// <value>The children.</value>
         protected IEnumerable<Instance> Children
         {
             get
@@ -53,32 +65,44 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataTypeDefinition" /> class.
+        /// </summary>
         protected DataTypeDefinition()
         {
             _children = new Field<HashSet<Instance>>(this, "_children");
 
             initializeFieldHandlers();
         }
-
-
-
-        internal void RegisterField(Field directProperty, out string storage)
+        
+        /// <summary>
+        /// Registers the field.
+        /// </summary>
+        /// <param name="field">The registered field.</param>
+        /// <param name="storage">The storage of field.</param>
+        internal void RegisterField(Field field, out string storage)
         {
-            _fields.Add(directProperty);
-            storage = string.Format("@prop_{0}_{1}_{2}", _fields.Count, directProperty, GetType());
+            _fields.Add(field);
+            storage = string.Format("@prop_{0}_{1}_{2}", _fields.Count, field, GetType());
         }
 
+        /// <summary>
+        /// Gets methods defined by current type definition.
+        /// </summary>
+        /// <returns>Defined methods</returns>
         internal override IEnumerable<RuntimeMethodGenerator> GetMethods()
         {
-            //TODO resolve inheritance
             return ContainingAssembly.GetMethodGenerators(this);
         }
 
+        /// <summary>
+        /// Get subchains defining current type definition's inheritance.
+        /// </summary>
+        /// <returns>Subchains.</returns>
         internal override IEnumerable<InheritanceChain> GetSubChains()
         {
             if (_simulatedType == null)
-            {
-                //TODO allow overwrite base type
+            {                
                 return new InheritanceChain[] { ContainingAssembly.GetChain(typeof(object)) };
             }
             else
@@ -88,17 +112,34 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
 
+        /// <summary>
+        /// Simulates type T.
+        /// </summary>
+        /// <typeparam name="T">Simulated type</typeparam>
         protected void Simulate<T>()
         {
             _simulatedType = typeof(T);
             FullName = _simulatedType.FullName;
         }
 
+        /// <summary>
+        /// Reports that child has been added.
+        /// </summary>
+        /// <param name="childArgIndex">Index of the child argument.</param>
+        /// <param name="childDescription">The child description.</param>
+        /// <param name="isOptional">if set to <c>true</c> can be removed from call.</param>
         protected void ReportChildAdd(int childArgIndex, string childDescription, bool isOptional = false)
         {
             ReportChildAdd(This, childArgIndex, childDescription, isOptional);
         }
 
+        /// <summary>
+        /// Reports that child has been added in variable arguments parameter.
+        /// </summary>
+        /// <param name="childParamArgIndex">Index of the child parameter argument.</param>
+        /// <param name="child">The child.</param>
+        /// <param name="childDescription">The child description.</param>
+        /// <param name="isOptional">if set to <c>true</c> can be removed from call.</param>
         protected void ReportParamChildAdd(int childParamArgIndex, Instance child, string childDescription, bool isOptional = false)
         {
             ++childParamArgIndex;
@@ -113,6 +154,13 @@ namespace MEFEditor.TypeSystem.Runtime
             Edits.AttachRemoveArgument(attachedInstance, child, childParamArgIndex, editName);
         }
 
+        /// <summary>
+        /// Reports that child has been added.
+        /// </summary>
+        /// <param name="attachedInstance">The attached instance.</param>
+        /// <param name="childArgIndex">Index of the child argument.</param>
+        /// <param name="childDescription">The child description.</param>
+        /// <param name="isOptional">if set to <c>true</c> can be removed from call.</param>
         protected void ReportChildAdd(Instance attachedInstance, int childArgIndex, string childDescription, bool isOptional = false)
         {
             var child = CurrentArguments[childArgIndex];
@@ -125,6 +173,11 @@ namespace MEFEditor.TypeSystem.Runtime
             Edits.AttachRemoveArgument(attachedInstance, child, childArgIndex, editName);
         }
 
+        /// <summary>
+        /// Adds the child.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        /// <param name="child">The child.</param>
         private void addChild(Instance parent, Instance child)
         {
             RunInContextOf(parent, () =>
@@ -140,6 +193,9 @@ namespace MEFEditor.TypeSystem.Runtime
             });
         }
 
+        /// <summary>
+        /// Initializes the field handlers.
+        /// </summary>
         private void initializeFieldHandlers()
         {
             var fields = this.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);

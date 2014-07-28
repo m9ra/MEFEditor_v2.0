@@ -18,24 +18,60 @@ using RecommendedExtensions.Core.TypeDefinitions.CompositionEngine;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="CompositionContainer" />.
+    /// </summary>
     public class CompositionContainerDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// The contained composable catalog.
+        /// </summary>
         protected Field<Instance> ComposableCatalog;
+
+        /// <summary>
+        /// The direct children.
+        /// </summary>
         protected Field<List<Instance>> DirectChildren;
+
+        /// <summary>
+        /// The composition result.
+        /// </summary>
         protected Field<CompositionResult> CompositionResult;
+
+        /// <summary>
+        /// The compose edit.
+        /// </summary>
         protected Field<Edit> ComposeEdit;
+
+        /// <summary>
+        /// The compose by using batch edit.
+        /// </summary>
         protected Field<Edit> ComposeBatchEdit;
+
+        /// <summary>
+        /// Determine that container was composed.
+        /// </summary>
         protected Field<bool> WasComposed;
+
+        /// <summary>
+        /// Error occured during composition.
+        /// </summary>
         protected Field<string> Error;
-
-
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositionContainerDefinition" /> class.
+        /// </summary>
         public CompositionContainerDefinition()
         {
             Simulate<CompositionContainer>();
             AddCreationEdit("Add CompositionContainer");
         }
 
-
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="composablePartCatalog">The composable part catalog.</param>
+        /// <param name="exportProviders">The export providers.</param>
         [ParameterTypes(typeof(ComposablePartCatalog), typeof(ExportProvider[]))]
         public void _method_ctor(Instance composablePartCatalog, params Instance[] exportProviders)
         {
@@ -45,6 +81,9 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             ComposableCatalog.Set(composablePartCatalog);
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _method_ctor()
         {
             WasComposed.Value = false;
@@ -52,6 +91,10 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             initEdits(true);
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="constructedParts">The constructed parts.</param>
         public void _method_ComposeParts(params Instance[] constructedParts)
         {
             //there is already compose part call 
@@ -69,6 +112,10 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             composeWithCatalog(constructedParts);
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="part">The part.</param>
         public void _method_SatisfyImportsOnce(Instance part)
         {
             ReportChildAdd(1, "Satisfied component");
@@ -78,8 +125,9 @@ namespace RecommendedExtensions.Core.TypeDefinitions
         }
 
         /// <summary>
-        /// Composition batch restriction is needed
+        /// Composition batch restriction is needed.
         /// </summary>
+        /// <param name="batch">The batch.</param>
         [ParameterTypes(typeof(CompositionBatch))]
         public void _method_Compose(Instance batch)
         {
@@ -97,6 +145,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             });
         }
 
+        /// <summary>
+        /// Process composition by using given catalog.
+        /// </summary>
+        /// <param name="constructedPartsToAdd">The constructed parts to add.</param>
+        /// <param name="constructedPartsToRemove">The constructed parts to remove.</param>
         private void composeWithCatalog(Instance[] constructedPartsToAdd, Instance[] constructedPartsToRemove = null)
         {
             if (WasComposed.Value)
@@ -123,6 +176,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             }
         }
 
+        /// <summary>
+        /// Processes the composition.
+        /// </summary>
+        /// <param name="notConstructed">The not constructed instances.</param>
+        /// <param name="constructed">The constructed instances.</param>
+        /// <param name="toRemove">Instances to be removed from composition.</param>
         private void processComposition(IEnumerable<Instance> notConstructed, IEnumerable<Instance> constructed, IEnumerable<Instance> toRemove)
         {
             if (notConstructed == null)
@@ -158,6 +217,10 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #region Container edits
 
+        /// <summary>
+        /// Initializes the edits.
+        /// </summary>
+        /// <param name="acceptCatalog">if set to <c>true</c> accepting catalog is included.</param>
         private void initEdits(bool acceptCatalog)
         {
             var e = Edits;
@@ -171,6 +234,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             );
         }
 
+        /// <summary>
+        /// Accepts the instance in given view.
+        /// </summary>
+        /// <param name="view">The view where instance will be accepted.</param>
+        /// <returns>Accepting call.</returns>
         private CallEditInfo acceptInstance(ExecutionView view)
         {
             var toAccept = UserInteraction.DraggedInstance;
@@ -191,6 +259,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return new CallEditInfo(TypeDescriptor.Create(typeof(AttributedModelServices)), "ComposeParts", true, This, toAccept);
         }
 
+        /// <summary>
+        /// Accepts the component by appending to ComposeParts call.
+        /// </summary>
+        /// <param name="e">The edits provider used for accepting.</param>
+        /// <param name="view">The view where instance will be accepted.</param>
+        /// <returns>Variable with accepted instance and correct scope.</returns>
         private object acceptAppendComponent(EditsProvider e, ExecutionView view)
         {
             var toAccept = UserInteraction.DraggedInstance;
@@ -204,6 +278,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return e.GetVariableFor(toAccept, view);
         }
 
+        /// <summary>
+        /// Accepts the part catalog in constructor.
+        /// </summary>
+        /// <param name="e">The edits provider used for accepting.</param>
+        /// <param name="view">The view where instance will be accepted.</param>
+        /// <returns>Variable with accepted catalog and correct scope.</returns>
         private object acceptPartCatalog(EditsProvider e, ExecutionView view)
         {
             var instance = UserInteraction.DraggedInstance;
@@ -223,6 +303,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
 
         #region Container drawing
 
+        /// <summary>
+        /// Export data from represented <see cref="Instance" /> by using given drawer.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas" /></remarks>.
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
         protected override void draw(InstanceDrawer drawer)
         {
             var slot = drawer.AddSlot();
@@ -233,6 +318,10 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             drawer.ForceShow();
         }
 
+        /// <summary>
+        /// Sets the composition information.
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
         private void setCompositionInfo(InstanceDrawer drawer)
         {
             var compositionResult = CompositionResult.Get();
@@ -278,6 +367,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             }
         }
 
+        /// <summary>
+        /// Draws the catalog.
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
+        /// <param name="slot">The slot.</param>
         private void drawCatalog(InstanceDrawer drawer, SlotDefinition slot)
         {
             var composableCatalog = ComposableCatalog.Get();
@@ -294,6 +388,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             }
         }
 
+        /// <summary>
+        /// Gets the connector.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="drawer">The drawer.</param>
+        /// <returns>ConnectorDefinition.</returns>
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
         {
             var instance = drawer.GetInstanceDrawing(point.Instance.Component);

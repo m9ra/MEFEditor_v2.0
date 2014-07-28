@@ -16,16 +16,28 @@ using MEFEditor.Drawing;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="AggregateCatalog" />.
+    /// </summary>
     public class AggregateCatalogDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// The catalogs.
+        /// </summary>
         protected Field<Instance> Catalogs;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AggregateCatalogDefinition" /> class.
+        /// </summary>
         public AggregateCatalogDefinition()
         {
             Simulate<AggregateCatalog>();
             AddCreationEdit("Add AggregateCatalog");
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _method_ctor()
         {
             var catalogsInstance = Context.Machine.CreateInstance(TypeDescriptor.Create(ComposablePartCatalogCollectionDefinition.TypeFullname));
@@ -37,12 +49,20 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             AsyncCall<Instance>(catalogsInstance, Naming.CtorName, null, This);
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>Instance.</returns>
         [ReturnType(ComposablePartCatalogCollectionDefinition.TypeFullname)]
         public Instance _get_Catalogs()
         {
             return Catalogs.Get();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>Instance[].</returns>
         public Instance[] _get_Parts()
         {
             AsyncCall<Instance[]>(Catalogs.Get(), "ToArray",
@@ -53,6 +73,10 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return new Instance[0];
         }
 
+        /// <summary>
+        /// Set return value to parts in given catalogs.
+        /// </summary>
+        /// <param name="catalogs">The catalogs.</param>
         private void returnParts(Instance[] catalogs)
         {
             var collectedParts = new HashSet<Instance>();
@@ -71,6 +95,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             });
         }
 
+        /// <summary>
+        /// Handler for accept catalog edit.
+        /// </summary>
+        /// <param name="view">The view.</param>
+        /// <returns>CallEditInfo.</returns>
         private CallEditInfo acceptCatalog(ExecutionView view)
         {
             var instance = UserInteraction.DraggedInstance;
@@ -85,6 +114,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return new CallEditInfo(This, "Catalogs.Add", instance);
         }
 
+        /// <summary>
+        /// Export data from represented <see cref="Instance" /> by using given drawer.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas" /></remarks>
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
         protected override void draw(InstanceDrawer drawer)
         {
             var slot = drawer.AddSlot();

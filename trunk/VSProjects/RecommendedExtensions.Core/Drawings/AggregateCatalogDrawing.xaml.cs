@@ -18,12 +18,19 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Drawing definition for <see cref="AggregateCatalog" />.
     /// </summary>
     public partial class AggregateCatalogDrawing : ContentDrawing
     {
+        /// <summary>
+        /// Cached image for icon.
+        /// </summary>
         protected static readonly CachedImage Image = new CachedImage(Icons.Container);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AggregateCatalogDrawing" /> class.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public AggregateCatalogDrawing(DiagramItem item)
             : base(item)
         {

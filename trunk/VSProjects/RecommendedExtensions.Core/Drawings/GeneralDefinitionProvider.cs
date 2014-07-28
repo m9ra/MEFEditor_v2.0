@@ -13,7 +13,7 @@ using MEFEditor.TypeSystem.DrawingServices;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Provider of general drawing used for every draw <see cref="DiagramItem"/>.
+    /// Provider of general drawing used for every draw <see cref="DiagramItem" />.
     /// </summary>
     public static class GeneralDefinitionProvider
     {

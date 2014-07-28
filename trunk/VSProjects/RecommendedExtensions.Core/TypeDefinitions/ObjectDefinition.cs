@@ -16,23 +16,39 @@ using MEFEditor.Drawing;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of <see cref="object" />.
+    /// </summary>
     public class ObjectDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ObjectDefinition"/> class.
+        /// </summary>
         public ObjectDefinition()
         {
             Simulate<object>();
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _method_ctor()
         {
             //nothing to do
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _static_method_cctor()
         {
             //nothing to do
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>Instance.</returns>
         public Instance _method_GetType()
         {
             var typeInfo = TypeDescriptor.Create<Type>();
@@ -42,6 +58,10 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return result;
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <returns>System.String.</returns>
         public string _method_ToString()
         {
             return This.Info.TypeName;

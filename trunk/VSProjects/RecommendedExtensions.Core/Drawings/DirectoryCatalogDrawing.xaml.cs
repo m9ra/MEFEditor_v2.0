@@ -18,12 +18,19 @@ using MEFEditor.Drawing;
 namespace RecommendedExtensions.Core.Drawings
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Drawing definition for <see cref="DirectoryCatalog" />.
     /// </summary>
     public partial class DirectoryCatalogDrawing : ContentDrawing
     {
+        /// <summary>
+        /// Cached image for icon.
+        /// </summary>
         protected static readonly CachedImage Image = new CachedImage(Icons.Folder);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectoryCatalogDrawing" /> class.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public DirectoryCatalogDrawing(DiagramItem item)
             :base(item)
         {

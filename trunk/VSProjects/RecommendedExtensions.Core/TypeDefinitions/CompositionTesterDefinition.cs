@@ -17,19 +17,49 @@ using RecommendedExtensions.Core.TypeDefinitions.CompositionEngine;
 
 namespace RecommendedExtensions.Core.TypeDefinitions
 {
+    /// <summary>
+    /// Analyzing definition of composition tester - that is used in MEFEditor.TestConsole application.
+    /// </summary>
     public class CompositionTesterDefinition : DataTypeDefinition
     {
+        /// <summary>
+        /// The assembly path.
+        /// </summary>
         protected Field<string> AssemblyPath;
-        protected Field<List<Instance>> Parts;
-        protected Field<bool> Composed;
-        protected Field<CompositionResult> CompositionResult;
-        protected Field<CompositionContext> CompositionContext;
 
+        /// <summary>
+        /// The parts.
+        /// </summary>
+        protected Field<List<Instance>> Parts;
+
+        /// <summary>
+        /// The composed flag.
+        /// </summary>
+        protected Field<bool> Composed;
+
+        /// <summary>
+        /// The composition result.
+        /// </summary>
+        protected Field<CompositionResult> CompositionResult;
+
+        /// <summary>
+        /// The composition context.
+        /// </summary>
+        protected Field<CompositionContext> CompositionContext;
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositionTesterDefinition" /> class.
+        /// </summary>
         public CompositionTesterDefinition()
         {
             FullName = "CompositionTester";
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="part1">The part1.</param>
+        /// <param name="part2">The part2.</param>
         public void _method_ctor(Instance part1, Instance part2)
         {
             var compositionContext = new CompositionContext(Services, Context);
@@ -39,12 +69,19 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             AssemblyPath.Set("Undefined");
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="assemblyPath">The assembly path.</param>
         public void _method_ctor(string assemblyPath)
         {
             _method_ctor();
             AssemblyPath.Set(assemblyPath);
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _method_ctor()
         {
             Parts.Set(new List<Instance>());
@@ -52,6 +89,9 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             AddCallEdit(".accept", (s) => acceptComponent(thisObj, s));
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
         public void _method_Compose()
         {
             var path = AssemblyPath.Get();
@@ -74,12 +114,20 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             compose(compositionContext);
         }
 
+        /// <summary>
+        /// Runtime member definition.
+        /// </summary>
+        /// <param name="part">The part.</param>
         public void _method_Add(Instance part)
         {
             ReportChildAdd(1, "Composition part");
             Parts.Get().Add(part);
         }
 
+        /// <summary>
+        /// Composes the specified composition context.
+        /// </summary>
+        /// <param name="compositionContext">The composition context.</param>
         private void compose(CompositionContext compositionContext)
         {
             var composition = CompositionProvider.Compose(compositionContext);
@@ -92,6 +140,11 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             }
         }
 
+        /// <summary>
+        /// Export data from represented <see cref="Instance" /> by using given drawer.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas" /></remarks>.
+        /// </summary>
+        /// <param name="drawer">The drawer.</param>
         protected override void draw(InstanceDrawer drawer)
         {
             var isComposed = Composed.Get();
@@ -131,6 +184,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             drawer.ForceShow();
         }
 
+        /// <summary>
+        /// Gets the connector.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="drawer">The drawer.</param>
+        /// <returns>ConnectorDefinition.</returns>
         private ConnectorDefinition getConnector(JoinPoint point, InstanceDrawer drawer)
         {
             var instance = drawer.GetInstanceDrawing(point.Instance.Component);
@@ -139,6 +198,12 @@ namespace RecommendedExtensions.Core.TypeDefinitions
             return connector;
         }
 
+        /// <summary>
+        /// Accepts the component.
+        /// </summary>
+        /// <param name="thisObj">The this object.</param>
+        /// <param name="services">The services.</param>
+        /// <returns>CallEditInfo.</returns>
         private CallEditInfo acceptComponent(Instance thisObj, ExecutionView services)
         {
             var instance = UserInteraction.DraggedInstance;
