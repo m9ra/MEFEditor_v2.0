@@ -9,7 +9,7 @@ using MEFEditor.TypeSystem.Core;
 namespace MEFEditor.TypeSystem
 {
     /// <summary>
-    /// Runtime representation of assembly, that can be used by <see cref="RuntimeTypeDefinition"/> implementations.
+    /// Runtime representation of assembly, that can be used by <see cref="MEFEditor.TypeSystem.Runtime.RuntimeTypeDefinition"/> implementations.
     /// </summary>
     public class TypeAssembly
     {

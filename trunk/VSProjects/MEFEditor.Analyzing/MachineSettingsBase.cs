@@ -42,10 +42,10 @@ namespace MEFEditor.Analyzing
         public abstract int InstanceLimit { get; }
 
         /// <summary>
-        /// Determine that machine will catch all exceptions from runtime
+        /// Determine that machine will catch all exceptions from interpreting
         /// and provide them as part of <see cref="AnalyzingResult" /> or not.
         /// </summary>
-        /// <value><c>true</c> if [catch exceptions]; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if exceptions should be catched by <see cref="Machine"/>; otherwise, <c>false</c>.</value>
         public abstract bool CatchExceptions { get; }
 
         /// <summary>

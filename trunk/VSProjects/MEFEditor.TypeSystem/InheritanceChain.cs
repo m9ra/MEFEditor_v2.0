@@ -9,30 +9,30 @@ using MEFEditor.Analyzing;
 namespace MEFEditor.TypeSystem
 {
     /// <summary>
-    /// Represents inheritance chain of types - is used for determining type relations
+    /// Represents inheritance chain of types - is used for determining type relations.
     /// </summary>
     public class InheritanceChain
     {
         /// <summary>
-        /// Type to which current chain belongs
+        /// Type to which current chain belongs.
         /// </summary>
         public readonly TypeDescriptor Type;
 
         /// <summary>
-        /// Path of Type name
+        /// Path of Type name.
         /// </summary>
         public readonly PathInfo Path;
 
         /// <summary>
-        /// Inheritance chains of sub types of current inheritenc's Type
+        /// Inheritance chains of sub types of current Type.
         /// </summary>
         public readonly IEnumerable<InheritanceChain> SubChains;
 
         /// <summary>
-        /// Create inheritance chain for given type
+        /// Create inheritance chain for given type.
         /// </summary>
-        /// <param name="type">Type which chain is created</param>
-        /// <param name="subChains">Chains from subtypes of type</param>
+        /// <param name="type">Type which chain is created.</param>
+        /// <param name="subChains">Chains from subtypes of type.</param>
         internal InheritanceChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
             Type = type;
@@ -42,10 +42,10 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Determine that given targetTypeName is listed in current Type or sub types
+        /// Determine that given targetTypeName is listed in current Type or sub types.
         /// </summary>
-        /// <param name="targetTypeName">Searched type name</param>
-        /// <returns>True if targetTypeName is found, false otherwise</returns>
+        /// <param name="targetTypeName">Searched type name.</param>
+        /// <returns>True if targetTypeName is found, false otherwise.</returns>
         public bool HasSubChain(string targetTypeName)
         {
             if (targetTypeName == Type.TypeName)
@@ -66,8 +66,8 @@ namespace MEFEditor.TypeSystem
         /// <summary>
         /// Make generic specialization of current chain according to given arguments.
         /// </summary>
-        /// <param name="arguments">Substitution arguments</param>
-        /// <returns>Created generic specialization</returns>
+        /// <param name="arguments">Substitution arguments.</param>
+        /// <returns>Created generic specialization.</returns>
         public InheritanceChain MakeGeneric(IEnumerable<string> arguments)
         {
             var substitutions = new Dictionary<string, string>();
@@ -94,10 +94,10 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Make generic specialization from current SubChains
+        /// Make generic specialization from current SubChains.
         /// </summary>
-        /// <param name="substitutions">Substitutions defined by generic arguments and Type parameters</param>
-        /// <returns>Generic specialzation</returns>
+        /// <param name="substitutions">Substitutions defined by generic arguments and Type parameters.</param>
+        /// <returns>Generic specialization.</returns>
         private IEnumerable<InheritanceChain> makeGenericSubchains(Dictionary<string, string> substitutions)
         {
             var genericSubChains = new List<InheritanceChain>();
@@ -126,7 +126,10 @@ namespace MEFEditor.TypeSystem
             return genericSubChains;
         }
 
-        ///</inheritdoc>
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             return string.Format("[Inheritance]{0}", Type.TypeName);

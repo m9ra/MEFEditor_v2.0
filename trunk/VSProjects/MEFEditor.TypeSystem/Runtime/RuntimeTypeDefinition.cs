@@ -276,10 +276,10 @@ namespace MEFEditor.TypeSystem.Runtime
         }
 
         /// <summary>
-        /// Export data from represented <see cref="Instance"/> by using given drawer.
-        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas"/></remarks>
+        /// Export data from represented <see cref="Instance" /> by using given drawer.
+        /// <remarks>Note that only instances which are forced to display are displayed in root of <see cref="DiagramCanvas" /></remarks>.
         /// </summary>
-        /// <param name="drawer">The drawer.</param>
+        /// <param name="toDraw">Instance to be drawn.</param>
         internal void Draw(DrawedInstance toDraw)
         {
             This = toDraw.WrappedInstance;

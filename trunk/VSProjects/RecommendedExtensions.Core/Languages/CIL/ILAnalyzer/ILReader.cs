@@ -10,12 +10,11 @@ using System.Reflection;
 namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
 {
     /// <summary>
-    /// Used from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
-    /// 
+    /// Taken from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
     /// Reads IL instructions from a byte stream.
     /// </summary>
     /// <remarks>Allows generated code to be viewed without debugger or enabled debug assemblies.</remarks>
-    public sealed class ILReader
+    sealed class ILReader
     {
         /// <summary>
         /// The _instruction lookup.
@@ -23,8 +22,9 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
         private static readonly Dictionary<short, OpCode> instructionLookup = ILReader.GetLookupTable();
 
         /// <summary>
-        /// All opcodes available in lookup table
+        /// All opcodes available in lookup table.
         /// </summary>
+        /// <value>The opcodes.</value>
         internal static IEnumerable<OpCode> Opcodes { get { return instructionLookup.Values; } }
 
         /// <summary>
@@ -33,11 +33,10 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
         private IILReaderProvider intermediateLanguageProvider;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ILReader"/> class.
+        /// Initializes a new instance of the <see cref="ILReader" /> class.
         /// </summary>
-        /// <param name="method">
-        /// The method.
-        /// </param>
+        /// <param name="method">The method.</param>
+        /// <exception cref="System.ArgumentNullException">method</exception>
         public ILReader(MethodInfo method)
         {
             if (method == null)
@@ -52,6 +51,7 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
         /// Gets the instructions.
         /// </summary>
         /// <value>The instructions.</value>
+        /// <exception cref="System.InvalidProgramException"></exception>
         public IEnumerable<ILInstruction> Instructions
         {
             get
@@ -105,9 +105,7 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
         /// Creates the IL reader provider.
         /// </summary>
         /// <param name="methodInfo">The MethodInfo object that represents the method to read..</param>
-        /// <returns>
-        /// The ILReader provider.
-        /// </returns>
+        /// <returns>The ILReader provider.</returns>
         private static IILReaderProvider CreateILReaderProvider(MethodInfo methodInfo)
         {
             IILReaderProvider reader = DynamicILReaderProvider.Create(methodInfo);
@@ -123,8 +121,8 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
         /// Checks to see if the IL instruction is a prefix indicating the length of the instruction is two bytes long.
         /// </summary>
         /// <param name="value">The IL instruction as a byte.</param>
-        /// <remarks>IL instructions can either be 1 or 2 bytes.</remarks>
         /// <returns>True if this IL instruction is a prefix indicating the instruction is two bytes long.</returns>
+        /// <remarks>IL instructions can either be 1 or 2 bytes.</remarks>
         private static bool IsInstructionPrefix(short value)
         {
             return ((value & OpCodes.Prefix1.Value) == OpCodes.Prefix1.Value) || ((value & OpCodes.Prefix2.Value) == OpCodes.Prefix2.Value)
@@ -136,9 +134,7 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
         /// <summary>
         /// The get lookup table.
         /// </summary>
-        /// <returns>
-        /// A dictionary of IL instructions.
-        /// </returns>
+        /// <returns>A dictionary of IL instructions.</returns>
         private static Dictionary<short, OpCode> GetLookupTable()
         {
             // Might be better to do an array lookup.  Use a seperate arrary for instructions without a prefix and array for each prefix.
@@ -189,6 +185,12 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
             }
         }
 
+        /// <summary>
+        /// Gets the data.
+        /// </summary>
+        /// <param name="code">The code.</param>
+        /// <param name="rawData">The raw data.</param>
+        /// <returns>System.Object.</returns>
         private object GetData(OpCode code, byte[] rawData)
         {
             object data = null;

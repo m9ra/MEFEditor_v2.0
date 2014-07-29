@@ -13,27 +13,29 @@ using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversing;
 namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBuilding
 {
     /// <summary>
-    /// Builder of <see cref="TypeMethodInfo"/> objects from <see cref="CodeElement"/> definitions.
+    /// Builder of <see cref="TypeMethodInfo" /> objects from <see cref="CodeElement" /> definitions.
     /// </summary>
     public class MethodInfoBuilder : CodeElementVisitor
     {
         /// <summary>
-        /// Result of build
+        /// Result of build.
         /// </summary>
         private TypeMethodInfo _result;
 
         /// <summary>
-        /// Assembly declaring <see cref="CodeElement"/> definitions.
+        /// Assembly declaring <see cref="CodeElement" /> definitions.
         /// </summary>
+        /// <value>The declaring assembly.</value>
         protected VsProjectAssembly DeclaringAssembly { get; private set; }
 
         /// <summary>
-        /// Name that is requried for method that will be built
+        /// Name that is requried for method that will be built.
         /// </summary>
+        /// <value>The name of the required.</value>
         protected string RequiredName { get; private set; }
 
         /// <summary>
-        /// Initialize new instance of builder of <see cref="TypeMethodInfo"/>
+        /// Initialize new instance of builder of <see cref="TypeMethodInfo" />.
         /// </summary>
         public MethodInfoBuilder()
         {
@@ -41,9 +43,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Initialize builder with given assembly
+        /// Initialize builder with given assembly.
         /// </summary>
-        /// <param name="declaringAssembly">Assembly where are declared definitions to built</param>
+        /// <param name="declaringAssembly">Assembly where are declared definitions to built.</param>
+        /// <exception cref="System.ArgumentNullException">declaringAssembly</exception>
         internal void Initialize(VsProjectAssembly declaringAssembly)
         {
             if (declaringAssembly == null)
@@ -53,11 +56,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Build <see cref="TypeMethodInfo"/> from given element.
+        /// Build <see cref="TypeMethodInfo" /> from given element.
         /// </summary>
-        /// <param name="element">Method definition element</param>
-        /// <param name="requiredName">Name that is required from builded info</param>
-        /// <returns>Built method</returns>
+        /// <param name="element">Method definition element.</param>
+        /// <param name="requiredName">Name that is required from builded info.</param>
+        /// <returns>Built method.</returns>
         public TypeMethodInfo Build(CodeElement element, string requiredName)
         {
             TypeMethodInfo result;
@@ -78,9 +81,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Report result of build
+        /// Report result of build.
         /// </summary>
-        /// <param name="info">Reported result</param>
+        /// <param name="info">Reported result.</param>
         protected void Result(TypeMethodInfo info)
         {
             _result = info;
@@ -89,10 +92,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         #region Concrete builders
 
         /// <summary>
-        /// Creates <see cref="TypeMethodInfo"/> for given element
+        /// Creates <see cref="TypeMethodInfo" /> for given element.
         /// </summary>
-        /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
-        /// <returns>Created <see cref="TypeMethodInfo"/></returns>
+        /// <param name="element">Element which <see cref="TypeMethodInfo" /> is created.</param>
+        /// <returns>Created <see cref="TypeMethodInfo" />.</returns>
         protected TypeMethodInfo BuildFrom(CodeFunction element)
         {
             //collect information from element - note, every call working with element may fail with exception, because of VS doesn't provide determinism
@@ -116,11 +119,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Creates <see cref="TypeMethodInfo"/> for given element
+        /// Creates <see cref="TypeMethodInfo" /> for given element.
         /// </summary>
-        /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
-        /// <param name="buildGetter">Determine that getter or setter should be built</param>
-        /// <returns>Created <see cref="TypeMethodInfo"/></returns>
+        /// <param name="element">Element which <see cref="TypeMethodInfo" /> is created.</param>
+        /// <returns>Created <see cref="TypeMethodInfo" />.</returns>
         protected TypeMethodInfo BuildFrom(CodeProperty element)
         {
             //translate name according to naming conventions of type system
@@ -169,11 +171,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Creates <see cref="TypeMethodInfo"/> for given element
+        /// Creates <see cref="TypeMethodInfo" /> for given element.
         /// </summary>
-        /// <param name="element">Element which <see cref="TypeMethodInfo"/> is created</param>
-        /// <param name="buildGetter">Determine that getter or setter should be built</param>
-        /// <returns>Created <see cref="TypeMethodInfo"/></returns>
+        /// <param name="element">Element which <see cref="TypeMethodInfo" /> is created.</param>
+        /// <returns>Created <see cref="TypeMethodInfo" />.</returns>
         internal TypeMethodInfo BuildFrom(CodeVariable element)
         {
             var isShared = element.IsShared;
@@ -210,10 +211,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         #endregion
 
         /// <summary>
-        /// Creates parameter's info from given <see cref="CodeElements"/> describing method parameters
+        /// Creates parameter's info from given <see cref="CodeElements" /> describing method parameters.
         /// </summary>
-        /// <param name="parameters">Method parameters described by <see cref="CodeElements"/></param>
-        /// <returns>Created parameter's info</returns>
+        /// <param name="parameters">Method parameters described by <see cref="CodeElements" />.</param>
+        /// <returns>Created parameter's info.</returns>
         public ParameterTypeInfo[] CreateParametersInfo(CodeElements parameters)
         {
             var result = new List<ParameterTypeInfo>();
@@ -233,10 +234,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         #region Type descriptor building routines
 
         /// <summary>
-        /// Create <see cref="TypeDescriptor"/> from given element
+        /// Create <see cref="TypeDescriptor" /> from given element.
         /// </summary>
-        /// <param name="element">Element definition of type</param>
-        /// <returns>Created <see cref="TypeDescriptor"/></returns>
+        /// <param name="element">Element definition of type.</param>
+        /// <returns>Created <see cref="TypeDescriptor" />.</returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public TypeDescriptor CreateDescriptor(CodeElement element)
         {
             if (element is CodeTypeRef)
@@ -253,10 +255,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Create <see cref="TypeDescriptor"/> from given typeReference
+        /// Create <see cref="TypeDescriptor" /> from given typeReference.
         /// </summary>
-        /// <param name="typeRefeference">Reference on type</param>
-        /// <returns>Created <see cref="TypeDescriptor"/></returns>
+        /// <param name="typeReference">Reference on type.</param>
+        /// <returns>Created <see cref="TypeDescriptor" />.</returns>
         public TypeDescriptor CreateDescriptor(CodeTypeRef typeReference)
         {
             var fullname = typeReference.AsFullName;
@@ -270,10 +272,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Create <see cref="TypeDescriptor"/> from given type
+        /// Create <see cref="TypeDescriptor" /> from given type.
         /// </summary>
-        /// <param name="type">Type representation</param>
-        /// <returns>Created <see cref="TypeDescriptor"/></returns>
+        /// <param name="type">Type representation.</param>
+        /// <returns>Created <see cref="TypeDescriptor" />.</returns>
         public TypeDescriptor CreateDescriptor(CodeType type)
         {
             var fullname = type.FullName;
@@ -284,10 +286,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Creates <see cref="TypeDescriptor"/> from given typeNode        
+        /// Creates <see cref="TypeDescriptor" /> from given typeNode.
         /// </summary>
-        /// <param name="typeNode">Type node which descriptor is created</param>
-        /// <returns>Created <see cref="TypeDescriptor"/></returns>
+        /// <param name="typeNode">Type node which descriptor is created.</param>
+        /// <returns>Created <see cref="TypeDescriptor" />.</returns>
         public TypeDescriptor CreateDescriptor(CodeClass typeNode)
         {
             var fullname = typeNode.FullName;
@@ -297,10 +299,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
 
 
         /// <summary>
-        /// Creates <see cref="TypeDescriptor"/> from given typeNode        
+        /// Creates <see cref="TypeDescriptor" /> from given typeNode.
         /// </summary>
-        /// <param name="typeNode">Type node which descriptor is created</param>
-        /// <returns>Created <see cref="TypeDescriptor"/></returns>
+        /// <param name="typeNode">Type node which descriptor is created.</param>
+        /// <returns>Created <see cref="TypeDescriptor" />.</returns>
         public TypeDescriptor CreateDescriptor(CodeInterface typeNode)
         {
             var fullname = typeNode.FullName;
@@ -309,12 +311,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Converts fullnames between <see cref="CodeModel"/> representation and TypeSystem typeName
+        /// Converts fullnames between <see cref="CodeModel" /> representation and TypeSystem typeName.
         /// </summary>
-        /// <param name="fullname">Fullname of element from <see cref="CodeModel"/></param>
-        /// <param name="hasOnlyGenericArguments">Determine that fullname belongs to compile time element 
-        /// (like <see cref="CodeClass"/> or <see cref="CodeInterface"/>) or not</param>
-        /// <returns></returns>
+        /// <param name="fullname">Fullname of element from <see cref="CodeModel" />.</param>
+        /// <param name="hasOnlyGenericArguments">Determine that fullname belongs to compile time element
+        /// (like <see cref="CodeClass" /> or <see cref="CodeInterface" />) or not.</param>
+        /// <returns>TypeDescriptor.</returns>
         public TypeDescriptor ConvertToDescriptor(string fullname, bool hasOnlyGenericArguments)
         {
             //every fullname collected from assembly is compile time - thus all generic arguments are parameters
@@ -328,6 +330,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
             return descriptor;
         }
 
+        /// <summary>
+        /// Arrays the resolver.
+        /// </summary>
+        /// <param name="genericParameter">The generic parameter.</param>
+        /// <returns>System.String.</returns>
         private string arrayResolver(string genericParameter)
         {
             if (genericParameter.EndsWith("[]"))
@@ -344,18 +351,30 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
 
         #region Visitor overrides
 
+        /// <summary>
+        /// Visit given element.
+        /// </summary>
+        /// <param name="e">Element to visit.</param>
         /// <inheritdoc />
         public override void VisitFunction(CodeFunction2 e)
         {
             Result(BuildFrom(e));
         }
 
+        /// <summary>
+        /// Visit given element.
+        /// </summary>
+        /// <param name="e">Element to visit.</param>
         /// <inheritdoc />
         public override void VisitVariable(CodeVariable e)
         {
             Result(BuildFrom(e));
         }
 
+        /// <summary>
+        /// Visit given element.
+        /// </summary>
+        /// <param name="e">Element to visit.</param>
         /// <inheritdoc />
         public override void VisitProperty(CodeProperty e)
         {

@@ -17,12 +17,31 @@ namespace MEFEditor.TypeSystem
     /// </summary>
     public class HashedMethodContainer
     {
+        /// <summary>
+        /// The method items indexed by their path signatures.
+        /// </summary>
         readonly private MultiDictionary<string, MethodItem> _methodPaths = new MultiDictionary<string, MethodItem>();
+
+        /// <summary>
+        /// The method items indexed by their identifiers.
+        /// </summary>
         readonly private Dictionary<MethodID, MethodItem> _methodIds = new Dictionary<MethodID, MethodItem>();
 
+        /// <summary>
+        /// The explicit table of relations between method and implemented types.
+        /// </summary>
         readonly private Dictionary<Tuple<TypeDescriptor, MethodID>, MethodID> _explicitImplementations = new Dictionary<Tuple<TypeDescriptor, MethodID>, MethodID>();
+
+        /// <summary>
+        /// The table of generic implementation relations.
+        /// </summary>
         readonly private Dictionary<Tuple<string, string>, MethodItem> _genericImplementations = new Dictionary<Tuple<string, string>, MethodItem>();
 
+        /// <summary>
+        /// Adds the item to current container.
+        /// </summary>
+        /// <param name="item">The added item.</param>
+        /// <param name="implementedTypes">The types that are implemented by method item.</param>
         public void AddItem(MethodItem item, IEnumerable<InstanceInfo> implementedTypes = null)
         {
             if (implementedTypes == null)
@@ -39,6 +58,23 @@ namespace MEFEditor.TypeSystem
             _methodPaths.Add(itemPath.ShortSignature, item);
         }
 
+        /// <summary>
+        /// Gets the method items.
+        /// </summary>
+        /// <value>Stored method items.</value>
+        public KeyValuePair<MethodID, MethodItem>[] MethodItems
+        {
+            get
+            {
+                return _methodIds.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Registers implemented types of given method.
+        /// </summary>
+        /// <param name="item">The item which implementing types are registered.</param>
+        /// <param name="implementedTypes">The implemented types.</param>
         private void registerImplementedMethods(MethodItem item, IEnumerable<InstanceInfo> implementedTypes)
         {
             foreach (var implementedType in implementedTypes)
@@ -48,7 +84,6 @@ namespace MEFEditor.TypeSystem
 
                 if (item.Info.HasGenericParameters)
                 {
-                    //TODO parse out only real generic parameters
                     var implementingPath = new PathInfo(implementingType.TypeName);
                     var genericImplementedMethod = Naming.ChangeDeclaringType(implementedType.TypeName, implementingMethodID, true);
                     var implementedMethodPath = Naming.GetMethodPath(genericImplementedMethod);
@@ -67,10 +102,10 @@ namespace MEFEditor.TypeSystem
 
         /// <summary>
         /// Method that is used for searching method info according to path - method info is instantiated
-        /// according to generic
+        /// according to generic.
         /// </summary>
-        /// <param name="path">Path of searched methods</param>
-        /// <returns>Found methods</returns>
+        /// <param name="path">Path of searched methods.</param>
+        /// <returns>Found methods.</returns>
         public IEnumerable<TypeMethodInfo> AccordingPath(PathInfo path)
         {
             var overloads = from overload in accordingPath(path) select overload.Info;
@@ -79,10 +114,10 @@ namespace MEFEditor.TypeSystem
 
         /// <summary>
         /// Method that is used for searching method info of given type path - method info is NOT instantiated
-        /// according to generic
+        /// according to generic.
         /// </summary>
-        /// <param name="typePath">Path of type which methods are searched</param>
-        /// <returns>Found methods</returns>
+        /// <param name="typePath">Path of type which methods are searched.</param>
+        /// <returns>Found methods.</returns>
         internal IEnumerable<TypeMethodInfo> AccordingType(PathInfo typePath)
         {
             var signature = typePath.ShortSignature;
@@ -100,6 +135,12 @@ namespace MEFEditor.TypeSystem
             }
         }
 
+        /// <summary>
+        /// Search method according to given method identifier.
+        /// </summary>
+        /// <param name="method">The searched method identifier.</param>
+        /// <returns>Generator of method if available, <c>null</c> otherwise.</returns>
+        /// <exception cref="System.NotSupportedException">Cannot get method with generic parameters</exception>
         public GeneratorBase AccordingId(MethodID method)
         {
             MethodItem item;
@@ -117,6 +158,10 @@ namespace MEFEditor.TypeSystem
             return null;
         }
 
+        /// <summary>
+        /// Removes the specified method from container.
+        /// </summary>
+        /// <param name="method">The identifier of removed method.</param>
         public void RemoveItem(MethodID method)
         {
             MethodItem item;
@@ -128,6 +173,12 @@ namespace MEFEditor.TypeSystem
             _methodPaths.Remove(Naming.GetMethodPath(method).ShortSignature, item);
         }
 
+        /// <summary>
+        /// Search generic method according to given method identifier.
+        /// </summary>
+        /// <param name="method">The searched method identifier.</param>
+        /// <param name="searchPath">Path where generic arguments can be found.</param>
+        /// <returns>Generator of method if available, <c>null</c> otherwise.</returns>
         public GeneratorBase AccordingGenericId(MethodID method, PathInfo searchPath)
         {
             var overloads = accordingPath(searchPath);
@@ -142,6 +193,12 @@ namespace MEFEditor.TypeSystem
             return null;
         }
 
+        /// <summary>
+        /// Gets the implementation of virtual method.
+        /// </summary>
+        /// <param name="method">The method which implementation is searched.</param>
+        /// <param name="dynamicInfo">The call time type information.</param>
+        /// <returns>Implementing method identifier if found, <c>null</c> otherwise.</returns>
         public MethodID GetImplementation(MethodID method, TypeDescriptor dynamicInfo)
         {
             var implementationEntry = Tuple.Create(dynamicInfo, method);
@@ -152,9 +209,15 @@ namespace MEFEditor.TypeSystem
             return implementation;
         }
 
-        public MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath)
+        /// <summary>
+        /// Gets the implementation of virtual method.
+        /// </summary>
+        /// <param name="method">The method which implementation is searched.</param>
+        /// <param name="methodSearchPath">Path of searched method with generic arguments.</param>
+        /// <param name="implementingTypePath">Path of implementing type.</param>
+        /// <returns>Implementing method identifier if found, <c>null</c> otherwise.</returns>
+        public MethodID GetGenericImplementation(MethodID method, PathInfo methodSearchPath, PathInfo implementingTypePath)
         {
-            //TODO: throw new NotImplementedException();
             var implementationEntry = Tuple.Create(implementingTypePath.Signature, methodSearchPath.Signature);
 
             MethodItem implementation;
@@ -162,13 +225,19 @@ namespace MEFEditor.TypeSystem
                 //implementation not found
                 return null;
 
-            var implementingMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, methodID, false);
+            var implementingMethod = Naming.ChangeDeclaringType(implementingTypePath.Name, method, false);
             var implementingMethodPath = Naming.GetMethodPath(implementingMethod);
             var genericImplementation = implementation.Make(implementingMethodPath);
 
             return genericImplementation.Info.MethodID;
         }
 
+        /// <summary>
+        /// Method that is used for searching method info according to path - method info is instantiated
+        /// according to generic.
+        /// </summary>
+        /// <param name="path">Path of searched methods.</param>
+        /// <returns>Found methods.</returns>
         private IEnumerable<MethodItem> accordingPath(PathInfo path)
         {
             var methods = _methodPaths.Get(path.ShortSignature);
@@ -184,14 +253,5 @@ namespace MEFEditor.TypeSystem
                 }
             }
         }
-
-        public KeyValuePair<MethodID, MethodItem>[] MethodItems
-        {
-            get
-            {
-                return _methodIds.ToArray();
-            }
-        }
-
     }
 }

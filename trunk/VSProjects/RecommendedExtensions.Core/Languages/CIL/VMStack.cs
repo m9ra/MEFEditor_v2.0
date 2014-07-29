@@ -16,34 +16,64 @@ using MEFEditor.TypeSystem.Runtime;
 
 namespace RecommendedExtensions.Core.Languages.CIL
 {
+    /// <summary>
+    /// Signature of method used for math binary operations.
+    /// </summary>
+    /// <param name="op1">The first operand.</param>
+    /// <param name="op2">The second operand.</param>
+    /// <returns>Result of math operation.</returns>
     internal delegate object MathOp(object op1, object op2);
 
+    /// <summary>
+    /// Representation of stack of CIL virtual machine. 
+    /// The stack is used for CIL transcription to Instruction Analyzing Language (IAL), where
+    /// it simulates stack of real virtual machine.
+    /// </summary>
     public class VMStack
     {
+        /// <summary>
+        /// The stack of operands.
+        /// </summary>
         private readonly Stack<Instance> _stack = new Stack<Instance>();
 
+        /// <summary>
+        /// The context of currently processed method.
+        /// </summary>
         private readonly AnalyzingContext _context;
 
         /// <summary>
-        /// Create representation of VM stack.
+        /// Create representation of virtual machine stack.
         /// </summary>
-        /// <param name="context">Analyzing context available for method call</param>
+        /// <param name="context">Analyzing context available for method call.</param>
         private VMStack(AnalyzingContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Initializes the stack with given context.
+        /// </summary>
+        /// <param name="context">The context.</param>
         internal static void InitializeStack(AnalyzingContext context)
         {
             var stackInstance = context.Machine.CreateDirectInstance(new VMStack(context));
             context.SetValue(new VariableName(Transcription.StackStorage), stackInstance);
         }
 
-        public void Push(Instance pushed)
+        /// <summary>
+        /// Pushes the specified value.
+        /// </summary>
+        /// <param name="value">The pushed value.</param>
+        public void Push(Instance value)
         {
-            _stack.Push(pushed);
+            _stack.Push(value);
         }
 
+        /// <summary>
+        /// Pop value that is on top of the stack.
+        /// </summary>
+        /// <returns>Popped value.</returns>
+        /// <exception cref="MEFEditor.TypeSystem.ParsingException">No value on stack is present because CIL transcription created incorrect program.;null</exception>
         public Instance Pop()
         {
             if (_stack.Count == 0)
@@ -53,6 +83,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
             return popped;
         }
 
+        /// <summary>
+        /// Handle values on stack in way defined by instruction. However
+        /// operation with those values is not known, therefore they are
+        /// marked as dirty.
+        /// </summary>
         public void Fake()
         {
             var toFake = Pop().DirectValue as CILInstruction;
@@ -80,7 +115,6 @@ namespace RecommendedExtensions.Core.Languages.CIL
             var op2 = Pop().DirectValue;
             var op1 = Pop().DirectValue;
 
-            //TODO proper adding
             var res = (int)op1 + (int)op2;
 
             _stack.Push(createInstance(res));
@@ -110,7 +144,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Pop array size from the stack and push new array on the stack
+        /// Pop array size from the stack and push new array on the stack.
         /// </summary>
         public void NewArr()
         {
@@ -122,7 +156,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Replace array element at index with the value on the stack
+        /// Replace array element at index with the value on the stack.
         /// </summary>
         public void StElem()
         {
@@ -144,6 +178,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
             Push(result.Wrapped);
         }
 
+        /// <summary>
+        /// Creates direct instance from given value.
+        /// </summary>
+        /// <param name="obj">The object which will be wrapped by direct instance.</param>
+        /// <returns>Created instance.</returns>
         private Instance createInstance(object obj)
         {
             return _context.Machine.CreateDirectInstance(obj);
@@ -153,10 +192,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
 
         /// <summary>
         /// Compute delta of pushing according to given instruction
-        /// <remarks>Modified method taken from http://cecil.googlecode.com/svn/trunk/decompiler/Cecil.Decompiler/Cecil.Decompiler.Cil/ControlFlowGraphBuilder.cs </remarks>
+        /// <remarks>Modified method taken from http://cecil.googlecode.com/svn/trunk/decompiler/Cecil.Decompiler/Cecil.Decompiler.Cil/ControlFlowGraphBuilder.cs </remarks>.
         /// </summary>
-        /// <param name="instruction">Instruction which delta is computed</param>
-        /// <returns>Push delta</returns>
+        /// <param name="instruction">Instruction which delta is computed.</param>
+        /// <returns>Push delta.</returns>
         int getPushDelta(CILInstruction instruction)
         {
             var stackBehaviour = instruction.OpCode.StackBehaviourPush;
@@ -192,11 +231,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
 
         /// <summary>
         /// Compute delta of popping according to given instruction
-        /// <remarks>Modified method taken from http://cecil.googlecode.com/svn/trunk/decompiler/Cecil.Decompiler/Cecil.Decompiler.Cil/ControlFlowGraphBuilder.cs </remarks>
+        /// <remarks>Modified method taken from http://cecil.googlecode.com/svn/trunk/decompiler/Cecil.Decompiler/Cecil.Decompiler.Cil/ControlFlowGraphBuilder.cs </remarks>.
         /// </summary>
-        /// <param name="instruction">Instruction which delta is computed</param>
-        /// <param name="stackHeight">Current height of stack that should be popped</param>
-        /// <returns>Pop delta</returns>
+        /// <param name="instruction">Instruction which delta is computed.</param>
+        /// <param name="stackHeight">Current height of stack that should be popped.</param>
+        /// <returns>Pop delta.</returns>
         int getPopDelta(CILInstruction instruction, int stackHeight)
         {
             var stackBehaviour = instruction.OpCode.StackBehaviourPop;
@@ -253,6 +292,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
 
         #endregion
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         /// <inheritdoc />
         public override string ToString()
         {

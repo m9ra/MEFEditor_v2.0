@@ -9,17 +9,17 @@ using MEFEditor.TypeSystem.Runtime;
 namespace MEFEditor.TypeSystem
 {
     /// <summary>
-    /// Factory method for exported drawing definitions
+    /// Factory method for exported drawing definitions.
     /// </summary>
-    /// <param name="item"><see cref="DiagramItem"/> which drawing is required</param>
-    /// <returns>Created <see cref="ContentDrawing"/></returns>
+    /// <param name="item"><see cref="DiagramItem" /> which drawing is required.</param>
+    /// <returns>Created <see cref="ContentDrawing" />.</returns>
     public delegate ContentDrawing ExportedDrawingFactory(DiagramItem item);
 
     /// <summary>
-    /// Factory method for exported assembly providers
+    /// Factory method for exported assembly providers.
     /// </summary>
     /// <param name="assemblyKey">Key defining assembly</param>
-    /// <returns><see cref="AssemblyProvider"/> if can be created from given key, <c>null</c> otherwise.</returns>
+    /// <returns><see cref="AssemblyProvider" /> if can be created from given key, <c>null</c> otherwise.</returns>
     public delegate AssemblyProvider ExportedAssemblyProviderFactory(object assemblyKey);
 
     /// <summary>
@@ -30,55 +30,60 @@ namespace MEFEditor.TypeSystem
     public delegate void OnLogEvent(string category, string message);
 
     /// <summary>
-    /// Provides ability to export extension into <see cref="RuntimeAssembly"/>
+    /// Provides ability to export extensions into <see cref="MEFEditor" />. It has to be
+    /// marked with <see cref="System.ComponentModel.Composition.ExportAttribute"/> with
+    /// <see cref="ExtensionExport"/> contract.
     /// </summary>
     public abstract class ExtensionExport
     {
         /// <summary>
-        /// Here are stored default log messages of exporter
+        /// Here are stored default log messages of exporter.
         /// </summary>
         private readonly StringBuilder _log = new StringBuilder();
 
         /// <summary>
-        /// Currently available runtime, where type definitions will be loaded into
+        /// Currently available runtime, where type definitions will be loaded into.
         /// </summary>
         private RuntimeAssembly _currentRuntime;
 
         /// <summary>
-        /// <see cref="AssemblyProvider"/> factories that were collected during registering
+        /// <see cref="AssemblyProvider" /> factories that were collected during registering.
         /// </summary>
         private List<ExportedAssemblyProviderFactory> _exportedProviders = new List<ExportedAssemblyProviderFactory>();
 
         /// <summary>
-        /// <see cref="ContentDrawing"/> factories that were collected during registering
+        /// <see cref="ContentDrawing" /> factories that were collected during registering indexed by associated type.
         /// </summary>
         private Dictionary<string, ExportedDrawingFactory> _exportedDrawers = new Dictionary<string, ExportedDrawingFactory>();
 
         /// <summary>
-        /// <see cref="AssemblyProvider"/> factories that were collected during registering
+        /// <see cref="AssemblyProvider" /> factories that were collected during registering.
         /// </summary>
+        /// <value>The exported providers.</value>
         public IEnumerable<ExportedAssemblyProviderFactory> ExportedProviders { get { return _exportedProviders; } }
 
         /// <summary>
-        /// <see cref="ContentDrawing"/> factories that were collected during registering
+        /// <see cref="ContentDrawing" /> factories that were collected during registering.
         /// </summary>
+        /// <value>The exported drawers.</value>
         public IEnumerable<KeyValuePair<string, ExportedDrawingFactory>> ExportedDrawers { get { return _exportedDrawers; } }
 
         /// <summary>
-        /// Event fired whenever new message is logged
+        /// Event fired whenever new message is logged.
         /// </summary>
         public event OnLogEvent OnLog;
 
         /// <summary>
-        /// When overriden register required extensions for runtime
+        /// When overridden register required extensions for runtime.
         /// </summary>
         protected abstract void Register();
 
         /// <summary>
         /// Load all registered exports. Type definitions are added into runtime,
-        /// factories are collected to <see cref="ExportedProviders"/> and <see cref="ExportedDrawers"/>
+        /// factories are collected to <see cref="ExportedProviders" /> and <see cref="ExportedDrawers" />.
         /// </summary>
         /// <param name="runtime">Runtime where type definitions will be loaded into.</param>
+        /// <exception cref="System.ArgumentNullException">runtime</exception>
         public void LoadExports(RuntimeAssembly runtime)
         {
             _exportedProviders.Clear();
@@ -98,30 +103,43 @@ namespace MEFEditor.TypeSystem
             }
         }
 
+        /// <summary>
+        /// Exports Type as direct definition to <see cref="RuntimeAssembly"/>.
+        /// </summary>
+        /// <typeparam name="Type">The type of the type.</typeparam>
         protected void ExportAsDirectDefinition<Type>()
         {
             var definition = new DirectTypeDefinition(typeof(Type));
             ExportDefinition(definition);
         }
 
-        protected void ExportDefinition<TypeDefiniton>()
-            where TypeDefiniton : DataTypeDefinition
+        /// <summary>
+        /// Exports the <see cref="DataTypeDefinition"/> to <see cref="RuntimeAssembly"/>.
+        /// </summary>
+        /// <typeparam name="TypeDefinition">The type of the data type definion.</typeparam>
+        protected void ExportDefinition<TypeDefinition>()
+            where TypeDefinition : DataTypeDefinition
         {
-            ExportDefinitionWithDrawing<TypeDefiniton>(null);
+            ExportDefinitionWithDrawing<TypeDefinition>(null);
         }
 
 
-        protected void ExportDefinitionWithDrawing<TypeDefiniton>(ExportedDrawingFactory drawing)
-            where TypeDefiniton : DataTypeDefinition
+        /// <summary>
+        /// Exports <see cref="DataTypeDefinition"/> with drawing registered for same type.
+        /// </summary>
+        /// <typeparam name="TypeDefinition">The type of the data type definion.</typeparam>
+        /// <param name="drawing">The exported drawing.</param>
+        protected void ExportDefinitionWithDrawing<TypeDefinition>(ExportedDrawingFactory drawing)
+            where TypeDefinition : DataTypeDefinition
         {
             DataTypeDefinition definition;
             try
             {
-                definition = Activator.CreateInstance<TypeDefiniton>();
+                definition = Activator.CreateInstance<TypeDefinition>();
             }
             catch (Exception)
             {
-                Error("Exported {0} skipped because it cannot be constructed, it must have public parameter less constructor", typeof(TypeDefiniton).FullName);
+                Error("Export of {0} skipped because it cannot be constructed, it must have public parameter less constructor", typeof(TypeDefinition).FullName);
                 return;
             }
 
@@ -130,28 +148,50 @@ namespace MEFEditor.TypeSystem
                 ExportDrawing(definition.FullName, drawing);
         }
 
+        /// <summary>
+        /// Exports the given <see cref="DirectTypeDefinition"/> to <see cref="RuntimeAssembly"/>.
+        /// </summary>
+        /// <param name="definition">The direct type definition.</param>
         protected void ExportDefinition(DirectTypeDefinition definition)
         {
             Message("Exporting {0} for direct type {1}", definition, definition.DirectType);
             _currentRuntime.AddDirectDefinition(definition);
         }
 
+        /// <summary>
+        /// Exports the given <see cref="DataTypeDefinition"/> to <see cref="RuntimeAssembly"/>.
+        /// </summary>
+        /// <param name="definition">The data type definition.</param>
         protected void ExportDefinition(DataTypeDefinition definition)
         {
             Message("Exporting {0} for data type {1}", definition, definition.FullName);
             _currentRuntime.AddDefinition(definition);
         }
 
+        /// <summary>
+        /// Exports the drawing factory for given type.
+        /// </summary>
+        /// <typeparam name="RegisteredType">The type of the registered type.</typeparam>
+        /// <param name="drawing">The exported drawing.</param>
         protected void ExportDrawing<RegisteredType>(ExportedDrawingFactory drawing)
         {
             ExportDrawing(typeof(RegisteredType).FullName, drawing);
         }
 
+        /// <summary>
+        /// Exports the general drawing factory that is used for every drawn instance.
+        /// </summary>
+        /// <param name="drawing">The exported drawing.</param>
         protected void ExportGeneralDrawing(ExportedDrawingFactory drawing)
         {
             ExportDrawing("", drawing);
         }
 
+        /// <summary>
+        /// Exports the drawing factory for type with given type name.
+        /// </summary>
+        /// <param name="registeredTypeName">Name of the registered type.</param>
+        /// <param name="drawing">The exported drawing.</param>
         protected void ExportDrawing(string registeredTypeName, ExportedDrawingFactory drawing)
         {
             if (registeredTypeName == "")
@@ -166,6 +206,11 @@ namespace MEFEditor.TypeSystem
             _exportedDrawers[registeredTypeName] = drawing;
         }
 
+        /// <summary>
+        /// Exports the assembly factory that provide assemblies for keys of given type.
+        /// </summary>
+        /// <typeparam name="KeyType">The type of supported assembly key.</typeparam>
+        /// <param name="factory">The exported factory.</param>
         protected void ExportAssemblyFactory<KeyType>(Func<KeyType, AssemblyProvider> factory)
         {
             Message("Exporting factory based on type {0}", typeof(KeyType));
@@ -180,6 +225,10 @@ namespace MEFEditor.TypeSystem
             });
         }
 
+        /// <summary>
+        /// Exports the assembly factory that provide assemblies from given assembly keys.
+        /// </summary>
+        /// <param name="factory">The exported factory.</param>
         protected void ExportAssemblyFactory(ExportedAssemblyProviderFactory factory)
         {
             _exportedProviders.Add(factory);
@@ -188,11 +237,11 @@ namespace MEFEditor.TypeSystem
         #region Logging routines
 
         /// <summary>
-        /// Method used for logging during extension registering
+        /// Method used for logging during extension registering.
         /// </summary>
-        /// <param name="category">Category that is registered</param>
-        /// <param name="format">Format of logged entry</param>
-        /// <param name="args">Format arguments</param>
+        /// <param name="category">Category that is registered.</param>
+        /// <param name="format">Format of logged entry.</param>
+        /// <param name="args">Format arguments.</param>
         protected virtual void Log(string category, string format, params object[] args)
         {
             var message = string.Format(format, args);
@@ -203,20 +252,20 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Method used for message logging during extension registering
+        /// Method used for message logging during extension registering.
         /// </summary>
-        /// <param name="format">Format of logged message</param>
-        /// <param name="args">Format arguments</param>
+        /// <param name="format">Format of logged message.</param>
+        /// <param name="args">Format arguments.</param>
         protected void Message(string format, params object[] args)
         {
             Log("MESSAGE", format, args);
         }
 
         /// <summary>
-        /// Method used for error logging during extension registering
+        /// Method used for error logging during extension registering.
         /// </summary>
-        /// <param name="format">Format of logged error</param>
-        /// <param name="args">Format arguments</param>
+        /// <param name="format">Format of logged error.</param>
+        /// <param name="args">Format arguments.</param>
         protected void Error(string format, params object[] args)
         {
             Log("ERROR", format, args);

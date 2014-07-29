@@ -10,29 +10,55 @@ using RecommendedExtensions.Core.Languages.CSharp.Interfaces;
 namespace RecommendedExtensions.Core.Languages.CSharp.Primitives
 {
     /// <summary>
-    /// Implementation for IPosition.
+    /// Position used for determining offset in given source.
     /// </summary>
     public class Position
     {
-        public int Offset { get; private set; }
-        public Source Source { get; private set; }
+        /// <summary>
+        /// The offset of current position from <see cref="Source"/> beginning. 
+        /// </summary>
+        public readonly int Offset;
 
+        /// <summary>
+        /// The position source.
+        /// </summary>
+        public readonly Source Source;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Position" /> class.
+        /// </summary>
+        /// <param name="source">The position source.</param>
+        /// <param name="offset">The offset of position.</param>
         internal Position(Source source,int offset)
         {
             Offset = offset;
             Source = source;
         }
 
+        /// <summary>
+        /// Creates new position that is shifted according to specified offset
+        /// from current position.
+        /// </summary>
+        /// <param name="offset">The shift offset.</param>
+        /// <returns>Shifted position.</returns>
         public Position Shift(int offset)
         {
             return new Position(Source,Offset + offset);
         }
 
+        /// <summary>
+        /// Gets source strip from given position.
+        /// </summary>
+        /// <param name="position">The strip position.</param>
+        /// <returns>Text of requested strip.</returns>
         public string GetStrip(Position position)
         {
             return Source.OriginalCode.Substring(Offset, position.Offset - Offset);
         }
 
+        /// <summary>
+        /// Navigates to current position in source code.
+        /// </summary>
         public void Navigate()
         {
             Source.Navigate(Offset);

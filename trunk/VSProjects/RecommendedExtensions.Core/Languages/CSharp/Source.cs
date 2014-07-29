@@ -137,9 +137,9 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Event notifier fired by <see cref="EditContext" /><param name="commitedContext">Source that has been commited</param>.
+        /// Event notifier fired by <see cref="EditContext" />
         /// </summary>
-        /// <param name="commitedContext">The commited context.</param>
+        /// <param name="commitedContext">Source that has been commited</param>.
         internal void OnCommited(EditContext commitedContext)
         {
             if (SourceChangeCommited != null)

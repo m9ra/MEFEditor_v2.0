@@ -120,7 +120,7 @@ namespace MEFEditor.TypeSystem
 
         /// <summary>
         /// Mapping of fullpath used for provided assembly. Path mapping
-        /// is necessary for analzing development configuration: Extending of an Existing Application.
+        /// is necessary for analying development configuration: Extending of an Existing Application.
         /// </summary>
         /// <value>The full path mapping.</value>
         public string FullPathMapping
@@ -212,13 +212,13 @@ namespace MEFEditor.TypeSystem
         /// <summary>
         /// Gets the assembly full path.
         /// </summary>
-        /// <returns>System.String.</returns>
+        /// <returns>Assembly full path.</returns>
         protected abstract string getAssemblyFullPath();
 
         /// <summary>
         /// Gets the name of the assembly.
         /// </summary>
-        /// <returns>System.String.</returns>
+        /// <returns>Assembly name.</returns>
         protected abstract string getAssemblyName();
 
         /// <summary>

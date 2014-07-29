@@ -16,79 +16,79 @@ using MEFEditor.TypeSystem.TypeParsing;
 namespace MEFEditor.TypeSystem.Runtime.Building
 {
     /// <summary>
-    /// Builder for runtime methods
+    /// Builder for runtime methods.
     /// </summary>
     class MethodBuilder
     {
         /// <summary>
-        /// Type of analyzing context
-        /// TODO: Refactor method infos out of classes
+        /// Type of analyzing context.
         /// </summary>
         private static readonly Type _contextType = typeof(AnalyzingContext);
 
         /// <summary>
-        /// Definition that is declaring builded method
+        /// Definition that is declaring builded method.
         /// </summary>
         private readonly RuntimeTypeDefinition _declaringDefinition;
 
         /// <summary>
-        /// Array where arguments are stored
+        /// Array where arguments are stored.
         /// </summary>
         private readonly Expression _argumentsArray;
 
         /// <summary>
-        /// Input parameter for direct method (contains Analyzing context)
+        /// Input parameter for direct method (contains Analyzing context).
         /// </summary>
         private readonly ParameterExpression _contextParam;
 
         /// <summary>
-        /// Name of builded method
+        /// Name of built method.
         /// </summary>
         private readonly string _methodName;
 
         /// <summary>
-        /// Determine that builded method should be forced as static
+        /// Determine that built method should be forced as static.
         /// </summary>
         private readonly bool _forceStatic;
 
         /// <summary>
-        /// Expression which can get declaring definition object
+        /// Expression which can get declaring definition object.
         /// </summary>
         internal readonly Expression DeclaringDefinitionConstant;
 
         /// <summary>
-        /// Method info of builded method
-        /// (Can be overriden before build)
+        /// Method info of built method
+        /// (Can be overridden before build).
         /// </summary>
         internal TypeMethodInfo BuildedMethodInfo;
 
         /// <summary>
         /// Method that is invoked in context of declaring definition
-        /// (Can be overriden before build)
+        /// (Can be overridden before build).
         /// </summary>
         internal DirectMethod Adapter;
 
         /// <summary>
         /// Object on which adapter is called
-        /// (Can be overriden before build)
+        /// (Can be overridden before build).
         /// </summary>
         internal Expression ThisObjectExpression;
 
         /// <summary>
-        /// Types that are implemented byt builded method
+        /// Types that are implemented byt built method.
         /// </summary>
         internal HashSet<Type> ImplementedTypes = new HashSet<Type>();
 
         /// <summary>
-        /// Translator used for TypeMethodInfo building
+        /// Translator used for TypeMethodInfo building.
         /// </summary>
         internal readonly GenericParamTranslator Translator;
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="MethodBuilder" /> class.
         /// </summary>
-        /// <param name="declaringDefinition"></param>
-        /// <param name="methodName"></param>
+        /// <param name="declaringDefinition">The declaring definition.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="forceStatic">if set to <c>true</c> static method will be generated.</param>
         internal MethodBuilder(RuntimeTypeDefinition declaringDefinition, string methodName, bool forceStatic)
         {
             _forceStatic = forceStatic;
@@ -101,11 +101,20 @@ namespace MEFEditor.TypeSystem.Runtime.Building
             Translator = new GenericParamTranslator(declaringDefinition.TypeInfo);
         }
 
+        /// <summary>
+        /// Create argument expression.
+        /// </summary>
+        /// <param name="argumentIndex">Index of the argument.</param>
+        /// <returns>Expression.</returns>
         internal Expression ArgumentInstanceExpression(int argumentIndex)
         {
             return Expression.ArrayIndex(_argumentsArray, Expression.Constant(argumentIndex));
         }
 
+        /// <summary>
+        /// Creates adapter for given method.
+        /// </summary>
+        /// <param name="method">The method.</param>
         internal void AdapterFor(MethodInfo method)
         {
             var paramsInfo = getParametersInfo(method);
@@ -122,6 +131,10 @@ namespace MEFEditor.TypeSystem.Runtime.Building
             Adapter = generateAdapter(method);
         }
 
+        /// <summary>
+        /// Builds this instance.
+        /// </summary>
+        /// <returns>RuntimeMethodGenerator.</returns>
         internal RuntimeMethodGenerator Build()
         {
             var implementedTypes = ImplementedTypes.ToArray();
@@ -134,11 +147,23 @@ namespace MEFEditor.TypeSystem.Runtime.Building
                 implementedTypes);
         }
 
+        /// <summary>
+        /// Invokes the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="method">The method.</param>
+        /// <param name="adapter">The adapter.</param>
+        /// <param name="definition">The definition.</param>
         private static void invoke(AnalyzingContext context, TypeMethodInfo method, DirectMethod adapter, RuntimeTypeDefinition definition)
         {
             definition.Invoke(context, adapter);
         }
 
+        /// <summary>
+        /// Unwraps the specified wrap.
+        /// </summary>
+        /// <param name="wrap">The wrap.</param>
+        /// <returns>Instance.</returns>
         private static Instance unwrap(InstanceWrap wrap)
         {
             if (wrap == null)
@@ -148,10 +173,10 @@ namespace MEFEditor.TypeSystem.Runtime.Building
         }
 
         /// <summary>
-        /// Get parameters info for given method base
+        /// Get parameters info for given method base.
         /// </summary>
-        /// <param name="method">Base method which parameters will be created</param>
-        /// <returns>Created parameters info</returns>
+        /// <param name="method">Base method which parameters will be created.</param>
+        /// <returns>Created parameters info.</returns>
         private ParameterTypeInfo[] getParametersInfo(MethodBase method)
         {
             var paramsInfo = new List<ParameterTypeInfo>();
@@ -181,10 +206,10 @@ namespace MEFEditor.TypeSystem.Runtime.Building
         }
 
         /// <summary>
-        /// Get parameters info for given method base
+        /// Get parameters info for given method base.
         /// </summary>
-        /// <param name="method">Base method which parameters will be created</param>
-        /// <returns>Created parameters info</returns>
+        /// <param name="method">Base method which parameters will be created.</param>
+        /// <returns>Created parameters info.</returns>
         private TypeDescriptor[] getTypeArguments(MethodInfo method)
         {
             if (method == null)
@@ -203,6 +228,11 @@ namespace MEFEditor.TypeSystem.Runtime.Building
         }
 
 
+        /// <summary>
+        /// Gets the return type of method.
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <returns>TypeDescriptor.</returns>
         private TypeDescriptor getReturnType(MethodInfo method)
         {
             var attributes = method.GetCustomAttributes(typeof(ReturnTypeAttribute), false);
@@ -223,6 +253,11 @@ namespace MEFEditor.TypeSystem.Runtime.Building
             }
         }
 
+        /// <summary>
+        /// Generates the adapter for given method.
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <returns>DirectMethod.</returns>
         private DirectMethod generateAdapter(MethodInfo method)
         {
             if (method.IsGenericMethodDefinition)
@@ -246,15 +281,17 @@ namespace MEFEditor.TypeSystem.Runtime.Building
             return Expression.Lambda<DirectMethod>(handledAdapter, _contextParam).Compile();
         }
 
+        /// <summary>
+        /// Handles the return value of adapter.
+        /// </summary>
+        /// <param name="adapterCall">The adapter call.</param>
+        /// <returns>Expression.</returns>
         private Expression handleReturn(MethodCallExpression adapterCall)
         {
             var returnType = adapterCall.Method.ReturnType;
             if (returnType == typeof(void))
                 //there is no need for unwrapping logic
                 return adapterCall;
-
-
-            //TODO refactor conversion logic
 
             var needReturnUnWrapping = returnType == typeof(InstanceWrap);
             Expression returnValue = adapterCall;
@@ -289,12 +326,11 @@ namespace MEFEditor.TypeSystem.Runtime.Building
         }
 
         /// <summary>
-        /// Get argument expression according to index
+        /// Get argument expression according to index.
         /// </summary>
-        /// <param name="index">Zero based index of arguments - zero arguments belongs to this instance</param>
-        /// <param name="resultType">Expected type of result - wrapping, direct value obtaining is processed</param>
-        /// <param name="contextParameter">Parameter with context object</param>
-        /// <returns>Argument expression</returns>
+        /// <param name="instanceExpression">The instance expression.</param>
+        /// <param name="resultType">Expected type of result - wrapping, direct value obtaining is processed.</param>
+        /// <returns>Argument expression.</returns>
         private Expression convert(Expression instanceExpression, Type resultType)
         {
             if (instanceExpression == null)

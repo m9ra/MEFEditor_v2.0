@@ -16,37 +16,40 @@ using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversing;
 namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBuilding
 {
     /// <summary>
-    /// Builder of <see cref="MethodItem"/> objects from <see cref="CodeElement"/> definitions.
+    /// Builder of <see cref="MethodItem" /> objects from <see cref="CodeElement" /> definitions.
     /// </summary>
     public class MethodItemBuilder : CodeElementVisitor
     {
         /// <summary>
-        /// Stores result of method build process
+        /// Stores result of method build process.
         /// </summary>
         private MethodItem _result;
 
         /// <summary>
-        /// Method info of method that will be built
+        /// Method info of method that will be built.
         /// </summary>
+        /// <value>The method information.</value>
         protected TypeMethodInfo MethodInfo { get; private set; }
 
         /// <summary>
-        /// Assembly where built method has been declared
+        /// Assembly where built method has been declared.
         /// </summary>
+        /// <value>The declaring assembly.</value>
         protected VsProjectAssembly DeclaringAssembly { get; private set; }
 
         /// <summary>
-        /// Initialize new instance of <see cref="MethodItem"/> builder.
-        /// </summary>        
+        /// Initialize new instance of <see cref="MethodItem" /> builder.
+        /// </summary>
         public MethodItemBuilder()
         {
             RecursiveVisit = false;
         }
 
         /// <summary>
-        /// Initialize builder with given assembly
+        /// Initialize builder with given assembly.
         /// </summary>
-        /// <param name="declaringAssembly">Assembly where are declared definitions to built</param>
+        /// <param name="declaringAssembly">Assembly where are declared definitions to built.</param>
+        /// <exception cref="System.ArgumentNullException">declaringAssembly</exception>
         internal void Initialize(VsProjectAssembly declaringAssembly)
         {
             if (declaringAssembly == null)
@@ -58,11 +61,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         #region Method building API
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given element.
+        /// Build <see cref="MethodItem" /> from given element.
         /// </summary>
-        /// <param name="element">Method definition element</param>
-        /// <param name="needGetter">Determine that getter is needed from given element</param>
-        /// <returns>Built method</returns>
+        /// <param name="element">Method definition element.</param>
+        /// <param name="requiredName">Name that is required for built method.</param>
+        /// <returns>Built method.</returns>
         public MethodItem Build(CodeElement element, string requiredName)
         {
             MethodItem result;
@@ -90,9 +93,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Set result of build process
+        /// Set result of build process.
         /// </summary>
-        /// <param name="resultMethod">Result of building process</param>
+        /// <param name="resultMethod">Result of building process.</param>
+        /// <exception cref="System.NotSupportedException">Cannot build MethodItem from multiple method definitions</exception>
         protected void Result(MethodItem resultMethod)
         {
             if (_result != null)
@@ -106,11 +110,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         #region Concrete method builders
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given <see cref="CodeFunction"/>.
+        /// Build <see cref="MethodItem" /> from given <see cref="CodeFunction" />.
         /// </summary>
-        /// <param name="element">Method definition element</param>
-        /// <param name="declaringAssembly">Assembly in which scope method is builded</param>
-        /// <returns>Built method</returns>
+        /// <param name="element">Method definition element.</param>
+        /// <returns>Built method.</returns>
         public MethodItem BuildFrom(CodeFunction element)
         {
             var sourceCode = element.MustImplement ? null : GetSourceCode(element);
@@ -136,11 +139,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given variable element
+        /// Build <see cref="MethodItem" /> from given variable element.
         /// </summary>
-        /// <param name="element">Method definition element</param>
-        /// <param name="buildGetter">Determine that getter or setter should be builded</param>
-        /// <returns>Built method</returns>
+        /// <param name="element">Method definition element.</param>
+        /// <returns>Built method.</returns>
         public MethodItem BuildFrom(CodeVariable element)
         {
             //variable will generate auto property
@@ -149,11 +151,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
 
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given <see cref="CodeProperty"/> element
+        /// Build <see cref="MethodItem" /> from given <see cref="CodeProperty" /> element.
         /// </summary>
-        /// <param name="element">Method definition element</param>
-        /// <param name="buildGetter">Determine that getter or setter should be builded</param>
-        /// <returns>Built method</returns>
+        /// <param name="element">Method definition element.</param>
+        /// <returns>Built method.</returns>
         public MethodItem BuildFrom(CodeProperty element)
         {
             var isAutoProperty = element.IsAutoProperty();
@@ -174,10 +175,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         #region Building utilities
 
         /// <summary>
-        /// Get source code from given element
+        /// Get source code from given element.
         /// </summary>
-        /// <param name="element">Element which source code is retrieved</param>
-        /// <returns>Element's source code</returns>
+        /// <param name="element">Element which source code is retrieved.</param>
+        /// <returns>Element's source code.</returns>
         internal string GetSourceCode(CodeFunction element)
         {
             var name = element.Name;
@@ -190,10 +191,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Get source code from given element that is before main body
+        /// Get source code from given element that is before main body.
         /// </summary>
-        /// <param name="fn">Element which precode is retrieved</param>
-        /// <returns>Element's precode</returns>
+        /// <param name="fn">Element which precode is retrieved.</param>
+        /// <returns>Element's precode.</returns>
         internal string GetPreCode(CodeFunction fn)
         {
             if (fn.FunctionKind != vsCMFunction.vsCMFunctionConstructor)
@@ -221,10 +222,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Build auto generated property from given <see cref="TypeMethodInfo"/>
+        /// Build auto generated property from given <see cref="TypeMethodInfo" />.
         /// </summary>
-        /// <param name="methodInfo">Info of method that will be generated</param>
-        /// <returns></returns>
+        /// <param name="methodInfo">Info of method that will be generated.</param>
+        /// <returns>MethodItem.</returns>
         private static MethodItem buildAutoProperty(TypeMethodInfo methodInfo)
         {
             var buildGetter = !methodInfo.ReturnType.Equals(TypeDescriptor.Void);
@@ -259,10 +260,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         #region Changes writing services
 
         /// <summary>
-        /// Register handlers on activation for purposes of binding with source
+        /// Register handlers on activation for purposes of binding with source.
         /// </summary>
-        /// <param name="activation">Activation which bindings will be registered</param>
-        /// <param name="element">Element where bindings will be applied</param>
+        /// <param name="activation">Activation which bindings will be registered.</param>
+        /// <param name="element">Element where bindings will be applied.</param>
         protected void RegisterActivation(ParsingActivation activation, CodeElement element)
         {
             var fn = element as CodeFunction;
@@ -272,11 +273,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Process source writing into given element
+        /// Process source writing into given element.
         /// </summary>
-        /// <param name="element">Element which source will be written</param>
-        /// <param name="requiredNamespaces">Namespaces which presence is required within document</param>
-        /// <param name="source">Source that will be written</param>
+        /// <param name="element">Element which source will be written.</param>
+        /// <param name="source">Source that will be written.</param>
+        /// <param name="requiredNamespaces">Namespaces which presence is required within document.</param>
+        /// <exception cref="System.NotSupportedException">Document is read only</exception>
         protected void Write(CodeFunction element, string source, IEnumerable<string> requiredNamespaces)
         {
             bool undoOpened = false;
@@ -314,10 +316,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
         }
 
         /// <summary>
-        /// Process navigating at offset on given element
+        /// Process navigating at offset on given element.
         /// </summary>
-        /// <param name="element">Element which is base for offset navigation</param>
-        /// <param name="navigationOffset">Offset where user will be navigated to</param>
+        /// <param name="element">Element which is base for offset navigation.</param>
+        /// <param name="navigationOffset">Offset where user will be navigated to.</param>
         protected void Navigate(CodeElement element, int navigationOffset)
         {
             if (!(element is CodeFunction))
@@ -370,18 +372,30 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
 
         #region Visitor overrides
 
+        /// <summary>
+        /// Visit given element.
+        /// </summary>
+        /// <param name="e">Element to visit.</param>
         /// <inheritdoc />
         public override void VisitFunction(CodeFunction2 e)
         {
             Result(BuildFrom(e));
         }
 
+        /// <summary>
+        /// Visit given element.
+        /// </summary>
+        /// <param name="e">Element to visit.</param>
         /// <inheritdoc />
         public override void VisitVariable(CodeVariable e)
         {
             Result(BuildFrom(e));
         }
 
+        /// <summary>
+        /// Visit given element.
+        /// </summary>
+        /// <param name="e">Element to visit.</param>
         /// <inheritdoc />
         public override void VisitProperty(CodeProperty e)
         {

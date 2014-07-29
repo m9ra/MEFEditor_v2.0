@@ -16,7 +16,7 @@ namespace MEFEditor.TypeSystem
     /// which using is required for compatibility with TypeSystem.
     /// 
     /// MethodID format:
-    ///     MethodName: Name &lt generic arguments &gt
+    ///     MethodName: Name &lt; generic arguments &gt;
     ///     MethodPath: TypeFullname {PathDelimiter} MethodName
     ///     MethodIdentifier: MethodPath {PartDelimiter} ParametersDescription
     /// </summary>

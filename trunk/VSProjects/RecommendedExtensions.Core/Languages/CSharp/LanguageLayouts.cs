@@ -373,7 +373,6 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// throwing parsing exception. If null, no exception is thrown</param>
         /// <param name="msgArgs">Format arguments for errorMessage.</param>
         /// <returns>True if expectedString is equal to lexers current value.</returns>
-        /// <exception cref="ParsingException">If errorMessage!=null, is thrown parsing exception with specified errorMessage.</exception>
         private bool _shiftToken(string expectedString, string errorMessage = null, params object[] msgArgs)
         {
             var result = _checkToken(expectedString, errorMessage, msgArgs);
@@ -387,11 +386,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         /// Test if current lexer token value is equal to expectedString.
         /// </summary>
         /// <param name="expectedString">Value which is used to test lexer current value.</param>
-        /// <param name="errorMessage">If is not null and test doesnt suceed, is used for 
+        /// <param name="errorMessage">If is not null and test doesn't succeed, is used for 
         /// throwing parsing exception. If null, no exception is thrown</param>
         /// <param name="msgArgs">Format arguments for errorMessage.</param>
         /// <returns>True if expectedString is equal to lexers current value.</returns>
-        /// <exception cref="ParsingException">If errorMessage!=null, is thrown parsing exception with specified errorMessage.</exception>
         private bool _checkToken(string expectedString, string errorMessage = null, params object[] msgArgs)
         {
             if (_lexer.Current.Value != expectedString)

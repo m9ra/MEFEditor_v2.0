@@ -17,7 +17,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
     class MethodInfoBuilder
     {
         /// <summary>
-        /// Available substitutions for generic parameters
+        /// Available substitutions for generic parameters.
         /// </summary>
         internal readonly TypeReferenceHelper TypeHelper;
 
@@ -60,14 +60,16 @@ namespace RecommendedExtensions.Core.Languages.CIL
 
         /// <summary>
         /// Determine offset of generic parameter, that is currently available. Is
-        /// used for correct ordering accross method and type parameters
+        /// used for correct ordering accross method and type parameters.
         /// </summary>
         private int _genericParamOffset = 0;
 
         /// <summary>
-        /// Create builder for given method
+        /// Create builder for given method.
         /// </summary>
-        /// <param name="translatedMethod">Method which TypeMethodInfo is builded</param>
+        /// <param name="translatedMethod">Method which TypeMethodInfo is built.</param>
+        /// <param name="typeHelper">Helper for type resolving.</param>
+        /// <exception cref="System.ArgumentNullException">typeHelper</exception>
         internal MethodInfoBuilder(MethodReference translatedMethod, TypeReferenceHelper typeHelper)
         {
             TypeHelper = typeHelper;
@@ -84,10 +86,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Get type descriptor from given type. All available translation rules are applied
+        /// Get type descriptor from given type. All available translation rules are applied.
         /// </summary>
-        /// <param name="type">Type which descriptor is created</param>
-        /// <returns>Created type descriptor</returns>
+        /// <param name="type">Type which descriptor is created.</param>
+        /// <returns>Created type descriptor.</returns>
         internal TypeDescriptor GetDescriptor(TypeReference type)
         {
             var result = TypeHelper.BuildDescriptor(type);
@@ -95,9 +97,9 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Build TypeMethodInfo from current info in build properties
+        /// Build TypeMethodInfo from current info in build properties.
         /// </summary>
-        /// <returns>Builded type method info</returns>
+        /// <returns>Builded type method info.</returns>
         internal TypeMethodInfo Build()
         {
             var result = new TypeMethodInfo(
@@ -116,18 +118,18 @@ namespace RecommendedExtensions.Core.Languages.CIL
         #region Build handlers
 
         /// <summary>
-        /// Apply information available in declaring type reference
+        /// Apply information available in declaring type reference.
         /// </summary>
-        /// <param name="typeReference">Type reference of declaring type</param>
+        /// <param name="typeReference">Type reference of declaring type.</param>
         private void applyDeclaringType(TypeReference typeReference)
         {
             DeclaringType = GetDescriptor(typeReference);
         }
 
         /// <summary>
-        /// Apply information available in declaring generic type
+        /// Apply information available in declaring generic type.
         /// </summary>
-        /// <param name="genericType">Generic type instance of declaring type</param>
+        /// <param name="genericType">Generic type instance of declaring type.</param>
         private void applyGenericDeclaringType(GenericInstanceType genericType)
         {
             if (genericType == null)
@@ -141,9 +143,9 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Apply information available in method reference
+        /// Apply information available in method reference.
         /// </summary>
-        /// <param name="methodReference">Method reference of builded method info</param>
+        /// <param name="methodReference">Method reference of builded method info.</param>
         private void applyMethod(MethodReference methodReference)
         {
             //set default parameters
@@ -185,9 +187,9 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Apply information available in generic instance method
+        /// Apply information available in generic instance method.
         /// </summary>
-        /// <param name="genericMethod">Generic instance method of builded method info</param>
+        /// <param name="genericMethod">Generic instance method of builded method info.</param>
         private void applyGenericMethod(GenericInstanceMethod genericMethod)
         {
             if (genericMethod == null)
@@ -208,9 +210,9 @@ namespace RecommendedExtensions.Core.Languages.CIL
 
 
         /// <summary>
-        /// Apply information available in method definition
+        /// Apply information available in method definition.
         /// </summary>
-        /// <param name="genericMethod">Method definition of builded method info</param>
+        /// <param name="method">The method.</param>
         private void applyMethodDefinition(MethodDefinition method)
         {
             if (method == null)
@@ -221,10 +223,10 @@ namespace RecommendedExtensions.Core.Languages.CIL
         }
 
         /// <summary>
-        /// Apply type parameters substitutions
+        /// Apply type parameters substitutions.
         /// </summary>
-        /// <param name="arguments">Type arguments</param>
-        /// <param name="parameters"></param>
+        /// <param name="arguments">Type arguments.</param>
+        /// <param name="parameters">The parameters.</param>
         private void applySubstitutions(IEnumerable<TypeReference> arguments, IEnumerable<GenericParameter> parameters)
         {
             var args = arguments.ToArray();

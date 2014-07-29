@@ -68,7 +68,7 @@ namespace MEFEditor.TypeSystem.DrawingServices
             var initialView = new EditView(_result.CreateExecutionView());
             Context = new DiagramDefinition(initialView);
 
-            foreach (var edit in runtime.StaticEdits)
+            foreach (var edit in runtime.GlobalEdits)
             {
                 var drawingEdit = CreateEditDefinition(edit);
                 Context.AddEdit(drawingEdit);

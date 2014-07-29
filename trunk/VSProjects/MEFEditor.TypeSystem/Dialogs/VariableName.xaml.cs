@@ -24,31 +24,31 @@ using MEFEditor.TypeSystem.Runtime;
 namespace MEFEditor.TypeSystem.Dialogs
 {
     /// <summary>
-    /// Interaction logic for ComponentTypeDialog.xaml
+    /// Dialog provider for variable name selection.
     /// </summary>
     public partial class VariableName : Window
     {
         /// <summary>
         /// Name of variable that has been selected by user. Name is validated according
         /// to basic naming rules, context duplicity is checked.
-        /// 
         /// If no name is selected null is present.
         /// </summary>
+        /// <value>The name of the result.</value>
         public string ResultName { get; private set; }
 
         /// <summary>
-        /// Context of call, where new variable name will be used. Is used for 
+        /// Context of call, where new variable name will be used. Is used for
         /// duplicity checking.
         /// </summary>
         private readonly CallContext _context;
 
         /// <summary>
-        /// Validator for variable form
+        /// Validator for variable form.
         /// </summary>
         static readonly Regex _variableValidator = new Regex(@"^[a-zA-Z]\w*$", RegexOptions.Compiled);
 
         /// <summary>
-        /// Keywords that cannot be used as variable names
+        /// Keywords that cannot be used as variable names.
         /// </summary>
         static readonly HashSet<string> _keywords = new HashSet<string>(){
             //TODO extend this list
@@ -56,10 +56,10 @@ namespace MEFEditor.TypeSystem.Dialogs
         };
 
         /// <summary>
-        /// Create dialog for selecting
+        /// Create dialog for selecting.
         /// </summary>
-        /// <param name="initialName">Initial hint that will be offered to user</param>
-        /// <param name="context">Context of call, where new variable name will be used. Is used for duplicity checking</param>
+        /// <param name="initialName">Initial hint that will be offered to user.</param>
+        /// <param name="context">Context of call, where new variable name will be used. Is used for duplicity checking.</param>
         private VariableName(string initialName, CallContext context)
         {
             InitializeComponent();
@@ -72,10 +72,10 @@ namespace MEFEditor.TypeSystem.Dialogs
         }
 
         /// <summary>
-        /// Provide variable name dialog for creation edit of given definition
+        /// Provide variable name dialog for creation edit of given definition.
         /// </summary>
-        /// <param name="definition">Definition which creation edit is active</param>
-        /// <param name="creationContext">Context of call, where new variable name will be used. Is used for duplicity checking</param>
+        /// <param name="definition">Definition which creation edit is active.</param>
+        /// <param name="creationContext">Context of call, where new variable name will be used. Is used for duplicity checking.</param>
         /// <returns>Name of variable that has been selected by user. Name is validated according
         /// to basic naming rules, context duplicity is checked.
         /// If no name is selected null is returned.</returns>
@@ -86,10 +86,10 @@ namespace MEFEditor.TypeSystem.Dialogs
 
 
         /// <summary>
-        /// Provide variable name dialog for creation edit of given definition
+        /// Provide variable name dialog for creation edit of given type.
         /// </summary>
-        /// <param name="definition">Definition which creation edit is active</param>
-        /// <param name="creationContext">Context of call, where new variable name will be used. Is used for duplicity checking</param>
+        /// <param name="type">The created type.</param>
+        /// <param name="creationContext">Context of call, where new variable name will be used. Is used for duplicity checking.</param>
         /// <returns>Name of variable that has been selected by user. Name is validated according
         /// to basic naming rules, context duplicity is checked.
         /// If no name is selected null is returned.</returns>
@@ -103,11 +103,11 @@ namespace MEFEditor.TypeSystem.Dialogs
 
 
         /// <summary>
-        /// Create default name hint for given definition
+        /// Create default name hint for given type.
         /// </summary>
-        /// <param name="definition">Definition which name is created</param>
-        /// <param name="context">Context used for uniqueness guarancy</param>
-        /// <returns>Created name</returns>
+        /// <param name="type">Definition which name is created.</param>
+        /// <param name="context">Context used for uniqueness guaranty.</param>
+        /// <returns>Created name.</returns>
         private static string getDefaultName(InstanceInfo type, CallContext context)
         {
             var basename = Naming.SplitGenericPath(type.TypeName).Last();
@@ -125,9 +125,9 @@ namespace MEFEditor.TypeSystem.Dialogs
         }
 
         /// <summary>
-        /// Determine that current name has validation error
+        /// Determine that current name has validation error.
         /// </summary>
-        /// <returns>True if there is validation error in variable name</returns>
+        /// <returns>True if there is validation error in variable name.</returns>
         private bool hasError()
         {
             //error that will be displayed
@@ -161,6 +161,11 @@ namespace MEFEditor.TypeSystem.Dialogs
             return hasError;
         }
 
+        /// <summary>
+        /// Handles the Click event of the OK control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void OK_Click(object sender, RoutedEventArgs e)
         {
             if (!hasError())
@@ -170,6 +175,11 @@ namespace MEFEditor.TypeSystem.Dialogs
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the Storno control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Storno_Click(object sender, RoutedEventArgs e)
         {
             ResultName = null;

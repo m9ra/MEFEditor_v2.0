@@ -23,53 +23,55 @@ using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBuildin
 namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
 {
     /// <summary>
-    /// Assembly provider implementation for <see cref="Project"/> assemblies loaded from Visual Studio solutions
+    /// Assembly provider implementation for <see cref="Project" /> assemblies loaded from Visual Studio solutions.
     /// </summary>
     public abstract class VsProjectAssembly : AssemblyProvider
     {
         /// <summary>
-        /// Represented VsProject assembly
+        /// Represented VsProject assembly.
         /// </summary>
         private readonly VSProject _assemblyProject;
 
         /// <summary>
-        /// Searcher of <see cref="CodeElement"/> objects
+        /// Searcher of <see cref="CodeElement" /> objects.
         /// </summary>
         protected readonly CodeElementSearcher Searcher;
 
         /// <summary>
-        /// <see cref="CodeClass"/> set that will be discovered when change transaction is closed
+        /// <see cref="CodeClass" /> set that will be discovered when change transaction is closed.
         /// </summary>
         private readonly HashSet<CodeClass> _toDiscover = new HashSet<CodeClass>();
 
         /// <summary>
-        /// Provider of element names
+        /// Provider of element names.
         /// </summary>
         private readonly CodeElementNamesProvider _namesProvider;
 
         /// <summary>
-        /// <see cref="Project"/> represented by current assembly
+        /// <see cref="Project" /> represented by current assembly.
         /// </summary>
+        /// <value>The project.</value>
         public Project Project { get { return _assemblyProject.Project; } }
 
         /// <summary>
-        /// Services that are available for assembly
+        /// Services that are available for assembly.
         /// </summary>
         public readonly VisualStudioServices VS;
 
         /// <summary>
-        /// Build method info
+        /// Build method info.
         /// </summary>
         public readonly MethodInfoBuilder InfoBuilder;
 
         /// <summary>
-        /// Build method items
+        /// Build method items.
         /// </summary>
         public readonly MethodItemBuilder ItemBuilder;
 
         /// <summary>
-        /// Root <see cref="CodeElement"/> objects of represented <see cref="Project"/>
+        /// Root <see cref="CodeElement" /> objects of represented <see cref="Project" />.
         /// </summary>
+        /// <value>The root elements.</value>
         public IEnumerable<CodeElement> RootElements
         {
             get
@@ -82,10 +84,13 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Initialize new instance of <see cref="VsProjectAssembly"/> from given <see cref="Project"/>
+        /// Initialize new instance of <see cref="VsProjectAssembly" /> from given <see cref="Project" />.
         /// </summary>
-        /// <param name="assemblyProject">Project that will be represented by initialized assembly</param>
-        /// <param name="vs"></param>
+        /// <param name="assemblyProject">Project that will be represented by initialized assembly.</param>
+        /// <param name="vs">The visual studio services.</param>
+        /// <param name="namesProvider">The <see cref="CodeElement"/> names provider.</param>
+        /// <param name="infoBuilder">The method signature information builder.</param>
+        /// <param name="itemBuilder">The method item builder.</param>
         public VsProjectAssembly(Project assemblyProject, VisualStudioServices vs,
             CodeElementNamesProvider namesProvider, MethodInfoBuilder infoBuilder, MethodItemBuilder itemBuilder)
         {
@@ -106,10 +111,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         #region Services that are customizable for concrete languages
 
         /// <summary>
-        /// Provider of method parsing for assembly
+        /// Provider of method parsing for assembly.
         /// </summary>
-        /// <param name="activation">Activation for assembly parser</param>
-        /// <param name="emitter">Emitter where parsed instructions are emitted</param>
+        /// <param name="activation">Activation for assembly parser.</param>
+        /// <param name="emitter">Emitter where parsed instructions are emitted.</param>
         public abstract void ParsingProvider(ParsingActivation activation, EmitterBase emitter);
 
 
@@ -119,26 +124,26 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <param name="valueRepresentation">The value representation.</param>
         /// <param name="contextType">Context type where value has been found.</param>
         /// <param name="contextElement">The context element where has been found.</param>
-        /// <returns>Parsed object if available, <c>null</c> otherwise</returns>
+        /// <returns>Parsed object if available, <c>null</c> otherwise.</returns>
         public abstract object ParseValue(string valueRepresentation, TypeDescriptor contextType, CodeElement contextElement);
 
         /// <summary>
         /// Translate given path according to aliases and language type conventions
-        /// <remarks>Namespace lookup is not used</remarks>
+        /// <remarks>Namespace lookup is not used</remarks>.
         /// </summary>
-        /// <param name="path">Path to be translated</param>
-        /// <returns>Resulting descriptor</returns>
+        /// <param name="path">Path to be translated.</param>
+        /// <returns>Resulting descriptor.</returns>
         public virtual string TranslatePath(string path)
         {
             return path;
         }
 
         /// <summary>
-        /// Determine that given name is possible for given <see cref="CodeElement"/>
+        /// Determine that given name is possible for given <see cref="CodeElement" />.
         /// </summary>
-        /// <param name="possibleName">Tested name</param>
-        /// <param name="element">Element which is tested for possible name</param>
-        /// <returns><c>true</c> if element can have possible name, <c>false</c> otherwise</returns>
+        /// <param name="possibleName">Tested name.</param>
+        /// <param name="element">Element which is tested for possible name.</param>
+        /// <returns><c>true</c> if element can have possible name, <c>false</c> otherwise.</returns>
         public bool IsPossibleName(string possibleName, CodeElement element)
         {
             var signature = PathInfo.GetSignature(possibleName);
@@ -148,11 +153,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Get names that are matching to given node and searchedName constraint
+        /// Get names that are matching to given node and searchedName constraint.
         /// </summary>
-        /// <param name="node">Node which names are matched</param>
-        /// <param name="searchedName">Constraint on searched name if <c>null</c> no constraint is specified</param>
-        /// <returns>Matching names</returns>
+        /// <param name="node">Node which names are matched.</param>
+        /// <param name="searchedName">Constraint on searched name if <c>null</c> no constraint is specified.</param>
+        /// <returns>Matching names.</returns>
         internal IEnumerable<string> GetMatchingNames(CodeElement node, string searchedName)
         {
             var names = generatePossibleNames(node);
@@ -169,10 +174,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         #endregion
 
         /// <summary>
-        /// Get namespaces that are valid for file where given <see cref="CodeElement"/> is defined
+        /// Get namespaces that are valid for file where given <see cref="CodeElement" /> is defined.
         /// </summary>
-        /// <param name="element">Element which namespaces will be returned</param>
-        /// <returns>Valida namespaces for file with given element</returns>
+        /// <param name="element">Element which namespaces will be returned.</param>
+        /// <returns>Valid namespaces for file with given element.</returns>
         public IEnumerable<string> GetNamespaces(CodeElement element)
         {
             var namespaces = VS.GetNamespaces(element.ProjectItem);
@@ -180,10 +185,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Get namespaces that are valid for given <see cref="TypeDescriptor"/>        
+        /// Get namespaces that are valid for given <see cref="TypeDescriptor" />.
         /// </summary>
-        /// <param name="type">Type which namespaces will be returned</param>
-        /// <returns>Valid namespaces for given method</returns>
+        /// <param name="type">Type which namespaces will be returned.</param>
+        /// <returns>Valid namespaces for given method.</returns>
         public static IEnumerable<string> GetImplicitNamespaces(TypeDescriptor type)
         {
             var implicitNamespaces = new HashSet<string>();
@@ -214,7 +219,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         #region Initialization routines
 
         /// <summary>
-        /// Initialize assembly
+        /// Initialize assembly.
         /// </summary>
         private void initializeAssembly()
         {
@@ -238,7 +243,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Hook handler that will recieve change events in project
+        /// Hook handler that will recieve change events in project.
         /// </summary>
         private void hookChangesHandler()
         {
@@ -255,7 +260,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Set references according to project referencies
+        /// Set references according to project referencies.
         /// </summary>
         private void initializeReferences()
         {
@@ -272,7 +277,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Add references to current assembly
+        /// Add references to current assembly.
         /// </summary>
         private void addReferences()
         {
@@ -295,9 +300,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Create <see cref="ComponentSearcher"/> with initialized event handlers
+        /// Create <see cref="ComponentSearcher" /> with initialized event handlers.
         /// </summary>
-        /// <returns>Created <see cref="ComponentSearcher"/></returns>
+        /// <returns>Created <see cref="ComponentSearcher" />.</returns>
         private ComponentSearcher createComponentSearcher()
         {
             var searcher = new ComponentSearcher(this, TypeServices);
@@ -307,9 +312,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Reports search progress to TypeSystem
+        /// Reports search progress to TypeSystem.
         /// </summary>
-        /// <param name="e">Name of currently processed namespace</param>
+        /// <param name="e">Name of currently processed namespace.</param>
         private void reportSearchProgress(CodeNamespace e)
         {
             ReportProgress(e.FullName);
@@ -320,9 +325,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         #region Changes handlers
 
         /// <summary>
-        /// Handler called for element that has been added
+        /// Handler called for element that has been added.
         /// </summary>
-        /// <param name="node">Affected element node</param>
+        /// <param name="node">Affected element node.</param>
         private void onAdd(ElementNode node)
         {
             var fullnames = GetFullNames(node.Element).ToArray();
@@ -338,9 +343,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Handler called for element that has been changed
+        /// Handler called for element that has been changed.
         /// </summary>
-        /// <param name="node">Affected element node</param>
+        /// <param name="node">Affected element node.</param>
         private void onChange(ElementNode node)
         {
             var fn = node.Element as CodeFunction;
@@ -361,9 +366,9 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Handler called for element that has been removed
+        /// Handler called for element that has been removed.
         /// </summary>
-        /// <param name="node">Affected element node</param>
+        /// <param name="node">Affected element node.</param>
         private void onRemove(ElementNode node)
         {
             var fullnames = node.GetTag("Names") as IEnumerable<string>;
@@ -378,7 +383,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Require discovering action after current transaction is completed
+        /// Require discovering action after current transaction is completed.
         /// </summary>
         private void requireDiscovering()
         {
@@ -386,7 +391,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Flush discovering of elements collected through changes handlers
+        /// Flush discovering of elements collected through changes handlers.
         /// </summary>
         private void flushDiscovering()
         {
@@ -413,6 +418,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
 
         #region Assembly provider implementation
 
+        /// <summary>
+        /// Force to load components - suppose that no other components from this assembly are registered.
+        /// <remarks>Can be called multiple times when changes in references are registered</remarks>.
+        /// </summary>
         /// <inheritdoc />
         protected override void loadComponents()
         {
@@ -422,18 +431,31 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             searcher.VisitProject(Project);
         }
 
+        /// <summary>
+        /// Gets the name of the assembly.
+        /// </summary>
+        /// <returns>Assembly name.</returns>
         /// <inheritdoc />
         protected override string getAssemblyName()
         {
             return _assemblyProject.Project.Name;
         }
 
+        /// <summary>
+        /// Gets the assembly full path.
+        /// </summary>
+        /// <returns>Assembly full path.</returns>
         /// <inheritdoc />
         protected override string getAssemblyFullPath()
         {
             return _assemblyProject.Project.FullName;
         }
 
+        /// <summary>
+        /// Gets the method generator.
+        /// </summary>
+        /// <param name="methodID">The method identifier.</param>
+        /// <returns>GeneratorBase.</returns>
         /// <inheritdoc />
         public override GeneratorBase GetMethodGenerator(MethodID methodID)
         {
@@ -445,6 +467,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             return item.Generator;
         }
 
+        /// <summary>
+        /// Gets the generic method generator.
+        /// </summary>
+        /// <param name="methodID">The method identifier.</param>
+        /// <param name="searchPath">The search path.</param>
+        /// <returns>GeneratorBase.</returns>
         /// <inheritdoc />
         public override GeneratorBase GetGenericMethodGenerator(MethodID methodID, PathInfo searchPath)
         {
@@ -455,12 +483,24 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             return item.Generator;
         }
 
+        /// <summary>
+        /// Creates the root iterator. That is used for
+        /// searching method definitions.
+        /// </summary>
+        /// <returns>SearchIterator.</returns>
         /// <inheritdoc />
         public override SearchIterator CreateRootIterator()
         {
             return new CodeElementIterator(this);
         }
 
+        /// <summary>
+        /// Gets the implementation.
+        /// </summary>
+        /// <param name="methodID">The method identifier.</param>
+        /// <param name="dynamicInfo">The dynamic information.</param>
+        /// <param name="alternativeImplementer">The alternative implementer.</param>
+        /// <returns>MethodID.</returns>
         /// <inheritdoc />
         public override MethodID GetImplementation(MethodID methodID, TypeDescriptor dynamicInfo, out TypeDescriptor alternativeImplementer)
         {
@@ -486,6 +526,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             return item.Info.MethodID;
         }
 
+        /// <summary>
+        /// Gets identifier of implementing method for given abstract method.
+        /// </summary>
+        /// <param name="methodID">The abstract method identifier.</param>
+        /// <param name="methodSearchPath">The method search path.</param>
+        /// <param name="implementingTypePath">The implementing type path.</param>
+        /// <param name="alternativeImplementer">The alternative implementer which can define requested method.</param>
+        /// <returns>Identifier of implementing method.</returns>
         /// <inheritdoc />
         public override MethodID GetGenericImplementation(MethodID methodID, PathInfo methodSearchPath, PathInfo implementingTypePath, out PathInfo alternativeImplementer)
         {
@@ -500,6 +548,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             return item.Info.MethodID;
         }
 
+        /// <summary>
+        /// Gets inheritance chain for type described by given path.
+        /// </summary>
+        /// <param name="typePath">The type path.</param>
+        /// <returns>InheritanceChain.</returns>
         /// <inheritdoc />
         public override InheritanceChain GetInheritanceChain(PathInfo typePath)
         {
@@ -525,10 +578,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         #region Method building helpers
 
         /// <summary>
-        /// Get all possible fullnames for given element
+        /// Get all possible fullnames for given element.
         /// </summary>
-        /// <param name="codeElement">Element which fullnames are requested</param>
-        /// <returns>Possible fullnames</returns>
+        /// <param name="codeElement">Element which fullnames are requested.</param>
+        /// <returns>Possible fullnames.</returns>
         protected IEnumerable<string> GetFullNames(CodeElement codeElement)
         {
             var elementFullname = TranslatePath(codeElement.FullName);
@@ -546,10 +599,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Generate possible names of given element
+        /// Generate possible names of given element.
         /// </summary>
-        /// <param name="element">Element which names will be generated</param>
-        /// <returns>Generated names</returns>
+        /// <param name="element">Element which names will be generated.</param>
+        /// <returns>Generated names.</returns>
         private HashSet<string> generatePossibleNames(CodeElement element)
         {
             _namesProvider.ReportedNames.Clear();
@@ -560,28 +613,30 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Find node of type specified by given typePathSignature
+        /// Find node of type specified by given typePathSignature.
         /// </summary>
-        /// <param name="typePathSignature">Path to type in signature form</param>
-        /// <returns>Found node if any, <c>null</c> otherwise</returns>
+        /// <param name="typePathSignature">Path to type in signature form.</param>
+        /// <returns>Found node if any, <c>null</c> otherwise.</returns>
         protected CodeType GetTypeNode(string typePathSignature)
         {
             return Searcher.Search(typePathSignature).FirstOrDefault() as CodeType;
         }
 
         /// <summary>
-        /// Get <see cref="MethodItem"/> for method described by given methodID
+        /// Get <see cref="MethodItem" /> for method described by given methodID.
         /// </summary>
-        /// <param name="methodID">Description of desired method</param>
-        /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>false</c> otherwise</returns>
+        /// <param name="methodID">Description of desired method.</param>
+        /// <returns><see cref="MethodItem" /> for given methodID specialized by genericPath if found, <c>false</c> otherwise.</returns>
         private MethodItem getMethodItem(MethodID methodID)
         {
             return getMethodItemFromGeneric(methodID, Naming.GetMethodPath(methodID));
         }
 
         /// <summary>
-        /// Create <see cref="InheritanceChain"/> enumeration from given typeNodes
+        /// Create <see cref="InheritanceChain" /> enumeration from given typeNodes.
         /// </summary>
+        /// <param name="typeNodes">The type nodes.</param>
+        /// <returns>IEnumerable&lt;InheritanceChain&gt;.</returns>
         private IEnumerable<InheritanceChain> createInheritanceChains(CodeElements typeNodes)
         {
             var chains = new List<InheritanceChain>();
@@ -597,10 +652,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
 
         /// <summary>
         /// Find nodes that can be base of methods with given signature
-        /// <remarks>Methods can be generated from <see cref="CodeVariable"/>, <see cref="CodeFunction"/>, <see cref="CodeProperty"/></remarks>
+        /// <remarks>Methods can be generated from <see cref="CodeVariable" />, <see cref="CodeFunction" />, <see cref="CodeProperty" /></remarks>.
         /// </summary>
-        /// <param name="methodPathSignature">Path to method in signature form</param>
-        /// <returns>Found methods</returns>
+        /// <param name="path">The path.</param>
+        /// <returns>Found methods.</returns>
         private IEnumerable<CodeElement> findNodesWithMatchingNames(PathInfo path)
         {
             VS.Log.Message("Searching method nodes for {0}", path.Signature);
@@ -627,10 +682,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Create <see cref="InheritanceChain"/> from given typeNode
+        /// Create <see cref="InheritanceChain" /> from given typeNode.
         /// </summary>
-        /// <param name="typeNode">Type node which inheritance chain will be created</param>
-        /// <returns>Created <see cref="InheritanceChain"/></returns>
+        /// <param name="typeNode">Type node which inheritance chain will be created.</param>
+        /// <returns>Created <see cref="InheritanceChain" />.</returns>
         private InheritanceChain createInheritanceChain(CodeType typeNode)
         {
             var subChains = new List<InheritanceChain>();
@@ -650,11 +705,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Build <see cref="MethodItem"/> from given generic methodNode
+        /// Build <see cref="MethodItem" /> from given generic methodNode.
         /// </summary>
-        /// <param name="methodNode">Node from which <see cref="MethodItem"/> is builded</param>
-        /// <param name="methodGenericPath">Arguments for generic method</param>
-        /// <returns>Builded <see cref="MethodItem"/></returns>
+        /// <param name="methodNode">Node from which <see cref="MethodItem" /> is builded.</param>
+        /// <param name="methodGenericPath">Arguments for generic method.</param>
+        /// <returns>Builded <see cref="MethodItem" />.</returns>
         private MethodItem buildGenericMethod(CodeElement methodNode, PathInfo methodGenericPath)
         {
             var name = methodGenericPath.LastPartSignature;
@@ -670,12 +725,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
 
 
         /// <summary>
-        /// Get <see cref="MethodItem"/> for generic method described by given methodID with specialization according to
-        /// generic Path
+        /// Get <see cref="MethodItem" /> for generic method described by given methodID with specialization according to
+        /// generic Path.
         /// </summary>
-        /// <param name="methodID">Description of desired method</param>
-        /// <param name="methodGenericPath">Method path specifiing generic substitutions</param>
-        /// <returns><see cref="MethodItem"/> for given methodID specialized by genericPath if found, <c>null</c> otherwise</returns>
+        /// <param name="methodID">Description of desired method.</param>
+        /// <param name="methodGenericPath">Method path specifiing generic substitutions.</param>
+        /// <returns><see cref="MethodItem" /> for given methodID specialized by genericPath if found, <c>null</c> otherwise.</returns>
         private MethodItem getMethodItemFromGeneric(MethodID methodID, PathInfo methodGenericPath)
         {
             try

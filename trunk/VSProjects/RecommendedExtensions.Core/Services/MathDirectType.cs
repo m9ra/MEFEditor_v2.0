@@ -17,11 +17,23 @@ namespace RecommendedExtensions.Core.Services
 
     delegate UnaryExpression UnaryOperator(ParameterExpression op);
 
+    /// <summary>
+    /// <see cref="DirectTypeDefinition" /> implementation that enhance given type about mathematical operators
+    /// with naming expected by <see cref="MEFEditor.TypeSystem" />. Operators are implemented by strongly typed
+    /// native methods because of performance purposes.
+    /// </summary>
+    /// <typeparam name="T">The direct type.</typeparam>
     public class MathDirectType<T> : DirectTypeDefinition<T>
             where T : IComparable
     {
+        /// <summary>
+        /// The direct type that is represented by current direct type definition.
+        /// </summary>
         readonly Type directType;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MathDirectType{T}" /> class.
+        /// </summary>
         public MathDirectType()
         {
             directType = typeof(T);
@@ -30,6 +42,9 @@ namespace RecommendedExtensions.Core.Services
             addDirectComparing();
         }
 
+        /// <summary>
+        /// Add direct methods for math operators.
+        /// </summary>
         private void addDirectMath()
         {
             addBinaryOperator("op_Addition", Expression.Add);
@@ -48,6 +63,9 @@ namespace RecommendedExtensions.Core.Services
             addUnaryOperator("op_Addition", Expression.UnaryPlus);
         }
 
+        /// <summary>
+        /// Adds direct methods with comparisons.
+        /// </summary>
         private void addDirectComparing()
         {
             addBinaryPredicate("op_LessThan", Expression.LessThan);
@@ -58,6 +76,11 @@ namespace RecommendedExtensions.Core.Services
 
         #region Utility methods
 
+        /// <summary>
+        /// Adds the binary operator.
+        /// </summary>
+        /// <param name="methodName">Name of the operator method.</param>
+        /// <param name="binaryOperator">The binary operator.</param>
         private void addBinaryOperator(string methodName, BinaryOperator binaryOperator)
         {
             DirectMethod directOperator;
@@ -75,6 +98,11 @@ namespace RecommendedExtensions.Core.Services
         }
 
 
+        /// <summary>
+        /// Adds the binary predicate.
+        /// </summary>
+        /// <param name="predicateName">Name of the predicate.</param>
+        /// <param name="binaryOperator">The binary operator.</param>
         private void addBinaryPredicate(string predicateName, BinaryOperator binaryOperator)
         {
             DirectMethod directOperator;
@@ -91,18 +119,33 @@ namespace RecommendedExtensions.Core.Services
             addBinaryPredicate(predicateName, directOperator);
         }
 
+        /// <summary>
+        /// Adds the binary operator.
+        /// </summary>
+        /// <param name="methodName">Name of the operator method.</param>
+        /// <param name="directOperator">The direct operator.</param>
         private void addBinaryOperator(string methodName, DirectMethod directOperator)
         {
             var method = binaryInfo(methodName, TypeDescriptor.Create<T>());
             AddMethod(directOperator, method);
         }
 
+        /// <summary>
+        /// Adds the binary predicate.
+        /// </summary>
+        /// <param name="methodName">Name of the operator method.</param>
+        /// <param name="directOperator">The direct operator.</param>
         private void addBinaryPredicate(string methodName, DirectMethod directOperator)
         {
             var method = binaryInfo(methodName, TypeDescriptor.Create<bool>());
             AddMethod(directOperator, method);
         }
 
+        /// <summary>
+        /// Adds the unary operator.
+        /// </summary>
+        /// <param name="methodName">Name of the operator method.</param>
+        /// <param name="unaryOperator">The unary operator.</param>
         private void addUnaryOperator(string methodName, UnaryOperator unaryOperator)
         {
             DirectMethod directOperator;
@@ -121,6 +164,11 @@ namespace RecommendedExtensions.Core.Services
         }
 
 
+        /// <summary>
+        /// Generates the direct binary operator.
+        /// </summary>
+        /// <param name="binaryOperator">The binary operator.</param>
+        /// <returns>DirectMethod.</returns>
         private DirectMethod generateDirectBinaryOperator(BinaryOperator binaryOperator)
         {
             var param1 = Expression.Parameter(typeof(T), "op1");
@@ -132,6 +180,11 @@ namespace RecommendedExtensions.Core.Services
             );
         }
 
+        /// <summary>
+        /// Generates the direct binary predicate.
+        /// </summary>
+        /// <param name="binaryOperator">The binary operator.</param>
+        /// <returns>DirectMethod.</returns>
         private DirectMethod generateDirectBinaryPredicate(BinaryOperator binaryOperator)
         {
             var param1 = Expression.Parameter(typeof(T), "op1");
@@ -143,6 +196,11 @@ namespace RecommendedExtensions.Core.Services
             );
         }
 
+        /// <summary>
+        /// Generates the direct unary operator.
+        /// </summary>
+        /// <param name="unaryOperator">The unary operator.</param>
+        /// <returns>DirectMethod.</returns>
         private DirectMethod generateDirectUnaryOperator(UnaryOperator unaryOperator)
         {
             var param1 = Expression.Parameter(typeof(T), "op");
@@ -153,6 +211,14 @@ namespace RecommendedExtensions.Core.Services
             );
         }
 
+        /// <summary>
+        /// Generates the direct binary operator.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the t result.</typeparam>
+        /// <param name="mathExpression">The math expression.</param>
+        /// <param name="param1">The param1.</param>
+        /// <param name="param2">The param2.</param>
+        /// <returns>DirectMethod.</returns>
         private DirectMethod generateDirectBinary<TResult>(BinaryExpression mathExpression, ParameterExpression param1, ParameterExpression param2)
         {
             var directOperator = Expression.Lambda<Func<T, T, TResult>>(
@@ -172,6 +238,12 @@ namespace RecommendedExtensions.Core.Services
             };
         }
 
+        /// <summary>
+        /// Generates the math operator.
+        /// </summary>
+        /// <param name="mathExpression">The math expression.</param>
+        /// <param name="param">The parameter.</param>
+        /// <returns>DirectMethod.</returns>
         private DirectMethod generateMathOperator(UnaryExpression mathExpression, ParameterExpression param)
         {
             var directOperator = Expression.Lambda<Func<T, T>>(
@@ -190,6 +262,12 @@ namespace RecommendedExtensions.Core.Services
             };
         }
 
+        /// <summary>
+        /// Generate binary info for specified method.
+        /// </summary>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="resultInfo">The result information.</param>
+        /// <returns>TypeMethodInfo.</returns>
         private TypeMethodInfo binaryInfo(string methodName, TypeDescriptor resultInfo)
         {
             var thisInfo = TypeDescriptor.Create<T>();
@@ -202,6 +280,11 @@ namespace RecommendedExtensions.Core.Services
         }
 
 
+        /// <summary>
+        /// Generate unary info for specified method.
+        /// </summary>
+        /// <param name="methodName">Name of the method.</param>
+        /// <returns>TypeMethodInfo.</returns>
         private TypeMethodInfo unaryOperatorInfo(string methodName)
         {
             var thisInfo = TypeDescriptor.Create<T>();

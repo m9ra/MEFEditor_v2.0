@@ -12,21 +12,44 @@ using System.Runtime.InteropServices;
 namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
 {
     /// <summary>
-    /// Used from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
+    /// Taken from answer at: http://stackoverflow.com/questions/14243284/how-can-i-retrieve-string-literals-using-reflection
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct ILInstruction
+    struct ILInstruction
     {
+        /// <summary>
+        /// The op code.
+        /// </summary>
         public readonly OpCode OpCode; // 40.  56-64.  The entire structure is very big.  maybe do array lookup for opcode instead.
 
+        /// <summary>
+        /// The raw data.
+        /// </summary>
         public readonly byte[] RawData;
 
+        /// <summary>
+        /// The data.
+        /// </summary>
         public readonly object Data;
 
+        /// <summary>
+        /// The address.
+        /// </summary>
         public readonly int Address;
 
+        /// <summary>
+        /// The index.
+        /// </summary>
         public readonly int Index;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ILInstruction" /> struct.
+        /// </summary>
+        /// <param name="code">The code.</param>
+        /// <param name="instructionRawData">The instruction raw data.</param>
+        /// <param name="instructionAddress">The instruction address.</param>
+        /// <param name="instructionData">The instruction data.</param>
+        /// <param name="index">The index.</param>
         internal ILInstruction(OpCode code, byte[] instructionRawData, int instructionAddress, object instructionData, int index)
         {
             this.OpCode = code;
@@ -39,7 +62,7 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
 
 
         /// <summary>
-        /// Gets the value as integer
+        /// Gets the value as integer.
         /// </summary>
         /// <value>The data value.</value>
         public int DataValue
@@ -80,11 +103,9 @@ namespace RecommendedExtensions.Core.Languages.CIL.ILAnalyzer
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             StringBuilder builder = new StringBuilder();

@@ -12,66 +12,77 @@ namespace MEFEditor.TypeSystem
 {
     /// <summary>
     /// Class used for describing methods within whole TypeSystem. Usable for parsers, compilers,...
-    /// 
-    /// All Assembly providers has to produce this kind for info for every requested method
+    /// All Assembly providers has to produce this kind for info for every requested method.
     /// </summary>
     public class TypeMethodInfo
     {
         /// <summary>
-        /// Name of described method (without generic arguments)
+        /// Name of described method (without generic arguments).
         /// </summary>
         public readonly string MethodName;
 
         /// <summary>
-        /// Parameters defined for described method
+        /// Parameters defined for described method.
         /// </summary>
         public readonly ParameterTypeInfo[] Parameters;
 
         /// <summary>
-        /// Type arguments that are contained within method
+        /// Type arguments that are contained within method.
         /// </summary>
         public readonly TypeDescriptor[] MethodTypeArguments;
 
         /// <summary>
-        /// Type where described method is declared
+        /// Type where described method is declared.
         /// </summary>
         public readonly TypeDescriptor DeclaringType;
 
         /// <summary>
-        /// Return type of described method
+        /// Return type of described method.
         /// </summary>
         public readonly TypeDescriptor ReturnType;
 
         /// <summary>
-        /// Determine that method is static (shared through application domain)
+        /// Determine that method is static (shared through application domain).
         /// </summary>
         public readonly bool IsStatic;
 
         /// <summary>
-        /// Determine that method expects "this object"
+        /// Determine that method expects "this object".
         /// </summary>
+        /// <value><c>true</c> if this instance has this; otherwise, <c>false</c>.</value>
         public bool HasThis { get { return !IsStatic; } }
 
         /// <summary>
-        /// Determine that method cannot be invoked directly
+        /// Determine that method cannot be invoked directly.
         /// </summary>
         public readonly bool IsAbstract;
 
         /// <summary>
-        /// Determine that method has generic parameters
+        /// Determine that method has generic parameters.
         /// </summary>
         public readonly bool HasGenericParameters;
 
         /// <summary>
-        /// ID for described method
+        /// ID for described method.
         /// </summary>
         public readonly MethodID MethodID;
 
         /// <summary>
-        /// Path for described method
+        /// Path for described method.
         /// </summary>
         public readonly PathInfo Path;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeMethodInfo"/> class.
+        /// </summary>
+        /// <param name="declaringType">Type declaring the method.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="returnType">Type of the return value.</param>
+        /// <param name="parameters">The method's parameters.</param>
+        /// <param name="isStatic">if set to <c>true</c> method is static.</param>
+        /// <param name="methodTypeArguments">The method type arguments.</param>
+        /// <param name="isAbstract">if set to <c>true</c> method is abstract.</param>
+        /// <exception cref="System.ArgumentNullException">declaringType</exception>
         public TypeMethodInfo(TypeDescriptor declaringType, string methodName, TypeDescriptor returnType, ParameterTypeInfo[] parameters, bool isStatic, TypeDescriptor[] methodTypeArguments, bool isAbstract = false)
         {
             if (declaringType == null)
@@ -102,10 +113,10 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Creates type method info from givem method info
+        /// Creates type method info from givem method info.
         /// </summary>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="method">The method.</param>
+        /// <returns>TypeMethodInfo.</returns>
         public static TypeMethodInfo Create(MethodInfo method)
         {
             var paramsInfo = getParametersInfo(method);
@@ -124,10 +135,11 @@ namespace MEFEditor.TypeSystem
         #region API for deriving generic methods
 
         /// <summary>
-        /// Creates generic method info from current definition according to path
+        /// Creates generic method info from current definition according to path.
         /// </summary>
-        /// <param name="path">Path where parameters substitutions are defined</param>
-        /// <returns>Maked method info</returns>
+        /// <param name="path">Path where parameters substitutions are defined.</param>
+        /// <returns>Maked method info.</returns>
+        /// <exception cref="System.NotSupportedException">Cannot make generic method from incompatible path info</exception>
         public TypeMethodInfo MakeGenericMethod(PathInfo path)
         {
             if (path.ShortSignature != Path.ShortSignature)
@@ -147,10 +159,10 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
-        /// Creates generic method info from current definition according to given translations and path
+        /// Creates generic method info from current definition according to given translations and path.
         /// </summary>
-        /// <param name="translations">Translations defining generic parameters substitutions</param>
-        /// <returns>Maked method info</returns>
+        /// <param name="translations">Translations defining generic parameters substitutions.</param>
+        /// <returns>Maked method info.</returns>
         public TypeMethodInfo MakeGenericMethod(Dictionary<string, string> translations)
         {
             var translatedName = TypeDescriptor.TranslatePath(MethodName, translations);
@@ -181,10 +193,10 @@ namespace MEFEditor.TypeSystem
         #endregion
 
         /// <summary>
-        /// Get parameters info for given method base
+        /// Get parameters info for given method base.
         /// </summary>
-        /// <param name="method">Base method which parameters will be created</param>
-        /// <returns>Created parameters info</returns>
+        /// <param name="method">Base method which parameters will be created.</param>
+        /// <returns>Created parameters info.</returns>
         private static ParameterTypeInfo[] getParametersInfo(MethodBase method)
         {
             var paramsInfo = new List<ParameterTypeInfo>();
@@ -198,6 +210,11 @@ namespace MEFEditor.TypeSystem
             return paramsInfo.ToArray();
         }
 
+        /// <summary>
+        /// Gets the type arguments of method.
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <returns>TypeDescriptor[].</returns>
         private static TypeDescriptor[] getTypeArguments(MethodInfo method)
         {
             var result = new List<TypeDescriptor>();
@@ -210,7 +227,10 @@ namespace MEFEditor.TypeSystem
             return result.ToArray();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             return "[TypeMethodInfo]" + MethodID.MethodString;

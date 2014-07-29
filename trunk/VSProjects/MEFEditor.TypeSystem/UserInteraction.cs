@@ -10,10 +10,14 @@ using MEFEditor.Drawing;
 
 namespace MEFEditor.TypeSystem
 {
+    /// <summary>
+    /// Singleton used for forwarding user's IO between <see cref="MEFEditor.Drawing"/> library nad 
+    /// <see cref="MEFEditor.TypeSystem.Runtime.RuntimeTypeDefinition"/> and their edits.
+    /// </summary>
     public static class UserInteraction
     {
         /// <summary>
-        /// Name of edit used for accepting by drop edit
+        /// Name of edit used for accepting by drop edit.
         /// </summary>
         public static readonly string AcceptEditName = ".accept";
 
@@ -24,8 +28,9 @@ namespace MEFEditor.TypeSystem
 
         /// <summary>
         /// Instance that is currently dragged.
-        /// <remarks>Setter is required to be public for testing purposes</remarks>
+        /// <remarks>Setter is required to be public for testing purposes</remarks>.
         /// </summary>
+        /// <value>The dragged instance.</value>
         public static Instance DraggedInstance { get; set; }
 
         /// <summary>
@@ -37,7 +42,7 @@ namespace MEFEditor.TypeSystem
         public static event Action OnResourceDisposing;
 
         /// <summary>
-        /// Fire events for resource disposing 
+        /// Fire events for resource disposing.
         /// </summary>
         public static void DisposeResources()
         {

@@ -9,16 +9,22 @@ using RecommendedExtensions.Core.Languages.CSharp.Primitives;
 
 namespace RecommendedExtensions.Core.Languages.CSharp
 {
+    /// <summary>
+    /// C# parser that produce <see cref="CodeNode"/> abstract syntax tree.
+    /// <remarks>Semantic (like type fullnames or string literal escaping) of language is not resolved by this parser.</remarks>
+    /// </summary>
     public class SyntaxParser
     {
+        /// <summary>
+        /// The C# syntax definition.
+        /// </summary>
         CSharpSyntax _language;
 
         /// <summary>
-        /// Parse given invoke info.
+        /// Parse given C# source into <see cref="CodeNode"/> representation.
         /// </summary>
-        /// <param name="services">Available parsing services.</param>
-        /// <param name="invokeInfo">Instructions to parse.</param>
-        /// <returns>Syntax abstract tree instructions.</returns>
+        /// <param name="source">The source that will be parsed.</param>
+        /// <returns>Parsed abstract syntax tree.</returns>
         public CodeNode Parse(Source source)
         {
             var lexer = new Lexer(source);
@@ -27,6 +33,14 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             return _getTree();
         }
 
+        /// <summary>
+        /// Gets the source code from given rawCode. Raw code is used
+        /// for parsing pre body routines, like calling base or this constructors.
+        /// Pre body is trailed by : and delimited by \0 character from code.
+        /// </summary>
+        /// <param name="rawCode">The raw code.</param>
+        /// <param name="preCode">The pre code.</param>
+        /// <returns>Source code.</returns>
         public string GetSourceCode(string rawCode, out string preCode)
         {
             preCode = null;
@@ -45,9 +59,10 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Usporada podle priorit jednotlive Node ktere vezme z getNode
-        /// </summary>        
-        /// <returns></returns>
+        /// Build node tree from operands and operators while resolving its priorities.
+        /// </summary>
+        /// <returns>Built tree.</returns>
+        /// <exception cref="System.NotSupportedException">newNode cannot be null</exception>
         private CodeNode _getTree()
         {
             var operands = new Stack<CodeNode>();
@@ -75,7 +90,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
 
-                //add operand on the stack - behind operand we excpect postfix/binary operator
+                //add operand on the stack - behind operand we expect postfix/binary operator
                 if (newNode.NodeType != NodeTypes.binaryOperator)
                 {
                     _expectPostfix = true;
@@ -116,12 +131,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// repair newNode if prefix/postfix operator, according to expect prefix/postfix context
+        /// repair newNode if prefix/postfix operator, according to expect prefix/postfix context.
         /// </summary>
-        /// <param name="newNode"></param>
-        /// <param name="operands"></param>
-        /// <param name="expectPrefix"></param>
-        /// <param name="expectPostfix"></param>
+        /// <param name="newNode">The new node.</param>
+        /// <param name="operands">The operands.</param>
+        /// <param name="expectPrefix">if set to <c>true</c> prefix operator is expected.</param>
+        /// <param name="expectPostfix">if set to <c>true</c> postfix operator is expected.</param>
         private void operatorContext(CodeNode newNode, Stack<CodeNode> operands, bool expectPrefix, bool expectPostfix)
         {
             bool shouldRepair = false;
@@ -154,14 +169,20 @@ namespace RecommendedExtensions.Core.Languages.CSharp
             newNode.IsTreeEnding |= argument.IsTreeEnding;
         }
 
+        /// <summary>
+        /// Determines whether the specified node1 has lesser priority that node2.
+        /// </summary>
+        /// <param name="node1">The node1.</param>
+        /// <param name="node2">The node2.</param>
+        /// <returns><c>true</c> if the specified node1 is lesser; otherwise, <c>false</c>.</returns>
         private bool isLesser(CodeNode node1, CodeNode node2)
         {
             return _language.HasLesserPriority(node1, node2);
         }
 
 
-        /// <summary>        
-        /// Satisfy given operator node. Satisfed operator is added into operands stack.        
+        /// <summary>
+        /// Satisfy given operator node. Satisfied operator is added into operands stack.
         /// </summary>
         /// <param name="operatorNode">Operator to satisfy.</param>
         /// <param name="operands">Operands used for satisfying.</param>
@@ -169,7 +190,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         {
             var arity = _language.Arity(operatorNode);
             if (operands.Count < arity)
-                throw CSharpSyntax.ParsingException(operatorNode, "There aren´t enough operands for the operator {0}", operatorNode.Value);
+                throw CSharpSyntax.ParsingException(operatorNode, "There aren't enough operands for the operator {0}", operatorNode.Value);
 
             var reverseStack = new Stack<CodeNode>();
 

@@ -23,17 +23,17 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
     public delegate void NavigationRequestEvent(int offset);
 
     /// <summary>
-    /// Activation describing method that could be parsed
+    /// Activation describing method that could be parsed.
     /// </summary>
     public class ParsingActivation
     {
         /// <summary>
-        /// Source code of parsed method
+        /// Source code of parsed method.
         /// </summary>
         internal readonly string SourceCode;
 
         /// <summary>
-        /// <see cref="TypeMethodInfo"/> describing generated method
+        /// <see cref="TypeMethodInfo" /> describing generated method.
         /// </summary>
         internal readonly TypeMethodInfo Method;
 
@@ -44,37 +44,48 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         internal readonly IEnumerable<string> GenericParameters;
 
         /// <summary>
-        /// Namespaces that are available for current method
+        /// Namespaces that are available for current method.
         /// </summary>
         internal readonly IEnumerable<string> Namespaces;
 
         /// <summary>
-        /// Determine that method has to be compiled inline 
+        /// Determine that method has to be compiled inline.
         /// </summary>
+        /// <value><c>true</c> if this instance is inline; otherwise, <c>false</c>.</value>
         internal bool IsInline { get { return Method.MethodName == InlineMethodName; } }
 
         /// <summary>
-        /// Event fired whenever change on this source is commited
+        /// Event fired whenever change on this source is committed.
         /// </summary>
         public event SourceChangeCommitedEvent SourceChangeCommited;
 
         /// <summary>
-        /// Event fired whenever navigation request is detected
+        /// Event fired whenever navigation request is detected.
         /// </summary>
         public event NavigationRequestEvent NavigationRequested;
 
         /// <summary>
-        /// Name for methods that will be treated as inline ones by compiler
+        /// Name for methods that will be treated as inline ones by compiler.
         /// </summary>
         public static readonly string InlineMethodName = "#inline";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParsingActivation" /> class.
+        /// </summary>
+        /// <param name="sourceCode">The source code.</param>
+        /// <param name="method">The method.</param>
+        /// <param name="genericParameters">The generic parameters.</param>
+        /// <param name="namespaces">The namespaces.</param>
+        /// <exception cref="System.ArgumentNullException">genericParameters
+        /// or
+        /// method</exception>
         public ParsingActivation(string sourceCode, TypeMethodInfo method, IEnumerable<string> genericParameters, IEnumerable<string> namespaces = null)
         {
             /*  if (sourceCode == null)
                   throw new ArgumentNullException("sourceCode");*/
 
             if (genericParameters == null)
-                throw new ArgumentNullException("genericParameterrs");
+                throw new ArgumentNullException("genericParameters");
 
             if (method == null)
                 throw new ArgumentNullException("method");
@@ -93,20 +104,20 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         }
 
         /// <summary>
-        /// Method for reporting commits on represented source code
+        /// Method for reporting commits on represented source code.
         /// </summary>
-        /// <param name="commitedSource">Code that has been commited</param>
-        /// <param name="requiredNamespaces">Namespaces which presence is required</param>
-        internal void OnCommited(string commitedSource, IEnumerable<string> requiredNamespaces)
+        /// <param name="committedSource">Code that has been committed.</param>
+        /// <param name="requiredNamespaces">Namespaces which presence is required.</param>
+        internal void OnCommited(string committedSource, IEnumerable<string> requiredNamespaces)
         {
             if (SourceChangeCommited != null)
-                SourceChangeCommited(commitedSource, requiredNamespaces);
+                SourceChangeCommited(committedSource, requiredNamespaces);
         }
 
         /// <summary>
-        /// Method for reporting navigation requests
+        /// Method for reporting navigation requests.
         /// </summary>
-        /// <param name="offset">Offset of navigation target</param>
+        /// <param name="offset">Offset of navigation target.</param>
         internal void OnNavigated(int offset)
         {
             if (NavigationRequested != null)
