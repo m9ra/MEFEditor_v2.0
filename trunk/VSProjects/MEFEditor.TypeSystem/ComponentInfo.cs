@@ -81,6 +81,11 @@ namespace MEFEditor.TypeSystem
     public class ComponentInfo
     {
         /// <summary>
+        /// Names on that component validity depends.
+        /// </summary>
+        public readonly string[] DependencyNames;
+
+        /// <summary>
         /// Type of component.
         /// </summary>
         public readonly InstanceInfo ComponentType;
@@ -106,7 +111,7 @@ namespace MEFEditor.TypeSystem
         public readonly CompositionPoint[] CompositionPoints;
 
         /// <summary>
-        /// Constructor marked as importing constructor, or paramless constructor.
+        /// Constructor marked as importing constructor, or param less constructor.
         /// </summary>
         public readonly MethodID ImportingConstructor;
 
@@ -133,6 +138,30 @@ namespace MEFEditor.TypeSystem
             Imports = imports;
             ImportingConstructor = importingCtor;
             CompositionPoints = compositionPoints;
+
+            //find dependency names
+            var names = new HashSet<string>();
+            names.Add(ComponentType.TypeName);
+            foreach (var export in Exports)
+            {
+                names.Add(export.Contract);
+                names.Add(export.ExportType.TypeName);
+            }
+
+            foreach (var export in SelfExports)
+            {
+                names.Add(export.Contract);
+                names.Add(export.ExportType.TypeName);
+            }
+
+            foreach (var import in Imports)
+            {
+                names.Add(import.Contract);
+                names.Add(import.ImportTypeInfo.ImportType.TypeName);
+                names.Add(import.ImportTypeInfo.ItemType.TypeName);
+            }
+
+            DependencyNames = names.ToArray();
         }
 
         /// <summary>

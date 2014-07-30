@@ -109,6 +109,19 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
+        /// Unloads assembly with specified key.
+        /// </summary>
+        public void Unload(object key)
+        {
+            var assemblyProvider=_manager.FindLoadedAssemblyProvider(key);
+            if(assemblyProvider==null)
+                //there is nothing to do
+                return;
+
+            _manager.Unload(assemblyProvider);
+        }
+
+        /// <summary>
         /// Get <see cref="ComponentInfo" /> for given <see cref="InstanceInfo" />.
         /// </summary>
         /// <param name="instanceInfo"><see cref="InstanceInfo" /> which defines type of component.</param>
@@ -235,5 +248,6 @@ namespace MEFEditor.TypeSystem
         }
 
         #endregion
+
     }
 }

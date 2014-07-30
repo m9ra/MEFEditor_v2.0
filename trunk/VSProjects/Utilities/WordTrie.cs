@@ -72,6 +72,14 @@ namespace Utilities
         }
 
         /// <summary>
+        /// Clears all data stored in instance.
+        /// </summary>
+        public void Clear()
+        {
+            _root.Clear();
+        }
+
+        /// <summary>
         /// Gets node for given key.
         /// </summary>
         /// <param name="key">The key.</param>

@@ -34,7 +34,7 @@ namespace MEFEditor.TestConsole
         /// Test case from text of master thesis.
         /// </summary>
         /// <returns>Testing assembly where test case is defined.</returns>
-        static internal TestingAssembly TestExtensions()
+        static internal TestingAssembly TestExtensions_FromMasterThesis()
         {
             return AssemblyUtils.Run(@"
                 var export=new SimpleStringExport();

@@ -15,96 +15,110 @@ using MEFEditor.TypeSystem.Transactions;
 namespace MEFEditor.TypeSystem.Core
 {
     /// <summary>
+    /// Event handler used for registering invalidation through type system.
+    /// </summary>
+    /// <param name="invalidatePrefix">Prefix that has been invalidated.</param>
+    public delegate void NamePrefixInvalidation(string invalidatePrefix);
+
+    /// <summary>
     /// Representation of AppDomain, that handle loading/unloading, type resolving and components. Is topmost manager
-    /// for TypeSystem services
+    /// for TypeSystem services.
     /// </summary>
     class AssembliesManager
     {
         /// <summary>
-        /// Assemblies that are currently loaded
+        /// Assemblies that are currently loaded.
         /// </summary>
         private readonly AssembliesStorage _assemblies;
 
         /// <summary>
-        /// Stack for keeping correct ordering on system transactions
+        /// Stack for keeping correct ordering on system transactions.
         /// </summary>
         private readonly Stack<Transaction> _systemTransactions = new Stack<Transaction>();
 
         /// <summary>
-        /// Transaction used when interpreting is running
+        /// Transaction used when interpreting is running.
         /// </summary>
         private Transaction _interpetingTransaction;
 
         /// <summary>
-        /// Components indexed by their defining assemblies
+        /// Components indexed by their defining assemblies.
         /// </summary>
         private readonly MultiDictionary<AssemblyProvider, ComponentInfo> _assemblyComponents = new MultiDictionary<AssemblyProvider, ComponentInfo>();
 
         /// <summary>
-        /// Components indexed by defining types
+        /// Components indexed by defining types.
         /// </summary>
         private readonly Dictionary<InstanceInfo, ComponentInfo> _components = new Dictionary<InstanceInfo, ComponentInfo>();
 
         /// <summary>
-        /// Cache used for storing method generators
+        /// Cache used for storing method generators.
         /// </summary>
         internal readonly MethodsCache Cache = new MethodsCache();
 
         /// <summary>
-        /// Here are managed all <see cref="Transaction"/> objects
+        /// Here are managed all <see cref="Transaction" /> objects.
         /// </summary>
         internal readonly TransactionManager Transactions = new TransactionManager();
 
         /// <summary>
-        /// Loader that is used for creating assemblies
+        /// Loader that is used for creating assemblies.
         /// </summary>
         internal readonly AssemblyLoader Loader;
 
         /// <summary>
-        /// Settings available fur current AppDomain
+        /// Settings available fur current AppDomain.
         /// </summary>
         internal readonly MachineSettings Settings;
 
         /// <summary>
-        /// Event fired whenever new component is added
+        /// Event fired whenever new component is added.
         /// </summary>
         internal event ComponentEvent ComponentAdded;
 
         /// <summary>
-        /// Event fired whenever component is removed
+        /// Event fired whenever component is removed.
         /// </summary>
         internal event ComponentEvent ComponentRemoved;
 
         /// <summary>
-        /// Event fired whenever new assembly is added into AppDomain
+        /// Event fired whenever new assembly is added into AppDomain.
         /// </summary>
         internal event AssemblyEvent AssemblyAdded;
 
         /// <summary>
-        /// Event fired whenever assembly is removed from AppDomain
+        /// Event fired whenever assembly is removed from AppDomain.
         /// </summary>
         internal event AssemblyEvent AssemblyRemoved;
 
         /// <summary>
-        /// Enumeration of all available components
+        /// Event fired whenever some name prefix is invalidated.
         /// </summary>
+        internal event NamePrefixInvalidation NameInvalidated;
+
+        /// <summary>
+        /// Enumeration of all available components.
+        /// </summary>
+        /// <value>The components.</value>
         internal IEnumerable<ComponentInfo> Components { get { return _components.Values; } }
 
         /// <summary>
-        /// All loaded assemblies
+        /// All loaded assemblies.
         /// </summary>
+        /// <value>The assemblies.</value>
         public IEnumerable<AssemblyProvider> Assemblies { get { return _assemblies.Providers; } }
 
         /// <summary>
-        /// Runtime used by current AppDomain
+        /// Runtime used by current AppDomain.
         /// </summary>
+        /// <value>The runtime.</value>
         internal RuntimeAssembly Runtime { get { return Settings.Runtime; } }
 
         /// <summary>
-        /// Initialize new instance of <see cref="AssembliesManager"/> object
+        /// Initialize new instance of <see cref="AssembliesManager" /> object.
         /// </summary>
-        /// <param name="loader">Loader that is used for loading of assemblies</param>
-        /// <param name="settings">Settings used for interpretation</param>
+        /// <param name="loader">Loader that is used for loading of assemblies.</param>
+        /// <param name="settings">Settings used for interpretation.</param>
         internal AssembliesManager(AssemblyLoader loader, MachineSettings settings)
         {
             Settings = settings;
@@ -129,9 +143,9 @@ namespace MEFEditor.TypeSystem.Core
         #region Workflow definitions
 
         /// <summary>
-        /// Immediately (not within after action) reload assemblies that are affected by given assembly key
+        /// Immediately (not within after action) reload assemblies that are affected by given assembly key.
         /// </summary>
-        /// <param name="key">Key that is affecting assemblies</param>
+        /// <param name="key">Key that is affecting assemblies.</param>
         private void reloadAffectedAssemblies(object key)
         {
             foreach (var affectedAssembly in _assemblies.GetDependantAssemblies(key))
@@ -142,7 +156,7 @@ namespace MEFEditor.TypeSystem.Core
         /// Force reloading of given assembly (probably because of invalidation of some its references)
         /// or because it hasn't been loaded yet.
         /// </summary>
-        /// <param name="assembly">Reloaded assembly</param>
+        /// <param name="assembly">Reloaded assembly.</param>
         private void reloadAssembly(AssemblyProvider assembly)
         {
             invalidateDefinedComponents(assembly);
@@ -150,9 +164,9 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Force invalidation of all components that are defined within given assembly
+        /// Force invalidation of all components that are defined within given assembly.
         /// </summary>
-        /// <param name="assembly">Assembly which components will be invalidated</param>
+        /// <param name="assembly">Assembly which components will be invalidated.</param>
         private void invalidateDefinedComponents(AssemblyProvider assembly)
         {
             var componentsCopy = GetComponents(assembly).ToArray();
@@ -163,10 +177,10 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Force invalidation of given component
+        /// Force invalidation of given component.
         /// </summary>
-        /// <param name="definingAssembly">Assembly where component is defined</param>
-        /// <param name="component">Invalidated component</param>
+        /// <param name="definingAssembly">Assembly where component is defined.</param>
+        /// <param name="component">Invalidated component.</param>
         private void invalidateComponent(AssemblyProvider definingAssembly, ComponentInfo component)
         {
             //behaves same as real removing from assembly provider
@@ -174,18 +188,18 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Force loading components from given assembly
+        /// Force loading components from given assembly.
         /// </summary>
-        /// <param name="assembly">Assembly which components will be loaded</param>
+        /// <param name="assembly">Assembly which components will be loaded.</param>
         private void loadComponents(AssemblyProvider assembly)
         {
             assembly.LoadComponents();
         }
 
         /// <summary>
-        /// Completely remove assembly - probably it has been invalidated
+        /// Completely remove assembly - probably it has been invalidated.
         /// </summary>
-        /// <param name="assembly">Removed assembly</param>
+        /// <param name="assembly">Removed assembly.</param>
         private void removeAssembly(AssemblyProvider assembly)
         {
             //this will cause unregister events on assembly
@@ -197,30 +211,21 @@ namespace MEFEditor.TypeSystem.Core
         #region Workflow transaction definitions
 
         /// <summary>
-        /// Add reload assembly action to after actions of current transaction
+        /// Add reload assembly action to after actions of current transaction.
         /// </summary>
-        /// <param name="assembly">Assembly that will be reloaded</param>
+        /// <param name="assembly">Assembly that will be reloaded.</param>
         private void after_reloadAssembly(AssemblyProvider assembly)
         {
             addAfterAction(() => reloadAssembly(assembly), "ReloadAssembly", includedByReload, assembly);
         }
 
         /// <summary>
-        /// Add components load action to after actions of current transaction
+        /// Add after action to current transaction.
         /// </summary>
-        /// <param name="assembly">Assembly which components will be loaded</param>
-        private void after_loadComponents(AssemblyProvider assembly)
-        {
-            addAfterAction(() => loadComponents(assembly), "LoadComponents", includedByComponentsLoad, assembly);
-        }
-
-        /// <summary>
-        /// Add after action to current transaction
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="name"></param>
-        /// <param name="predicate"></param>
-        /// <param name="keys"></param>
+        /// <param name="action">The action.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="keys">The keys.</param>
         private void addAfterAction(Action action, string name, IsIncludedPredicate predicate, params object[] keys)
         {
             var transactionAction = new TransactionAction(action, name, predicate, keys);
@@ -230,6 +235,11 @@ namespace MEFEditor.TypeSystem.Core
 
         #region Transaction dependencies
 
+        /// <summary>
+        /// Includeds the by reload.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool includedByReload(TransactionAction action)
         {
             return
@@ -238,12 +248,22 @@ namespace MEFEditor.TypeSystem.Core
                 includedByComponentsLoad(action);
         }
 
+        /// <summary>
+        /// Includeds the by components invalidation.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool includedByComponentsInvalidation(TransactionAction action)
         {
             //TODO also include all component changes
             return action.Name == "InvalidateComponents";
         }
 
+        /// <summary>
+        /// Includeds the by components load.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool includedByComponentsLoad(TransactionAction action)
         {
             return action.Name == "LoadComponents";
@@ -256,10 +276,10 @@ namespace MEFEditor.TypeSystem.Core
         #region Internal methods exposed for AssemblyLoader
 
         /// <summary>
-        /// Resolve static (it means here non-virtual) method
+        /// Resolve static (it means here non-virtual) method.
         /// </summary>
-        /// <param name="method">Method to be resolved</param>
-        /// <returns>Generator of resolved method</returns>
+        /// <param name="method">Method to be resolved.</param>
+        /// <returns>Generator of resolved method.</returns>
         internal GeneratorBase StaticResolve(MethodID method)
         {
             var result = Cache.GetCachedGenerator(method, tryStaticResolve);
@@ -271,11 +291,11 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Resolve dynamic (it means here virtual) method
+        /// Resolve dynamic (it means here virtual) method.
         /// </summary>
-        /// <param name="method">Method to be resolved</param>
-        /// <param name="dynamicArgumentInfo">Descriptors of arguments available during method invokation</param>
-        /// <returns>Identifier of resolved method</returns>
+        /// <param name="method">Method to be resolved.</param>
+        /// <param name="dynamicArgumentInfo">Descriptors of arguments available during method invokation.</param>
+        /// <returns>Identifier of resolved method.</returns>
         internal MethodID DynamicResolve(MethodID method, InstanceInfo[] dynamicArgumentInfo)
         {
             //resolving of .NET objects depends only on called object type
@@ -295,22 +315,22 @@ namespace MEFEditor.TypeSystem.Core
         #region Reference API
 
         /// <summary>
-        /// Given reference has been removed from given <see cref="AssemblyProvider"/>. Removing assembly provider
-        /// does not need this reference, however other providers may it still referenced
+        /// Given reference has been removed from given <see cref="AssemblyProvider" />. Removing assembly provider
+        /// does not need this reference, however other providers may it still referenced.
         /// </summary>
-        /// <param name="assembly">Assembly which references changed</param>
-        /// <param name="reference">Removed reference</param>
+        /// <param name="assembly">Assembly which references changed.</param>
+        /// <param name="reference">Removed reference.</param>
         internal void ReportReferenceRemoved(AssemblyProvider assembly, object reference)
         {
             _onReferenceRemoved(assembly, reference);
         }
 
         /// <summary>
-        /// Given reference has been added into given <see cref="AssemblyProvider"/>. If the
-        /// referenced assembly doesnot exists it has to be loaded
+        /// Given reference has been added into given <see cref="AssemblyProvider" />. If the
+        /// referenced assembly doesnot exists it has to be loaded.
         /// </summary>
-        /// <param name="assembly">Assembly which references changed</param>
-        /// <param name="reference">Reference that has been added into assembly</param>
+        /// <param name="assembly">Assembly which references changed.</param>
+        /// <param name="reference">Reference that has been added into assembly.</param>
         internal void ReportReferenceAdded(AssemblyProvider assembly, object reference)
         {
             _onReferenceAdded(assembly, reference);
@@ -321,20 +341,21 @@ namespace MEFEditor.TypeSystem.Core
         #region Type inspection API
 
         /// <summary>
-        /// Get concrete implementation of abstract (virtual,interface,..) method on given type
+        /// Get concrete implementation of abstract (virtual,interface,..) method on given type.
         /// </summary>
-        /// <param name="type">Type where concrete implementation is searched</param>
-        /// <param name="abstractMethod">Abstract method which implementation is searched</param>
-        /// <returns>Concreate implementation if available, <c>null</c> otherwise</returns>
+        /// <param name="type">Type where concrete implementation is searched.</param>
+        /// <param name="abstractMethod">Abstract method which implementation is searched.</param>
+        /// <returns>Concreate implementation if available, <c>null</c> otherwise.</returns>
         internal MethodID TryGetImplementation(TypeDescriptor type, MethodID abstractMethod)
         {
             return tryDynamicResolve(type, abstractMethod);
         }
 
         /// <summary>
-        /// Creates method searcher, which can search in referenced assemblies
+        /// Creates method searcher, which can search in referenced assemblies.
         /// </summary>
-        /// <returns>Created method searcher</returns>
+        /// <param name="references">The references.</param>
+        /// <returns>Created method searcher.</returns>
         internal MethodSearcher CreateSearcher(ReferencedAssemblies references)
         {
             return new MethodSearcher(resolveKeys(references));
@@ -342,17 +363,17 @@ namespace MEFEditor.TypeSystem.Core
 
         /// <summary>
         /// Determine that assignedType can be assigned into variable with targetTypeName without any conversion calls (implicit nor explicit)
-        /// Only tests inheritance
+        /// Only tests inheritance.
         /// </summary>
-        /// <param name="targetTypeName">Name of target variable type</param>
-        /// <param name="assignedTypeName">Name of assigned type</param>
-        /// <returns>True if assigned type is assignable, false otherwise</returns>
+        /// <param name="targetTypeName">Name of target variable type.</param>
+        /// <param name="assignedTypeName">Name of assigned type.</param>
+        /// <returns>True if assigned type is assignable, false otherwise.</returns>
         internal bool IsAssignable(string targetTypeName, string assignedTypeName)
         {
             if (targetTypeName == assignedTypeName)
                 return true;
 
-            var chain = getChain(assignedTypeName);
+            var chain = getChain(assignedTypeName, null);
             if (chain == null)
                 return false;
             return chain.HasSubChain(targetTypeName);
@@ -360,24 +381,28 @@ namespace MEFEditor.TypeSystem.Core
 
         /// <summary>
         /// Create inheritance chain for given type and subChains
-        /// <remarks>This is used by <see cref="AssemblyProvider"/> to create information about inheritance</remarks>
+        /// <remarks>This is used by <see cref="AssemblyProvider" /> to create information about inheritance</remarks>.
         /// </summary>
-        /// <param name="type">Type which inheritance chain is created</param>
-        /// <param name="subChains"><see cref="InheritanceChain"/> of sub types</param>
-        /// <returns>Created chain</returns>
+        /// <param name="type">Type which inheritance chain is created.</param>
+        /// <param name="subChains"><see cref="InheritanceChain" /> of sub types.</param>
+        /// <returns>Created chain.</returns>
         internal InheritanceChain CreateChain(TypeDescriptor type, IEnumerable<InheritanceChain> subChains)
         {
             return new InheritanceChain(type, subChains);
         }
 
         /// <summary>
-        /// Get inheritance chain for given type
+        /// Get inheritance chain for given type.
         /// </summary>
-        /// <param name="type">Type which inheritance chain is desired</param>
-        /// <returns>Founded inheritance chain if available, <c>null</c> otherwise</returns>
-        internal InheritanceChain GetChain(TypeDescriptor type)
+        /// <param name="type">Type which inheritance chain is desired.</param>
+        /// <param name="references">References where chain will be searched</param>
+        /// <returns>Founded inheritance chain if available, <c>null</c> otherwise.</returns>
+        internal InheritanceChain GetChain(TypeDescriptor type, ReferencedAssemblies references)
         {
-            return getChain(type.TypeName);
+            if (type == null)
+                return null;
+
+            return getChain(type.TypeName, references);
         }
 
         #endregion
@@ -385,10 +410,10 @@ namespace MEFEditor.TypeSystem.Core
         #region Component API
 
         /// <summary>
-        /// Get <see cref="ComponentInfo"/> defined for given type.
+        /// Get <see cref="ComponentInfo" /> defined for given type.
         /// </summary>
-        /// <param name="type">Type which component info is needed</param>
-        /// <returns><see cref="ComponentInfo"/> defined for type if available, <c>false</c> otherwise</returns>
+        /// <param name="type">Type which component info is needed.</param>
+        /// <returns><see cref="ComponentInfo" /> defined for type if available, <c>false</c> otherwise.</returns>
         internal ComponentInfo GetComponentInfo(InstanceInfo type)
         {
             ComponentInfo result;
@@ -397,20 +422,20 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Get components defined within given assembly
+        /// Get components defined within given assembly.
         /// </summary>
-        /// <param name="assembly">Assembly where components are searched</param>
-        /// <returns>Components defined within assembly</returns>
+        /// <param name="assembly">Assembly where components are searched.</param>
+        /// <returns>Components defined within assembly.</returns>
         internal IEnumerable<ComponentInfo> GetComponents(AssemblyProvider assembly)
         {
             return _assemblyComponents.Get(assembly);
         }
 
         /// <summary>
-        /// Get components defined within given assembly and its referenced assemblies
+        /// Get components defined within given assembly and its referenced assemblies.
         /// </summary>
-        /// <param name="assembly">Assembly where components are searched</param>
-        /// <returns>Components defined within assembly</returns>
+        /// <param name="assembly">Assembly where components are searched.</param>
+        /// <returns>Components defined within assembly.</returns>
         internal IEnumerable<ComponentInfo> GetReferencedComponents(AssemblyProvider assembly)
         {
             var result = new List<ComponentInfo>();
@@ -428,10 +453,10 @@ namespace MEFEditor.TypeSystem.Core
         #region Assembly API
 
         /// <summary>
-        /// Register call handler that will be called instead of methods on registered <see cref="Instance"/>
+        /// Register call handler that will be called instead of methods on registered <see cref="Instance" />.
         /// </summary>
-        /// <param name="registeredInstance">Instance that is registered</param>
-        /// <param name="handler">Method that will be called</param>
+        /// <param name="registeredInstance">Instance that is registered.</param>
+        /// <param name="handler">Method that will be called.</param>
         internal void RegisterCallHandler(Instance registeredInstance, DirectMethod handler)
         {
             var generator = new DirectGenerator(handler);
@@ -439,7 +464,7 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Reports invalidation of composition scheme
+        /// Reports invalidation of composition scheme.
         /// </summary>
         internal void CompositionSchemeInvalidation()
         {
@@ -447,10 +472,22 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Get files that are present in given directory by taking assemblies mapping into consideration
+        /// Invalidate all methods/types/beginning with given prefix from cache.
         /// </summary>
-        /// <param name="directoryFullPath">Fullpath of directory which files will be retrieved</param>
-        /// <returns>Files that are present in directory according to virtual mapping</returns>
+        /// <param name="invalidatedNamePrefix">Prefix used for method invalidation.</param>
+        internal void Invalidate(string invalidatedNamePrefix)
+        {
+            if (NameInvalidated != null)
+                NameInvalidated(invalidatedNamePrefix);
+
+            Cache.Invalidate(invalidatedNamePrefix);
+        }
+
+        /// <summary>
+        /// Get files that are present in given directory by taking assemblies mapping into consideration.
+        /// </summary>
+        /// <param name="directoryFullPath">Fullpath of directory which files will be retrieved.</param>
+        /// <returns>Files that are present in directory according to virtual mapping.</returns>
         internal IEnumerable<string> GetFiles(string directoryFullPath)
         {
             var listed = new HashSet<string>();
@@ -490,10 +527,10 @@ namespace MEFEditor.TypeSystem.Core
 
         /// <summary>
         /// Load assembly for purposes of interpretation analysis. Assembly is automatically cached between multiple runs.
-        /// Mapping of assemblies is take into consideration
+        /// Mapping of assemblies is take into consideration.
         /// </summary>
-        /// <param name="assemblyKey">Key of loaded assembly</param>
-        /// <returns>Loaded assembly if available, <c>null</c> otherwise</returns>
+        /// <param name="assemblyKey">Key of loaded assembly.</param>
+        /// <returns>Loaded assembly if available, <c>null</c> otherwise.</returns>
         internal TypeAssembly LoadReferenceAssembly(object assemblyKey)
         {
             var assembly = findLoadedAssembly(assemblyKey);
@@ -514,9 +551,9 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Load root assembly into AppDomain
+        /// Load root assembly into AppDomain.
         /// </summary>
-        /// <param name="loadedAssembly">Asembly that is loaded</param>
+        /// <param name="loadedAssembly">Asembly that is loaded.</param>
         internal void LoadRoot(AssemblyProvider loadedAssembly)
         {
             //adding will fire appropriate handlers
@@ -524,9 +561,10 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Unload assembly from AppDomain roots
+        /// Unload assembly from AppDomain roots.
         /// </summary>
-        /// <param name="unloadedAssemblyKey">Asembly that is unloaded</param>
+        /// <param name="unloadedAssemblyKey">Asembly that is unloaded.</param>
+        /// <returns>AssemblyProvider.</returns>
         internal AssemblyProvider UnloadRoot(object unloadedAssemblyKey)
         {
             //removing will fire appropriate handlers
@@ -537,9 +575,9 @@ namespace MEFEditor.TypeSystem.Core
 
 
         /// <summary>
-        /// Completely unload given assembly
+        /// Completely unload given assembly.
         /// </summary>
-        /// <param name="assembly">Assembly to unload</param>
+        /// <param name="assembly">Assembly to unload.</param>
         internal void Unload(AssemblyProvider assembly)
         {
             _assemblies.Remove(assembly);
@@ -557,8 +595,8 @@ namespace MEFEditor.TypeSystem.Core
         /// <summary>
         /// Get assembly which defines given method.
         /// </summary>
-        /// <param name="method">Method which assembly is searched</param>
-        /// <returns>Assembly where method is defined</returns>
+        /// <param name="method">Method which assembly is searched.</param>
+        /// <returns>Assembly where method is defined.</returns>
         internal TypeAssembly GetDefiningAssembly(MethodID method)
         {
             var definingAssemblyProvider = GetDefiningAssemblyProvider(method);
@@ -571,8 +609,8 @@ namespace MEFEditor.TypeSystem.Core
         /// <summary>
         /// Get assembly which defines given type.
         /// </summary>
-        /// <param name="type">Type which assembly is searched</param>
-        /// <returns>Assembly where type is defined</returns>
+        /// <param name="type">Type which assembly is searched.</param>
+        /// <returns>Assembly where type is defined.</returns>
         internal TypeAssembly GetDefiningAssembly(InstanceInfo type)
         {
             var definingAssemblyProvider = GetDefiningAssemblyProvider(type);
@@ -585,8 +623,8 @@ namespace MEFEditor.TypeSystem.Core
         /// <summary>
         /// Get assembly which defines given type.
         /// </summary>
-        /// <param name="type">Type which assembly is searched</param>
-        /// <returns>Assembly provider where type is defined</returns>
+        /// <param name="type">Type which assembly is searched.</param>
+        /// <returns>Assembly provider where type is defined.</returns>
         internal AssemblyProvider GetDefiningAssemblyProvider(InstanceInfo type)
         {
             var path = new PathInfo(type.TypeName);
@@ -603,8 +641,8 @@ namespace MEFEditor.TypeSystem.Core
         /// <summary>
         /// Get assembly which defines given method.
         /// </summary>
-        /// <param name="method">Method which assembly is searched</param>
-        /// <returns>Assembly provider where method is defined</returns>
+        /// <param name="method">Method which assembly is searched.</param>
+        /// <returns>Assembly provider where method is defined.</returns>
         internal AssemblyProvider GetDefiningAssemblyProvider(MethodID method)
         {
             var definingAssemblyProvider = Cache.GetCachedDefiningAssembly(method, (x) =>
@@ -622,10 +660,10 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Find assembly provider that is already loaded
+        /// Find assembly provider that is already loaded.
         /// </summary>
-        /// <param name="key">Key defining the assembly provider</param>
-        /// <returns>Loaded assebmly provided if available, <c>null</c> otherwise</returns>
+        /// <param name="key">Key defining the assembly provider.</param>
+        /// <returns>Loaded assebmly provided if available, <c>null</c> otherwise.</returns>
         internal AssemblyProvider FindLoadedAssemblyProvider(object key)
         {
             return _assemblies.FindProviderFromKey(key);
@@ -638,7 +676,7 @@ namespace MEFEditor.TypeSystem.Core
         #region Event handlers
 
         /// <summary>
-        /// Handler fired before interpretation is started
+        /// Handler fired before interpretation is started.
         /// </summary>
         private void _beforeInterpretation()
         {
@@ -646,7 +684,7 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Handler fired after interpretation is completed
+        /// Handler fired after interpretation is completed.
         /// </summary>
         private void _afterInterpretation()
         {
@@ -656,34 +694,37 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Given reference has been removed from given <see cref="AssemblyProvider"/>. Removing assembly provider
-        /// does not need this reference, however other providers may it still referenced
+        /// Given reference has been removed from given <see cref="AssemblyProvider" />. Removing assembly provider
+        /// does not need this reference, however other providers may it still referenced.
         /// </summary>
-        /// <param name="assembly">Assembly which references changed</param>
-        /// <param name="reference">Removed reference</param>
+        /// <param name="assembly">Assembly which references changed.</param>
+        /// <param name="reference">Removed reference.</param>
         private void _onReferenceRemoved(AssemblyProvider assembly, object reference)
         {
             after_reloadAssembly(assembly);
+            Cache.Clear();
+            CompositionSchemeInvalidation();
         }
 
         /// <summary>
-        /// Given reference has been added into given <see cref="AssemblyProvider"/>. If the
-        /// referenced assembly doesnot exists it has to be loaded
+        /// Given reference has been added into given <see cref="AssemblyProvider" />. If the
+        /// referenced assembly doesnot exists it has to be loaded.
         /// </summary>
-        /// <param name="assembly">Assembly which references changed</param>
-        /// <param name="reference">Reference that has been added into assembly</param>
+        /// <param name="assembly">Assembly which references changed.</param>
+        /// <param name="reference">Reference that has been added into assembly.</param>
         private void _onReferenceAdded(AssemblyProvider assembly, object reference)
         {
             LoadReferenceAssembly(reference);
+            //reloading of referencing 
 
-            //reloading is done when reference is loaded
-            //after_reloadAssembly(assembly);
+            Cache.Clear();
+            CompositionSchemeInvalidation();
         }
 
         /// <summary>
-        /// Handler called for assembly that is invalidated
+        /// Handler called for assembly that is invalidated.
         /// </summary>
-        /// <param name="assembly">Invalidated assembly</param>
+        /// <param name="assembly">Invalidated assembly.</param>
         private void _onAssemblyInvalidation(AssemblyProvider assembly)
         {
             //remove invalidated assembly
@@ -694,9 +735,9 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Root assembly has been added
+        /// Root assembly has been added.
         /// </summary>
-        /// <param name="assembly">Added assembly</param>
+        /// <param name="assembly">Added assembly.</param>
         private void _onRootAssemblyAdd(AssemblyProvider assembly)
         {
             //root assemblies will be initialized and their references also
@@ -705,29 +746,31 @@ namespace MEFEditor.TypeSystem.Core
 
             foreach (var reference in assembly.References)
             {
-                var provider=_assemblies.FindProviderFromKey(reference);
+                var provider = _assemblies.FindProviderFromKey(reference);
                 if (provider == null)
                     continue;
 
                 //references of root assemblies should be 
                 //initialized, because of providing their components
                 provider.InitializeAssembly();
+                //force loading components
+                after_reloadAssembly(provider);
             }
         }
 
         /// <summary>
-        /// Root assembly has been removed
+        /// Root assembly has been removed.
         /// </summary>
-        /// <param name="assembly">Removed assembly</param>
+        /// <param name="assembly">Removed assembly.</param>
         private void _onRootAssemblyRemoved(AssemblyProvider assembly)
         {
             //what to do with root assemblies
         }
 
         /// <summary>
-        /// Assembly has been registered (every assembly has to be registered exactly one if loaded)
+        /// Assembly has been registered (every assembly has to be registered exactly one if loaded).
         /// </summary>
-        /// <param name="assembly">Registered assembly</param>
+        /// <param name="assembly">Registered assembly.</param>
         private void _onAssemblyRegistered(AssemblyProvider assembly)
         {
             //attach after action to outer scope of assembly
@@ -756,9 +799,9 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Assembly that has been removed completely from <see cref="AssembliesManager"/>
+        /// Assembly that has been removed completely from <see cref="AssembliesManager" />.
         /// </summary>
-        /// <param name="assembly">Removed assembly</param>
+        /// <param name="assembly">Removed assembly.</param>
         private void _onAssemblyRemoved(AssemblyProvider assembly)
         {
             startTransaction("Unregistering assembly: " + assembly.Name);
@@ -769,6 +812,12 @@ namespace MEFEditor.TypeSystem.Core
                 foreach (var component in componentsCopy)
                 {
                     _onComponentRemoved(assembly, component);
+                }
+
+                if (assembly.TypeServices.RegisteredInvalidationHandler != null)
+                {
+                    //remove handler
+                    NameInvalidated -= assembly.TypeServices.RegisteredInvalidationHandler;
                 }
 
                 assembly.Unload();
@@ -783,10 +832,10 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Handler fired whenever component is added
+        /// Handler fired whenever component is added.
         /// </summary>
-        /// <param name="assembly">Assembly where component has been discovered</param>
-        /// <param name="componentInfo">Information about component</param>
+        /// <param name="assembly">Assembly where component has been discovered.</param>
+        /// <param name="componentInfo">Information about component.</param>
         private void _onComponentAdded(AssemblyProvider assembly, ComponentInfo componentInfo)
         {
             componentInfo.DefiningAssembly = _assemblies.GetTypeAssembly(assembly);
@@ -805,10 +854,10 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Handler fired whenever component is removed
+        /// Handler fired whenever component is removed.
         /// </summary>
-        /// <param name="assembly">Assembly where component has been defined</param>
-        /// <param name="removedComponent">Information about removed component</param>
+        /// <param name="assembly">Assembly where component has been defined.</param>
+        /// <param name="removedComponent">Information about removed component.</param>
         private void _onComponentRemoved(AssemblyProvider assembly, ComponentInfo removedComponent)
         {
             _assemblyComponents.Remove(assembly, removedComponent);
@@ -817,15 +866,15 @@ namespace MEFEditor.TypeSystem.Core
             if (ComponentRemoved != null)
                 ComponentRemoved(removedComponent);
         }
-        
+
         #endregion
 
         #region Transaction system
 
         /// <summary>
-        /// Strat transaction with given description. Expect safe usage - for TypeSystem purposes only
+        /// Strat transaction with given description. Expect safe usage - for TypeSystem purposes only.
         /// </summary>
-        /// <param name="description">Description of started transaction</param>
+        /// <param name="description">Description of started transaction.</param>
         private void startTransaction(string description)
         {
             var transaction = Transactions.StartNew(description);
@@ -833,8 +882,8 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Commit lastly opened system transaction. Has to be called correctly for every 
-        /// <see cref="startTransaction"/> call.
+        /// Commit lastly opened system transaction. Has to be called correctly for every
+        /// <see cref="startTransaction" /> call.
         /// </summary>
         private void commitTransaction()
         {
@@ -848,10 +897,10 @@ namespace MEFEditor.TypeSystem.Core
 
 
         /// <summary>
-        /// Find assembly that is already loaded. Mapping of assembly path is taken into consideration
+        /// Find assembly that is already loaded. Mapping of assembly path is taken into consideration.
         /// </summary>
-        /// <param name="assemblyKey">Key of searched assembly</param>
-        /// <returns>Found assembly if available, <c>null</c> otherwise</returns>
+        /// <param name="assemblyKey">Key of searched assembly.</param>
+        /// <returns>Found assembly if available, <c>null</c> otherwise.</returns>
         private TypeAssembly findLoadedAssembly(object assemblyKey)
         {
             var assemblyPath = assemblyKey as string;
@@ -875,10 +924,10 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Create assembly provider from given key, by using <see cref="AssemblyLoader"/>
+        /// Create assembly provider from given key, by using <see cref="AssemblyLoader" />.
         /// </summary>
-        /// <param name="key">Key that is used as definition for assembly creation</param>
-        /// <returns>Created assembly provider</returns>
+        /// <param name="key">Key that is used as definition for assembly creation.</param>
+        /// <returns>Created assembly provider.</returns>
         private AssemblyProvider createAssembly(object key)
         {
             var assembly = Loader.CreateOrGetAssembly(key);
@@ -886,14 +935,17 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Get inheritance chain for given type
+        /// Get inheritance chain for given type.
         /// </summary>
-        /// <param name="typeName">name of type which inheritance chain is required</param>
-        /// <returns>Created inheritance chain</returns>
-        private InheritanceChain getChain(string typeName)
+        /// <param name="typeName">name of type which inheritance chain is required.</param>
+        /// <param name="references">References where chain will be searched</param>
+        /// <returns>Created inheritance chain.</returns>
+        private InheritanceChain getChain(string typeName, ReferencedAssemblies references)
         {
             var typePath = new PathInfo(typeName);
-            foreach (var assembly in _assemblies.Providers)
+            var assemblies = references == null ? _assemblies.Providers : resolveKeys(references);
+
+            foreach (var assembly in assemblies)
             {
                 var inheritanceChain = assembly.GetInheritanceChain(typePath);
                 if (inheritanceChain != null)
@@ -906,11 +958,11 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Try to resolve dynamic (generic/non-generic) method according to descriptor of called object
+        /// Try to resolve dynamic (generic/non-generic) method according to descriptor of called object.
         /// </summary>
-        /// <param name="calledObjectDescriptor">Descriptor of called object</param>
-        /// <param name="method">Method that is resolved</param>
-        /// <returns>Resolved method if available, <c>null</c> othewrise</returns>
+        /// <param name="calledObjectDescriptor">Descriptor of called object.</param>
+        /// <param name="method">Method that is resolved.</param>
+        /// <returns>Resolved method if available, <c>null</c> othewrise.</returns>
         private MethodID tryDynamicResolve(TypeDescriptor calledObjectDescriptor, MethodID method)
         {
             var result = tryDynamicExplicitResolve(calledObjectDescriptor, method);
@@ -924,11 +976,11 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Try to resolve static (generic/non-generic) method
+        /// Try to resolve static (generic/non-generic) method.
         /// </summary>
-        /// <param name="method">Method that is resolved</param>
-        /// <param name="definingAssembly">Assembly where method is defined</param>
-        /// <returns>Resolved method if available, <c>null</c> otherwise</returns>
+        /// <param name="method">Method that is resolved.</param>
+        /// <param name="definingAssembly">Assembly where method is defined.</param>
+        /// <returns>Resolved method if available, <c>null</c> otherwise.</returns>
         private GeneratorBase tryStaticResolve(MethodID method, out AssemblyProvider definingAssembly)
         {
             var result = tryStaticExplicitResolve(method, out definingAssembly);
@@ -942,11 +994,11 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Resolve method generator with generic search on given method ID
+        /// Resolve method generator with generic search on given method ID.
         /// </summary>
-        /// <param name="method">Resolved method</param>
-        /// <param name="definingAssembly">Assembly where method is defined</param>
-        /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
+        /// <param name="method">Resolved method.</param>
+        /// <param name="definingAssembly">Assembly where method is defined.</param>
+        /// <returns>Generator for resolved method, or null, if there is no available generator.</returns>
         private GeneratorBase tryStaticGenericResolve(MethodID method, out AssemblyProvider definingAssembly)
         {
             definingAssembly = null;
@@ -954,7 +1006,7 @@ namespace MEFEditor.TypeSystem.Core
             if (!searchPath.HasGenericArguments)
                 //there is no need for generic resolving
                 return null;
-            
+
             foreach (var assembly in _assemblies.Providers)
             {
                 var generator = assembly.GetGenericMethodGenerator(method, searchPath);
@@ -969,11 +1021,11 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Resolve method generator with exact method ID (no generic method searches)
+        /// Resolve method generator with exact method ID (no generic method searches).
         /// </summary>
-        /// <param name="method">Resolved method</param>
-        /// <param name="definingAssembly">Assembly where method is defined</param>
-        /// <returns>Generator for resolved method, or null, if there is no available generator</returns>
+        /// <param name="method">Resolved method.</param>
+        /// <param name="definingAssembly">Assembly where method is defined.</param>
+        /// <returns>Generator for resolved method, or null, if there is no available generator.</returns>
         private GeneratorBase tryStaticExplicitResolve(MethodID method, out AssemblyProvider definingAssembly)
         {
             foreach (var assembly in _assemblies.Providers)
@@ -991,11 +1043,11 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Try to resolve dynamic generic method according to descriptor of called object
+        /// Try to resolve dynamic generic method according to descriptor of called object.
         /// </summary>
-        /// <param name="calledObjectDescriptor">Descriptor of called object</param>
-        /// <param name="method">Method that is resolved</param>
-        /// <returns>Resolved method if available, <c>null</c> othewrise</returns>
+        /// <param name="calledObjectDescriptor">Descriptor of called object.</param>
+        /// <param name="method">Method that is resolved.</param>
+        /// <returns>Resolved method if available, <c>null</c> othewrise.</returns>
         private MethodID tryDynamicGenericResolve(TypeDescriptor calledObjectDescriptor, MethodID method)
         {
             var searchPath = Naming.GetMethodPath(method);
@@ -1030,11 +1082,11 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Try to resolve dynamic method according to descriptor of called object
+        /// Try to resolve dynamic method according to descriptor of called object.
         /// </summary>
-        /// <param name="calledObjectDescriptor">Descriptor of called object</param>
-        /// <param name="method">Method that is resolved</param>
-        /// <returns>Resolved method if available, <c>null</c> othewrise</returns>
+        /// <param name="calledObjectDescriptor">Descriptor of called object.</param>
+        /// <param name="method">Method that is resolved.</param>
+        /// <returns>Resolved method if available, <c>null</c> othewrise.</returns>
         private MethodID tryDynamicExplicitResolve(TypeDescriptor calledObjectDescriptor, MethodID method)
         {
             var implementers = new Queue<TypeDescriptor>();
@@ -1061,10 +1113,10 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         /// <summary>
-        /// Resolve enumeration of keys into enumeration of <see cref="AssemblyProvider"/> objects
+        /// Resolve enumeration of keys into enumeration of <see cref="AssemblyProvider" /> objects.
         /// </summary>
-        /// <param name="keys">Keys to be resolved</param>
-        /// <returns>Resolved enumeration</returns>
+        /// <param name="keys">Keys to be resolved.</param>
+        /// <returns>Resolved enumeration.</returns>
         private IEnumerable<AssemblyProvider> resolveKeys(IEnumerable<object> keys)
         {
             foreach (var key in keys)
@@ -1083,5 +1135,6 @@ namespace MEFEditor.TypeSystem.Core
         }
 
         #endregion
+
     }
 }

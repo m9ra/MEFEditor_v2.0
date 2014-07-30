@@ -343,38 +343,41 @@ namespace MEFEditor.Plugin.Main
         /// <param name="compositionPoint">Composition point to be analyzed.</param>
         private void showComposition(CompositionPoint compositionPoint)
         {
-            if (_currentResult != null)
+            _vs.SafeRunAction(() =>
             {
-                //invalidate result, to free up resources
-                UserInteraction.DisposeResources();
-            }
-
-            if (compositionPoint == null)
-            {
-                _guiManager.Display(null);
-                _currentResult = null;
-            }
-            else
-            {
-                var watch = Stopwatch.StartNew();
-
-                runAnalysis(compositionPoint);
-                _vs.Log.Message("Executing composition point {0}ms", watch.ElapsedMilliseconds);
-
-                if (_analysisError == null)
+                if (_currentResult != null)
                 {
-                    watch.Restart();
+                    //invalidate result, to free up resources
+                    UserInteraction.DisposeResources();
+                }
 
-                    //analysis has been successful
-                    var drawing = createDrawings(_currentResult);
-                    _guiManager.Display(drawing);
-                    _vs.Log.Message("Drawing composition point {0}ms", watch.ElapsedMilliseconds);
+                if (compositionPoint == null)
+                {
+                    _guiManager.Display(null);
+                    _currentResult = null;
                 }
                 else
                 {
-                    _guiManager.DisplayEntry(_analysisError);
+                    var watch = Stopwatch.StartNew();
+
+                    runAnalysis(compositionPoint);
+                    _vs.Log.Message("Executing composition point {0}ms", watch.ElapsedMilliseconds);
+
+                    if (_analysisError == null)
+                    {
+                        watch.Restart();
+
+                        //analysis has been successful
+                        var drawing = createDrawings(_currentResult);
+                        _guiManager.Display(drawing);
+                        _vs.Log.Message("Drawing composition point {0}ms", watch.ElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        _guiManager.DisplayEntry(_analysisError);
+                    }
                 }
-            }
+            },"Refreshing composition point");
         }
 
         /// <summary>
@@ -765,7 +768,7 @@ namespace MEFEditor.Plugin.Main
         void _vs_ProjectRemoved(EnvDTE.Project project)
         {
             var tr = Transactions.StartNew("Removing project");
-            _loader.UnloadRoot(project);
+            _loader.Unload(project);
             tr.Commit();
         }
 

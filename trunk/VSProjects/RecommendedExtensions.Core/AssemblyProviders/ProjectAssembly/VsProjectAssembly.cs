@@ -48,6 +48,11 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         private readonly CodeElementNamesProvider _namesProvider;
 
         /// <summary>
+        /// Events for handling references.
+        /// </summary>
+        private readonly ReferencesEvents _referenceEvents;
+
+        /// <summary>
         /// <see cref="Project" /> represented by current assembly.
         /// </summary>
         /// <value>The project.</value>
@@ -96,6 +101,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         {
             VS = vs;
             _assemblyProject = assemblyProject.Object as VSProject;
+            _referenceEvents = _assemblyProject.Events.ReferencesEvents;
             _namesProvider = namesProvider;
             Searcher = new CodeElementSearcher(this);
 
@@ -116,7 +122,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <param name="activation">Activation for assembly parser.</param>
         /// <param name="emitter">Emitter where parsed instructions are emitted.</param>
         public abstract void ParsingProvider(ParsingActivation activation, EmitterBase emitter);
-
 
         /// <summary>
         /// Parses the given value to native object.
@@ -252,6 +257,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
                 VS.RegisterElementAdd(_assemblyProject, onAdd);
                 VS.RegisterElementRemove(_assemblyProject, onRemove);
                 VS.RegisterElementChange(_assemblyProject, onChange);
+                _referenceEvents.ReferenceAdded += (r) => addReference(r as Reference3);
+                _referenceEvents.ReferenceRemoved += (r) => removeReference(r as Reference3);
+
+                TypeServices.RegisterInvalidationHandler(onNameInvalidation);
             }
             catch (Exception ex)
             {
@@ -283,19 +292,49 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         {
             foreach (Reference3 reference in _assemblyProject.References)
             {
-                var sourceProject = reference.SourceProject;
+                addReference(reference);
+            }
+        }
 
-                if (sourceProject == null)
-                {
-                    //there is not source project for the reference
-                    //we has to add reference according to path
-                    AddReference(reference.Path);
-                }
-                else
-                {
-                    //we can add reference through referenced source project
-                    AddReference(sourceProject);
-                }
+        /// <summary>
+        /// Adds reference according to given <see cref="Reference3"/>.
+        /// </summary>
+        /// <param name="reference">The reference.</param>
+        private void addReference(Reference3 reference)
+        {
+            var sourceProject = reference.SourceProject;
+
+            if (sourceProject == null)
+            {
+                //there is not source project for the reference
+                //we has to add reference according to path
+                AddReference(reference.Path);
+            }
+            else
+            {
+                //we can add reference through referenced source project
+                AddReference(sourceProject);
+            }
+        }
+        
+        /// <summary>
+        /// Removes reference according to given <see cref="Reference3"/>.
+        /// </summary>
+        /// <param name="reference">The reference.</param>
+        private void removeReference(Reference3 reference)
+        {
+            var sourceProject = reference.SourceProject;
+
+            if (sourceProject == null)
+            {
+                //there is not source project for the reference
+                //we has to add reference according to path
+                RemoveReference(reference.Path);
+            }
+            else
+            {
+                //we can add reference through referenced source project
+                RemoveReference(sourceProject);
             }
         }
 
@@ -325,6 +364,43 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         #region Changes handlers
 
         /// <summary>
+        /// Handler called for every invalidated name.
+        /// </summary>
+        /// <param name="name">Invalidated name.</param>
+        private void onNameInvalidation(string name)
+        {
+            if (name == null)
+                return;
+
+            //get components defined in current assembly
+            var components = TypeServices.GetComponents(this).ToArray();
+
+            //check for components that may be invalidated.
+            foreach (var component in components)
+            {
+                foreach (var componentName in component.DependencyNames)
+                {
+                    if (componentName.StartsWith(name) || name.EndsWith(componentName))
+                    {
+                        //component is invalidated
+                        var componentClass = GetTypeNode(component.ComponentType.TypeName) as CodeClass;
+                        if (componentClass != null)
+                        {
+                            _toDiscover.Add(componentClass);
+                            ComponentRemoveDiscovered(component.ComponentType.TypeName);
+                        }
+
+                        break;
+                    }
+                }
+
+            }
+
+            if (_toDiscover.Count > 0)
+                requireComponentDiscovering();
+        }
+
+        /// <summary>
         /// Handler called for element that has been added.
         /// </summary>
         /// <param name="node">Affected element node.</param>
@@ -338,7 +414,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             if (node.Element is CodeClass)
             {
                 _toDiscover.Add(node.Element as CodeClass);
-                requireDiscovering();
+                requireComponentDiscovering();
+            }
+
+            //there may be indirect dependency
+            foreach (var fullname in fullnames)
+            {
+                //code change within method
+                ReportInvalidation(fullname);
             }
         }
 
@@ -357,6 +440,15 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
             else
             {
                 var fullnames = node.GetTag("Names") as IEnumerable<string>;
+                if (fullnames == null)
+                {
+                    fullnames = GetFullNames(node.Element);
+                    node.SetTag("Names", fullnames);
+                }
+
+                if (node == null)
+                    return;
+
                 foreach (var fullname in fullnames)
                 {
                     //code change within method
@@ -385,7 +477,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly
         /// <summary>
         /// Require discovering action after current transaction is completed.
         /// </summary>
-        private void requireDiscovering()
+        private void requireComponentDiscovering()
         {
             Transactions.AttachAfterAction(Transactions.CurrentTransaction, new TransactionAction(flushDiscovering, "FlushDiscovering", (t) => t.Name == "FlushDiscovering", this));
         }

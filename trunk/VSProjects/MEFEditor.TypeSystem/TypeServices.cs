@@ -32,6 +32,12 @@ namespace MEFEditor.TypeSystem
         internal readonly ReferencedAssemblies References = new ReferencedAssemblies();
 
         /// <summary>
+        /// Handler that is registered for invalidation routines. It
+        /// is stored here because of removing handler after assembly unload.
+        /// </summary>
+        internal NamePrefixInvalidation RegisteredInvalidationHandler;
+
+        /// <summary>
         /// Here are managed all <see cref="Transaction" /> objects.
         /// </summary>
         /// <value>The transactions.</value>
@@ -160,7 +166,7 @@ namespace MEFEditor.TypeSystem
         /// <returns>Founded inheritance chain if available, <c>null</c> otherwise.</returns>
         public InheritanceChain GetChain(TypeDescriptor type)
         {
-            return _manager.GetChain(type);
+            return _manager.GetChain(type, References);
         }
 
         /// <summary>
@@ -174,7 +180,7 @@ namespace MEFEditor.TypeSystem
         {
             return _manager.CreateChain(type, subChains);
         }
-        
+
         #endregion
 
         #region Component API
@@ -199,10 +205,22 @@ namespace MEFEditor.TypeSystem
             return _manager.GetComponents(assembly);
         }
 
-
         #endregion
 
         #region Assembly API
+
+        /// <summary>
+        /// Registers the invalidation handler.
+        /// </summary>
+        /// <param name="onNameInvalidation">The invalidation hadler.</param>
+        public void RegisterInvalidationHandler(NamePrefixInvalidation onNameInvalidation)
+        {
+            if (RegisteredInvalidationHandler != null)
+                throw new NotSupportedException("Name invalidation handler cannot be registered twice");
+
+            RegisteredInvalidationHandler = onNameInvalidation;
+            _manager.NameInvalidated += RegisteredInvalidationHandler;
+        }
 
         /// <summary>
         /// Register call handler that will be called instead of methods on registered <see cref="Instance" />.
@@ -229,7 +247,7 @@ namespace MEFEditor.TypeSystem
         /// <param name="invalidatedNamePrefix">Prefix used for method invalidation.</param>
         internal void Invalidate(string invalidatedNamePrefix)
         {
-            _manager.Cache.Invalidate(invalidatedNamePrefix);
+            _manager.Invalidate(invalidatedNamePrefix);
         }
 
 
@@ -285,5 +303,7 @@ namespace MEFEditor.TypeSystem
         }
 
         #endregion
+
+
     }
 }

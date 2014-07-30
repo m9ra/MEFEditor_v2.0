@@ -194,6 +194,10 @@ namespace MEFEditor.Interoperability
             _solutionWait.Tick += solutionOpenedAfterWait;
 
             _dte = dte;
+            if (_dte == null)
+                //create empty services
+                return;
+
             _events = _dte.Events;
             _events2 = _dte.Events as Events2;
             _textEditorEvents = _events.TextEditorEvents;
@@ -405,20 +409,6 @@ namespace MEFEditor.Interoperability
 
             if (ProjectAdded != null)
                 ProjectAdded(addedProject);
-
-            //changes are proceeded after manager is registered by above event
-            var manager = _watchedProjects[addedProject];
-
-            if (BeforeFlushingChanges != null)
-                BeforeFlushingChanges(manager.Name);
-
-            manager.RequireRegisterAllItems(FlushingChangesProgress);
-
-            if (AfterFlushingChanges != null)
-                AfterFlushingChanges();
-
-            //this is required because of registering namespaces
-            flushManagerChanges(manager);
         }
 
         /// <summary>
@@ -438,6 +428,18 @@ namespace MEFEditor.Interoperability
             
             var manager = new ProjectManager(addedProject, this);
             _watchedProjects.Add(addedProject, manager);
+
+            //changes are proceeded after manager is registered by above event
+            if (BeforeFlushingChanges != null)
+                BeforeFlushingChanges(manager.Name);
+
+            manager.RequireRegisterAllItems(FlushingChangesProgress);
+
+            if (AfterFlushingChanges != null)
+                AfterFlushingChanges();
+
+            //this is required because of registering namespaces
+            flushManagerChanges(manager);
 
             return true;
         }
@@ -478,8 +480,10 @@ namespace MEFEditor.Interoperability
             if (ProjectRemoved != null)
                 ProjectRemoved(removedProject);
 
-            removedManager.RemoveAll();
-            flushManagerChanges(removedManager);
+
+         // Removing is not neccessary - projects are removed atomically
+         //   removedManager.RemoveAll();
+         //   flushManagerChanges(removedManager);
         }
 
         /// <summary>

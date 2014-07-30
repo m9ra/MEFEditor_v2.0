@@ -301,8 +301,8 @@ namespace MEFEditor.Interoperability
                     manager.LoadRootOnly();
                 }
 
-                    //register item
-                    _watchedItems.Add(item, manager);
+                //register item
+                _watchedItems.Add(item, manager);
 
                 return manager;
             }

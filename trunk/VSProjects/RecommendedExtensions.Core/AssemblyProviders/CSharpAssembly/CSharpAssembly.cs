@@ -89,7 +89,6 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
                 valueRepresentation = TranslatePath(valueRepresentation);
 
                 //find  type
-
                 var implicitNamespaces = GetImplicitNamespaces(contextType);
 
                 var namespaces = implicitNamespaces.Concat(GetNamespaces(contextElement));
@@ -101,6 +100,8 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CSharpAssembly
                     if (TypeServices.GetChain(descriptor) != null)
                         return descriptor;
                 }
+
+                return TypeDescriptor.Create(valueRepresentation);
             }
 
             return null;

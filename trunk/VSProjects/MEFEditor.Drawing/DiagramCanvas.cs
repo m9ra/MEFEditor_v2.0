@@ -20,19 +20,20 @@ namespace MEFEditor.Drawing
     public class DiagramCanvas : DiagramCanvasBase
     {
         /// <summary>
-        /// Scale transformation used for zooming
+        /// Scale transformation used for zooming.
         /// </summary>
         private readonly ScaleTransform _scale = new ScaleTransform();
 
         /// <summary>
-        /// Shift <see cref="Vector"/> used for content shifting
+        /// Shift <see cref="Vector" /> used for content shifting.
         /// </summary>
         private Vector _shift;
 
         /// <summary>
-        /// Set or get vector that determine shifting of content 
-        /// displayed on <see cref="DiagramCanvas"/>
+        /// Set or get vector that determine shifting of content
+        /// displayed on <see cref="DiagramCanvas" />.
         /// </summary>
+        /// <value>The shift.</value>
         public Vector Shift
         {
             get
@@ -51,8 +52,9 @@ namespace MEFEditor.Drawing
         }
 
         /// <summary>
-        /// Zoom of displayed content
+        /// Zoom of displayed content.
         /// </summary>
+        /// <value>The zoom.</value>
         public double Zoom
         {
             get
@@ -73,7 +75,15 @@ namespace MEFEditor.Drawing
         }
 
         /// <summary>
-        /// Clear displayed content
+        /// Initializes a new instance of the <see cref="DiagramCanvas" /> class.
+        /// </summary>
+        public DiagramCanvas()
+        {
+            Reset();
+        }
+
+        /// <summary>
+        /// Clear displayed content.
         /// </summary>
         public void Clear()
         {
@@ -82,14 +92,19 @@ namespace MEFEditor.Drawing
         }
 
         /// <summary>
-        /// Reset content transformations
+        /// Reset content transformations.
         /// </summary>
         public void Reset()
         {
-            Shift = new Vector(0, 0);
+            Shift = new Vector(100, 100);
             Zoom = 1;
         }
 
+        /// <summary>
+        /// Arranges the override.
+        /// </summary>
+        /// <param name="arrangeSize">Size of the arrange.</param>
+        /// <returns>Size.</returns>
         /// <inheritdoc />
         protected override Size ArrangeOverride(Size arrangeSize)
         {

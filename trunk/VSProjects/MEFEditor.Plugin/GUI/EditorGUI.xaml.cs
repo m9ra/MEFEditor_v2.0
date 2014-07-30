@@ -44,6 +44,12 @@ namespace MEFEditor.Plugin.GUI
         private bool _crossInterpretingEnabled = false;
 
         /// <summary>
+        /// Determine that there is element to display. It determine
+        /// whether workspace can be displayed.
+        /// </summary>
+        private bool _hasElement = false;
+
+        /// <summary>
         /// Main workspace where composition scheme is drawed
         /// </summary>
         public DiagramCanvas Workspace { get { return _Workspace; } }
@@ -207,6 +213,7 @@ namespace MEFEditor.Plugin.GUI
         /// </summary>
         public void ShowWorkspace()
         {
+            _hasElement = false;
             setVisibleContent(ContentPanel.Workspace);
         }
 
@@ -216,6 +223,7 @@ namespace MEFEditor.Plugin.GUI
         /// <param name="element">Shown element</param>
         public void ShowElement(FrameworkElement element)
         {
+            _hasElement = true;
             _Element.Children.Clear();
             _Element.Children.Add(element);
             element.MaxWidth = _Workspace.ActualWidth;
@@ -254,7 +262,7 @@ namespace MEFEditor.Plugin.GUI
         /// <param name="e">Event object</param>
         private void refresh_Click(object sender, RoutedEventArgs e)
         {
-            if (!isWorkspaceVisible())
+            if (isSettingsVisible())
             {
                 setVisibleContent(ContentPanel.Workspace);
             }
@@ -349,13 +357,13 @@ namespace MEFEditor.Plugin.GUI
         #region Content panels switching
 
         /// <summary>
-        /// Toggle between workspace and settings visiblity
+        /// Toggle between workspace and settings visibility
         /// </summary>
         private void toggleSettingsVisibility()
         {
-            var isVisible = isWorkspaceVisible();
+            var isVisible = isSettingsVisible();
 
-            var toToggle = isVisible ? ContentPanel.Settings : ContentPanel.Workspace;
+            var toToggle = isVisible ? ContentPanel.Workspace : ContentPanel.Settings;
             setVisibleContent(toToggle);
         }
 
@@ -363,9 +371,9 @@ namespace MEFEditor.Plugin.GUI
         /// Determine that workspace is visible
         /// </summary>
         /// <returns><c>true</c> if workspace is visible, <c>false</c> otherwise</returns>
-        private bool isWorkspaceVisible()
+        private bool isSettingsVisible()
         {
-            return _Workspace.Visibility == Visibility.Visible;
+            return _Settings.Visibility == Visibility.Visible;
         }
 
         /// <summary>
@@ -384,6 +392,9 @@ namespace MEFEditor.Plugin.GUI
         private void setVisibleContent(ContentPanel panel)
         {
             string settingsButtonText;
+
+            if (_hasElement && panel == ContentPanel.Workspace)
+                panel = ContentPanel.Element;
 
             switch (panel)
             {
@@ -418,7 +429,7 @@ namespace MEFEditor.Plugin.GUI
                     _Element.Visibility = Visibility.Visible;
                     settingsButtonText = "Settings";
                     break;
-                    
+
                 default:
                     throw new NotImplementedException("Unsupported content panel" + panel);
             }

@@ -114,16 +114,35 @@ namespace MEFEditor.TypeSystem.Core
                     MethodInvalidated(method);
             }
         }
+
+        internal void Clear()
+        {
+            _cachedDefiners.Clear();
+            _cachedMethods.Clear();
+            _methodIdIndex.Clear();
+        }
     }
 
+    /// <summary>
+    /// Trie used for efficient method tree handling.
+    /// </summary>
     class MethodTrie : WordTrie<string, MethodID>
     {
+        /// <summary>
+        /// Adds the specified method.
+        /// </summary>
+        /// <param name="method">The method.</param>
         public void Add(MethodID method)
         {
             var key = Naming.GetNonGenericPath(method);
             Add(key, method);
         }
 
+        /// <summary>
+        /// Words the spliter.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         protected override IEnumerable<string> wordSpliter(string key)
         {
             var signature = PathInfo.GetNonGenericPath(key);

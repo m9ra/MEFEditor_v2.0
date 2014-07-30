@@ -182,6 +182,10 @@ namespace MEFEditor.Plugin.GUI
         public GUIManager(EditorGUI gui, VisualStudioServices vs = null)
         {
             _gui = gui;
+            if (vs == null)
+                //create empty services
+                vs = new VisualStudioServices(null);
+
             _vs = vs;
 
             //initialize logging as soon as possible

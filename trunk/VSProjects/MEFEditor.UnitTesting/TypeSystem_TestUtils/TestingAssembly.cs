@@ -144,17 +144,18 @@ namespace MEFEditor.UnitTesting.TypeSystem_TestUtils
 
             //load self
             _factory.Register(this, this);
+            Loader.AppDomain.Transactions.StartNew("Test");
             Loader.LoadRoot(this);
         }
 
         /// <summary>
         /// Builds current testing assembly.
         /// </summary>
-        /// <exception cref="System.NotSupportedException">Runtime can't be builded</exception>
+        /// <exception cref="System.NotSupportedException">Runtime can't be built</exception>
         public void Build()
         {
             if (IsBuilded)
-                throw new NotSupportedException("Runtime can't be builded");
+                throw new NotSupportedException("Runtime can't be built");
 
             IsBuilded = true;
 

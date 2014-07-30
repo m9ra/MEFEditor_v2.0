@@ -25,7 +25,7 @@ namespace MEFEditor.TestConsole
         /// </summary>
         public static void Main()
         {
-            var testAssembly = TestCases.ImplicitThisProperty();
+            var testAssembly = TestCases.TestExtensions_FromMasterThesis();
             DisplayTestResult(testAssembly);
         }
 

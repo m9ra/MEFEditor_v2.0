@@ -250,8 +250,7 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
             if (element is CodeInterface)
                 return CreateDescriptor(element as CodeInterface);
 
-            var name = element.FullName;
-            throw new NotImplementedException();
+            return null;
         }
 
         /// <summary>
