@@ -19,7 +19,12 @@ namespace MEFEditor.Analyzing.Execution.Instructions
 
         public override void Execute(AnalyzingContext context)
         {
+            //literal can have another initial values from previous cached runs,
+            //however literal behaves like it is created again so we will reset
+            //previous flags.
+            _literal.IsDirty = false;
             _literal.CreationBlock = context.CurrentCall.CurrentBlock;
+
             context.SetValue(_targetVariable, _literal);
         }
 

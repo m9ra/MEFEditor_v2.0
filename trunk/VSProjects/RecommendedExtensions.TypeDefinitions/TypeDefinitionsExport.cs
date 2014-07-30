@@ -38,6 +38,7 @@ namespace RecommendedExtensions.TypeDefinitions
                 typeof(Lazy<>),
                 typeof(Lazy<,>),
                 typeof(List<>),
+                typeof(Dictionary<,>),
                 typeof(ICollection<>),
                 typeof(IEnumerable<>),
                 typeof(IEnumerator<>),

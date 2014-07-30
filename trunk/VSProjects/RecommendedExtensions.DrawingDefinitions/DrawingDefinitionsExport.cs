@@ -30,7 +30,7 @@ namespace RecommendedExtensions.DrawingDefinitions
             //Component drawing
             ExportGeneralDrawing((i) => new ComponentDrawing(i));
 
-            //Catalogs and containers drawings
+            //Catalogs and containers drawings 
             ExportDrawing<CompositionContainer>((i) => new CompositionContainerDrawing(i));
             ExportDrawing<CompositionBatch>((i) => new CompositionBatchDrawing(i));
             ExportDrawing<DirectoryCatalog>((i) => new DirectoryCatalogDrawing(i));

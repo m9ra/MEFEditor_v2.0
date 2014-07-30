@@ -24,27 +24,32 @@ namespace MEFEditor.TypeSystem.DrawingServices
     public class DrawingPipeline
     {
         /// <summary>
-        /// The result of analysis which instances will be drawn
+        /// The result of analysis which instances will be drawn.
         /// </summary>
         private readonly AnalyzingResult _result;
 
         /// <summary>
-        /// The general drawer used for every instance to drawn
+        /// The general drawer used for every instance to drawn.
         /// </summary>
         private readonly GeneralDrawer _drawer;
 
         /// <summary>
-        /// The queue of instances waiting for drawing
+        /// The queue of instances waiting for drawing.
         /// </summary>
         private readonly Queue<DrawedInstance> _toDrawQueue = new Queue<DrawedInstance>();
 
         /// <summary>
-        /// The already created drawing of instances
+        /// The already created drawing of instances.
         /// </summary>
         private readonly Dictionary<Instance, DrawedInstance> _instanceDrawings = new Dictionary<Instance, DrawedInstance>();
 
         /// <summary>
-        /// The corresponding <see cref="RuntimeAssembly"/>
+        /// Set of instances that will be displayed in diagram.
+        /// </summary>
+        private readonly HashSet<Instance> _displayedInstances = new HashSet<Instance>();
+
+        /// <summary>
+        /// The corresponding <see cref="RuntimeAssembly"/>.
         /// </summary>
         internal readonly RuntimeAssembly Runtime;
 
@@ -52,6 +57,12 @@ namespace MEFEditor.TypeSystem.DrawingServices
         /// Diagram definition in which context instances will be drawn.
         /// </summary>
         internal readonly DiagramDefinition Context;
+
+        /// <summary>
+        /// Instances that has been displayed by current pipeline.
+        /// </summary>
+        /// <value>The instances that will be displayed.</value>
+        public IEnumerable<Instance> DisplayedInstances { get { return _displayedInstances; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingPipeline"/> class.
@@ -117,6 +128,17 @@ namespace MEFEditor.TypeSystem.DrawingServices
             registerInteraction();
 
             return Context;
+        }
+
+        /// <summary>
+        /// Draws the specified item for given instance.
+        /// </summary>
+        /// <param name="instance">Instance which is represented by given drawing item</param>
+        /// <param name="item">Item drawing.</param>
+        internal void DrawItem(DrawedInstance instance, DiagramItemDefinition item)
+        {
+            Context.DrawItem(item);
+            _displayedInstances.Add(instance.WrappedInstance);
         }
 
         /// <summary>

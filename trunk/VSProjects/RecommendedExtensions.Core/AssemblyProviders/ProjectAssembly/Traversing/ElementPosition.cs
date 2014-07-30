@@ -68,14 +68,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
                 if (name.Contains('.'))
                 {
                     //test compound namespace
-                    if (!name.StartsWith(part))
+                    if (part!=null && !name.StartsWith(part))
                         //element doesn't match
                         continue;
 
                     var parts = name.Split('.').Skip(1);
                     result.Add(new ElementPosition(element, parts));
                 }
-                else if (name == part)
+                else if (name == part || part==null)
                 {
                     //element name matches
                     result.Add(new ElementPosition(element, new string[0]));

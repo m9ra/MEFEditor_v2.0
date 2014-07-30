@@ -25,7 +25,7 @@ namespace MEFEditor.TestConsole
         /// </summary>
         public static void Main()
         {
-            var testAssembly = TestCases.CastingOperators();
+            var testAssembly = TestCases.ImplicitThisProperty();
             DisplayTestResult(testAssembly);
         }
 

@@ -513,6 +513,11 @@ namespace MEFEditor.Plugin.Main
             }
 
             var definition = pipeline.GetOutput();
+            foreach (var instance in pipeline.DisplayedInstances)
+            {
+                if (instance.IsDirty)
+                    _vs.Log.Warning("Instance {0} is marked as dirty, therefore it's display can be incorrect",instance.ID);
+            }
 
             definition.AddEditsMenu("Add Component", componentCreationEdits);
             definition.AddCommand(new CommandDefinition("Reset workspace", () => _vs.SafeRunAction(_guiManager.ResetWorkspace, "Resetting workspace failed")));

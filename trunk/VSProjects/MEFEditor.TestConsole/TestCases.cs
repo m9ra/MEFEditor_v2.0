@@ -31,7 +31,7 @@ namespace MEFEditor.TestConsole
     static class TestCases
     {
         /// <summary>
-        /// Test case.
+        /// Test case from text of master thesis.
         /// </summary>
         /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly TestExtensions()
@@ -1285,6 +1285,31 @@ namespace MEFEditor.TestConsole
                  var value = c.GetField(c.CurrentArguments[0], "Property") as Instance;
                  c.Return(value);
              }, Method.StaticString_NoParam)
+
+             ;
+        }
+
+        /// <summary>
+        /// Test case.
+        /// </summary>
+        /// <returns>Testing assembly where test case is defined.</returns>
+        static internal TestingAssembly ImplicitThisProperty()
+        {
+            return AssemblyUtils.Run(@"
+                Property=""TestValue"";
+                var result=Property;
+            ")
+
+             .AddMethod(Method.EntryClass + ".set_Property", (c) =>
+             {
+                 c.SetField(c.CurrentArguments[0], "Property", c.CurrentArguments[1]);
+             }, Method.Void_StringParam)
+
+             .AddMethod(Method.EntryClass + ".get_Property", (c) =>
+             {
+                 var value = c.GetField(c.CurrentArguments[0], "Property") as Instance;
+                 c.Return(value);
+             }, Method.String_NoParam)
 
              ;
         }

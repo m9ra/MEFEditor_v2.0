@@ -89,12 +89,14 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             IEnumerable<ElementPosition> nextElements;
             if (_currentElements == null)
             {
-                nextElements = ElementPosition.ExtendElements(_assembly.RootElements, searchedName);
+                //searched name will be tested when filling matching info
+                nextElements = ElementPosition.ExtendElements(_assembly.RootElements, null);
             }
             else
             {
                 fillWithMatchingInfo(searchedName, _currentElements, methods);
-                nextElements = ElementPosition.ExtendElements(_currentElements, searchedName);
+                //searched name will be tested when filling matching info
+                nextElements = ElementPosition.ExtendElements(_currentElements, null);
             }
 
             fillWithMatchingInfo(searchedName, nextElements, methods);
@@ -168,5 +170,19 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
         }
 
         #endregion
+
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
+        public override string ToString()
+        {
+            var result = "[" + _assembly.Name + "]";
+            if (_currentPath != null)
+                result += _currentPath.Name;
+
+            return result;
+        }
     }
 }

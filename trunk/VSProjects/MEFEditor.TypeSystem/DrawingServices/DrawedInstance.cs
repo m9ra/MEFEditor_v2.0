@@ -100,7 +100,7 @@ namespace MEFEditor.TypeSystem.DrawingServices
         /// </summary>
         internal void CommitDrawing()
         {
-            Pipeline.Context.DrawItem(Drawing);
+            Pipeline.DrawItem(this, Drawing);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace MEFEditor.TypeSystem.DrawingServices
         {
             Drawing.SetProperty(name, value);
         }
-        
+
         /// <summary>
         /// Adds all instance edits to drawing definition.
         /// </summary>

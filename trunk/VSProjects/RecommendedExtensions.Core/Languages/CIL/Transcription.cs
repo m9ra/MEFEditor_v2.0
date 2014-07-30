@@ -42,7 +42,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         /// Push method of stack
         /// </summary>
         internal static readonly MethodID Stack_push = Naming.Method<VMStack>("Push", typeof(object));
-        
+
         /// <summary>
         /// Pop method of stack
         /// </summary>
@@ -218,7 +218,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
                 }
                 else
                 {
-                    unknwonInstruction();
+                    unknownInstruction();
                 }
             }
         }
@@ -229,7 +229,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
         /// <summary>
         /// Transcriptor for instruction without defined transcriptor
         /// </summary>
-        static void unknwonInstruction()
+        static void unknownInstruction()
         {
             emitPush<CILInstruction>(Instruction);
             stackCall(Stack_fakeInstruction);
@@ -250,9 +250,19 @@ namespace RecommendedExtensions.Core.Languages.CIL
             emitPopTo(getLocalVar(Name));
         }
 
+        static void _stloca()
+        {
+            unknownInstruction();
+        }
+
         static void _ldloc()
         {
             emitPushFrom(getLocalVar(Name));
+        }
+
+        static void _ldloca()
+        {
+            unknownInstruction();
         }
 
         static void _ldarg()
@@ -260,6 +270,20 @@ namespace RecommendedExtensions.Core.Languages.CIL
             var argNumber = getArgNumber(Name);
 
             emitPushArg(argNumber);
+        }
+
+        static void _ldarg_s()
+        {
+            var number = Instruction.Data as ParameterReference;
+            if (number == null)
+                unknownInstruction();
+            
+            emitPushArg(number.Index);
+        }
+
+        static void _ldarga()
+        {
+            unknownInstruction();
         }
 
         static void _newobj()
@@ -279,9 +303,19 @@ namespace RecommendedExtensions.Core.Languages.CIL
             emitCall(Instruction.SetterOperand, true);
         }
 
+        static void _stsflda()
+        {
+            unknownInstruction();
+        }
+
         static void _ldsfld()
         {
             emitCall(Instruction.GetterOperand, true);
+        }
+
+        static void _ldsflda()
+        {
+            unknownInstruction();
         }
 
         static void _box()
@@ -292,7 +326,6 @@ namespace RecommendedExtensions.Core.Languages.CIL
 
         static void _ret()
         {
-            //TODO jump to the end
             if (HasReturnValue)
             {
                 emitPopTo(LocalTmpVar);
@@ -310,7 +343,6 @@ namespace RecommendedExtensions.Core.Languages.CIL
             var literalType = new LiteralType(type);
             emitPush<LiteralType>(literalType);
         }
-        
 
         static void _dup()
         {
@@ -325,10 +357,20 @@ namespace RecommendedExtensions.Core.Languages.CIL
             emitCall(getter, getter.IsStatic);
         }
 
+        static void _ldflda()
+        {
+            unknownInstruction();
+        }
+
         static void _stfld()
         {
             var setter = Instruction.SetterOperand;
             emitCall(setter, setter.IsStatic);
+        }
+
+        static void _stflda()
+        {
+            unknownInstruction();
         }
 
         #endregion
