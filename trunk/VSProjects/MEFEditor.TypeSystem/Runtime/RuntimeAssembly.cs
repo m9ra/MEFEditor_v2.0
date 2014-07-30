@@ -208,7 +208,6 @@ namespace MEFEditor.TypeSystem.Runtime
         /// <returns>InheritanceChain.</returns>
         internal InheritanceChain GetChain(Type type)
         {
-            //TODO resolve generic chains
             if (type == null)
                 return null;
 

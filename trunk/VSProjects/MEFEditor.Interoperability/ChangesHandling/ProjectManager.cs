@@ -141,8 +141,12 @@ namespace MEFEditor.Interoperability
             if (_isAllRegistered)
                 return;
 
-            foreach (ProjectItem item in _project.ProjectItems)
-                registerItem(item); //folder and its project items
+            var items = _project.ProjectItems;
+            if (items != null)
+            {
+                foreach (ProjectItem item in items)
+                    registerItem(item); //folder and its project items
+            }
 
             _isAllRegistered = true;
         }

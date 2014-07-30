@@ -25,6 +25,9 @@ using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
 using MEFEditor.Plugin.GUI;
 using MEFEditor.Plugin.Drawing;
 
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+
 namespace MEFEditor.Plugin.Main
 {
     /// <summary>
@@ -63,6 +66,11 @@ namespace MEFEditor.Plugin.Main
         /// Content drawers that were loaded through extensions.
         /// </summary>
         private ContentDrawer[] _contentDrawers;
+        
+        /// <summary>
+        /// The exported general drawing providers.
+        /// </summary>
+        private List<GeneralDrawingDefinitionProvider> _exportedGeneralDrawingProvider=new List<GeneralDrawingDefinitionProvider>();
 
         /// <summary>
         /// Transaction used for handling changes.
@@ -145,6 +153,10 @@ namespace MEFEditor.Plugin.Main
             _machine = new Machine(_settings);
             _guiManager = new GUIManager(GUI, _vs);
 
+            //install recommended extensions if required
+            if (Installer.CheckInstall())
+                Installer.Install();
+            
             //try to load users extensions
             Exception loadingException = null;
             try
@@ -238,6 +250,9 @@ namespace MEFEditor.Plugin.Main
                 //collect exported providers
                 exportedProviders.AddRange(export.ExportedProviders);
                 drawingProviders.AddRange(createContentDrawers(export));
+
+                if (export.ExportedGeneralDrawingDefinitionProvider != null)
+                    _exportedGeneralDrawingProvider.Add(export.ExportedGeneralDrawingDefinitionProvider);
             }
 
             //initialize editor
@@ -283,9 +298,19 @@ namespace MEFEditor.Plugin.Main
         /// <summary>
         /// Collects all exports.
         /// </summary>
-        /// <returns>Collected exportts.</returns>
+        /// <returns>Collected exports.</returns>
+        [CompositionPoint]
         private IEnumerable<ExtensionExport> collectExports()
         {
+            //MEF Composition of user extensions.
+            /*
+            var importer = new UserExtensionImporter();
+            var directoryCatalog = new DirectoryCatalog(Installer.ExtensionPath);
+            var container = new CompositionContainer(directoryCatalog);
+            container.ComposeParts(directoryCatalog);
+            return importer.Exports;
+            */
+
             //TODO load extensions from Extensions directory
             //TODO remove reference to RecommendedExtensions
             var providers = new RecommendedExtensions.AssemblyProviders.AssemblyProvidersExport();
@@ -490,7 +515,7 @@ namespace MEFEditor.Plugin.Main
             var definition = pipeline.GetOutput();
 
             definition.AddEditsMenu("Add Component", componentCreationEdits);
-            definition.AddCommand(new CommandDefinition("Reset workspace", () => _vs.RunSafeAction(_guiManager.ResetWorkspace, "Resetting workspace failed")));
+            definition.AddCommand(new CommandDefinition("Reset workspace", () => _vs.SafeRunAction(_guiManager.ResetWorkspace, "Resetting workspace failed")));
             definition.UseItemAvoidance = _guiManager.UseItemAvoidance;
             definition.UseJoinAvoidance = _guiManager.UseJoinAvoidance;
             definition.ShowJoinLines = _guiManager.ShowJoinLines;
@@ -526,7 +551,7 @@ namespace MEFEditor.Plugin.Main
 
                 var edit = new EditDefinition("Create " + component.ComponentType.TypeName, (v) =>
                 {
-                    return _vs.RunSafe(() =>
+                    return _vs.SafeRun(() =>
                     {
                         var transformation = new AddCallTransformation((exV) => addComponent(component, exV));
 
@@ -574,13 +599,13 @@ namespace MEFEditor.Plugin.Main
             if (instance.WrappedInstance.CreationNavigation != null)
                 instance.Drawing.AddCommand(new CommandDefinition("Navigate to", () =>
                 {
-                    _vs.RunSafeAction(() => instance.WrappedInstance.CreationNavigation(),
+                    _vs.SafeRunAction(() => instance.WrappedInstance.CreationNavigation(),
                         "Instance navigation failed");
                 }));
 
             instance.Drawing.AddEdit(new EditDefinition("Remove", (v) =>
             {
-                return _vs.RunSafe(() =>
+                return _vs.SafeRun(() =>
                  {
                      var view = (v as EditView).CopyView();
                      view.Remove(instance.WrappedInstance);
@@ -592,14 +617,17 @@ namespace MEFEditor.Plugin.Main
                 return view.CanRemove(instance.WrappedInstance);
             }));
 
-
             var instanceInfo = instance.WrappedInstance.Info;
             var componentInfo = _loader.GetComponentInfo(instanceInfo);
             var assembly = _loader.AppDomain.GetDefiningAssembly(instanceInfo);
             if (assembly != null)
                 instance.SetProperty("DefiningAssembly", assembly.Name);
 
-            GeneralDefinitionProvider.Draw(instance, componentInfo);
+            //provide general drawing
+            foreach (var generalDrawer in _exportedGeneralDrawingProvider)
+            {
+                generalDrawer(instance, componentInfo);
+            }
         }
 
         #endregion
@@ -750,7 +778,9 @@ namespace MEFEditor.Plugin.Main
         /// </summary>
         private void _vs_SolutionClosed()
         {
-            //there is nothing to do, projects are unloaded by ProjectRemoved
+            //REA will be also freed
+            _guiManager.DisableHostedApplication();
+            //unload assemblies because of disposing resources
             _loader.UnloadAssemblies();
         }
 

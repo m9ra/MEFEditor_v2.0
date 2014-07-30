@@ -51,7 +51,7 @@ namespace MEFEditor.Plugin
             var editor = new Editor(services);
             base.Content = editor.GUI;
 
-            //TODO async loading
+            
             editor.Initialize();
         }
     }

@@ -190,10 +190,10 @@ namespace MEFEditor.TypeSystem
     public abstract class SearchIterator
     {
         /// <summary>
-        /// Create iterator that is extended by given suffix
+        /// Create iterator that is extended by given suffix.
         /// </summary>
-        /// <param name="suffix">Extending suffix</param>
-        /// <returns>Extended search iterator</returns>
+        /// <param name="suffix">Extending suffix.</param>
+        /// <returns>Extended search iterator.</returns>
         public abstract SearchIterator ExtendName(string suffix);
 
         /// <summary>

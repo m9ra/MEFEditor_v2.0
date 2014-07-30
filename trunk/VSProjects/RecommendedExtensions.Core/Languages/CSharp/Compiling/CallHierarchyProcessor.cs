@@ -282,7 +282,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp.Compiling
         /// <param name="calledObject">The called object.</param>
         /// <param name="currNode">The curr node.</param>
         /// <param name="dispatchSetter">if set to <c>true</c> [dispatch setter].</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if current object is correctly set, <c>false</c> otherwise.</returns>
         private bool setCurrentObject(RValueProvider calledObject, INodeAST currNode, bool dispatchSetter)
         {
             if (calledObject != null && currNode != null && currNode.Indexer != null)

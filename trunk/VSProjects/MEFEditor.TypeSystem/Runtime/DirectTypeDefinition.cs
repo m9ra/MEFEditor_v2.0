@@ -281,7 +281,6 @@ namespace MEFEditor.TypeSystem.Runtime
             {
                 foreach (var implementedInterface in type.GetInterfaces())
                 {
-                    //TODO generics
                     var map = type.GetInterfaceMap(implementedInterface);
                     foreach (var method in map.TargetMethods)
                     {

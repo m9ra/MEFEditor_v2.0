@@ -5,6 +5,7 @@ using System.Text;
 
 using MEFEditor.Drawing;
 using MEFEditor.TypeSystem.Runtime;
+using MEFEditor.TypeSystem.DrawingServices;
 
 namespace MEFEditor.TypeSystem
 {
@@ -21,6 +22,13 @@ namespace MEFEditor.TypeSystem
     /// <param name="assemblyKey">Key defining assembly</param>
     /// <returns><see cref="AssemblyProvider" /> if can be created from given key, <c>null</c> otherwise.</returns>
     public delegate AssemblyProvider ExportedAssemblyProviderFactory(object assemblyKey);
+
+    /// <summary>
+    /// Method used for initialization of every drawing instance definition.
+    /// </summary>
+    /// <param name="instance">Instance which drawing definition is created.</param>
+    /// <param name="info">Component information for drawn instance.</param>
+    public delegate void GeneralDrawingDefinitionProvider(DrawedInstance instance,ComponentInfo info);
 
     /// <summary>
     /// Handler used for logging events
@@ -67,6 +75,12 @@ namespace MEFEditor.TypeSystem
         /// </summary>
         /// <value>The exported drawers.</value>
         public IEnumerable<KeyValuePair<string, ExportedDrawingFactory>> ExportedDrawers { get { return _exportedDrawers; } }
+
+        /// <summary>
+        /// Gets general drawing definition provider that has been exported.
+        /// </summary>
+        /// <value>The exported general drawing definition provider.</value>
+        public GeneralDrawingDefinitionProvider ExportedGeneralDrawingDefinitionProvider { get; private set; }
 
         /// <summary>
         /// Event fired whenever new message is logged.
@@ -185,6 +199,20 @@ namespace MEFEditor.TypeSystem
         protected void ExportGeneralDrawing(ExportedDrawingFactory drawing)
         {
             ExportDrawing("", drawing);
+        }
+
+
+        /// <summary>
+        /// Exports the general drawing definition provider that is called on every <see cref="Analyzing.Instance"/> that will be drawn.
+        /// </summary>
+        /// <param name="provider">The exported provider.</param>
+        protected void ExportGeneralDrawingDefinitionProvider(GeneralDrawingDefinitionProvider provider)
+        {
+            if (provider == null)
+                throw new ArgumentNullException("provider");
+
+            ExportedGeneralDrawingDefinitionProvider = provider;
+            Message("Exporting general drawing definition provider {0}", provider);
         }
 
         /// <summary>

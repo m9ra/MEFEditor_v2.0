@@ -847,7 +847,7 @@ namespace MEFEditor.Interoperability
         /// <param name="action">The action that will be run.</param>
         /// <param name="messageFormat">The message format displayed in log.</param>
         /// <param name="formatArguments">The format arguments.</param>
-        public void RunSafeAction(Action action, string messageFormat, params object[] formatArguments)
+        public void SafeRunAction(Action action, string messageFormat, params object[] formatArguments)
         {
             try
             {
@@ -868,7 +868,7 @@ namespace MEFEditor.Interoperability
         /// <param name="messageFormat">The message format displayed in log.</param>
         /// <param name="formatArguments">The format arguments.</param>
         /// <returns>T.</returns>
-        public T RunSafe<T>(Func<T> function, string messageFormat, params object[] formatArguments)
+        public T SafeRun<T>(Func<T> function, string messageFormat, params object[] formatArguments)
         {
             try
             {

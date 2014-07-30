@@ -1140,12 +1140,12 @@ namespace RecommendedExtensions.Core.Languages.CSharp
 
 
         /// <summary>
-        /// Tries the get setter.
+        /// Tries to get setter.
         /// </summary>
         /// <param name="callNode">The call node.</param>
         /// <param name="result">The result.</param>
         /// <param name="baseObject">The base object.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if call hierarchy is recognized, <c>false</c> otherwise.</returns>
         private bool tryGetSetter(INodeAST callNode, out LValueProvider result, RValueProvider baseObject = null)
         {
             var processor = new CallHierarchyProcessor(callNode, this);

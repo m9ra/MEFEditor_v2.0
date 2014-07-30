@@ -139,8 +139,6 @@ namespace MEFEditor.TypeSystem.Core
 
         internal TypeAssembly AccordingMappedFullpath(string assemblyPath)
         {
-            //TODO performance improvement
-
             foreach (var assemblyPair in _assemblies)
             {
                 if (assemblyPair.Key.FullPathMapping == assemblyPath)

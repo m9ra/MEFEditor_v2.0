@@ -186,7 +186,7 @@ namespace MEFEditor.Plugin.GUI
         /// <summary>
         /// Initialization routine that makes <see cref="GUIManager" /> active.
         /// </summary>
-        /// <param name="appDomain">Appdomain where analysis is processed.</param>
+        /// <param name="appDomain">AppDomain where analysis is processed.</param>
         /// <param name="diagramFactory">Factory used for diagram drawings.</param>
         public void Initialize(AppDomainServices appDomain, AbstractDiagramFactory diagramFactory)
         {
@@ -341,6 +341,15 @@ namespace MEFEditor.Plugin.GUI
         #endregion
 
         #region Assembly settings handling
+
+
+        /// <summary>
+        /// Disables hosted application interpreting.
+        /// </summary>
+        internal void DisableHostedApplication()
+        {
+            _gui._CrossInterpretationValue.IsChecked = false;
+        }
 
         /// <summary>
         /// Handler called on assembly removed.
@@ -843,18 +852,17 @@ namespace MEFEditor.Plugin.GUI
             {
                 var navigate = new MenuItem();
                 navigate.Header = "Navigate to";
-                navigate.Click += (s, e) => _vs.RunSafeAction(entry.Navigate, "Navigation fialed");
+                navigate.Click += (s, e) => _vs.SafeRunAction(entry.Navigate, "Navigation fialed");
                 contextMenu.Items.Add(navigate);
             }
 
             var copy = new MenuItem();
             copy.Header = "Copy to clipboard";
             copy.Click += (s, e) =>
-                _vs.RunSafeAction(() => Clipboard.SetText(entry.ToString()), "Clipboard text setting failed");
+                _vs.SafeRunAction(() => Clipboard.SetText(entry.ToString()), "Clipboard text setting failed");
             contextMenu.Items.Add(copy);
         }
 
         #endregion
-
     }
 }

@@ -51,7 +51,6 @@ namespace MEFEditor.TypeSystem.Dialogs
         /// Keywords that cannot be used as variable names.
         /// </summary>
         static readonly HashSet<string> _keywords = new HashSet<string>(){
-            //TODO extend this list
             "while", "do", "this", "self", "until", "base", "class", "interface", "public", "protected",
         };
 

@@ -37,6 +37,9 @@ namespace RecommendedExtensions.DrawingDefinitions
             ExportDrawing<AggregateCatalog>((i)=>new AggregateCatalogDrawing(i));
             ExportDrawing<TypeCatalog>((i)=>new TypeCatalogDrawing(i));
             ExportDrawing<AssemblyCatalog>((i)=>new AssemblyCatalogDrawing(i));
+
+            //general drawing definition provider
+            ExportGeneralDrawingDefinitionProvider(GeneralDefinitionProvider.Draw);
         }
     }
 }

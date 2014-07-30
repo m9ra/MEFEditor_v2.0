@@ -94,6 +94,7 @@
     <Compile Include="AssemblyProviders\CSharpAssembly\CSharpNames.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\MethodBuilding\MethodInfoBuilder.cs" />
     <Compile Include="AssemblyProviders\ProjectAssembly\Traversing\CodeElementNamesProvider.cs" />
+    <Compile Include="AssemblyProviders\ProjectAssembly\Traversing\ElementPosition.cs" />
     <Compile Include="TypeDefinitions\AggregateCatalogDefinition.cs" />
     <Compile Include="TypeDefinitions\AssemblyDefinition.cs" />
     <Compile Include="TypeDefinitions\AttributedModelServicesDefinition.cs" />

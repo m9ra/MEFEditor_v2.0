@@ -102,7 +102,6 @@ namespace MEFEditor.TypeSystem
         {
             get
             {
-                //TODO make sure that correct resolver is returned
                 return _typeArguments.Values;
             }
         }
@@ -115,7 +114,6 @@ namespace MEFEditor.TypeSystem
         {
             get
             {
-                //TODO refactor
                 return TypeName.StartsWith("@");
             }
         }
@@ -242,7 +240,6 @@ namespace MEFEditor.TypeSystem
         /// <returns>Created type descriptor.</returns>
         public static TypeDescriptor Create(string typeName)
         {
-            //TODO improve type parsing
             var path = new PathInfo(typeName);
             var args = path.GenericArgs.ToArray();
 
@@ -266,7 +263,6 @@ namespace MEFEditor.TypeSystem
         /// <returns>Parameter descritor.</returns>
         public static TypeDescriptor GetParameter(int parameterIndex)
         {
-            //TODO refactor!!
             return new TypeDescriptor("@" + parameterIndex);
         }
 

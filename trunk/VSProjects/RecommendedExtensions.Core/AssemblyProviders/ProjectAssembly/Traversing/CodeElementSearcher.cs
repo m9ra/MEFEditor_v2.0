@@ -37,11 +37,12 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             var pathParts = pathSignature.Split(Naming.PathDelimiter);
             var pathLength = pathParts.Length;
             if (pathLength == 0)
+                //the path is empty
                 return null;
 
             var result = new List<CodeElement>();
-            //travers elements
-            var currentElements = _searchedAssembly.RootElements;
+            //traverse elements
+            IEnumerable<ElementPosition> currentElements = null;
             for (var i = 0; i < pathLength; ++i)
             {
                 var isLastPart = i + 1 == pathLength;
@@ -51,29 +52,21 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
                 if (genericIndex > 0)
                     currentPart = currentPart.Substring(0, genericIndex);
 
-                IEnumerable<CodeElement> nextElements = new CodeElement[0];
-                foreach (CodeElement currentChild in currentElements)
-                {
-                    var name = currentChild.Name();
-                    if (name == currentPart)
-                    {
-                        //current element satysfiing the path - step to its children
-                        if (isLastPart)
-                        {
-                            result.Add(currentChild);
-                        }
-
-                        var children = from CodeElement child in currentChild.Children() select child;
-                        nextElements = nextElements.Concat(children);
-                    }
-                }
-
-                //shift to next children
-                currentElements = nextElements;
-
+                //extend next element
                 if (currentElements == null)
-                    //no element matches current part
+                    currentElements = ElementPosition.ExtendElements(_searchedAssembly.RootElements, currentPart);
+                else
+                    currentElements = ElementPosition.ExtendElements(currentElements, currentPart);
+
+                if (!currentElements.Any())
+                    //there are no available elements
                     break;
+            }
+
+            foreach (var element in currentElements)
+            {
+                if (element.IsEnd)
+                    result.Add(element.Element);
             }
 
             return result;
