@@ -54,6 +54,11 @@ namespace MEFEditor.Interoperability
         internal event ElementNodeHandler ElementChanged;
 
         /// <summary>
+        /// Determine that manager has waiting changes.
+        /// </summary>
+        internal bool HasChanges { get { return _changedFileManagers.Count > 0; } }
+
+        /// <summary>
         /// Gets the root nodes in FileCodeModel of manager.
         /// </summary>
         /// <value>The root nodes.</value>
@@ -80,12 +85,18 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
+        /// Name of represented project.
+        /// </summary>
+        internal readonly string Name;
+
+        /// <summary>
         /// Initialize manager.
         /// </summary>
         /// <param name="project"><see cref="Project" /> that will be watched after Hooking.</param>
         /// <param name="vs">Visual studio services.</param>
         public ProjectManager(Project project, VisualStudioServices vs)
         {
+            Name = project.Name;
             _project = project;
             _vs = vs;
         }
@@ -127,7 +138,7 @@ namespace MEFEditor.Interoperability
             FileItemManager fileManager;
             if (!_watchedItems.TryGetValue(item, out fileManager))
             {
-                fileManager = registerItem(item);
+                fileManager = registerItem(item, null);
             }
 
             return fileManager;
@@ -136,7 +147,7 @@ namespace MEFEditor.Interoperability
         /// <summary>
         /// Register all items that are contained within project.
         /// </summary>
-        internal void RequireRegisterAllItems()
+        internal void RequireRegisterAllItems(NamedProgressEvent progress)
         {
             if (_isAllRegistered)
                 return;
@@ -145,7 +156,9 @@ namespace MEFEditor.Interoperability
             if (items != null)
             {
                 foreach (ProjectItem item in items)
-                    registerItem(item); //folder and its project items
+                {
+                    registerItem(item, progress); //folder and its project items                    
+                }
             }
 
             _isAllRegistered = true;
@@ -186,7 +199,7 @@ namespace MEFEditor.Interoperability
         /// <param name="item">Project item that is added.</param>
         internal void RegisterAdd(ProjectItem item)
         {
-            registerItem(item);
+            registerItem(item, null);
         }
 
         /// <summary>
@@ -199,7 +212,7 @@ namespace MEFEditor.Interoperability
             if (!_watchedItems.TryGetValue(change.Item, out fileManager))
             {
                 //requested manager is not registered yet
-                fileManager = registerItem(change.Item);
+                fileManager = registerItem(change.Item, null);
             }
 
             if (fileManager == null)
@@ -217,11 +230,14 @@ namespace MEFEditor.Interoperability
         /// <summary>
         /// Flush all waiting changes.
         /// </summary>
-        internal void FlushChanges()
+        internal void FlushChanges(NamedProgressEvent progress)
         {
             foreach (var file in _changedFileManagers)
             {
                 file.FlushChanges();
+
+                if (progress != null)
+                    progress(file.Name);
             }
 
             _changedFileManagers.Clear();
@@ -233,8 +249,9 @@ namespace MEFEditor.Interoperability
         /// Register given <see cref="ProjectItem" />.
         /// </summary>
         /// <param name="item">Project item that is registered.</param>
+        /// <param name="progress">The progress handler.</param>
         /// <returns><see cref="FileItemManager" /> created for given item if any.</returns>
-        private FileItemManager registerItem(ProjectItem item)
+        private FileItemManager registerItem(ProjectItem item, NamedProgressEvent progress)
         {
             if (_watchedItems.ContainsKey(item))
                 return _watchedItems[item];
@@ -247,7 +264,7 @@ namespace MEFEditor.Interoperability
                     //possible folder, which contains another project items
                     foreach (ProjectItem subItm in item.ProjectItems)
                         //folder and its project items
-                        registerItem(subItm);
+                        registerItem(subItm, progress);
                 }
 
                 //Note that we don't need to watch SubProjects in folders for now           
@@ -255,8 +272,11 @@ namespace MEFEditor.Interoperability
             }
             else
             {
-                //item is source code file so it needs to be registered                
-                var manager = new FileItemManager(_vs, fileCodeModel);
+                //item is source code file so it needs to be registered          
+                if (progress != null)
+                    progress(item.Name);
+
+                var manager = new FileItemManager(_vs, item.Name, fileCodeModel);
                 manager.ElementAdded += (e) =>
                 {
                     if (ElementAdded != null) ElementAdded(e);
@@ -269,10 +289,20 @@ namespace MEFEditor.Interoperability
                 {
                     if (ElementRemoved != null) ElementRemoved(e);
                 };
-                manager.FlushChanges();
 
-                //register item
-                _watchedItems.Add(item, manager);
+                if (item.IsOpen)
+                {
+                    //we will read whole representation of opened
+                    //file because it is already loaded in memory
+                    manager.FlushChanges();
+                }
+                else
+                {
+                    manager.LoadRootOnly();
+                }
+
+                    //register item
+                    _watchedItems.Add(item, manager);
 
                 return manager;
             }

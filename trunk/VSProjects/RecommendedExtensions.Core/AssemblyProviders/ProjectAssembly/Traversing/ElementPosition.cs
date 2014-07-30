@@ -65,17 +65,20 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.Traversin
             foreach (var element in elements)
             {
                 var name = element.Name();
+                if (name == null)
+                    continue;
+
                 if (name.Contains('.'))
                 {
                     //test compound namespace
-                    if (part!=null && !name.StartsWith(part))
+                    if (part != null && !name.StartsWith(part))
                         //element doesn't match
                         continue;
 
                     var parts = name.Split('.').Skip(1);
                     result.Add(new ElementPosition(element, parts));
                 }
-                else if (name == part || part==null)
+                else if (name == part || part == null)
                 {
                     //element name matches
                     result.Add(new ElementPosition(element, new string[0]));

@@ -121,19 +121,12 @@ namespace MEFEditor.TypeSystem.Core
             Settings.AfterInterpretation += _afterInterpretation;
 
             //runtime assembly has to be always present
+            startTransaction("Loading root assembly");
             _assemblies.AddRoot(settings.Runtime);
+            commitTransaction();
         }
 
         #region Workflow definitions
-
-        /// <summary>
-        /// Tries to recover assembly that has been invalidated
-        /// </summary>
-        /// <param name="assemblyKey">Assembly key describes recovered assembly</param>
-        private void tryRecoverAssembly(object assemblyKey)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// Immediately (not within after action) reload assemblies that are affected by given assembly key
@@ -141,11 +134,13 @@ namespace MEFEditor.TypeSystem.Core
         /// <param name="key">Key that is affecting assemblies</param>
         private void reloadAffectedAssemblies(object key)
         {
-            throw new NotImplementedException();
+            foreach (var affectedAssembly in _assemblies.GetDependantAssemblies(key))
+                after_reloadAssembly(affectedAssembly);
         }
 
         /// <summary>
         /// Force reloading of given assembly (probably because of invalidation of some its references)
+        /// or because it hasn't been loaded yet.
         /// </summary>
         /// <param name="assembly">Reloaded assembly</param>
         private void reloadAssembly(AssemblyProvider assembly)
@@ -229,7 +224,8 @@ namespace MEFEditor.TypeSystem.Core
         private void addAfterAction(Action action, string name, IsIncludedPredicate predicate, params object[] keys)
         {
             var transactionAction = new TransactionAction(action, name, predicate, keys);
-            Transactions.CurrentTransaction.AddAfterAction(transactionAction);
+            //attach to current transaction or to root
+            Transactions.AttachAfterAction(Transactions.CurrentTransaction, transactionAction);
         }
 
         #region Transaction dependencies
@@ -495,7 +491,6 @@ namespace MEFEditor.TypeSystem.Core
         /// <summary>
         /// Load assembly for purposes of interpretation analysis. Assembly is automatically cached between multiple runs.
         /// Mapping of assemblies is take into consideration
-        /// <remarks>TODO: Reloading affected assemblies is not processed. Should be?</remarks>
         /// </summary>
         /// <param name="assemblyKey">Key of loaded assembly</param>
         /// <returns>Loaded assembly if available, <c>null</c> otherwise</returns>
@@ -513,6 +508,7 @@ namespace MEFEditor.TypeSystem.Core
 
             //register created assembly
             _assemblies.AddReference(createdProvider);
+            reloadAffectedAssemblies(assemblyKey);
 
             return _assemblies.GetTypeAssembly(createdProvider);
         }
@@ -547,6 +543,15 @@ namespace MEFEditor.TypeSystem.Core
         internal void Unload(AssemblyProvider assembly)
         {
             _assemblies.Remove(assembly);
+        }
+
+        /// <summary>
+        /// Mark assembly as invalidated and tries to reload it.
+        /// </summary>
+        /// <param name="assembly">Invalidated assembly.</param>
+        internal void InvalidateAssembly(AssemblyProvider assembly)
+        {
+            _onAssemblyInvalidation(assembly);
         }
 
         /// <summary>
@@ -670,7 +675,9 @@ namespace MEFEditor.TypeSystem.Core
         private void _onReferenceAdded(AssemblyProvider assembly, object reference)
         {
             LoadReferenceAssembly(reference);
-            after_reloadAssembly(assembly);
+
+            //reloading is done when reference is loaded
+            //after_reloadAssembly(assembly);
         }
 
         /// <summary>
@@ -682,9 +689,7 @@ namespace MEFEditor.TypeSystem.Core
             //remove invalidated assembly
             removeAssembly(assembly);
 
-            if (_assemblies.IsRequired(assembly.Key))
-                tryRecoverAssembly(assembly.Key);
-
+            //affected assemblies can try to reload assembly again
             reloadAffectedAssemblies(assembly.Key);
         }
 
@@ -694,7 +699,20 @@ namespace MEFEditor.TypeSystem.Core
         /// <param name="assembly">Added assembly</param>
         private void _onRootAssemblyAdd(AssemblyProvider assembly)
         {
-            //what to do with root assemblies
+            //root assemblies will be initialized and their references also
+            //however references of referencs will be loaded lazily
+            assembly.InitializeAssembly();
+
+            foreach (var reference in assembly.References)
+            {
+                var provider=_assemblies.FindProviderFromKey(reference);
+                if (provider == null)
+                    continue;
+
+                //references of root assemblies should be 
+                //initialized, because of providing their components
+                provider.InitializeAssembly();
+            }
         }
 
         /// <summary>
@@ -712,14 +730,17 @@ namespace MEFEditor.TypeSystem.Core
         /// <param name="assembly">Registered assembly</param>
         private void _onAssemblyRegistered(AssemblyProvider assembly)
         {
+            //attach after action to outer scope of assembly
+            after_reloadAssembly(assembly);
             startTransaction("Registering assembly: " + assembly.Name);
+
+            //hook component handlers
             assembly.ComponentAdded += (compInfo) => _onComponentAdded(assembly, compInfo);
             assembly.ComponentRemoved += (compInfo) => _onComponentRemoved(assembly, compInfo);
 
             var services = new TypeServices(assembly, this);
+            //this assign causes assembly initialization (loading references)
             assembly.TypeServices = services;
-
-            after_loadComponents(assembly);
 
             try
             {
@@ -730,6 +751,8 @@ namespace MEFEditor.TypeSystem.Core
             {
                 commitTransaction();
             }
+
+            //assembly has to be be initialized only if it is a Root assembly or Root's assembly reference by caller
         }
 
         /// <summary>
@@ -794,8 +817,7 @@ namespace MEFEditor.TypeSystem.Core
             if (ComponentRemoved != null)
                 ComponentRemoved(removedComponent);
         }
-
-
+        
         #endregion
 
         #region Transaction system
@@ -874,7 +896,6 @@ namespace MEFEditor.TypeSystem.Core
             foreach (var assembly in _assemblies.Providers)
             {
                 var inheritanceChain = assembly.GetInheritanceChain(typePath);
-
                 if (inheritanceChain != null)
                 {
                     return inheritanceChain;
@@ -933,8 +954,7 @@ namespace MEFEditor.TypeSystem.Core
             if (!searchPath.HasGenericArguments)
                 //there is no need for generic resolving
                 return null;
-
-
+            
             foreach (var assembly in _assemblies.Providers)
             {
                 var generator = assembly.GetGenericMethodGenerator(method, searchPath);
@@ -1054,6 +1074,9 @@ namespace MEFEditor.TypeSystem.Core
                 if (resolved == null)
                     //assembly is not available
                     continue;
+
+                //require reference initialization
+                resolved.InitializeAssembly();
 
                 yield return resolved;
             }

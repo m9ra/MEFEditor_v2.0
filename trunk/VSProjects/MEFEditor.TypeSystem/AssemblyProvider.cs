@@ -55,7 +55,12 @@ namespace MEFEditor.TypeSystem
         private object _key;
 
         /// <summary>
-        /// Stack of running transactons.
+        /// Determine that assembly has been initialized.
+        /// </summary>
+        private bool _isInitialized;
+
+        /// <summary>
+        /// Stack of running transactions.
         /// </summary>
         private Stack<Transaction> _transactions = new Stack<Transaction>();
 
@@ -120,7 +125,7 @@ namespace MEFEditor.TypeSystem
 
         /// <summary>
         /// Mapping of fullpath used for provided assembly. Path mapping
-        /// is necessary for analying development configuration: Extending of an Existing Application.
+        /// is necessary for analyzing development configuration: Extending of an Existing Application.
         /// </summary>
         /// <value>The full path mapping.</value>
         public string FullPathMapping
@@ -147,7 +152,7 @@ namespace MEFEditor.TypeSystem
         /// </summary>
         /// <value>The type services.</value>
         /// <exception cref="System.InvalidOperationException">
-        /// Cannot request services before theire initialized
+        /// Cannot request services before they are initialized
         /// or
         /// Cannot reset already initialized services
         /// </exception>
@@ -156,7 +161,7 @@ namespace MEFEditor.TypeSystem
             get
             {
                 if (_services == null)
-                    throw new InvalidOperationException("Cannot request services before theire initialized");
+                    throw new InvalidOperationException("Cannot request services before they are initialized");
 
                 return _services;
             }
@@ -170,9 +175,6 @@ namespace MEFEditor.TypeSystem
 
                 //default path mapping
                 FullPathMapping = FullPath;
-
-                if (OnTypeSystemInitialized != null)
-                    OnTypeSystemInitialized();
             }
         }
 
@@ -190,13 +192,27 @@ namespace MEFEditor.TypeSystem
             //by default there is nothing to do
         }
 
+        internal void InitializeAssembly()
+        {
+            if (_isInitialized)
+                //assembly is already initialized
+                return;
+
+            if (TypeServices == null)
+                throw new NotSupportedException("Cannot initialize assembly where TypeServices are not available");
+
+            _isInitialized = true;
+            if (OnTypeSystemInitialized != null)
+                OnTypeSystemInitialized();
+        }
+
         /// <summary>
         /// Force to load components - suppose that no other components from this assembly are registered.
         /// <remarks>Can be called multiple times when changes in references are registered</remarks>.
         /// </summary>
         internal void LoadComponents()
         {
-            StartTransaction("Loading components");
+            StartTransaction(Name + " is loading components");
             try
             {
                 loadComponents();
@@ -345,7 +361,7 @@ namespace MEFEditor.TypeSystem
         /// <param name="transactionDescription">Description of started transaction.</param>
         protected void StartTransaction(string transactionDescription)
         {
-            var transaction=_services.Transactions.StartNew(transactionDescription);
+            var transaction = _services.Transactions.StartNew(transactionDescription);
             _transactions.Push(transaction);
         }
 

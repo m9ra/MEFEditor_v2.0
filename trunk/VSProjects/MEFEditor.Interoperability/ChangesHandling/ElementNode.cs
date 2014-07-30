@@ -166,6 +166,41 @@ namespace MEFEditor.Interoperability
             return false;
         }
 
+
+        /// <summary>
+        /// Loads the direct children only.
+        /// It is used for fast initial loading where we don't require
+        /// changes handling.
+        /// </summary>
+        /// <returns>Collected namespaces.</returns>
+        internal HashSet<string> LoadDirectChildrenOnly()
+        {
+            var collectedNamespaces = new HashSet<string>();
+            if (_elements == null)
+                //nothing to load
+                return collectedNamespaces;
+
+            _children.Clear();
+            foreach (CodeElement element in _elements)
+            {
+                if (element.Kind == vsCMElement.vsCMElementImportStmt)
+                {
+                    var import = element as CodeImport;
+                    collectedNamespaces.Add(import.Namespace);
+                    continue;
+                }
+
+                if (!element.IsWatched())
+                    //we are watching only few element types
+                    continue;
+
+                var child = new ElementNode(element, _owner);
+                _children[element] = child;
+            }
+
+            return collectedNamespaces;
+        }
+
         /// <summary>
         /// Check which descendants were added/removed or are misplaced according to ApplyEdits.
         /// </summary>
@@ -173,7 +208,8 @@ namespace MEFEditor.Interoperability
         /// <returns>List&lt;ElementChange&gt;.</returns>
         internal List<ElementChange> CheckChildren(List<ElementChange> result = null)
         {
-            if (result == null) result = new List<ElementChange>();
+            if (result == null)
+                result = new List<ElementChange>();
 
             if (_elements == null)
                 return result; //no watched children
@@ -188,13 +224,17 @@ namespace MEFEditor.Interoperability
                     continue;
                 }
 
-                if (!el.IsWatched()) continue; //we are watching only few element types
+                if (!el.IsWatched())
+                    //we are watching only few element types
+                    continue;
 
-                if (oldElements.Remove(el)) continue; //element is already registered      
+                if (oldElements.Remove(el))
+                    //element is already registered      
+                    continue;
 
                 //else element was added
                 var nChild = new ElementNode(el, _owner);
-                _children.Add(el, nChild);
+                _children[el] = nChild;
                 result.Add(new ElementChange(nChild, ChangeKind.Added));
             }
 

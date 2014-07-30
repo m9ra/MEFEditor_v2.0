@@ -18,28 +18,43 @@ namespace MEFEditor.Interoperability
     public delegate void ElementNodeHandler(ElementNode element);
 
     /// <summary>
-    /// Provide element events in sourcecode - wrapper over LineChanged event
+    /// Provide element events in source code - wrapper over LineChanged event.
     /// </summary>
     class FileItemManager
     {
-        Document _doc;
+        /// <summary>
+        /// Currently known length of document.
+        /// </summary>
         int _docLength;
 
         /// <summary>
-        /// All namespaces available via usings
+        /// All namespaces available via usings.
         /// </summary>
         HashSet<string> _namespaces = new HashSet<string>();
 
         /// <summary>
-        /// Storage for namespaces explored when checking elements
+        /// Storage for namespaces explored when checking elements.
         /// </summary>
         HashSet<string> _checkedNamespaces = new HashSet<string>();
 
+        /// <summary>
+        /// The _queue.
+        /// </summary>
         HashSet<ElementChange> _queue = new HashSet<ElementChange>();
+        /// <summary>
+        /// The _removed.
+        /// </summary>
         HashSet<ElementChange> _removed = new HashSet<ElementChange>();
 
+        /// <summary>
+        /// The vs.
+        /// </summary>
         internal readonly VisualStudioServices VS;
 
+        /// <summary>
+        /// Gets the root.
+        /// </summary>
+        /// <value>The root.</value>
         internal ElementNode Root { get; private set; }
 
         /// <summary>
@@ -57,11 +72,21 @@ namespace MEFEditor.Interoperability
         /// </summary>
         internal event ElementNodeHandler ElementChanged;
 
-        internal FileItemManager(VisualStudioServices vs, FileCodeModel file)
+        /// <summary>
+        /// Name of described file;
+        /// </summary>
+        internal readonly string Name;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileItemManager" /> class.
+        /// </summary>
+        /// <param name="vs">The vs.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="file">The file.</param>
+        internal FileItemManager(VisualStudioServices vs, string name, FileCodeModel file)
         {
             VS = vs;
-            _doc = file.Parent.Document;
-
+            Name = name;
             /*   var fullpath = _doc.Path + _doc.Name;
                var str = File.ReadAllText(fullpath).Replace("\r", "");
                _docLength =str.Length; //Document interface doesnt support EndPoint used for length determining by TextDocument*/
@@ -70,7 +95,6 @@ namespace MEFEditor.Interoperability
             /*       if (_doc == null) throw new NullReferenceException("_doc cannot be null");
 
                    var textDoc = (TextDocument)_doc.Object();*/
-            var textDoc = file.Parent.Object as TextDocument;
             //    _docLength = textDoc.EndPoint.AbsoluteCharOffset;
 
 
@@ -78,9 +102,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// handle given changes - make some logic on these changes
+        /// handle given changes - make some logic on these changes.
         /// </summary>
-        /// <param name="changes"></param>
+        /// <param name="changes">The changes.</param>
         private void registerChanges(List<ElementChange> changes)
         {
             foreach (var change in changes)
@@ -99,9 +123,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// modify wrapped element tree according to line change
+        /// modify wrapped element tree according to line change.
         /// </summary>
-        /// <param name="change"></param>
+        /// <param name="change">The change.</param>
         internal void LineChanged(LineChange change)
         {
             var shortening = _docLength - change.DocumentLength;
@@ -112,7 +136,7 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Check for mismatches in LineChanged handling and fire handlers for all registered changes
+        /// Check for mismatches in LineChanged handling and fire handlers for all registered changes.
         /// </summary>
         internal void FlushChanges()
         {
@@ -129,8 +153,10 @@ namespace MEFEditor.Interoperability
                 if (_namespaces.Count == _checkedNamespaces.Count)
                 {
                     _namespaces.IntersectWith(_checkedNamespaces);
-                    if (_namespaces.Count == _checkedNamespaces.Count) nsChange = false;
-                    else nsChange = true;
+                    if (_namespaces.Count == _checkedNamespaces.Count)
+                        nsChange = false;
+                    else
+                        nsChange = true;
                 }
                 else nsChange = true;
 
@@ -140,16 +166,27 @@ namespace MEFEditor.Interoperability
                     _namespaces.UnionWith(_checkedNamespaces);
                     _checkedNamespaces.Clear();
 
-                    //dont need report change when solution is loading ->all elements are newly added
+                    //don't need report change when solution is loading ->all elements are newly added
                     if (Root != null)
                         registerChanges(Root.NamespaceChange());
                 }
-            }, "flushinng changes by FileItemManager");
+            }, "flushing changes by FileItemManager");
 
             //exception during firing handlers
             VS.ExecutingExceptions(() => fireHandlers(), "firing handlers for file");
         }
 
+        internal void LoadRootOnly()
+        {
+            if (Root != null)
+            {
+                _namespaces = Root.LoadDirectChildrenOnly();
+            }
+        }
+
+        /// <summary>
+        /// Fires the handlers.
+        /// </summary>
         private void fireHandlers()
         {
             //removing has to be done before other changes -> remove can be caused via LineChanged, but should be repaired in CheckChildren phase
@@ -173,6 +210,11 @@ namespace MEFEditor.Interoperability
             _queue.Clear();
         }
 
+        /// <summary>
+        /// Logs the span.
+        /// </summary>
+        /// <param name="description">The description.</param>
+        /// <param name="node">The node.</param>
         private void logSpan(string description, ElementNode node)
         {
             var id = node.Removed ? "$removed" : node.Element.FullName;
@@ -182,9 +224,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// when change is noticed in registered span, this element is fired ->element is possibly changed
+        /// when change is noticed in registered span, this element is fired -&gt;element is possibly changed.
         /// </summary>
-        /// <param name="node"></param>
+        /// <param name="node">The node.</param>
         private void onElementChanged(ElementNode node)
         {
             if (node.IsRoot)
@@ -198,9 +240,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// when new element is registered, this handler is called
+        /// when new element is registered, this handler is called.
         /// </summary>
-        /// <param name="node"></param>
+        /// <param name="node">The node.</param>
         private void onElementAdd(ElementNode node)
         {
             logSpan("Added", node);
@@ -210,9 +252,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// when element, which has been reported as added is dirty->removed, this handler is called on its wrapper
+        /// when element, which has been reported as added is dirty-&gt;removed, this handler is called on its wrapper.
         /// </summary>
-        /// <param name="node"></param>
+        /// <param name="node">The node.</param>
         private void onElementRemoved(ElementNode node)
         {
             logSpan("Removed", node);
@@ -221,6 +263,9 @@ namespace MEFEditor.Interoperability
                 ElementRemoved(node);
         }
 
+        /// <summary>
+        /// Disconnects this instance.
+        /// </summary>
         internal void Disconnect()
         {
             if (Root != null)
@@ -231,9 +276,9 @@ namespace MEFEditor.Interoperability
 
         /// <summary>
         /// Owned elements reports all available namespaces - because of checking changes of namespaces
-        /// Namespaces has changing hashcodes, even if no namespace change was made
+        /// Namespaces has changing hashcodes, even if no namespace change was made.
         /// </summary>
-        /// <param name="import"></param>
+        /// <param name="import">The import.</param>
         internal void ReportNamespace(CodeImport import)
         {
             var ns = import.Namespace;
@@ -241,8 +286,9 @@ namespace MEFEditor.Interoperability
         }
 
         /// <summary>
-        /// Return all available namespaces - can change during time
+        /// Return all available namespaces - can change during time.
         /// </summary>
+        /// <value>The namespaces.</value>
         public IEnumerable<string> Namespaces
         {
             get

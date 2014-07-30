@@ -261,7 +261,7 @@ namespace MEFEditor.TypeSystem
         /// <param name="provider">Representation of invalidate assembly.</param>
         internal void InvalidateAssembly(AssemblyProvider provider)
         {
-            _manager.Unload(provider);
+            _manager.InvalidateAssembly(provider);
         }
 
         /// <summary>

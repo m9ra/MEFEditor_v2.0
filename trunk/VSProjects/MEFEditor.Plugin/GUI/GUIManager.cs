@@ -83,6 +83,12 @@ namespace MEFEditor.Plugin.GUI
         private DrawingProvider _drawingProvider;
 
         /// <summary>
+        /// Last log entry that is kept because of
+        /// avoiding repeating of last log.
+        /// </summary>
+        private LogEntry _lastLogEntry;
+
+        /// <summary>
         /// Available services exposed by visual studio.
         /// </summary>
         private readonly VisualStudioServices _vs;
@@ -407,23 +413,44 @@ namespace MEFEditor.Plugin.GUI
         /// <param name="path">The path.</param>
         void onHostPathChanged(string path)
         {
-            if (_hostAssembly != null)
+            _vs.SafeRunAction(() =>
             {
-                if (HostAssemblyUnLoaded != null)
-                    HostAssemblyUnLoaded(_hostAssembly);
+                //unload old assembly if available
+                if (_hostAssembly != null)
+                {
+                    var unloadTransaction = _appDomain.Transactions.StartNew("Unloading host assembly");
+                    try
+                    {
+                        if (HostAssemblyUnLoaded != null)
+                            HostAssemblyUnLoaded(_hostAssembly);
 
-                _appDomain.Loader.UnloadRoot(_hostAssembly.FullPath);
+                        _appDomain.Loader.UnloadRoot(_hostAssembly.FullPath);
 
-                _hostAssembly = null;
-            }
+                        _hostAssembly = null;
+                    }
+                    finally
+                    {
+                        unloadTransaction.Commit();
+                    }
+                }
 
-            if (path == null)
-                return;
+                if (path == null)
+                    return;
 
-            _hostAssembly = _appDomain.Loader.LoadRoot(path);
+                var loadTransaction = _appDomain.Transactions.StartNew("Unloading host assembly");
+                try
+                {
+                    //load assembly according to new path
+                    _hostAssembly = _appDomain.Loader.LoadRoot(path);
+                    if (_hostAssembly != null && HostAssemblyLoaded != null)
+                        HostAssemblyLoaded(_hostAssembly);
+                }
+                finally
+                {
+                    loadTransaction.Commit();
+                }
 
-            if (_hostAssembly != null && HostAssemblyLoaded != null)
-                HostAssemblyLoaded(_hostAssembly);
+            }, "Changing host assembly path");
         }
 
         #endregion
@@ -747,11 +774,16 @@ namespace MEFEditor.Plugin.GUI
         /// <param name="entry">Entry to draw.</param>
         private void drawLogEntry(LogEntry entry)
         {
-            var drawing = createLogEntryDrawing(entry);
+            if (entry == null || entry.Equals(_lastLogEntry))
+                //Entry that has been logged at last time.
+                return;
 
+            var drawing = createLogEntryDrawing(entry);
             _gui.Log.Children.Insert(0, drawing);
             while (_gui.Log.Children.Count > LogHistorySize)
                 _gui.Log.Children.RemoveAt(LogHistorySize);
+
+            _lastLogEntry = entry;
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace MEFEditor.TypeSystem.Transactions
     public delegate void TransactionEvent(Transaction transaction);
 
     /// <summary>
-    /// Manager used for providing transactions and handling theire correct commits.
+    /// Manager used for providing transactions and handling their correct commits.
     /// </summary>
     public class TransactionManager
     {

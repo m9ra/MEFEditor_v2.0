@@ -66,11 +66,11 @@ namespace MEFEditor.Plugin.Main
         /// Content drawers that were loaded through extensions.
         /// </summary>
         private ContentDrawer[] _contentDrawers;
-        
+
         /// <summary>
         /// The exported general drawing providers.
         /// </summary>
-        private List<GeneralDrawingDefinitionProvider> _exportedGeneralDrawingProvider=new List<GeneralDrawingDefinitionProvider>();
+        private List<GeneralDrawingDefinitionProvider> _exportedGeneralDrawingProvider = new List<GeneralDrawingDefinitionProvider>();
 
         /// <summary>
         /// Transaction used for handling changes.
@@ -156,7 +156,7 @@ namespace MEFEditor.Plugin.Main
             //install recommended extensions if required
             if (Installer.CheckInstall())
                 Installer.Install();
-            
+
             //try to load users extensions
             Exception loadingException = null;
             try
@@ -203,23 +203,35 @@ namespace MEFEditor.Plugin.Main
         {
             _guiManager.CompositionPointSelected += requireRedraw;
 
+            //hook transaction handlers
             Transactions.TransactionOpened += (t) => { _vs.Log.Message(">> {0}", t.Description); tryShowProgress(t); };
             Transactions.TransactionCommit += (t) => _vs.Log.Message("<< {0}", t.Description);
             Transactions.TransactionProgressChanged += (t) => tryShowProgress(t);
 
             _loader.AppDomain.OnLog += logHandler;
 
-            _vs.BeforeFlushingChanges += () => _changesTransaction = _loader.AppDomain.Transactions.StartNew("Handling user changes");
+            //hook changes handlers
+            _vs.FlushingChangesProgress += (fileName) => _changesTransaction.ReportProgress(fileName);
             _vs.AfterFlushingChanges += () => _changesTransaction.Commit();
+            _vs.BeforeFlushingChanges += (description) =>
+            {
+                if (description == null)
+                    description = "changes";
 
+                _changesTransaction = _loader.AppDomain.Transactions.StartNew("Registering " + description);
+            };
+
+            //hook solution handling
             _vs.SolutionOpened += _vs_SolutionOpened;
             _vs.SolutionOpeningStarted += _vs_SolutionOpeningStarted;
             _vs.SolutionClosed += _vs_SolutionClosed;
 
+            //hook project handling
             _vs.ProjectAdded += _vs_ProjectAdded;
             _vs.ProjectAddingStarted += _vs_ProjectAddingStarted;
             _vs.ProjectRemoved += _vs_ProjectRemoved;
 
+            //hook type system
             _loader.AppDomain.MethodInvalidated += methodInvalidated;
             _loader.AppDomain.CompositionSchemeInvalidated += requireRedraw;
             _loader.AppDomain.ComponentAdded += (c) => requireRedraw();
@@ -516,7 +528,7 @@ namespace MEFEditor.Plugin.Main
             foreach (var instance in pipeline.DisplayedInstances)
             {
                 if (instance.IsDirty)
-                    _vs.Log.Warning("Instance {0} is marked as dirty, therefore it's display can be incorrect",instance.ID);
+                    _vs.Log.Warning("Instance {0} is marked as dirty, therefore it's display can be incorrect", instance.ID);
             }
 
             definition.AddEditsMenu("Add Component", componentCreationEdits);

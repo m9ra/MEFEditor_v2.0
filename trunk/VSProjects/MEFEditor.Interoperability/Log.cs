@@ -78,6 +78,28 @@ namespace MEFEditor.Interoperability
             Navigate = navigate;
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" /> is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        public override bool Equals(object obj)
+        {
+            var o = obj as LogEntry;
+            if (o == null)
+                return false;
+
+            return
+                o.Description == Description &&
+                o.Level == Level &&
+                o.Message == Message &&
+                o.Navigate == Navigate;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         /// <inheritdoc />
         public override string ToString()
         {

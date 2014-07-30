@@ -1154,7 +1154,7 @@ namespace RecommendedExtensions.Core.Languages.CSharp
         }
 
         /// <summary>
-        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and statit classes).
+        /// Try to get call hierarchy (chained calls, properties, indexes, namespaces and static classes).
         /// </summary>
         /// <param name="callNode">The call node.</param>
         /// <param name="call">Result representation of call hierarchy.</param>

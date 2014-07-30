@@ -14,6 +14,12 @@ using System.Runtime.InteropServices;
 namespace MEFEditor.Interoperability
 {
     /// <summary>
+    /// Delegate used for progress events on items.
+    /// </summary>
+    /// <param name="progressedItem">Description of progressed item.</param>
+    public delegate void NamedProgressEvent(string progressedItem);
+
+    /// <summary>
     /// Provides simplified access to services from Visual Studio that are used by MEFEditor.
     /// </summary>
     public class VisualStudioServices
@@ -99,7 +105,6 @@ namespace MEFEditor.Interoperability
                     return;
                 _hasWaitingChanges = value;
 
-                //TODO fire events
                 _changeWait.Stop();
                 if (_hasWaitingChanges)
                 {
@@ -126,12 +131,17 @@ namespace MEFEditor.Interoperability
         public bool IsSolutionOpened { get { return _dte.Solution != null && _dte.Solution.IsOpen; } }
 
         /// <summary>
-        /// Event fired whenever project changes are flushed
+        /// Event fired during event changes flushing progressing.
         /// </summary>
-        public event Action BeforeFlushingChanges;
+        public event NamedProgressEvent FlushingChangesProgress;
 
         /// <summary>
-        /// Event fired after project changes are flushed
+        /// Event fired whenever project changes are flushed.
+        /// </summary>
+        public event NamedProgressEvent BeforeFlushingChanges;
+
+        /// <summary>
+        /// Event fired after project changes are flushed.
         /// </summary>
         public event Action AfterFlushingChanges;
 
@@ -398,7 +408,16 @@ namespace MEFEditor.Interoperability
 
             //changes are proceeded after manager is registered by above event
             var manager = _watchedProjects[addedProject];
-            manager.RequireRegisterAllItems();
+
+            if (BeforeFlushingChanges != null)
+                BeforeFlushingChanges(manager.Name);
+
+            manager.RequireRegisterAllItems(FlushingChangesProgress);
+
+            if (AfterFlushingChanges != null)
+                AfterFlushingChanges();
+
+            //this is required because of registering namespaces
             flushManagerChanges(manager);
         }
 
@@ -416,9 +435,7 @@ namespace MEFEditor.Interoperability
             if (_watchedProjects.ContainsKey(addedProject))
                 //project is already contained
                 return false;
-
-
-
+            
             var manager = new ProjectManager(addedProject, this);
             _watchedProjects.Add(addedProject, manager);
 
@@ -431,10 +448,13 @@ namespace MEFEditor.Interoperability
         /// <param name="manager">The manager.</param>
         private void flushManagerChanges(ProjectManager manager)
         {
-            if (BeforeFlushingChanges != null)
-                BeforeFlushingChanges();
+            if (!manager.HasChanges)
+                return;
 
-            manager.FlushChanges();
+            if (BeforeFlushingChanges != null)
+                BeforeFlushingChanges(manager.Name);
+
+            manager.FlushChanges(FlushingChangesProgress);
 
             if (AfterFlushingChanges != null)
                 AfterFlushingChanges();
@@ -676,7 +696,7 @@ namespace MEFEditor.Interoperability
             {
                 _changeWait.Stop();
                 if (BeforeFlushingChanges != null)
-                    BeforeFlushingChanges();
+                    BeforeFlushingChanges("user changes");
 
                 HasWaitingChanges = false;
 
@@ -705,7 +725,7 @@ namespace MEFEditor.Interoperability
                 //flush all changes in managers
                 foreach (var manager in changedManagers)
                 {
-                    manager.FlushChanges();
+                    manager.FlushChanges(FlushingChangesProgress);
                 }
             }
             finally
