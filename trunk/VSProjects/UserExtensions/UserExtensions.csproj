@@ -34,7 +34,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\x86\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <PlatformTarget>x86</PlatformTarget>
@@ -43,13 +43,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MEFEditor.Analyzing">
-      <HintPath>.\MEFEditor.Analyzing.dll</HintPath>
+      <HintPath>..\..\CompiledReferences\MEFEditor.Analyzing.dll</HintPath>
     </Reference>
     <Reference Include="MEFEditor.Drawing">
-      <HintPath>.\MEFEditor.Drawing.dll</HintPath>
+      <HintPath>..\..\CompiledReferences\MEFEditor.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="MEFEditor.TypeSystem">
-      <HintPath>.\MEFEditor.TypeSystem.dll</HintPath>
+      <HintPath>..\..\CompiledReferences\MEFEditor.TypeSystem.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

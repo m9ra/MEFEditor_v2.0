@@ -34,12 +34,22 @@ namespace RecommendedExtensions.DrawingDefinitions
             ExportDrawing<CompositionContainer>((i) => new CompositionContainerDrawing(i));
             ExportDrawing<CompositionBatch>((i) => new CompositionBatchDrawing(i));
             ExportDrawing<DirectoryCatalog>((i) => new DirectoryCatalogDrawing(i));
-            ExportDrawing<AggregateCatalog>((i)=>new AggregateCatalogDrawing(i));
-            ExportDrawing<TypeCatalog>((i)=>new TypeCatalogDrawing(i));
-            ExportDrawing<AssemblyCatalog>((i)=>new AssemblyCatalogDrawing(i));
+            ExportDrawing<AggregateCatalog>((i) => new AggregateCatalogDrawing(i));
+            ExportDrawing<TypeCatalog>((i) => new TypeCatalogDrawing(i));
+            ExportDrawing<AssemblyCatalog>((i) => new AssemblyCatalogDrawing(i));
 
             //general drawing definition provider
             ExportGeneralDrawingDefinitionProvider(GeneralDefinitionProvider.Draw);
+
+            //join drawing factory
+            ExportJoinFactory((d) => new CompositionJoin(d));
+
+            //connectors drawing
+            ExportConnectorFactory((d, o) => new ExportConnector(d, o), ConnectorAlign.Right);
+            ExportConnectorFactory((d, o) => new SelfExportConnector(d, o), ConnectorAlign.Top);
+            ExportConnectorFactory((d, o) => new ImportConnector(d, o), ConnectorAlign.Left);
+            //notice that this export is not required however for completeness it is added.
+            ExportConnectorFactory((d, o) => new SelfExportConnector(d, o), ConnectorAlign.Bottom);
         }
     }
 }

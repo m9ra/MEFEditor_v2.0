@@ -86,9 +86,10 @@ namespace MEFEditor.Plugin
         /// Determine if extensions should be installed.
         /// </summary>
         /// <returns>Return true if install should be called.</returns>
-        public static bool CheckInstall()
+        public static bool NeedInstall()
         {
-            return !Directory.Exists(ExtensionPath);
+            var needInstall = !Directory.Exists(ExtensionPath);
+            return needInstall;
         }
 
         /// <summary>
@@ -97,9 +98,8 @@ namespace MEFEditor.Plugin
         public static void Install()
         {
             //Create extensions folder
-            var extFolder = ExtensionPath;
-            createExtensionsDirectory(extFolder);
-            writeRecommendedExtensions(extFolder);
+            createExtensionsDirectory(ExtensionPath);
+            writeRecommendedExtensions();
         }
 
         /// <summary>
@@ -122,32 +122,42 @@ namespace MEFEditor.Plugin
         /// <summary>
         /// Writes the recommended extensions.
         /// </summary>
-        /// <param name="extFolder">The ext folder.</param>
-        private static void writeRecommendedExtensions(string extFolder)
+        private static void writeRecommendedExtensions()
         {
-            FileStream fileStream = null;
             try
             {
-                /*    var extensionsBinary = Resources.Recommended_Extensions;
-                    var extensionOutput = extFolder + "Recommended_Extensions.dll";
+                //install recommended extensions
+                var extensionPrefix = "RecommendedExtensions.";
+                installFile(extensionPrefix + "Core", Resources.RecommendedExtensions_Core);
+                installFile(extensionPrefix + "DrawingDefinitions", Resources.RecommendedExtensions_DrawingDefinitions);
+                installFile(extensionPrefix + "TypeDefinitions", Resources.RecommendedExtensions_TypeDefinitions);
+                installFile(extensionPrefix + "AssemblyProviders", Resources.RecommendedExtensions_AssemblyProviders);
 
-                    fileStream = new FileStream(extensionOutput, FileMode.Create);
-                    using (var writer = new BinaryWriter(fileStream))
-                    {
-                        fileStream = null;
-                        writer.Write(extensionsBinary);
-                    }*/
-
-                //TODO Install extensions
+                //install support libraries
+                installFile("Utilities", Resources.Utilities);
+                installFile("Mono.Cecil", Resources.Mono_Cecil);
             }
             catch (Exception ex)
             {
                 showExceptionError("Cannot write extensions into extensions folder, because of following exception", ex);
             }
-            finally
+        }
+
+        /// <summary>
+        /// Install given file at given location.
+        /// </summary>
+        /// <param name="fileName">Name of installed extension.</param>
+        /// <param name="fileData">Data of installed extension.</param>
+        private static void installFile(string fileName, byte[] fileData)
+        {
+            var extensionOutput = Path.Combine(ExtensionPath, fileName + ".dll");
+            using (var fileStream = new FileStream(extensionOutput, FileMode.Create))
             {
-                if (fileStream != null)
-                    fileStream.Dispose();
+                using (var writer = new BinaryWriter(fileStream))
+                {
+                    writer.Write(fileData);
+                    writer.Close();
+                }
             }
         }
 

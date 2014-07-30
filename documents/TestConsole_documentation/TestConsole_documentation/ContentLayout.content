@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Topics>
-  <Topic id="2bf92b7d-e357-4cc7-b46e-d94029947eb1" visible="True" isDefault="true" title="Welcome to the Enhanced MEF Component Architecture Editor">
+  <Topic id="54f82df8-35bb-44d3-9299-0f4b7dfe26ec" visible="True" isDefault="true" title="Welcome to the Test Console application">
     <HelpKeywords>
       <HelpKeyword index="K" term="Welcome" />
     </HelpKeywords>
   </Topic>
-  <Topic id="030cd63c-5f1a-46d8-a840-8901b0a28a93" visible="False" isExpanded="true" title="Version History">
+  <Topic id="23132e1a-aaf8-4734-a210-2f83611e2d1f" visible="False" isExpanded="true" isSelected="true" title="Version History">
     <HelpKeywords>
       <HelpKeyword index="K" term="version, history" />
     </HelpKeywords>
-    <Topic id="60a045ba-d03c-4a89-9ca8-0d6574342a91" visible="False" isSelected="true" title="Version 1.0.0.0">
+    <Topic id="eee50c5f-65b7-470f-a8ea-d02fad85db52" visible="False" title="Version 1.0.0.0">
       <HelpKeywords>
         <HelpKeyword index="K" term="version, 1.0.0.0" />
       </HelpKeywords>

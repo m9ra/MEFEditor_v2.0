@@ -16,12 +16,6 @@ using MEFEditor.TypeSystem.Transactions;
 using MEFEditor.TypeSystem.DrawingServices;
 using MEFEditor.Interoperability;
 
-using RecommendedExtensions.Core;
-using RecommendedExtensions.Core.Drawings;
-using RecommendedExtensions.Core.Languages.CIL;
-using RecommendedExtensions.Core.Languages.CSharp;
-using RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly;
-
 using MEFEditor.Plugin.GUI;
 using MEFEditor.Plugin.Drawing;
 
@@ -66,6 +60,17 @@ namespace MEFEditor.Plugin.Main
         /// Content drawers that were loaded through extensions.
         /// </summary>
         private ContentDrawer[] _contentDrawers;
+
+        /// <summary>
+        /// Imported factories for connectors indexed according to 
+        /// their align enum ordinal number.
+        /// </summary>
+        private ConnectorFactory[] _connectorFactories;
+
+        /// <summary>
+        /// Imported join factory
+        /// </summary>
+        private JoinFactory _joinFactory;
 
         /// <summary>
         /// The exported general drawing providers.
@@ -153,12 +158,20 @@ namespace MEFEditor.Plugin.Main
             _machine = new Machine(_settings);
             _guiManager = new GUIManager(GUI, _vs);
 
-            //install recommended extensions if required
-            if (Installer.CheckInstall())
-                Installer.Install();
-
             //try to load users extensions
             Exception loadingException = null;
+
+            try
+            {
+                //install recommended extensions if required
+                if (Installer.NeedInstall())
+                    Installer.Install();
+            }
+            catch (Exception ex)
+            {
+                loadingException = ex;
+            }
+
             try
             {
                 loadUserExtensions();
@@ -172,7 +185,7 @@ namespace MEFEditor.Plugin.Main
             //try to initialize gui manager
             try
             {
-                var factory = new DiagramFactory(_contentDrawers);
+                var factory = new DiagramFactory(_joinFactory, _connectorFactories, _contentDrawers);
                 _guiManager.Initialize(_loader.AppDomain, factory);
 
                 if (loadingException != null)
@@ -255,6 +268,7 @@ namespace MEFEditor.Plugin.Main
             //process all exports
             var exportedProviders = new List<ExportedAssemblyProviderFactory>();
             var drawingProviders = new List<ContentDrawer>();
+            _connectorFactories = new ConnectorFactory[Enum.GetValues(typeof(ConnectorAlign)).Length];
             foreach (var export in exports)
             {
                 registerExport(export);
@@ -265,6 +279,12 @@ namespace MEFEditor.Plugin.Main
 
                 if (export.ExportedGeneralDrawingDefinitionProvider != null)
                     _exportedGeneralDrawingProvider.Add(export.ExportedGeneralDrawingDefinitionProvider);
+
+                foreach (var connectorProvider in export.ExportedConnectorFactories)
+                    _connectorFactories[(int)connectorProvider.Key] = connectorProvider.Value;
+
+                if (export.ExportedJoinFactory != null)
+                    _joinFactory = export.ExportedJoinFactory;
             }
 
             //initialize editor
@@ -315,22 +335,11 @@ namespace MEFEditor.Plugin.Main
         private IEnumerable<ExtensionExport> collectExports()
         {
             //MEF Composition of user extensions.
-            /*
-            var importer = new UserExtensionImporter();
+            var importer = new UserExtensionImporter(_vs);
             var directoryCatalog = new DirectoryCatalog(Installer.ExtensionPath);
             var container = new CompositionContainer(directoryCatalog);
-            container.ComposeParts(directoryCatalog);
+            container.ComposeParts(importer);
             return importer.Exports;
-            */
-
-            //TODO load extensions from Extensions directory
-            //TODO remove reference to RecommendedExtensions
-            var providers = new RecommendedExtensions.AssemblyProviders.AssemblyProvidersExport();
-            providers.Services = _vs;
-
-            yield return providers;
-            yield return new RecommendedExtensions.TypeDefinitions.TypeDefinitionsExport();
-            yield return new RecommendedExtensions.DrawingDefinitions.DrawingDefinitionsExport();
         }
 
         #endregion
@@ -377,7 +386,7 @@ namespace MEFEditor.Plugin.Main
                         _guiManager.DisplayEntry(_analysisError);
                     }
                 }
-            },"Refreshing composition point");
+            }, "Refreshing composition point");
         }
 
         /// <summary>
@@ -824,6 +833,5 @@ namespace MEFEditor.Plugin.Main
         }
 
         #endregion
-
     }
 }

@@ -19,8 +19,6 @@ using MEFEditor.TypeSystem;
 using MEFEditor.TypeSystem.Runtime;
 using MEFEditor.TypeSystem.Transactions;
 
-using RecommendedExtensions.Core.AssemblyProviders.CILAssembly;
-
 namespace MEFEditor.Plugin.GUI
 {
 
@@ -223,8 +221,8 @@ namespace MEFEditor.Plugin.GUI
                     //prevent showing workspace when
                     //there is no diagram
                     _gui.ShowWorkspace();
-
-                _drawingProvider.Display(diagram);
+                _vs.SafeRun(() => _drawingProvider.Display(diagram)
+                , "Tryiing to display drawing");
             });
         }
 

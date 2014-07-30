@@ -120,7 +120,26 @@
   <data name="CanNotCreateWindow" xml:space="preserve">
     <value>Can not create tool window.</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Mono_Cecil" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Mono.Cecil.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="RecommendedExtensions_AssemblyProviders" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\RecommendedExtensions.AssemblyProviders.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="RecommendedExtensions_Core" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\RecommendedExtensions.Core.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="RecommendedExtensions_DrawingDefinitions" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\RecommendedExtensions.DrawingDefinitions.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="RecommendedExtensions_TypeDefinitions" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\RecommendedExtensions.TypeDefinitions.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="ToolWindowTitle" xml:space="preserve">
     <value>Enhanced MEF Component Architecture Editor</value>
+  </data>
+  <data name="Utilities" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Utilities.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

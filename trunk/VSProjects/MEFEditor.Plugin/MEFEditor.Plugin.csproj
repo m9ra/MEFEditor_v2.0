@@ -201,8 +201,14 @@
     <None Include="Resources\Images_24bit.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\RecommendedExtensions.TypeDefinitions.dll" />
+    <None Include="Resources\RecommendedExtensions.AssemblyProviders.dll" />
+    <None Include="Resources\RecommendedExtensions.DrawingDefinitions.dll" />
+    <None Include="Resources\RecommendedExtensions.Core.dll" />
+    <None Include="Resources\Utilities.dll" />
     <Resource Include="Preview_icon.ico" />
     <Resource Include="Preview_icon.png" />
+    <None Include="Resources\Mono.Cecil.dll" />
     <Content Include="Resources\Package.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -262,21 +268,9 @@
       <Project>{79f2bdfb-802b-44e6-b8c6-56e5cf64ecf6}</Project>
       <Name>MEFEditor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RecommendedExtensions.Core\RecommendedExtensions.Core.csproj">
-      <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
-      <Name>RecommendedExtensions.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RecommendedExtensions.AssemblyProviders\RecommendedExtensions.AssemblyProviders.csproj">
-      <Project>{7c687e56-104d-49a5-b781-b23b5173e2d1}</Project>
-      <Name>RecommendedExtensions.AssemblyProviders</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RecommendedExtensions.DrawingDefinitions\RecommendedExtensions.DrawingDefinitions.csproj">
-      <Project>{6cdd91e7-0f52-4ed6-a77c-9d0cd7181058}</Project>
-      <Name>RecommendedExtensions.DrawingDefinitions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RecommendedExtensions.TypeDefinitions\RecommendedExtensions.TypeDefinitions.csproj">
-      <Project>{706d14cc-df7e-4f6f-997a-e028f1c0c5e6}</Project>
-      <Name>RecommendedExtensions.TypeDefinitions</Name>
+    <ProjectReference Include="..\Utilities\Utilities.csproj">
+      <Project>{7c9e6dff-b855-47bb-be22-b4c0c45b73eb}</Project>
+      <Name>Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

@@ -35,7 +35,32 @@
       <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.TypeSystem\bin\Debug\MEFEditor.dll" xmlns="" />
       <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.TypeSystem\bin\Debug\Utilities.xml" xmlns="" />
       <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.TypeSystem\bin\Debug\Utilities.dll" xmlns="" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Analyzing.xml" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Analyzing.dll" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Drawing.xml" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Drawing.dll" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Interoperability.xml" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Interoperability.dll" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Plugin.XML" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.Plugin.dll" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.TypeSystem.xml" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.TypeSystem.dll" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.xml" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\MEFEditor.dll" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\Utilities.xml" />
+      <DocumentationSource sourceFile="..\..\..\trunk\VSProjects\MEFEditor.Plugin\bin\Debug\Utilities.dll" />
     </DocumentationSources>
+    <MaximumGroupParts>2</MaximumGroupParts>
+    <NamespaceGrouping>False</NamespaceGrouping>
+    <SyntaxFilters>Standard</SyntaxFilters>
+    <SdkLinkTarget>Blank</SdkLinkTarget>
+    <RootNamespaceContainer>False</RootNamespaceContainer>
+    <PresentationStyle>VS2013</PresentationStyle>
+    <Preliminary>False</Preliminary>
+    <NamingMethod>Guid</NamingMethod>
+    <HelpTitle>A Sandcastle Documented Class Library</HelpTitle>
+    <ContentPlacement>AboveNamespaces</ContentPlacement>
+    <MissingTags>AutoDocumentCtors, AutoDocumentDispose</MissingTags>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->

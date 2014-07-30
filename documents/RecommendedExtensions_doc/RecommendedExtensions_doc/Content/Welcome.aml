@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<topic id="2bf92b7d-e357-4cc7-b46e-d94029947eb1" revisionNumber="1">
-  <developerConceptualDocument xmlns="http://ddbfue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+<topic id="5ee52e07-e908-4704-879c-139b57f28695" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
     <introduction>
       <para>This is an auto generated documentation for master thesis Enhanced MEF Component Architecture Editor.</para>
     </introduction>
@@ -26,7 +26,7 @@
             <para>
               <codeInline>_privateField</codeInline> - Private fields are written with leading underscore.
             </para>
-          </listItem>
+          </listItem>          
         </list>
       </content>
     </section>

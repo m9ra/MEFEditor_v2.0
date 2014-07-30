@@ -70,11 +70,71 @@ namespace MEFEditor.Plugin {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Mono_Cecil {
+            get {
+                object obj = ResourceManager.GetObject("Mono_Cecil", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] RecommendedExtensions_AssemblyProviders {
+            get {
+                object obj = ResourceManager.GetObject("RecommendedExtensions_AssemblyProviders", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] RecommendedExtensions_Core {
+            get {
+                object obj = ResourceManager.GetObject("RecommendedExtensions_Core", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] RecommendedExtensions_DrawingDefinitions {
+            get {
+                object obj = ResourceManager.GetObject("RecommendedExtensions_DrawingDefinitions", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] RecommendedExtensions_TypeDefinitions {
+            get {
+                object obj = ResourceManager.GetObject("RecommendedExtensions_TypeDefinitions", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enhanced MEF Component Architecture Editor.
         /// </summary>
         public static string ToolWindowTitle {
             get {
                 return ResourceManager.GetString("ToolWindowTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Utilities {
+            get {
+                object obj = ResourceManager.GetObject("Utilities", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

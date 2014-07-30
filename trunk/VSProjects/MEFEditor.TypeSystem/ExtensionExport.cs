@@ -28,7 +28,20 @@ namespace MEFEditor.TypeSystem
     /// </summary>
     /// <param name="instance">Instance which drawing definition is created.</param>
     /// <param name="info">Component information for drawn instance.</param>
-    public delegate void GeneralDrawingDefinitionProvider(DrawedInstance instance,ComponentInfo info);
+    public delegate void GeneralDrawingDefinitionProvider(DrawedInstance instance, ComponentInfo info);
+
+    /// <summary>
+    /// Factory method for exported connector drawing.
+    /// </summary>
+    /// <param name="definition">Connector definition.</param>
+    /// <param name="owningItem">Connector owner.</param>
+    public delegate ConnectorDrawing ConnectorFactory(ConnectorDefinition definition, DiagramItem owningItem);
+
+    /// <summary>
+    /// Factory method for exported join drawing.
+    /// </summary>
+    /// <param name="join">Join definition.</param>
+    public delegate JoinDrawing JoinFactory(JoinDefinition join);
 
     /// <summary>
     /// Handler used for logging events
@@ -65,6 +78,11 @@ namespace MEFEditor.TypeSystem
         private Dictionary<string, ExportedDrawingFactory> _exportedDrawers = new Dictionary<string, ExportedDrawingFactory>();
 
         /// <summary>
+        /// Exported connector factories.
+        /// </summary>
+        private Dictionary<ConnectorAlign, ConnectorFactory> _connectorFactories = new Dictionary<ConnectorAlign, ConnectorFactory>();
+
+        /// <summary>
         /// <see cref="AssemblyProvider" /> factories that were collected during registering.
         /// </summary>
         /// <value>The exported providers.</value>
@@ -75,6 +93,16 @@ namespace MEFEditor.TypeSystem
         /// </summary>
         /// <value>The exported drawers.</value>
         public IEnumerable<KeyValuePair<string, ExportedDrawingFactory>> ExportedDrawers { get { return _exportedDrawers; } }
+
+        /// <summary>
+        /// Exported factories for creating ConnetorDrawing.
+        /// </summary>
+        public IEnumerable<KeyValuePair<ConnectorAlign, ConnectorFactory>> ExportedConnectorFactories { get { return _connectorFactories; } }
+
+        /// <summary>
+        /// Exported factory for creating <see cref="JoinDrawing"/>.
+        /// </summary>
+        public JoinFactory ExportedJoinFactory { get; private set; }
 
         /// <summary>
         /// Gets general drawing definition provider that has been exported.
@@ -201,6 +229,26 @@ namespace MEFEditor.TypeSystem
             ExportDrawing("", drawing);
         }
 
+        /// <summary>
+        /// Exports the join drawing factory that is used for every drawn join.
+        /// </summary>
+        /// <param name="factory">The exported factory.</param>
+        protected void ExportJoinFactory(JoinFactory factory)
+        {
+            Message("Exporting join factory {0}", factory);
+            ExportedJoinFactory = factory;
+        }
+
+        /// <summary>
+        /// Exports the connectory drawing factory that is used for every drawn join.
+        /// </summary>
+        /// <param name="factory">The exported factory.</param>
+        /// <param name="align">Align for which connector will be used.</param>
+        protected void ExportConnectorFactory(ConnectorFactory factory, ConnectorAlign align)
+        {
+            Message("Exporting {0} connector factory {1}", align, factory);
+            _connectorFactories[align] = factory;
+        }
 
         /// <summary>
         /// Exports the general drawing definition provider that is called on every <see cref="Analyzing.Instance"/> that will be drawn.

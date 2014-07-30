@@ -37,7 +37,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\x86\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -46,6 +46,10 @@
     <AssemblyOriginatorKeyFile>mefeditor.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MEFEditor.TypeSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=703201194e22e058, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\CompiledReferences\MEFEditor.TypeSystem.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -60,21 +64,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="mefeditor.snk" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\RecommendedExtensions.Core\RecommendedExtensions.Core.csproj">
       <Project>{d9591dc4-83d6-477f-a23a-495f65f5b934}</Project>
       <Name>RecommendedExtensions.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MEFEditor.Drawing\MEFEditor.Drawing.csproj">
-      <Project>{dc23fe88-544c-4751-ac71-cd87bf758095}</Project>
-      <Name>MEFEditor.Drawing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MEFEditor.TypeSystem\MEFEditor.TypeSystem.csproj">
-      <Project>{6571f9b2-7d38-423d-bb65-79916c9cd1b1}</Project>
-      <Name>MEFEditor.TypeSystem</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="mefeditor.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
