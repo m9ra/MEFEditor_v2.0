@@ -168,7 +168,10 @@ namespace RecommendedExtensions.Core.AssemblyProviders.CILAssembly
 
             foreach (var extension in new[] { ".exe", ".dll" })
             {
-                var assemblyName = reference.Name;
+                //NOTE: Concatenation with an extension is 
+                //is a BUG fix for reference resolving, 
+                //that is NOT included in Master thesis submission
+                var assemblyName = reference.Name + extension;
                 var files = Directory.GetFiles(root, assemblyName, SearchOption.AllDirectories);
 
                 if (files.Any())
