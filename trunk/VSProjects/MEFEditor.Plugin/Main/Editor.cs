@@ -331,11 +331,10 @@ namespace MEFEditor.Plugin.Main
         /// Collects all exports.
         /// </summary>
         /// <returns>Collected exports.</returns>
-        [CompositionPoint]
         private IEnumerable<ExtensionExport> collectExports()
         {
             //MEF Composition of user extensions.
-            var importer = new UserExtensionImporter(_vs);
+            var importer = new UserExtensionImporter(_vs); 
             var directoryCatalog = new DirectoryCatalog(Installer.ExtensionPath);
             var container = new CompositionContainer(directoryCatalog);
             container.ComposeParts(importer);
@@ -353,7 +352,7 @@ namespace MEFEditor.Plugin.Main
         private void showComposition(CompositionPoint compositionPoint)
         {
             _vs.SafeRunAction(() =>
-            {
+            {                
                 if (_currentResult != null)
                 {
                     //invalidate result, to free up resources
@@ -823,11 +822,13 @@ namespace MEFEditor.Plugin.Main
             {
                 _progressWatch.Start();
                 _showProgress = true;
+                _guiManager.EnableDoEvents = true;
             }
             else
             {
                 _progressWatch.Stop();
                 _showProgress = false;
+                _guiManager.EnableDoEvents = false;
                 _guiManager.ShowWorkspace();
             }
         }

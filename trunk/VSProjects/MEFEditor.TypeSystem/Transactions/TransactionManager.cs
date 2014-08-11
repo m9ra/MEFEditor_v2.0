@@ -108,6 +108,9 @@ namespace MEFEditor.TypeSystem.Transactions
         /// <param name="transaction">Transaction that is ended.</param>
         internal void EndTransaction(Transaction transaction)
         {
+            if (_transactionStack.Count == 0)
+                return;
+
             var popped = _transactionStack.Pop();
             if (popped != transaction)
                 //transaction stack unwiding

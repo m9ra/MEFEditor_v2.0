@@ -24,6 +24,9 @@ namespace RecommendedExtensions.Core.Drawings
         /// <param name="info">The component information available for draw instance.</param>
         public static void Draw(DrawedInstance instance, ComponentInfo info)
         {
+            if (instance == null || instance.WrappedInstance == null)
+                return;
+
             if (instance.WrappedInstance.IsDirty)
             {
                 //instance is dirty

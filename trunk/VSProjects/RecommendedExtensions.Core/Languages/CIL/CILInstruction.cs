@@ -96,13 +96,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
 
             OpCode = OpCodesTable[instruction.OpCode.Name];
 
-            //TODO resolve ctors
             MethodOperand = createMethodInfo(Data as MethodInfo);
             BranchAddressOperand = getBranchOffset(instruction);
             SetterOperand = createSetter(Data as FieldInfo);
             GetterOperand = createGetter(Data as FieldInfo);
 
-            //TODO this is not critical but it should be implemented
             TypeOperand = null;
         }
 
@@ -220,7 +218,6 @@ namespace RecommendedExtensions.Core.Languages.CIL
         /// </summary>
         /// <param name="instruction">The instruction.</param>
         /// <returns>Target offset.</returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         private int getBranchOffset(ILInstruction instruction)
         {
             switch (instruction.OpCode.OperandType)
@@ -228,7 +225,7 @@ namespace RecommendedExtensions.Core.Languages.CIL
                 case E.OperandType.ShortInlineBrTarget:
                     return instruction.Address + instruction.Length + (int)Data;
                 case E.OperandType.InlineBrTarget:
-                    throw new NotImplementedException();
+                    return instruction.Address + instruction.Length + (int)Data;
                 default:
                     return -1;
             }
@@ -295,12 +292,11 @@ namespace RecommendedExtensions.Core.Languages.CIL
         /// <param name="field">The field.</param>
         /// <param name="context">The context.</param>
         /// <returns><c>true</c> if field is static, <c>false</c> otherwise.</returns>
-        /// <exception cref="System.NotImplementedException">Resolve shared field</exception>
         private bool resolveIsStatic(FieldReference field, TranscriptionContext context)
         {
             var definition = field as FieldDefinition;
             if (definition == null)
-                throw new NotImplementedException("Resolve shared field");
+                return false;
 
             return definition.IsStatic;
         }

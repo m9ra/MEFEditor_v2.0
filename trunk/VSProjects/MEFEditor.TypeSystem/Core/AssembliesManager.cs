@@ -1123,7 +1123,7 @@ namespace MEFEditor.TypeSystem.Core
             {
                 var resolved = _assemblies.FindProviderFromKey(key);
 
-                if (resolved == null)
+                if (resolved == null || !resolved.HasServices)
                     //assembly is not available
                     continue;
 

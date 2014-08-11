@@ -179,6 +179,11 @@ namespace MEFEditor.TypeSystem
         }
 
         /// <summary>
+        /// Determine that assembly has initialized services.
+        /// </summary>
+        internal bool HasServices { get { return _services != null; } }
+
+        /// <summary>
         /// Here are managed all <see cref="Transaction" /> objects.
         /// </summary>
         /// <value>The transactions.</value>
@@ -199,7 +204,7 @@ namespace MEFEditor.TypeSystem
                 return;
 
             if (TypeServices == null)
-                throw new NotSupportedException("Cannot initialize assembly where TypeServices are not available");
+                throw new NotSupportedException("Cannot initialize assembly when TypeServices are not available");
 
             _isInitialized = true;
             if (OnTypeSystemInitialized != null)

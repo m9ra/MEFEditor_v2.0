@@ -70,12 +70,12 @@ namespace MEFEditor.Plugin
             {
                 if (VisualStudioVersionDetector.VS2010)
                 {
-                    return ExtensionPath_VS2012;
+                    return ExtensionPath_VS2010;
                 }
 
                 if (VisualStudioVersionDetector.VS2012)
                 {
-                    return ExtensionPath_VS2010;
+                    return ExtensionPath_VS2012;
                 }
 
                 return null;

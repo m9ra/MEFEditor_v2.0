@@ -173,6 +173,11 @@ namespace MEFEditor.Plugin.GUI
         public bool AutoRefresh { get { return _gui.AutoRefresh; } }
 
         /// <summary>
+        /// Determine that do events are enabled.
+        /// </summary>
+        internal bool EnableDoEvents;
+
+        /// <summary>
         /// Initialize instance of <see cref="GUIManager" />.
         /// </summary>
         /// <param name="gui">Gui managed by current manager.</param>
@@ -221,8 +226,9 @@ namespace MEFEditor.Plugin.GUI
                     //prevent showing workspace when
                     //there is no diagram
                     _gui.ShowWorkspace();
+
                 _vs.SafeRun(() => _drawingProvider.Display(diagram)
-                , "Tryiing to display drawing");
+                , "Trying to display drawing");
             });
         }
 
@@ -299,9 +305,12 @@ namespace MEFEditor.Plugin.GUI
         /// </summary>
         public void DoEvents()
         {
-            System.Windows.Forms.Application.DoEvents();
-            var idle = System.Windows.Threading.DispatcherPriority.SystemIdle;
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { }), idle);
+            if (EnableDoEvents)
+            {
+                System.Windows.Forms.Application.DoEvents();
+                var idle = System.Windows.Threading.DispatcherPriority.SystemIdle;
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { }), idle);
+            }
         }
 
         #endregion

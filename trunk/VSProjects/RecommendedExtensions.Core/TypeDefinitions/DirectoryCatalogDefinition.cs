@@ -233,6 +233,15 @@ namespace RecommendedExtensions.Core.TypeDefinitions
                 }
             }
 
+            var uniqueIndex = new Dictionary<string, Instance>();
+            foreach (var instance in Components.Value)
+            {
+                uniqueIndex[instance.Info.TypeName] = instance;
+            }
+
+            Components.Value.Clear();
+            Components.Value.AddRange(uniqueIndex.Values);
+
             return null;
         }
 
