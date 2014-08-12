@@ -218,11 +218,12 @@ namespace MEFEditor.Plugin.GUI
         /// Display given <see cref="DiagramDefinition" /> within editors workspace.
         /// </summary>
         /// <param name="diagram">Displayed diagram.</param>
-        public void Display(DiagramDefinition diagram)
+        /// <param name="forceShow">Determine that displaye will be forced</param>
+        public void Display(DiagramDefinition diagram, bool forceShow = false)
         {
             DispatchedAction(() =>
             {
-                if (diagram != null)
+                if (diagram != null || forceShow)
                     //prevent showing workspace when
                     //there is no diagram
                     _gui.ShowWorkspace();

@@ -456,7 +456,14 @@ namespace MEFEditor.Drawing
                     item.Header = edit.Name;
                     menu.Items.Add(item);
 
-                    item.Click += (e, s) => edit.Commit(DiagramContext.Diagram.InitialView);
+                    item.Click += (e, s) =>
+                    {
+                        try
+                        {
+                            edit.Commit(DiagramContext.Diagram.InitialView);
+                        }
+                        catch (Exception) { }
+                    };
                     break;
             }
         }

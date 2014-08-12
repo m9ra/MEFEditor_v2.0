@@ -294,19 +294,23 @@ namespace RecommendedExtensions.Core.AssemblyProviders.ProjectAssembly.MethodBui
             {
                 var editPoint = getEditPoint(element);
                 if (element.ProjectItem.Document.ReadOnly)
-                    throw new NotSupportedException("Document is read only");
-
-                var fileCodeModel2 = element.ProjectItem.FileCodeModel as FileCodeModel2;
-                if (fileCodeModel2 != null)
                 {
-                    foreach (var ns in requiredNamespaces)
-                    {
-                        fileCodeModel2.AddImport(ns);
-                    }
+                    DeclaringAssembly.VS.LogErrorEntry("Cannot write changes", "Document is readonly", () => Navigate(element as CodeElement, 0));
                 }
+                else
+                {
+                    var fileCodeModel2 = element.ProjectItem.FileCodeModel as FileCodeModel2;
+                    if (fileCodeModel2 != null)
+                    {
+                        foreach (var ns in requiredNamespaces)
+                        {
+                            fileCodeModel2.AddImport(ns);
+                        }
+                    }
 
-                source = source.Substring(1); //remove first {
-                editPoint.ReplaceText(element.EndPoint, source, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+                    source = source.Substring(1); //remove first {
+                    editPoint.ReplaceText(element.EndPoint, source, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+                }
             }
             finally
             {
