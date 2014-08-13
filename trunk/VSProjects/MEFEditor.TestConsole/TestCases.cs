@@ -54,8 +54,8 @@ namespace MEFEditor.TestConsole
         /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_Array()
         {
-            var cilAssembly = new CILAssembly("TestCases.exe");
-            return AssemblyUtils.RunCECIL("TestCases.exe", "CecilTestSources.RunExplicitArrayTest")
+            var cilAssembly = new CILAssembly("TestConsole.exe");
+            return AssemblyUtils.RunCECIL("TestConsole.exe", "CecilTestSources.RunExplicitArrayTest")
                 .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
                 .AddMethod("System.Type.GetTypeFromHandle", (c) => { c.Return(c.CurrentArguments[1]); },
                     new MethodDescription(TypeDescriptor.Create<Type>(), false, ParameterTypeInfo.Create("p", TypeDescriptor.Create("System.RuntimeTypeHandle"))
@@ -173,8 +173,8 @@ namespace MEFEditor.TestConsole
         /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_InterfaceResolving()
         {
-            var cilAssembly = new CILAssembly("TestCases.exe");
-            return AssemblyUtils.RunCECIL("TestCases.exe", "CecilTestSources.RunIfaceTest")
+            var cilAssembly = new CILAssembly("TestConsole.exe");
+            return AssemblyUtils.RunCECIL("TestConsole.exe", "CecilTestSources.RunIfaceTest")
                 .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
                 .AddAssembly(cilAssembly);
         }
@@ -185,7 +185,7 @@ namespace MEFEditor.TestConsole
         /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_Components()
         {
-            var cilAssembly = new CILAssembly("TestCases.exe");
+            var cilAssembly = new CILAssembly("TestConsole.exe");
 
             return AssemblyUtils.Run(@"        
                 var assemCat=new System.ComponentModel.Composition.Hosting.AssemblyCatalog(""" + cilAssembly.FullPath + @""");                  
@@ -212,9 +212,9 @@ namespace MEFEditor.TestConsole
         /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_GeneriInterfaceResolving()
         {
-            var cilAssembly = new CILAssembly("TestCases.exe");
-            //return AssemblyUtils.RunCECIL("TestCases.exe", "CecilTestSources.RunSimpleGenericTest")
-            return AssemblyUtils.RunCECIL("TestCases.exe", "CecilTestSources.RunGenericIfaceTest")
+            var cilAssembly = new CILAssembly("TestConsole.exe");
+            //return AssemblyUtils.RunCECIL("TestConsole.exe", "CecilTestSources.RunSimpleGenericTest")
+            return AssemblyUtils.RunCECIL("TestConsole.exe", "CecilTestSources.RunGenericIfaceTest")
                 .AddMethod("System.Object." + Naming.CtorName, (c) => { }, Method.Ctor_NoParam)
                 .AddWrappedGenericToRuntime(typeof(List<>))
                 .AddAssembly(cilAssembly);
@@ -411,7 +411,7 @@ namespace MEFEditor.TestConsole
 
         static internal TestingAssembly CECIL_CompositionPoint()
         {
-            var assembly = new CILAssembly("TestCases.exe");
+            var assembly = new CILAssembly("TestConsole.exe");
 
 
             return AssemblyUtils.Run(@"
@@ -593,8 +593,8 @@ namespace MEFEditor.TestConsole
         /// <returns>Testing assembly where test case is defined.</returns>
         static internal TestingAssembly CECIL_AssemblyProviding()
         {
-            var cilAssembly = new CILAssembly("TestCases.exe");
-            return AssemblyUtils.RunCECIL("TestCases.exe", "CecilTestSources.CrossStart")
+            var cilAssembly = new CILAssembly("TestConsole.exe");
+            return AssemblyUtils.RunCECIL("TestConsole.exe", "CecilTestSources.CrossStart")
                 .AddAssembly(cilAssembly);
         }
 
@@ -605,7 +605,7 @@ namespace MEFEditor.TestConsole
         [CompositionPoint]
         static internal TestingAssembly CECIL_ForLoop()
         {
-            return AssemblyUtils.RunCECIL("TestCases.exe", "CecilTestSources.ForLoop");
+            return AssemblyUtils.RunCECIL("TestConsole.exe", "CecilTestSources.ForLoop");
         }
 
         /// <summary>
