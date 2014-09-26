@@ -25,7 +25,7 @@ namespace MEFEditor.TestConsole
         /// </summary>
         public static void Main()
         {
-            var testAssembly = TestCases.TestExtensions_FromMasterThesis();
+            var testAssembly = TestCases.DrawingTester_SingleJoin();
             DisplayTestResult(testAssembly);
         }
 
